@@ -1,4 +1,4 @@
-**GSDM: Ground Segment Data Management**
+##GSDM: Ground Segment Data Management##
 
 This component is the data storage management tool for ground segment data.
 The data management will make use of a data model containing the following main entities:
@@ -7,7 +7,7 @@ The data management will make use of a data model containing the following main 
 3. Explicit references
 4. Data Ingestion Modules
 
-## Purpose
+** Purpose
 
 This component will manage the storage of the ground segment data following the next requirements:
 1. Traceability of all the data to the source of information (even information created within the infrastructure)
@@ -21,7 +21,7 @@ This component will manage the storage of the ground segment data following the 
 9. Parallel insertion of data using the RDBMS parallelism mechanisms
 10. Quick access to the information by which the information can be managed dynamically depending on the needs of the users
 
-## Scope
+** Scope
 
 This component will be targetted to systems/tools with the need of storing time-tagged information.
 The data model used will allow quick access to the infomration in a structured way.
