@@ -52,7 +52,7 @@ ALTER TABLE e2espm.event_tb OWNER TO e2espm;
 -- object: e2espm.gauge_cnf_tb | type: TABLE --
 -- DROP TABLE IF EXISTS e2espm.gauge_cnf_tb CASCADE;
 CREATE TABLE e2espm.gauge_cnf_tb(
-	gauge_id integer NOT NULL,
+	gauge_id serial NOT NULL,
 	system text,
 	name text NOT NULL,
 	description text,
