@@ -39,10 +39,11 @@ CREATE TABLE e2espm.event_tb(
 	stop timestamp NOT NULL,
 	time_stamp timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
-	gauge_id_gauge_cnf_tb integer NOT NULL,
-	explicit_ref_id_explicit_ref_tb integer,
-	processing_uuid_dim_processing_tb uuid,
-	CONSTRAINT event_tb_pk PRIMARY KEY (event_uuid)
+	gauge_id integer NOT NULL,
+	explicit_ref_id integer,
+	processing_uuid uuid,
+	CONSTRAINT event_tb_pk PRIMARY KEY (event_uuid),
+	CONSTRAINT unique_event UNIQUE (event_uuid)
 
 );
 -- ddl-end --
@@ -56,8 +57,9 @@ CREATE TABLE e2espm.gauge_cnf_tb(
 	system text,
 	name text NOT NULL,
 	description text,
-	dim_signature_id_dim_signature_tb integer NOT NULL,
-	CONSTRAINT gauge_cnf_tb_pk PRIMARY KEY (gauge_id)
+	dim_signature_id integer NOT NULL,
+	CONSTRAINT gauge_cnf_tb_pk PRIMARY KEY (gauge_id),
+	CONSTRAINT unique_gauge_cnf UNIQUE (system,name)
 
 );
 -- ddl-end --
@@ -74,8 +76,9 @@ CREATE TABLE e2espm.dim_processing_tb(
 	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	dim_exec_version text NOT NULL,
-	dim_signature_id_dim_signature_tb integer NOT NULL,
-	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid)
+	dim_signature_id integer NOT NULL,
+	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid),
+	CONSTRAINT unique_processing_uuid UNIQUE (processing_uuid)
 
 );
 -- ddl-end --
@@ -88,7 +91,8 @@ CREATE TABLE e2espm.dim_signature_tb(
 	dim_signature_id serial NOT NULL,
 	dim_signature text NOT NULL,
 	dim_exec_name text NOT NULL,
-	CONSTRAINT dim_signature_tb_pk PRIMARY KEY (dim_signature_id)
+	CONSTRAINT dim_signature_tb_pk PRIMARY KEY (dim_signature_id),
+	CONSTRAINT unique_dim_signature UNIQUE (dim_signature,dim_exec_name)
 
 );
 -- ddl-end --
@@ -101,8 +105,9 @@ CREATE TABLE e2espm.explicit_ref_tb(
 	explicit_ref_id serial NOT NULL,
 	time_stamp timestamp NOT NULL,
 	explicit_ref text NOT NULL,
-	expl_ref_cnf_id_explicit_ref_cnf_tb integer,
-	CONSTRAINT explicit_ref_tb_pk PRIMARY KEY (explicit_ref_id)
+	expl_ref_cnf_id integer,
+	CONSTRAINT explicit_ref_tb_pk PRIMARY KEY (explicit_ref_id),
+	CONSTRAINT unique_explicit_ref UNIQUE (explicit_ref)
 
 );
 -- ddl-end --
@@ -118,7 +123,7 @@ CREATE TABLE e2espm.event_text_tb(
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	event_uuid_event_tb uuid NOT NULL
+	event_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.event_text_tb OWNER TO e2espm;
@@ -133,7 +138,7 @@ CREATE TABLE e2espm.event_double_tb(
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	event_uuid_event_tb uuid NOT NULL
+	event_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.event_double_tb OWNER TO e2espm;
@@ -147,7 +152,7 @@ CREATE TABLE e2espm.event_object_tb(
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	event_uuid_event_tb uuid NOT NULL
+	event_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.event_object_tb OWNER TO e2espm;
@@ -162,7 +167,7 @@ CREATE TABLE e2espm.event_geosegment_tb(
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	event_uuid_event_tb uuid NOT NULL
+	event_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.event_geosegment_tb OWNER TO e2espm;
@@ -175,9 +180,10 @@ CREATE TABLE e2espm.annot_tb(
 	time_stamp timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	explicit_ref_id_explicit_ref_tb integer NOT NULL,
-	processing_uuid_dim_processing_tb uuid,
+	processing_uuid uuid,
 	annotation_cnf_id_annot_cnf_tb integer NOT NULL,
-	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid)
+	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid),
+	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)
 
 );
 -- ddl-end --
@@ -193,7 +199,7 @@ CREATE TABLE e2espm.annot_text_tb(
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	name text NOT NULL,
-	annotation_uuid_annot_tb uuid NOT NULL
+	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.annot_text_tb OWNER TO e2espm;
@@ -208,7 +214,7 @@ CREATE TABLE e2espm.annot_double_tb(
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	name text NOT NULL,
-	annotation_uuid_annot_tb uuid NOT NULL
+	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.annot_double_tb OWNER TO e2espm;
@@ -222,7 +228,7 @@ CREATE TABLE e2espm.annot_object_tb(
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	name text NOT NULL,
-	annotation_uuid_annot_tb uuid NOT NULL
+	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.annot_object_tb OWNER TO e2espm;
@@ -237,7 +243,7 @@ CREATE TABLE e2espm.annot_geosegment_tb(
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	annotation_uuid_annot_tb uuid NOT NULL
+	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.annot_geosegment_tb OWNER TO e2espm;
@@ -248,9 +254,10 @@ ALTER TABLE e2espm.annot_geosegment_tb OWNER TO e2espm;
 CREATE TABLE e2espm.annot_cnf_tb(
 	annotation_cnf_id serial NOT NULL,
 	name text NOT NULL,
-	group_id_annot_group_cnf_tb integer NOT NULL,
-	dim_signature_id_dim_signature_tb integer NOT NULL,
-	CONSTRAINT annot_cnf_tb_pk PRIMARY KEY (annotation_cnf_id)
+	group_id integer NOT NULL,
+	dim_signature_id integer NOT NULL,
+	CONSTRAINT annot_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
+	CONSTRAINT unique_annotation_cnf UNIQUE (name)
 
 );
 -- ddl-end --
@@ -262,7 +269,8 @@ ALTER TABLE e2espm.annot_cnf_tb OWNER TO e2espm;
 CREATE TABLE e2espm.annot_group_cnf_tb(
 	group_id serial NOT NULL,
 	name text NOT NULL,
-	CONSTRAINT annot_group_cnf_tb_pk PRIMARY KEY (group_id)
+	CONSTRAINT annot_group_cnf_tb_pk PRIMARY KEY (group_id),
+	CONSTRAINT unique_annotation_group UNIQUE (name)
 
 );
 -- ddl-end --
@@ -274,7 +282,7 @@ ALTER TABLE e2espm.annot_group_cnf_tb OWNER TO e2espm;
 CREATE TABLE e2espm.event_links_tb(
 	event_uuid_link uuid NOT NULL,
 	name text NOT NULL,
-	event_uuid_event_tb uuid NOT NULL,
+	event_uuid uuid NOT NULL,
 	CONSTRAINT event_links_tb_pk PRIMARY KEY (event_uuid_link)
 
 );
@@ -287,7 +295,8 @@ ALTER TABLE e2espm.event_links_tb OWNER TO e2espm;
 CREATE TABLE e2espm.explicit_ref_cnf_tb(
 	expl_ref_cnf_id serial NOT NULL,
 	name text NOT NULL,
-	CONSTRAINT explicit_ref_cnf_tb_pk PRIMARY KEY (expl_ref_cnf_id)
+	CONSTRAINT explicit_ref_cnf_tb_pk PRIMARY KEY (expl_ref_cnf_id),
+	CONSTRAINT unique_explicit_ref_group UNIQUE (name)
 
 );
 -- ddl-end --
@@ -299,7 +308,7 @@ ALTER TABLE e2espm.explicit_ref_cnf_tb OWNER TO e2espm;
 CREATE TABLE e2espm.explicit_ref_links_tb(
 	explicit_ref_id_link integer NOT NULL,
 	name text NOT NULL,
-	explicit_ref_id_explicit_ref_tb integer NOT NULL,
+	explicit_ref_id integer NOT NULL,
 	CONSTRAINT explicit_ref_links_tb_pk PRIMARY KEY (explicit_ref_id_link)
 
 );
@@ -312,7 +321,7 @@ ALTER TABLE e2espm.explicit_ref_links_tb OWNER TO e2espm;
 CREATE TABLE e2espm.dim_processing_status_tb(
 	time_stamp timestamp NOT NULL,
 	proc_status integer NOT NULL,
-	processing_uuid_dim_processing_tb uuid NOT NULL
+	processing_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE e2espm.dim_processing_status_tb OWNER TO e2espm;
@@ -320,7 +329,7 @@ ALTER TABLE e2espm.dim_processing_status_tb OWNER TO e2espm;
 
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.dim_processing_status_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
-ALTER TABLE e2espm.dim_processing_status_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid_dim_processing_tb)
+ALTER TABLE e2espm.dim_processing_status_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
 REFERENCES e2espm.dim_processing_tb (processing_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -334,14 +343,14 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: gauge_cnf_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_tb DROP CONSTRAINT IF EXISTS gauge_cnf_tb_fk CASCADE;
-ALTER TABLE e2espm.event_tb ADD CONSTRAINT gauge_cnf_tb_fk FOREIGN KEY (gauge_id_gauge_cnf_tb)
+ALTER TABLE e2espm.event_tb ADD CONSTRAINT gauge_cnf_tb_fk FOREIGN KEY (gauge_id)
 REFERENCES e2espm.gauge_cnf_tb (gauge_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
-ALTER TABLE e2espm.event_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid_dim_processing_tb)
+ALTER TABLE e2espm.event_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
 REFERENCES e2espm.dim_processing_tb (processing_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -351,7 +360,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE TABLE e2espm.event_keys_tb(
 	event_key text NOT NULL,
 	time_stamp timestamp NOT NULL,
-	event_uuid_event_tb uuid NOT NULL,
+	event_uuid uuid NOT NULL,
 	CONSTRAINT event_keys_tb_pk PRIMARY KEY (event_key)
 
 );
@@ -361,70 +370,70 @@ ALTER TABLE e2espm.event_keys_tb OWNER TO e2espm;
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_double_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_double_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_double_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_text_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_text_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_text_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_object_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_object_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_object_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_geosegment_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_geosegment_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_geosegment_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_text_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_text_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid_annot_tb)
+ALTER TABLE e2espm.annot_text_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES e2espm.annot_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_object_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_object_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid_annot_tb)
+ALTER TABLE e2espm.annot_object_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES e2espm.annot_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_double_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_double_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid_annot_tb)
+ALTER TABLE e2espm.annot_double_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES e2espm.annot_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_geosegment_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_geosegment_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid_annot_tb)
+ALTER TABLE e2espm.annot_geosegment_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES e2espm.annot_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: explicit_ref_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
-ALTER TABLE e2espm.event_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id_explicit_ref_tb)
+ALTER TABLE e2espm.event_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
 REFERENCES e2espm.explicit_ref_tb (explicit_ref_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid_dim_processing_tb)
+ALTER TABLE e2espm.annot_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
 REFERENCES e2espm.dim_processing_tb (processing_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -438,49 +447,49 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: annot_group_cnf_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_cnf_tb DROP CONSTRAINT IF EXISTS annot_group_cnf_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_cnf_tb ADD CONSTRAINT annot_group_cnf_tb_fk FOREIGN KEY (group_id_annot_group_cnf_tb)
+ALTER TABLE e2espm.annot_cnf_tb ADD CONSTRAINT annot_group_cnf_tb_fk FOREIGN KEY (group_id)
 REFERENCES e2espm.annot_group_cnf_tb (group_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_links_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_links_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_links_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: explicit_ref_cnf_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.explicit_ref_tb DROP CONSTRAINT IF EXISTS explicit_ref_cnf_tb_fk CASCADE;
-ALTER TABLE e2espm.explicit_ref_tb ADD CONSTRAINT explicit_ref_cnf_tb_fk FOREIGN KEY (expl_ref_cnf_id_explicit_ref_cnf_tb)
+ALTER TABLE e2espm.explicit_ref_tb ADD CONSTRAINT explicit_ref_cnf_tb_fk FOREIGN KEY (expl_ref_cnf_id)
 REFERENCES e2espm.explicit_ref_cnf_tb (expl_ref_cnf_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_signature_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.dim_processing_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
-ALTER TABLE e2espm.dim_processing_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id_dim_signature_tb)
+ALTER TABLE e2espm.dim_processing_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES e2espm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_signature_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_cnf_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id_dim_signature_tb)
+ALTER TABLE e2espm.annot_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES e2espm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_signature_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.gauge_cnf_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
-ALTER TABLE e2espm.gauge_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id_dim_signature_tb)
+ALTER TABLE e2espm.gauge_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES e2espm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: explicit_ref_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.explicit_ref_links_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
-ALTER TABLE e2espm.explicit_ref_links_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id_explicit_ref_tb)
+ALTER TABLE e2espm.explicit_ref_links_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
 REFERENCES e2espm.explicit_ref_tb (explicit_ref_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -499,7 +508,7 @@ CREATE UNIQUE INDEX pk_events_tb ON e2espm.event_tb
 CREATE INDEX idx_events_gauge_id ON e2espm.event_tb
 	USING btree
 	(
-	  gauge_id_gauge_cnf_tb
+	  gauge_id
 	);
 -- ddl-end --
 
@@ -526,7 +535,7 @@ CREATE INDEX idx_events_stop ON e2espm.event_tb
 CREATE INDEX idx_events_explicit_ref_id ON e2espm.event_tb
 	USING btree
 	(
-	  explicit_ref_id_explicit_ref_tb
+	  explicit_ref_id
 	);
 -- ddl-end --
 
@@ -544,7 +553,7 @@ CREATE INDEX idx_events_time_stamp ON e2espm.event_tb
 CREATE INDEX idx_events_processing_uuid ON e2espm.event_tb
 	USING btree
 	(
-	  processing_uuid_dim_processing_tb
+	  processing_uuid
 	);
 -- ddl-end --
 
@@ -553,7 +562,7 @@ CREATE INDEX idx_events_processing_uuid ON e2espm.event_tb
 CREATE INDEX idx_event_text_event_uuid ON e2espm.event_text_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
 -- ddl-end --
 
@@ -580,7 +589,7 @@ CREATE INDEX idx_event_text_name ON e2espm.event_text_tb
 CREATE INDEX idx_event_double_event_uuid ON e2espm.event_double_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
 -- ddl-end --
 
@@ -607,7 +616,7 @@ CREATE INDEX idx_event_double_name ON e2espm.event_double_tb
 CREATE INDEX idx_event_object_event_uuid ON e2espm.event_object_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
 -- ddl-end --
 
@@ -625,7 +634,7 @@ CREATE INDEX idx_event_object_name ON e2espm.event_object_tb
 CREATE INDEX idx_event_geosegment_event_uuid ON e2espm.event_geosegment_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
 -- ddl-end --
 
@@ -652,7 +661,7 @@ CREATE INDEX idx_event_geosegment_value ON e2espm.event_geosegment_tb
 CREATE INDEX idx_annot_text_annotation_uuid ON e2espm.annot_text_tb
 	USING btree
 	(
-	  annotation_uuid_annot_tb
+	  annotation_uuid
 	);
 -- ddl-end --
 
@@ -679,7 +688,7 @@ CREATE INDEX idx_annot_text_name ON e2espm.annot_text_tb
 CREATE INDEX idx_annot_double_annotation_uuid ON e2espm.annot_double_tb
 	USING btree
 	(
-	  annotation_uuid_annot_tb
+	  annotation_uuid
 	);
 -- ddl-end --
 
@@ -706,7 +715,7 @@ CREATE INDEX idx_annot_double_name ON e2espm.annot_double_tb
 CREATE INDEX idx_annot_object_annotation_uuid ON e2espm.annot_object_tb
 	USING btree
 	(
-	  annotation_uuid_annot_tb
+	  annotation_uuid
 	);
 -- ddl-end --
 
@@ -724,7 +733,7 @@ CREATE INDEX idx_annot_object_name ON e2espm.annot_object_tb
 CREATE INDEX idx_annot_geosegment_annotation_uuid ON e2espm.annot_geosegment_tb
 	USING btree
 	(
-	  annotation_uuid_annot_tb
+	  annotation_uuid
 	);
 -- ddl-end --
 
@@ -778,7 +787,7 @@ CREATE INDEX idx_gauge_cnf_name ON e2espm.gauge_cnf_tb
 CREATE INDEX idx_gauge_cnf_dim_signature_id ON e2espm.gauge_cnf_tb
 	USING btree
 	(
-	  dim_signature_id_dim_signature_tb
+	  dim_signature_id
 	);
 -- ddl-end --
 
@@ -805,7 +814,7 @@ CREATE INDEX idx_event_links_name ON e2espm.event_links_tb
 CREATE INDEX idx_event_links_event_uuid ON e2espm.event_links_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
 -- ddl-end --
 
@@ -877,7 +886,7 @@ CREATE INDEX idx_annot_cnf_name ON e2espm.annot_cnf_tb
 CREATE INDEX idx_annot_cnf_group_id ON e2espm.annot_cnf_tb
 	USING btree
 	(
-	  group_id_annot_group_cnf_tb
+	  group_id
 	);
 -- ddl-end --
 
@@ -886,7 +895,7 @@ CREATE INDEX idx_annot_cnf_group_id ON e2espm.annot_cnf_tb
 CREATE INDEX idx_annot_cnf_dim_signature_id ON e2espm.annot_cnf_tb
 	USING btree
 	(
-	  dim_signature_id_dim_signature_tb
+	  dim_signature_id
 	);
 -- ddl-end --
 
@@ -922,7 +931,7 @@ CREATE INDEX idx_annot_explicit_ref_id ON e2espm.annot_tb
 CREATE INDEX idx_annot_processing_uuid ON e2espm.annot_tb
 	USING btree
 	(
-	  processing_uuid_dim_processing_tb
+	  processing_uuid
 	);
 -- ddl-end --
 
@@ -931,7 +940,7 @@ CREATE INDEX idx_annot_processing_uuid ON e2espm.annot_tb
 CREATE INDEX idx_annot_annotation_cnf_id ON e2espm.annot_tb
 	USING btree
 	(
-	  processing_uuid_dim_processing_tb
+	  processing_uuid
 	);
 -- ddl-end --
 
@@ -958,7 +967,7 @@ CREATE INDEX idx_explicit_ref_links_name ON e2espm.explicit_ref_links_tb
 CREATE INDEX idx_explicit_ref_links_explicit_ref_id ON e2espm.explicit_ref_links_tb
 	USING btree
 	(
-	  explicit_ref_id_explicit_ref_tb
+	  explicit_ref_id
 	);
 -- ddl-end --
 
@@ -994,7 +1003,7 @@ CREATE INDEX idx_explicit_ref_explicit_ref ON e2espm.explicit_ref_tb
 CREATE INDEX idx_explicit_ref_explicit_ref_cnf_id ON e2espm.explicit_ref_tb
 	USING btree
 	(
-	  expl_ref_cnf_id_explicit_ref_cnf_tb
+	  expl_ref_cnf_id
 	);
 -- ddl-end --
 
@@ -1084,7 +1093,7 @@ CREATE INDEX idx_processing_dim_exec_version ON e2espm.dim_processing_tb
 CREATE INDEX idx_processing_dim_signature_id ON e2espm.dim_processing_tb
 	USING btree
 	(
-	  dim_signature_id_dim_signature_tb
+	  dim_signature_id
 	);
 -- ddl-end --
 
@@ -1111,20 +1120,20 @@ CREATE INDEX idx_dim_processing_status_proc_status ON e2espm.dim_processing_stat
 CREATE INDEX idx_dim_processing_status_processing_uuid ON e2espm.dim_processing_status_tb
 	USING btree
 	(
-	  processing_uuid_dim_processing_tb
+	  processing_uuid
 	);
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_keys_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE e2espm.event_keys_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid_event_tb)
+ALTER TABLE e2espm.event_keys_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES e2espm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_keys_tb_uq | type: CONSTRAINT --
 -- ALTER TABLE e2espm.event_keys_tb DROP CONSTRAINT IF EXISTS event_keys_tb_uq CASCADE;
-ALTER TABLE e2espm.event_keys_tb ADD CONSTRAINT event_keys_tb_uq UNIQUE (event_uuid_event_tb);
+ALTER TABLE e2espm.event_keys_tb ADD CONSTRAINT event_keys_tb_uq UNIQUE (event_uuid);
 -- ddl-end --
 
 -- object: idx_event_keys_event_key | type: INDEX --
@@ -1150,8 +1159,13 @@ CREATE INDEX idx_event_keys_time_stamp ON e2espm.event_keys_tb
 CREATE INDEX idx_event_keys_event_uuid ON e2espm.event_keys_tb
 	USING btree
 	(
-	  event_uuid_event_tb
+	  event_uuid
 	);
+-- ddl-end --
+
+-- object: unique_dim_processing | type: CONSTRAINT --
+-- ALTER TABLE e2espm.dim_processing_tb DROP CONSTRAINT IF EXISTS unique_dim_processing CASCADE;
+ALTER TABLE e2espm.dim_processing_tb ADD CONSTRAINT unique_dim_processing UNIQUE (filename,dim_signature_id);
 -- ddl-end --
 
 
