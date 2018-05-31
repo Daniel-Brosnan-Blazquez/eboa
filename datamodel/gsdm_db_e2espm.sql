@@ -103,7 +103,7 @@ ALTER TABLE e2espm.dim_signature_tb OWNER TO e2espm;
 -- DROP TABLE IF EXISTS e2espm.explicit_ref_tb CASCADE;
 CREATE TABLE e2espm.explicit_ref_tb(
 	explicit_ref_id serial NOT NULL,
-	time_stamp timestamp NOT NULL,
+	ingestion_time timestamp NOT NULL,
 	explicit_ref text NOT NULL,
 	expl_ref_cnf_id integer,
 	CONSTRAINT explicit_ref_tb_pk PRIMARY KEY (explicit_ref_id),
@@ -179,9 +179,9 @@ CREATE TABLE e2espm.annot_tb(
 	annotation_uuid uuid NOT NULL,
 	time_stamp timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
-	explicit_ref_id_explicit_ref_tb integer NOT NULL,
+	explicit_ref_id integer NOT NULL,
 	processing_uuid uuid,
-	annotation_cnf_id_annot_cnf_tb integer NOT NULL,
+	annotation_cnf_id integer NOT NULL,
 	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid),
 	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)
 
@@ -254,7 +254,6 @@ ALTER TABLE e2espm.annot_geosegment_tb OWNER TO e2espm;
 CREATE TABLE e2espm.annot_cnf_tb(
 	annotation_cnf_id serial NOT NULL,
 	name text NOT NULL,
-	group_id integer NOT NULL,
 	dim_signature_id integer NOT NULL,
 	CONSTRAINT annot_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
 	CONSTRAINT unique_annotation_cnf UNIQUE (name)
@@ -262,19 +261,6 @@ CREATE TABLE e2espm.annot_cnf_tb(
 );
 -- ddl-end --
 ALTER TABLE e2espm.annot_cnf_tb OWNER TO e2espm;
--- ddl-end --
-
--- object: e2espm.annot_group_cnf_tb | type: TABLE --
--- DROP TABLE IF EXISTS e2espm.annot_group_cnf_tb CASCADE;
-CREATE TABLE e2espm.annot_group_cnf_tb(
-	group_id serial NOT NULL,
-	name text NOT NULL,
-	CONSTRAINT annot_group_cnf_tb_pk PRIMARY KEY (group_id),
-	CONSTRAINT unique_annotation_group UNIQUE (name)
-
-);
--- ddl-end --
-ALTER TABLE e2espm.annot_group_cnf_tb OWNER TO e2espm;
 -- ddl-end --
 
 -- object: e2espm.event_links_tb | type: TABLE --
@@ -336,7 +322,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: explicit_ref_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id_explicit_ref_tb)
+ALTER TABLE e2espm.annot_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
 REFERENCES e2espm.explicit_ref_tb (explicit_ref_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -440,15 +426,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: annot_cnf_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE e2espm.annot_tb DROP CONSTRAINT IF EXISTS annot_cnf_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_tb ADD CONSTRAINT annot_cnf_tb_fk FOREIGN KEY (annotation_cnf_id_annot_cnf_tb)
+ALTER TABLE e2espm.annot_tb ADD CONSTRAINT annot_cnf_tb_fk FOREIGN KEY (annotation_cnf_id)
 REFERENCES e2espm.annot_cnf_tb (annotation_cnf_id) MATCH FULL
-ON DELETE CASCADE ON UPDATE CASCADE;
--- ddl-end --
-
--- object: annot_group_cnf_tb_fk | type: CONSTRAINT --
--- ALTER TABLE e2espm.annot_cnf_tb DROP CONSTRAINT IF EXISTS annot_group_cnf_tb_fk CASCADE;
-ALTER TABLE e2espm.annot_cnf_tb ADD CONSTRAINT annot_group_cnf_tb_fk FOREIGN KEY (group_id)
-REFERENCES e2espm.annot_group_cnf_tb (group_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -845,24 +824,6 @@ CREATE INDEX idx_dim_signature_dim_exec_name ON e2espm.dim_signature_tb
 	);
 -- ddl-end --
 
--- object: idx_annot_group_group_id | type: INDEX --
--- DROP INDEX IF EXISTS e2espm.idx_annot_group_group_id CASCADE;
-CREATE INDEX idx_annot_group_group_id ON e2espm.annot_group_cnf_tb
-	USING btree
-	(
-	  group_id
-	);
--- ddl-end --
-
--- object: idx_annot_group_name | type: INDEX --
--- DROP INDEX IF EXISTS e2espm.idx_annot_group_name CASCADE;
-CREATE INDEX idx_annot_group_name ON e2espm.annot_group_cnf_tb
-	USING btree
-	(
-	  name
-	);
--- ddl-end --
-
 -- object: idx_annot_cnf_annotation_cnf_id | type: INDEX --
 -- DROP INDEX IF EXISTS e2espm.idx_annot_cnf_annotation_cnf_id CASCADE;
 CREATE INDEX idx_annot_cnf_annotation_cnf_id ON e2espm.annot_cnf_tb
@@ -878,15 +839,6 @@ CREATE INDEX idx_annot_cnf_name ON e2espm.annot_cnf_tb
 	USING btree
 	(
 	  name
-	);
--- ddl-end --
-
--- object: idx_annot_cnf_group_id | type: INDEX --
--- DROP INDEX IF EXISTS e2espm.idx_annot_cnf_group_id CASCADE;
-CREATE INDEX idx_annot_cnf_group_id ON e2espm.annot_cnf_tb
-	USING btree
-	(
-	  group_id
 	);
 -- ddl-end --
 
@@ -922,7 +874,7 @@ CREATE INDEX idx_annot_time_stamp ON e2espm.annot_tb
 CREATE INDEX idx_annot_explicit_ref_id ON e2espm.annot_tb
 	USING btree
 	(
-	  explicit_ref_id_explicit_ref_tb
+	  explicit_ref_id
 	);
 -- ddl-end --
 
@@ -985,7 +937,7 @@ CREATE INDEX idx_explicit_ref_explicit_ref_id ON e2espm.explicit_ref_tb
 CREATE INDEX idx_explicit_ref_time_stamp ON e2espm.explicit_ref_tb
 	USING btree
 	(
-	  time_stamp
+	  ingestion_time
 	);
 -- ddl-end --
 
