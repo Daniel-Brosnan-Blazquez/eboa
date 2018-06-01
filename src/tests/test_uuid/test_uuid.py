@@ -7,66 +7,73 @@ module gsdm
 """
 
 # Adding path to the datamodel package
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-from datamodel.base import Session, engine, Base
 from uuids import UuidTest
-import time
+import time, uuid, random
+from multiprocessing import Process
 
-import threading, uuid
+NUMBER_OF_PROCESSES=3000
+NUMBER_OF_INSERTIONS=1000
 
-NUMBER_OF_THREADS=8
-NUMBER_OF_INSERTIONS=100000
-
-def test_uuid(test_func):
+def test_uuid():
   """
   Function to execute the function received X times
 
   Args:
-  test_func (function): function to be executed
+  None
 
   Returns: Nothing
   """
+  import sys
+  import os
+  sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+  
+  from datamodel.base import Session, engine, Base
+
   session = Session ()
   for i in range(NUMBER_OF_INSERTIONS):
     # Create the uuid instance
-    uuidInstance = UuidTest (test_func())
+    uuidInstance = UuidTest (uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14)))
     # Commit to database
     session.add (uuidInstance)
   session.commit()
   session.close()
 
-def test(test_func, threads):
+def test(processes):
   """
-  Function to execute threads running the uuid function
+  Function to execute processes running the uuid function
 
   Args:
-  test_func (function): function to be executed by the threads
-  test_func (threads): number of threads to be executed
+  processes (integer): number of processes to be executed
 
   Returns: Nothing
   """
-  print ('Running {} with {} threads...'.format(test_func.__name__, threads))
+  print ('Running {} processes...'.format(processes))
 
-  workers = [threading.Thread(target=test_uuid, args=(test_func,)) for x in range(threads)]
+  workers = [Process(target=test_uuid) for x in range(processes)]
   [x.start() for x in workers]
   [x.join() for x in workers]
   print ('Done!')
 
 if __name__ == '__main__':
   # Remove content of the table
+  import sys
+  import os
+  sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+  from datamodel.base import Session, engine, Base
   engine.execute(UuidTest.__table__.delete())
 
+  # Closing the pool of connections
+  engine.dispose()
+
   startTime = time.time()
-  test(uuid.uuid1, NUMBER_OF_THREADS)
+  test(NUMBER_OF_PROCESSES)
   stopTime = time.time()
 
   session = Session ()
   numberUuids = session.query(UuidTest).count()
   # Check that the number of uuids inserted corresponds to the expected
-  if numberUuids != NUMBER_OF_THREADS*NUMBER_OF_INSERTIONS:
+  if numberUuids != NUMBER_OF_PROCESSES*NUMBER_OF_INSERTIONS:
     print ('ERROR: There has been a colission!!')
   else:
     print ('{} uuids inserted without collision in {} seconds!!'.format(numberUuids, stopTime - startTime))
