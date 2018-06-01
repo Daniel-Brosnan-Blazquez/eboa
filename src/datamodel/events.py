@@ -50,3 +50,36 @@ class EventLink(Base):
         self.name = name
         self.event = event
 
+class EventKey(Base):
+    __tablename__ = 'event_keys_tb'
+
+    event_key = Column(Text, primary_key=True)
+    time_stamp = Column(DateTime)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventKeys")
+
+    def __init__(self, key, time_stamp, event):
+        self.event_uuid_link = link
+        self.name = name
+        self.event = event
+
+class EventText(Base):
+    __tablename__ = 'event_text_tb'
+
+    name = Column(Text, primary_key=True)
+    value = Column(Text)
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventTexts")
+
+    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+        self.name = name
+        self.value = name
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
+        self.event = event
