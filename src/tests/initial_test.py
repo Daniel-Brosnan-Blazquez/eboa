@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink
+from datamodel.events import Event, EventLink, EventText
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
@@ -128,6 +128,17 @@ session.commit()
 if len (session.query(EventLink).filter(EventLink.name == 'TEST').all()) != 1:
     raise Exception("The link between events was not committed")
 
+# Add text to the event
+name = 'TEST'
+eventText1 = EventText (name, 'TEST', 0, 0, 0, 0, event1)
+
+# Insert the text into the database
+session.add (eventText1)
+session.commit()
+
+if len (session.query(EventText).filter(EventText.event_uuid == event1Uuid).all()) != 1:
+    raise Exception("The text was not committed")
+
 ################
 # Annotations
 ################
@@ -157,18 +168,33 @@ print ('Inserted DIM Signatures ({}):'.format(len (session.query(DimSignature).a
 for idx, dimSignature in enumerate(session.query(DimSignature).all()):
     print ('DIM signature {}:'.format(idx))
     pprint.pprint(dimSignature.__dict__)
-    print ()
+
 print ('\nInserted gauges ({}):'.format(len(session.query(Gauge).all())))
 for idx, gauge in enumerate(session.query(Gauge).all()):
     print ('Gauge {}:'.format(idx))
     pprint.pprint(gauge.__dict__)
-    print ()
+
 print ('\nInserted events ({}):'.format(len(session.query(Event).all())))
 for idx, event in enumerate(session.query(Event).all()):
     print ('Event {}:'.format(idx))
     pprint.pprint(event.__dict__)
-    print ()
 
+print ('\nInserted annotations ({}):'.format(len(session.query(Annotation).all())))
+for idx, annotation in enumerate(session.query(Annotation).all()):
+    print ('Annotation {}:'.format(idx))
+    pprint.pprint(annotation.__dict__)
+
+print ('\nInserted explicit references ({}):'.format(len(session.query(ExplicitRef).all())))
+for idx, er in enumerate(session.query(ExplicitRef).all()):
+    print ('Explicit reference {}:'.format(idx))
+    pprint.pprint(er.__dict__)
+
+print ('\nInserted DIM processings ({}):'.format(len(session.query(DimProcessing).all())))
+for idx, dimProcessing in enumerate(session.query(DimProcessing).all()):
+    print ('DIM processing {}:'.format(idx))
+    pprint.pprint(dimProcessing.__dict__)
+
+print ()
 print ('Searching events by gauge name TEST\n>>> session.query(Event).join(Gauge).filter(Gauge.name == \'TEST\').all()')
 eventsGaugeTest = session.query(Event).join(Gauge).filter(Gauge.name == 'TEST').all()
 for idx, event in enumerate(eventsGaugeTest):
