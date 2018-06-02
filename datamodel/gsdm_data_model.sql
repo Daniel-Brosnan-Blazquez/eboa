@@ -158,11 +158,11 @@ CREATE TABLE gsdm.event_object_tb(
 ALTER TABLE gsdm.event_object_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.event_geosegment_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.event_geosegment_tb CASCADE;
-CREATE TABLE gsdm.event_geosegment_tb(
+-- object: gsdm.event_geometry_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.event_geometry_tb CASCADE;
+CREATE TABLE gsdm.event_geometry_tb(
 	name text NOT NULL,
-	value polygon NOT NULL,
+	value geometry NOT NULL,
 	level_position integer NOT NULL,
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE gsdm.event_geosegment_tb(
 	event_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.event_geosegment_tb OWNER TO gsdm;
+ALTER TABLE gsdm.event_geometry_tb OWNER TO gsdm;
 -- ddl-end --
 
 -- object: gsdm.annot_tb | type: TABLE --
@@ -234,11 +234,11 @@ CREATE TABLE gsdm.annot_object_tb(
 ALTER TABLE gsdm.annot_object_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_geosegment_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_geosegment_tb CASCADE;
-CREATE TABLE gsdm.annot_geosegment_tb(
+-- object: gsdm.annot_geometry_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annot_geometry_tb CASCADE;
+CREATE TABLE gsdm.annot_geometry_tb(
 	name text NOT NULL,
-	value polygon NOT NULL,
+	value geometry NOT NULL,
 	level_position integer NOT NULL,
 	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
@@ -246,7 +246,7 @@ CREATE TABLE gsdm.annot_geosegment_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_geosegment_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annot_geometry_tb OWNER TO gsdm;
 -- ddl-end --
 
 -- object: gsdm.annot_cnf_tb | type: TABLE --
@@ -376,8 +376,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_geosegment_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE gsdm.event_geosegment_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
+-- ALTER TABLE gsdm.event_geometry_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
+ALTER TABLE gsdm.event_geometry_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -404,8 +404,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_geosegment_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_geosegment_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
+-- ALTER TABLE gsdm.annot_geometry_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
+ALTER TABLE gsdm.annot_geometry_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -610,7 +610,7 @@ CREATE INDEX idx_event_object_name ON gsdm.event_object_tb
 
 -- object: idx_event_geosegment_event_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_event_uuid CASCADE;
-CREATE INDEX idx_event_geosegment_event_uuid ON gsdm.event_geosegment_tb
+CREATE INDEX idx_event_geosegment_event_uuid ON gsdm.event_geometry_tb
 	USING btree
 	(
 	  event_uuid
@@ -619,7 +619,7 @@ CREATE INDEX idx_event_geosegment_event_uuid ON gsdm.event_geosegment_tb
 
 -- object: idx_event_geosegment_name | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_name CASCADE;
-CREATE INDEX idx_event_geosegment_name ON gsdm.event_geosegment_tb
+CREATE INDEX idx_event_geosegment_name ON gsdm.event_geometry_tb
 	USING btree
 	(
 	  name
@@ -628,7 +628,7 @@ CREATE INDEX idx_event_geosegment_name ON gsdm.event_geosegment_tb
 
 -- object: idx_event_geosegment_value | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_value CASCADE;
-CREATE INDEX idx_event_geosegment_value ON gsdm.event_geosegment_tb
+CREATE INDEX idx_event_geosegment_value ON gsdm.event_geometry_tb
 	USING gist
 	(
 	  value
@@ -709,7 +709,7 @@ CREATE INDEX idx_annot_object_name ON gsdm.annot_object_tb
 
 -- object: idx_annot_geosegment_annotation_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_geosegment_annotation_uuid ON gsdm.annot_geosegment_tb
+CREATE INDEX idx_annot_geosegment_annotation_uuid ON gsdm.annot_geometry_tb
 	USING btree
 	(
 	  annotation_uuid
@@ -718,7 +718,7 @@ CREATE INDEX idx_annot_geosegment_annotation_uuid ON gsdm.annot_geosegment_tb
 
 -- object: idx_annot_geosegment_name | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_name CASCADE;
-CREATE INDEX idx_annot_geosegment_name ON gsdm.annot_geosegment_tb
+CREATE INDEX idx_annot_geosegment_name ON gsdm.annot_geometry_tb
 	USING btree
 	(
 	  name
@@ -727,7 +727,7 @@ CREATE INDEX idx_annot_geosegment_name ON gsdm.annot_geosegment_tb
 
 -- object: idx_annot_geosegment_value | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_value CASCADE;
-CREATE INDEX idx_annot_geosegment_value ON gsdm.annot_geosegment_tb
+CREATE INDEX idx_annot_geosegment_value ON gsdm.annot_geometry_tb
 	USING gist
 	(
 	  value

@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="495,593" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,642" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -160,7 +160,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="explicit_ref_id" not-null="true">
 		<type name="serial" length="1"/>
 	</column>
-	<column name="time_stamp" not-null="true">
+	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="explicit_ref" not-null="true">
@@ -283,7 +283,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="1"/>
 	</column>
 	<column name="value" not-null="true">
-		<type name="polygon" length="0"/>
+		<type name="geometry" length="0"/>
 	</column>
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
@@ -441,7 +441,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="1"/>
 	</column>
 	<column name="value" not-null="true">
-		<type name="polygon" length="0"/>
+		<type name="geometry" length="0"/>
 	</column>
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
@@ -1245,7 +1245,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
-			<column name="time_stamp"/>
+			<column name="ingestion_time"/>
 		</idxelement>
 </index>
 
