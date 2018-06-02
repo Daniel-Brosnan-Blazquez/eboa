@@ -6,9 +6,10 @@ Written by DEIMOS Space S.L. (dibb)
 module gsdm
 """
 
-from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text, Float
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
+from geoalchemy2 import Geometry
 
 from .base import Base
 
@@ -77,7 +78,68 @@ class EventText(Base):
 
     def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
         self.name = name
-        self.value = name
+        self.value = value
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
+        self.event = event
+
+class EventDouble(Base):
+    __tablename__ = 'event_double_tb'
+
+    name = Column(Text, primary_key=True)
+    value = Column(Float)
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventDoubles")
+
+    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+        self.name = name
+        self.value = value
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
+        self.event = event
+
+class EventObject(Base):
+    __tablename__ = 'event_object_tb'
+
+    name = Column(Text, primary_key=True)
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventObjects")
+
+    def __init__(self, name, levelPosition, childPosition, parentLevel, parentPosition, event):
+        self.name = name
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
+        self.event = event
+
+class EventGeometry(Base):
+    __tablename__ = 'event_geometry_tb'
+
+    name = Column(Text, primary_key=True)
+    value = Column(Geometry('POLYGON'))
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventGeometrys")
+
+    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+        self.name = name
+        self.value = value
         self.level_position = levelPosition
         self.child_position = childPosition
         self.parent_level = parentLevel

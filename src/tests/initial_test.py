@@ -13,14 +13,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText
+from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf
+from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 import datetime
 import uuid
 import pprint
+from math import pi
 
 # Create session to connect to the database
 session = Session()
@@ -139,6 +140,39 @@ session.commit()
 if len (session.query(EventText).filter(EventText.event_uuid == event1Uuid).all()) != 1:
     raise Exception("The text was not committed")
 
+# Add double to the event
+name = 'TEST'
+eventDouble1 = EventDouble (name, pi, 1, 1, 0, 0, event1)
+
+# Insert the float into the database
+session.add (eventDouble1)
+session.commit()
+
+if len (session.query(EventDouble).filter(EventDouble.event_uuid == event1Uuid).all()) != 1:
+    raise Exception("The double was not committed")
+
+# Add object to the event
+name = 'TEST'
+eventObject1 = EventObject (name, 1, 1, 0, 0, event1)
+
+# Insert the object into the database
+session.add (eventObject1)
+session.commit()
+
+if len (session.query(EventObject).filter(EventObject.event_uuid == event1Uuid).all()) != 1:
+    raise Exception("The object was not committed")
+
+# Add geometry to the event
+name = 'TEST'
+eventGeometry1 = EventGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 1, 0, 0, event1)
+
+# Insert the geometry into the database
+session.add (eventGeometry1)
+session.commit()
+
+if len (session.query(EventGeometry).filter(EventGeometry.event_uuid == event1Uuid).all()) != 1:
+    raise Exception("The geometry was not committed")
+
 ################
 # Annotations
 ################
@@ -163,6 +197,50 @@ session.commit()
 
 if len (session.query(Annotation).filter(Annotation.annotation_uuid == annotation1Uuid).all()) != 1:
     raise Exception("The Annotation was not committed")
+
+# Add text to the annotation
+name = 'TEST'
+annotationText1 = AnnotationText (name, 'TEST', 0, 0, 0, 0, annotation1)
+
+# Insert the text into the database
+session.add (annotationText1)
+session.commit()
+
+if len (session.query(AnnotationText).filter(AnnotationText.annotation_uuid == annotation1Uuid).all()) != 1:
+    raise Exception("The text was not committed")
+
+# Add double to the annotation
+name = 'TEST'
+annotationDouble1 = AnnotationDouble (name, pi, 1, 1, 0, 0, annotation1)
+
+# Insert the float into the database
+session.add (annotationDouble1)
+session.commit()
+
+if len (session.query(AnnotationDouble).filter(AnnotationDouble.annotation_uuid == annotation1Uuid).all()) != 1:
+    raise Exception("The double was not committed")
+
+# Add object to the annotation
+name = 'TEST'
+annotationObject1 = AnnotationObject (name, 1, 1, 0, 0, annotation1)
+
+# Insert the object into the database
+session.add (annotationObject1)
+session.commit()
+
+if len (session.query(AnnotationObject).filter(AnnotationObject.annotation_uuid == annotation1Uuid).all()) != 1:
+    raise Exception("The object was not committed")
+
+# Add geometry to the annotation
+name = 'TEST'
+annotationGeometry1 = AnnotationGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 1, 0, 0, annotation1)
+
+# Insert the geometry into the database
+session.add (annotationGeometry1)
+session.commit()
+
+if len (session.query(AnnotationGeometry).filter(AnnotationGeometry.annotation_uuid == annotation1Uuid).all()) != 1:
+    raise Exception("The geometry was not committed")
 
 print ('Inserted DIM Signatures ({}):'.format(len (session.query(DimSignature).all())))
 for idx, dimSignature in enumerate(session.query(DimSignature).all()):
