@@ -11,7 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 dbConfiguration = {
-    'user': 'e2espm',
+    'user': 'gsdm',
     'host': 'localhost',
     'port': 5432,
     'database': 'gsdmdb',
@@ -20,7 +20,7 @@ dbConfiguration = {
 
 dbUri = "{dbApi}://{user}@{host}:{port}/{database}".format(**dbConfiguration)
 
-engine = create_engine('postgresql://e2espm@localhost:5432/gsdmdb', pool_size=20, max_overflow=20)
+engine = create_engine(dbUri, pool_size=1000, max_overflow=1000)
 Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
