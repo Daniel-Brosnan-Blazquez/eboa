@@ -12,6 +12,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datamodel.dim_signatures import DimSignature
+from datamodel.base import Session, engine, Base
 from datamodel.events import Event
 from datamodel.gauges import Gauge
 from datamodel.explicit_refs import ExplicitRef
@@ -24,11 +25,10 @@ from multiprocessing import Process
 
 nProcesses = 10
 nEvents = 1000
+session = Session ()
 
 def createEvents (nEvents, explicitRef, gauge):
-    from datamodel.base import Session, engine, Base
     
-    session = Session ()
     for i in range(nEvents):
         # Create event
         eventTime = datetime.datetime.now()
@@ -44,14 +44,9 @@ def createEvents (nEvents, explicitRef, gauge):
     session.commit()    
 
 if __name__ == '__main__':
-    # Remove content of the table
-    from datamodel.base import Session, engine, Base
-
     # Clear all tables before executing the test
     for table in reversed(Base.metadata.sorted_tables):
         engine.execute(table.delete())
-
-    session = Session ()
 
     ################
     # DIM Signature
