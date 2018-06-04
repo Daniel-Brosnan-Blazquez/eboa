@@ -22,6 +22,7 @@ import datetime
 import uuid
 import pprint
 from math import pi
+import random
 
 # Create session to connect to the database
 session = Session()
@@ -96,7 +97,7 @@ if len (session.query(Gauge).filter(Gauge.name == 'TEST').all()) != 1:
 
 # Create event
 event1Time = datetime.datetime.now()
-event1Uuid = uuid.uuid1()
+event1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
 event1 = Event (event1Uuid, event1Time, event1Time, event1Time, event1Time,gauge1)
 
 # Insert the event into the database
@@ -108,7 +109,7 @@ if len (session.query(Event).filter(Event.event_uuid == event1Uuid).all()) != 1:
 
 # Create another event
 event2Time = datetime.datetime.now()
-event2Uuid = uuid.uuid1()
+event2Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
 event2 = Event (event2Uuid, event2Time, event2Time, event2Time, event2Time,gauge1)
 
 # Insert the event into the database
@@ -187,7 +188,7 @@ if len (session.query(AnnotationCnf).filter(AnnotationCnf.name == 'TEST').all())
     raise Exception("The Annotation was not committed")
 
 # Create annotation
-annotation1Uuid = uuid.uuid1()
+annotation1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
 annotation1Time = datetime.datetime.now()
 annotation1 = Annotation (annotation1Uuid, annotation1Time, annotation1Time,annotationCnf1,explicitRef1)
 
