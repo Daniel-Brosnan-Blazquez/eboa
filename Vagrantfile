@@ -41,5 +41,7 @@ Vagrant.configure("2") do |config|
     # Execute tests
     cd /vagrant/src/tests/
     python3 initial_test.py
+    python3 bulk_ingest_events.py
+    python3 bulk_ingest_events_multiprocessing.py
   SHELL
 end
