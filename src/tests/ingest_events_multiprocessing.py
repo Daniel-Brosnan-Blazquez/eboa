@@ -28,7 +28,7 @@ nEvents = 1000
 session = Session ()
 
 def createEvents (nEvents, explicitRef, gauge):
-    
+    session = Session ()
     for i in range(nEvents):
         # Create event
         eventTime = datetime.datetime.now()
