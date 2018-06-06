@@ -37,7 +37,7 @@ CREATE TABLE gsdm.event_tb(
 	event_uuid uuid NOT NULL,
 	start timestamp NOT NULL,
 	stop timestamp NOT NULL,
-	time_stamp timestamp NOT NULL,
+	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	gauge_id integer NOT NULL,
 	explicit_ref_id integer,
@@ -56,7 +56,6 @@ CREATE TABLE gsdm.gauge_cnf_tb(
 	gauge_id serial NOT NULL,
 	system text,
 	name text NOT NULL,
-	description text,
 	dim_signature_id integer NOT NULL,
 	CONSTRAINT gauge_cnf_tb_pk PRIMARY KEY (gauge_id),
 	CONSTRAINT unique_gauge_cnf UNIQUE (system,name)
@@ -75,6 +74,7 @@ CREATE TABLE gsdm.dim_processing_tb(
 	validity_stop timestamp NOT NULL,
 	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
+	ingestion_duration double precision,
 	dim_exec_version text NOT NULL,
 	dim_signature_id integer NOT NULL,
 	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid),
@@ -177,7 +177,7 @@ ALTER TABLE gsdm.event_geometry_tb OWNER TO gsdm;
 -- DROP TABLE IF EXISTS gsdm.annot_tb CASCADE;
 CREATE TABLE gsdm.annot_tb(
 	annotation_uuid uuid NOT NULL,
-	time_stamp timestamp NOT NULL,
+	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	explicit_ref_id integer NOT NULL,
 	processing_uuid uuid,
@@ -254,9 +254,10 @@ ALTER TABLE gsdm.annot_geometry_tb OWNER TO gsdm;
 CREATE TABLE gsdm.annot_cnf_tb(
 	annotation_cnf_id serial NOT NULL,
 	name text NOT NULL,
+	system text,
 	dim_signature_id integer NOT NULL,
 	CONSTRAINT annot_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
-	CONSTRAINT unique_annotation_cnf UNIQUE (name)
+	CONSTRAINT unique_annotation_cnf UNIQUE (name,system)
 
 );
 -- ddl-end --
@@ -313,6 +314,50 @@ CREATE TABLE gsdm.dim_processing_status_tb(
 ALTER TABLE gsdm.dim_processing_status_tb OWNER TO gsdm;
 -- ddl-end --
 
+-- object: gsdm.event_boolean_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.event_boolean_tb CASCADE;
+CREATE TABLE gsdm.event_boolean_tb(
+	name text NOT NULL,
+	value boolean NOT NULL,
+	level_position integer NOT NULL,
+	child_position integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	event_uuid uuid NOT NULL
+);
+-- ddl-end --
+ALTER TABLE gsdm.event_boolean_tb OWNER TO gsdm;
+-- ddl-end --
+
+-- object: event_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.event_boolean_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
+ALTER TABLE gsdm.event_boolean_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
+REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: gsdm.annot_boolean_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annot_boolean_tb CASCADE;
+CREATE TABLE gsdm.annot_boolean_tb(
+	value boolean NOT NULL,
+	level_position integer NOT NULL,
+	child_position integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	name text NOT NULL,
+	annotation_uuid uuid NOT NULL
+);
+-- ddl-end --
+ALTER TABLE gsdm.annot_boolean_tb OWNER TO gsdm;
+-- ddl-end --
+
+-- object: annot_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annot_boolean_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
+ALTER TABLE gsdm.annot_boolean_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE gsdm.dim_processing_status_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
 ALTER TABLE gsdm.dim_processing_status_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
@@ -345,7 +390,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- DROP TABLE IF EXISTS gsdm.event_keys_tb CASCADE;
 CREATE TABLE gsdm.event_keys_tb(
 	event_key text NOT NULL,
-	time_stamp timestamp NOT NULL,
+	generation_time timestamp NOT NULL,
 	event_uuid uuid NOT NULL,
 	CONSTRAINT event_keys_tb_pk PRIMARY KEY (event_key)
 
@@ -523,7 +568,7 @@ CREATE INDEX idx_events_explicit_ref_id ON gsdm.event_tb
 CREATE INDEX idx_events_time_stamp ON gsdm.event_tb
 	USING btree
 	(
-	  time_stamp
+	  generation_time
 	);
 -- ddl-end --
 
@@ -533,6 +578,33 @@ CREATE INDEX idx_events_processing_uuid ON gsdm.event_tb
 	USING btree
 	(
 	  processing_uuid
+	);
+-- ddl-end --
+
+-- object: idx_event_boolean_event_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_boolean_event_uuid CASCADE;
+CREATE INDEX idx_event_boolean_event_uuid ON gsdm.event_boolean_tb
+	USING btree
+	(
+	  event_uuid
+	);
+-- ddl-end --
+
+-- object: idx_event_boolean_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_boolean_value CASCADE;
+CREATE INDEX idx_event_boolean_value ON gsdm.event_boolean_tb
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_event_boolean_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_boolean_name CASCADE;
+CREATE INDEX idx_event_boolean_name ON gsdm.event_boolean_tb
+	USING btree
+	(
+	  name
 	);
 -- ddl-end --
 
@@ -608,30 +680,57 @@ CREATE INDEX idx_event_object_name ON gsdm.event_object_tb
 	);
 -- ddl-end --
 
--- object: idx_event_geosegment_event_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_event_uuid CASCADE;
-CREATE INDEX idx_event_geosegment_event_uuid ON gsdm.event_geometry_tb
+-- object: idx_event_geometry_event_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_geometry_event_uuid CASCADE;
+CREATE INDEX idx_event_geometry_event_uuid ON gsdm.event_geometry_tb
 	USING btree
 	(
 	  event_uuid
 	);
 -- ddl-end --
 
--- object: idx_event_geosegment_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_name CASCADE;
-CREATE INDEX idx_event_geosegment_name ON gsdm.event_geometry_tb
+-- object: idx_event_geometry_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_geometry_name CASCADE;
+CREATE INDEX idx_event_geometry_name ON gsdm.event_geometry_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_event_geosegment_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_event_geosegment_value CASCADE;
-CREATE INDEX idx_event_geosegment_value ON gsdm.event_geometry_tb
+-- object: idx_event_geometry_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_geometry_value CASCADE;
+CREATE INDEX idx_event_geometry_value ON gsdm.event_geometry_tb
 	USING gist
 	(
 	  value
+	);
+-- ddl-end --
+
+-- object: idx_annot_boolean_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_annotation_uuid CASCADE;
+CREATE INDEX idx_annot_boolean_annotation_uuid ON gsdm.annot_boolean_tb
+	USING btree
+	(
+	  annotation_uuid
+	);
+-- ddl-end --
+
+-- object: idx_annot_boolean_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_value CASCADE;
+CREATE INDEX idx_annot_boolean_value ON gsdm.annot_boolean_tb
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_annot_boolean_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_name CASCADE;
+CREATE INDEX idx_annot_boolean_name ON gsdm.annot_boolean_tb
+	USING btree
+	(
+	  name
 	);
 -- ddl-end --
 
@@ -707,27 +806,27 @@ CREATE INDEX idx_annot_object_name ON gsdm.annot_object_tb
 	);
 -- ddl-end --
 
--- object: idx_annot_geosegment_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_geosegment_annotation_uuid ON gsdm.annot_geometry_tb
+-- object: idx_annot_geometry_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_annotation_uuid CASCADE;
+CREATE INDEX idx_annot_geometry_annotation_uuid ON gsdm.annot_geometry_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_geosegment_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_name CASCADE;
-CREATE INDEX idx_annot_geosegment_name ON gsdm.annot_geometry_tb
+-- object: idx_annot_geometry_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_name CASCADE;
+CREATE INDEX idx_annot_geometry_name ON gsdm.annot_geometry_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_geosegment_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geosegment_value CASCADE;
-CREATE INDEX idx_annot_geosegment_value ON gsdm.annot_geometry_tb
+-- object: idx_annot_geometry_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_value CASCADE;
+CREATE INDEX idx_annot_geometry_value ON gsdm.annot_geometry_tb
 	USING gist
 	(
 	  value
@@ -865,7 +964,7 @@ CREATE INDEX idx_annot_annotation_uuid ON gsdm.annot_tb
 CREATE INDEX idx_annot_time_stamp ON gsdm.annot_tb
 	USING btree
 	(
-	  time_stamp
+	  generation_time
 	);
 -- ddl-end --
 
@@ -1102,7 +1201,7 @@ CREATE INDEX idx_event_keys_event_key ON gsdm.event_keys_tb
 CREATE INDEX idx_event_keys_time_stamp ON gsdm.event_keys_tb
 	USING btree
 	(
-	  time_stamp
+	  generation_time
 	);
 -- ddl-end --
 
