@@ -6,7 +6,7 @@ Written by DEIMOS Space S.L. (dibb)
 module gsdm
 """
 
-from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text, Float
+from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text, Float, Boolean
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
@@ -19,7 +19,7 @@ class Event(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     start = Column(DateTime)
     stop = Column(DateTime)
-    time_stamp = Column(DateTime)
+    generation_time = Column(DateTime)
     ingestion_time = Column(DateTime)
     gauge_id = Column(Integer, ForeignKey('gauge_cnf_tb.gauge_id'))
     explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
@@ -28,11 +28,11 @@ class Event(Base):
     explicitRef = relationship("ExplicitRef", backref="events")
     source = relationship("DimProcessing", backref="events")
 
-    def __init__(self, eventUuid, start, stop, timeStamp, ingestionTime, gauge, explicitRef = None, dimProcessing = None):
+    def __init__(self, eventUuid, start, stop, generationTime, ingestionTime, gauge, explicitRef = None, dimProcessing = None):
         self.event_uuid = eventUuid
         self.start = start
         self.stop = stop
-        self.time_stamp = timeStamp
+        self.generation_time = generationTime
         self.ingestion_time = ingestionTime
         self.gauge = gauge
         self.explicitRef = explicitRef
@@ -55,13 +55,34 @@ class EventKey(Base):
     __tablename__ = 'event_keys_tb'
 
     event_key = Column(Text, primary_key=True)
-    time_stamp = Column(DateTime)
+    generation_time = Column(DateTime)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventKeys")
 
-    def __init__(self, key, time_stamp, event):
+    def __init__(self, key, generation_time, event):
         self.event_uuid_link = link
+        self.generation_time = generation_time
+        self.event = event
+
+class EventBoolean(Base):
+    __tablename__ = 'event_boolean_tb'
+
+    name = Column(Text, primary_key=True)
+    value = Column(Boolean)
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventBooleans")
+
+    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
         self.name = name
+        self.value = value
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
         self.event = event
 
 class EventText(Base):
