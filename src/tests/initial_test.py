@@ -86,7 +86,7 @@ if len (session.query(ExplicitRefLink).filter(ExplicitRefLink.name == 'TEST').al
 # Events
 ################
 # Create gauge
-gauge1 = Gauge ('TEST', dimSignature1, 'TEST', 'TEST')
+gauge1 = Gauge ('TEST', dimSignature1, 'TEST')
 
 # Insert gauge into database
 session.add (gauge1)
