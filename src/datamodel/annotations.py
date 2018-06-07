@@ -111,27 +111,6 @@ class AnnotationDouble(Base):
         self.parent_position = parentPosition
         self.annotation = annotation
 
-class AnnotationTimestamp(Base):
-    __tablename__ = 'annot_timestamp_tb'
-
-    name = Column(Text, primary_key=True)
-    value = Column(DateTime)
-    level_position = Column(Integer)
-    child_position = Column(Integer)
-    parent_level = Column(Integer)
-    parent_position = Column(Integer)
-    annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annot_tb.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotTimestamps")
-
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, annotation):
-        self.name = name
-        self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
-        self.annotation = annotation
-
 class AnnotationObject(Base):
     __tablename__ = 'annot_object_tb'
 
