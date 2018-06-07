@@ -127,6 +127,27 @@ class EventDouble(Base):
         self.parent_position = parentPosition
         self.event = event
 
+class EventTimestamp(Base):
+    __tablename__ = 'event_timestamp_tb'
+
+    name = Column(Text, primary_key=True)
+    value = Column(DateTime)
+    level_position = Column(Integer)
+    child_position = Column(Integer)
+    parent_level = Column(Integer)
+    parent_position = Column(Integer)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event = relationship("Event", backref="eventTimestamps")
+
+    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+        self.name = name
+        self.value = value
+        self.level_position = levelPosition
+        self.child_position = childPosition
+        self.parent_level = parentLevel
+        self.parent_position = parentPosition
+        self.event = event
+
 class EventObject(Base):
     __tablename__ = 'event_object_tb'
 
