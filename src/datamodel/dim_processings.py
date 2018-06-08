@@ -26,15 +26,15 @@ class DimProcessing(Base):
     dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
     dimSignature = relationship("DimSignature", backref="dimProcessings")
 
-    def __init__(self, processingUuid, filename, validityStart, validityStop, generationTime, ingestionTime, execVersion, dimSignature):
-        self.processing_uuid = processingUuid
+    def __init__(self, processing_uuid, filename, validity_start, validity_stop, generation_time, ingestion_time, exec_version, dim_signature):
+        self.processing_uuid = processing_uuid
         self.filename = filename
-        self.validity_start = validityStart
-        self.validity_stop = validityStop
-        self.generation_time = generationTime
-        self.ingestion_time = ingestionTime
-        self.dim_exec_version = execVersion
-        self.dimSignature = dimSignature
+        self.validity_start = validity_start
+        self.validity_stop = validity_stop
+        self.generation_time = generation_time
+        self.ingestion_time = ingestion_time
+        self.dim_exec_version = exec_version
+        self.dimSignature = dim_signature
 
 class DimProcessingStatus(Base):
     __tablename__ = 'dim_processing_status_tb'
@@ -42,9 +42,9 @@ class DimProcessingStatus(Base):
     time_stamp = Column(DateTime)
     proc_status = Column(Integer, primary_key=True)
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
-    processing = relationship("DimProcessing", backref="statuses")
+    status = relationship("DimProcessing", backref="statuses")
 
-    def __init__(self, timeStamp, status, dimProcessing):
-        self.time_stamp = timeStamp
+    def __init__(self, time_stamp, status, dim_processing_status):
+        self.time_stamp = time_stamp
         self.status = status
-        self.processing = dimProcessing
+        self.status = dim_processing_status

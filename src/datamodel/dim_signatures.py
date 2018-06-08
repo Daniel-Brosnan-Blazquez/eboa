@@ -19,7 +19,7 @@ class DimSignature(Base):
     dim_signature = Column(Text)
     dim_exec_name = Column(Text)
 
-    def __init__(self, dimSignature, dimExecName):
-        self.dim_signature = dimSignature
-        self.dim_exec_name = dimExecName
+    def __init__(self, dim_signature, dim_exec_name):
+        self.dim_signature = dim_signature
+        self.dim_exec_name = dim_exec_name
 

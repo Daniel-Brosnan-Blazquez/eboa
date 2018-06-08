@@ -21,8 +21,8 @@ class Gauge(Base):
     dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
     dim_signature = relationship("DimSignature", backref="gauges")
     
-    def __init__(self, name, dimSignature, system = None):
+    def __init__(self, name, dim_signature, system = None):
         self.system = system
         self.name = name
-        self.dim_signature = dimSignature
+        self.dim_signature = dim_signature
 

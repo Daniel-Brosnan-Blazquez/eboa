@@ -28,15 +28,15 @@ class Event(Base):
     explicitRef = relationship("ExplicitRef", backref="events")
     source = relationship("DimProcessing", backref="events")
 
-    def __init__(self, eventUuid, start, stop, generationTime, ingestionTime, gauge, explicitRef = None, dimProcessing = None):
-        self.event_uuid = eventUuid
+    def __init__(self, event_uuid, start, stop, generation_time, ingestion_time, gauge, explicit_ref = None, dim_processing = None):
+        self.event_uuid = event_uuid
         self.start = start
         self.stop = stop
-        self.generation_time = generationTime
-        self.ingestion_time = ingestionTime
+        self.generation_time = generation_time
+        self.ingestion_time = ingestion_time
         self.gauge = gauge
-        self.explicitRef = explicitRef
-        self.source = dimProcessing
+        self.explicitRef = explicit_ref
+        self.source = dim_processing
 
 class EventLink(Base):
     __tablename__ = 'event_links_tb'
@@ -76,13 +76,13 @@ class EventBoolean(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventBooleans")
 
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
 
 class EventText(Base):
@@ -97,13 +97,13 @@ class EventText(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventTexts")
 
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
 
 class EventDouble(Base):
@@ -118,13 +118,13 @@ class EventDouble(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventDoubles")
 
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
 
 class EventTimestamp(Base):
@@ -139,13 +139,13 @@ class EventTimestamp(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventTimestamps")
 
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
 
 class EventObject(Base):
@@ -159,12 +159,12 @@ class EventObject(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventObjects")
 
-    def __init__(self, name, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, level_position, child_position, parent_level, parent_position, event):
         self.name = name
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
 
 class EventGeometry(Base):
@@ -179,11 +179,11 @@ class EventGeometry(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventGeometrys")
 
-    def __init__(self, name, value, levelPosition, childPosition, parentLevel, parentPosition, event):
+    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = levelPosition
-        self.child_position = childPosition
-        self.parent_level = parentLevel
-        self.parent_position = parentPosition
+        self.level_position = level_position
+        self.child_position = child_position
+        self.parent_level = parent_level
+        self.parent_position = parent_position
         self.event = event
