@@ -31,8 +31,12 @@
     <event start="2018-06-05T02:07:03"
            stop="2018-06-05T02:07:36"
            generationTime="2018-06-06T13:33:29"
-           explicitReference="test_explicit_ref1"
            key="test_key1">
+      <explicitRef id="test_explicit_ref1" group="test_explicit_ref_group1">
+        <links>
+          <link name="test_link_name1" id="explicit_ref_link_id1"></link>
+        </links>
+      </explicitRef>
       <!-- gauge system is optional
            insertionType can be:
            SIMPLE_UPDATE
@@ -65,8 +69,12 @@
     <event start="2018-06-05T02:07:03"
            stop="2018-06-05T02:07:36"
            generationTime="2018-06-06T13:33:29"
-           explicitReference="test_explicit_ref2"
            key="test_key2">
+      <explicitRef id="test_explicit_ref2" group="test_explicit_ref_group1">
+        <links>
+          <link name="test_link_name1" id="explicit_ref_link_id1"></link>
+        </links>
+      </explicitRef>
       <!-- gauge system is optional -->
       <gauge name="test_gauge_name2"
              system="test_gauge_system2"

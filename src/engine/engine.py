@@ -33,7 +33,7 @@ class Engine():
 
     session = Session()
 
-    def insertData (self, xml):
+    def insertData(self, xml):
         """
         
         """
@@ -42,20 +42,34 @@ class Engine():
         data = etree.XPathEvaluator(parsedXml)
         
         # Insert the DIM signature
-        dimSignature = self.insertDimSignature (data)
+        dimSignature = self.insertDimSignature(data)
 
         # Insert the source
         try:
-            source = self.insertSource (data, dimSignature)
+            source = self.insertSource(data, dimSignature)
         except:
             # Log that the source file has been already been processed
-            print ("The DIM Processing was already ingested")
+            print("The DIM Processing was already ingested")
             self.session.rollback()
             self.session.close()
             return
+        # end try
 
+        # Insert gauges
+        gauges = self.insertGauges(data,dimSignature)
+
+        # Insert annotation configuration
+        annotationCnfs = self.insertAnnotationConfs(data,dimSignature)
+
+        # Insert explicit reference groups
+        explicitRefGroups = self.insertExplGroups(data)
+
+        # Insert explicit reference groups
+        explicitRefs = self.insertExplicitRefs(data, explicitRefGroups)
 
         self.session.commit()
+        self.session.close()
+        print("All information has been committed")
         return
 
     def insertDimSignature(self, data):
@@ -69,11 +83,11 @@ class Engine():
         try:
             self.session.commit()
         except IntegrityError:
-            print ("The DIM Signature was already ingested")
             # The DIM signature was already available. Roll back
             # transaction for re-using the session
             self.session.rollback()
             pass
+        # end try
 
         # Get the stored DIM signature
         dimSignature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dimName and DimSignature.dim_exec_name == execName).first()
@@ -97,15 +111,125 @@ class Engine():
         try:
             self.session.commit()
         except IntegrityError:
-            # The DIM processing was already 
+            # The DIM processing was already ingested
             self.session.rollback()
             raise Exception("The data associated to the source with name {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested".format (name, dimSignature.dim_signature, dimSignature.dim_exec_name, execVersion))
+        # end try
 
-        # Get the stored DIM signature
         return dimProcessing
         
+    def insertGauges(self, data, dimSignature):
+        """
+        """
+        dictGauges = {}
+        gauges = data("/gsd/data/event/gauge")
+        for gauge in gauges:
+            self.session.begin_nested()
+            name = gauge.get("name")
+            system = gauge.get("system")
+            gaugeDdbb = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == dimSignature.dim_signature_id).first()
+            if gaugeDdbb == None:
+                gaugeDdbb = Gauge(name, dimSignature, system)
+                self.session.add (gaugeDdbb)
+                try:
+                    self.session.commit()
+                except IntegrityError:
+                    # The gauge has been inserted already by other process while checking
+                    self.session.rollback()
+                    pass
+                # end try
+            else:
+                # Nothing done. Close transaction
+                self.session.rollback()
+            # end if
+            dictGauges[(name,system)] = gaugeDdbb
+        # end for
 
-    # def insertGauges(self, data):
+        return dictGauges
         
-    # def insertAnnotationConfs(annotationCnfs):
+    def insertAnnotationConfs(self, data, dimSignature):
+        """
+        """
+        dictAnnotationConfs = {}
+        annotationCnfs = data("/gsd/data/annotation/annotationCnf")
+        for annotationCnf in annotationCnfs:
+            self.session.begin_nested()
+            name = annotationCnf.get("name")
+            system = annotationCnf.get("system")
+            annotationCnfDdbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == dimSignature.dim_signature_id).first()
+            if annotationCnfDdbb == None:
+                annotationCnfDdbb = AnnotationCnf(name, dimSignature, system)
+                self.session.add (annotationCnfDdbb)
+                try:
+                    self.session.commit()
+                except IntegrityError:
+                    # The annotation configuration has been inserted already by other process while checking
+                    self.session.rollback()
+                    pass
+                # end try
+            else:
+                # Nothing done. Close transaction
+                self.session.rollback()
+            # end if
+            dictAnnotationConfs[(name,system)] = annotationCnfDdbb
+        # end for
 
+        return dictAnnotationConfs
+        
+    def insertExplGroups(self, data):
+        """
+        """
+        dictExplGroups = {}
+        explGroups = data("/gsd/data/event/explicitRef/@group")
+        for explGroup in explGroups:
+            print (explGroup)
+            self.session.begin_nested()
+            explGroupDdbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == explGroup).first()
+            if explGroupDdbb == None:
+                explGroupDdbb = ExplicitRefGrp(explGroup)
+                self.session.add (explGroupDdbb)
+                try:
+                    self.session.commit()
+                except IntegrityError:
+                    # The explicit reference group has been inserted already by other process while checking
+                    self.session.rollback()
+                    pass
+                # end try
+            else:
+                # Nothing done. Close transaction
+                self.session.rollback()
+            # end if
+            dictExplGroups[explGroup] = explGroupDdbb
+        # end for
+
+        return dictExplGroups
+        
+    def insertExplicitRefs(self, data, explicitRefGroups):
+        """
+        """
+        dictExplicitRefs = {}
+        explicitRefs = data("/gsd/data/event/explicitRef")
+        for explicitRef in explicitRefs:
+            self.session.begin_nested()
+            name = explicitRef.get('id')
+            explicitRefDdbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == name).first()
+            if explicitRefDdbb == None:
+                group = explicitRef.get('group')
+                explicitRefGrp = explicitRefGroups[group]
+                explicitRefDdbb = ExplicitRef(datetime.datetime.now(), name, explicitRefGrp)
+                self.session.add (explicitRefDdbb)
+                try:
+                    self.session.commit()
+                except IntegrityError:
+                    # The gauge has been inserted already by other process while checking
+                    self.session.rollback()
+                    pass
+                # end try
+            else:
+                # Nothing done. Close transaction
+                self.session.rollback()
+            # end if
+            dictExplicitRefs[explicitRef] = explicitRefDdbb
+        # end for
+
+        return dictExplicitRefs
