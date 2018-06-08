@@ -79,7 +79,7 @@ if __name__ == '__main__':
     ################
 
     # Create gauge
-    gauge1 = Gauge ('TEST', dimSignature1, 'TEST', 'TEST')
+    gauge1 = Gauge ('TEST', dimSignature1, 'TEST')
     
     # Insert gauge into database
     session.add (gauge1)
