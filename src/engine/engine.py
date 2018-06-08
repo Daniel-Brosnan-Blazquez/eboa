@@ -33,20 +33,20 @@ class Engine():
 
     session = Session()
 
-    def insertData(self, xml):
+    def insert_data(self, xml):
         """
         
         """
         # Parse data from the xml file
-        parsedXml = etree.parse(xml)
-        data = etree.XPathEvaluator(parsedXml)
+        parsed_xml = etree.parse(xml)
+        data = etree.XPathEvaluator(parsed_xml)
         
         # Insert the DIM signature
-        dimSignature = self.insertDimSignature(data)
+        dim_signature = self._insert_dim_signature(data)
 
         # Insert the source
         try:
-            source = self.insertSource(data, dimSignature)
+            source = self._insert_source(data, dim_signature)
         except:
             # Log that the source file has been already been processed
             print("The DIM Processing was already ingested")
@@ -56,33 +56,36 @@ class Engine():
         # end try
 
         # Insert gauges
-        gauges = self.insertGauges(data,dimSignature)
+        gauges = self._insert_gauges(data,dim_signature)
 
         # Insert annotation configuration
-        annotationCnfs = self.insertAnnotationConfs(data,dimSignature)
+        annotation_cnfs = self._insert_annotation_confs(data,dim_signature)
 
         # Insert explicit reference groups
-        explicitRefGroups = self.insertExplGroups(data)
+        explicit_ref_groups = self._insert_expl_groups(data)
 
         # Insert explicit reference groups
-        explicitRefs = self.insertExplicitRefs(data, explicitRefGroups)
+        explicit_refs = self._insert_explicit_refs(data, explicit_ref_groups)
 
         # Insert events
-        self.insertEvents(data, gauges, explicitRefs, source)
+        self._insert_events(data, gauges, explicit_refs, source)
+
+        # Insert annotations
+        self._insert_annotations(data, annotation_cnfs, explicit_refs, source)
 
         self.session.commit()
         self.session.close()
         print("All information has been committed")
         return
 
-    def insertDimSignature(self, data):
+    def _insert_dim_signature(self, data):
         """
         """
         self.session.begin_nested()
-        dimSignature = data("/gsd/dim_signature").pop()
-        dimName = dimSignature.get("name")
-        execName = dimSignature.get("exec")
-        self.session.add (DimSignature(dimName, execName))
+        dim_signature = data("/gsd/dim_signature").pop()
+        dim_name = dim_signature.get("name")
+        exec_name = dim_signature.get("exec")
+        self.session.add (DimSignature(dim_name, exec_name))
         try:
             self.session.commit()
         except IntegrityError:
@@ -93,47 +96,47 @@ class Engine():
         # end try
 
         # Get the stored DIM signature
-        dimSignature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dimName and DimSignature.dim_exec_name == execName).first()
-        return dimSignature
+        dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name and DimSignature.dim_exec_name == exec_name).first()
+        return dim_signature
         
-    def insertSource(self, data, dimSignature):
+    def _insert_source(self, data, dim_signature):
         """
         """
         self.session.begin_nested()
-        execVersion = data("/gsd/dim_signature/@version").pop()
+        exec_version = data("/gsd/dim_signature/@version").pop()
         source = data("/gsd/source").pop()
         name = source.get("name")
-        generationTime = source.get("generationTime")
-        validityStart = source.get("validityStart")
-        validityStop = source.get("validityStop")
+        generation_time = source.get("generation_time")
+        validity_start = source.get("validity_start")
+        validity_stop = source.get("validity_stop")
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        dimProcessing = DimProcessing(id, name, validityStart,
-                                      validityStop, generationTime, datetime.datetime.now(),
-                                      execVersion, dimSignature)
-        self.session.add (dimProcessing)
+        dim_processing = DimProcessing(id, name, validity_start,
+                                      validity_stop, generation_time, datetime.datetime.now(),
+                                      exec_version, dim_signature)
+        self.session.add (dim_processing)
         try:
             self.session.commit()
         except IntegrityError:
             # The DIM processing was already ingested
             self.session.rollback()
-            raise Exception("The data associated to the source with name {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested".format (name, dimSignature.dim_signature, dimSignature.dim_exec_name, execVersion))
+            raise Exception("The data associated to the source with name {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested".format (name, dim_signature.dim_signature, dim_signature.dim_exec_name, exec_version))
         # end try
 
-        return dimProcessing
+        return dim_processing
         
-    def insertGauges(self, data, dimSignature):
+    def _insert_gauges(self, data, dim_signature):
         """
         """
-        dictGauges = {}
+        dict_gauges = {}
         gauges = data("/gsd/data/event/gauge")
         for gauge in gauges:
             self.session.begin_nested()
             name = gauge.get("name")
             system = gauge.get("system")
-            gaugeDdbb = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == dimSignature.dim_signature_id).first()
-            if gaugeDdbb == None:
-                gaugeDdbb = Gauge(name, dimSignature, system)
-                self.session.add (gaugeDdbb)
+            gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == dim_signature.dim_signature_id).first()
+            if gauge_ddbb == None:
+                gauge_ddbb = Gauge(name, dim_signature, system)
+                self.session.add (gauge_ddbb)
                 try:
                     self.session.commit()
                 except IntegrityError:
@@ -145,24 +148,24 @@ class Engine():
                 # Nothing done. Close transaction
                 self.session.rollback()
             # end if
-            dictGauges[(name,system)] = gaugeDdbb
+            dict_gauges[(name,system)] = gauge_ddbb
         # end for
 
-        return dictGauges
+        return dict_gauges
         
-    def insertAnnotationConfs(self, data, dimSignature):
+    def _insert_annotation_confs(self, data, dim_signature):
         """
         """
-        dictAnnotationConfs = {}
-        annotationCnfs = data("/gsd/data/annotation/annotationCnf")
-        for annotationCnf in annotationCnfs:
+        dict_annotation_confs = {}
+        annotation_cnfs = data("/gsd/data/annotation/annotation_cnf")
+        for annotation_cnf in annotation_cnfs:
             self.session.begin_nested()
-            name = annotationCnf.get("name")
-            system = annotationCnf.get("system")
-            annotationCnfDdbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == dimSignature.dim_signature_id).first()
-            if annotationCnfDdbb == None:
-                annotationCnfDdbb = AnnotationCnf(name, dimSignature, system)
-                self.session.add (annotationCnfDdbb)
+            name = annotation_cnf.get("name")
+            system = annotation_cnf.get("system")
+            annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == dim_signature.dim_signature_id).first()
+            if annotation_cnf_ddbb == None:
+                annotation_cnf_ddbb = AnnotationCnf(name, dim_signature, system)
+                self.session.add (annotation_cnf_ddbb)
                 try:
                     self.session.commit()
                 except IntegrityError:
@@ -174,23 +177,22 @@ class Engine():
                 # Nothing done. Close transaction
                 self.session.rollback()
             # end if
-            dictAnnotationConfs[(name,system)] = annotationCnfDdbb
+            dict_annotation_confs[(name,system)] = annotation_cnf_ddbb
         # end for
 
-        return dictAnnotationConfs
+        return dict_annotation_confs
         
-    def insertExplGroups(self, data):
+    def _insert_expl_groups(self, data):
         """
         """
-        dictExplGroups = {}
-        explGroups = data("/gsd/data/event/explicitRef/@group")
-        for explGroup in explGroups:
-            print (explGroup)
+        dict_expl_groups = {}
+        expl_groups = data("/gsd/data/explicit_reference/@group")
+        for expl_group in expl_groups:
             self.session.begin_nested()
-            explGroupDdbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == explGroup).first()
-            if explGroupDdbb == None:
-                explGroupDdbb = ExplicitRefGrp(explGroup)
-                self.session.add (explGroupDdbb)
+            expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group).first()
+            if expl_group_ddbb == None:
+                expl_group_ddbb = ExplicitRefGrp(expl_group)
+                self.session.add (expl_group_ddbb)
                 try:
                     self.session.commit()
                 except IntegrityError:
@@ -202,25 +204,29 @@ class Engine():
                 # Nothing done. Close transaction
                 self.session.rollback()
             # end if
-            dictExplGroups[explGroup] = explGroupDdbb
+            dict_expl_groups[expl_group] = expl_group_ddbb
         # end for
 
-        return dictExplGroups
+        return dict_expl_groups
         
-    def insertExplicitRefs(self, data, explicitRefGroups):
+    def _insert_explicit_refs(self, data, explicit_ref_groups):
         """
         """
-        dictExplicitRefs = {}
-        explicitRefs = data("/gsd/data/event/explicitRef")
-        for explicitRef in explicitRefs:
+        dict_explicit_refs = {}
+        explicit_refs = data("/gsd/data/event/@explicit_reference")
+        data_node = data("/gsd/data").pop()
+        for explicit_ref in explicit_refs:
             self.session.begin_nested()
-            name = explicitRef.get('id')
-            explicitRefDdbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == name).first()
-            if explicitRefDdbb == None:
-                group = explicitRef.get('group')
-                explicitRefGrp = explicitRefGroups[group]
-                explicitRefDdbb = ExplicitRef(datetime.datetime.now(), name, explicitRefGrp)
-                self.session.add (explicitRefDdbb)
+            explicit_ref_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
+            if explicit_ref_ddbb == None:
+                group = None
+                explicit_ref_grp = None
+                group_list = data_node.xpath("explicit_reference[@id = $id]/@group", id = explicit_ref)
+                if len(group_list) == 1:
+                    group = group_list.pop()
+                    explicit_ref_grp = explicit_ref_groups[group]
+                explicit_ref_ddbb = ExplicitRef(datetime.datetime.now(), explicit_ref, explicit_ref_grp)
+                self.session.add (explicit_ref_ddbb)
                 try:
                     self.session.commit()
                 except IntegrityError:
@@ -232,36 +238,65 @@ class Engine():
                 # Nothing done. Close transaction
                 self.session.rollback()
             # end if
-            dictExplicitRefs[name] = explicitRefDdbb
+            dict_explicit_refs[explicit_ref] = explicit_ref_ddbb
         # end for
 
-        return dictExplicitRefs
+        return dict_explicit_refs
 
-    def insertEvents(self, data, gauges, explicitRefs, source):
+    def _insert_events(self, data, gauges, explicit_refs, source):
         """
         """
-        listEvents = []
-        events = data('/gsd/data/event')
+        self.session.begin_nested()
+        list_events = []
+        events = data("/gsd/data/event")
         for event in events:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-            start = event.get('start')
-            stop = event.get('stop')
-            generationTime = event.get('generationTime')
-            gaugeInfo = event.xpath('gauge').pop()
-            gauge = gauges[(gaugeInfo.get('name'), gaugeInfo.get('system'))]
-            explicitRef = explicitRefs[event.xpath('explicitRef').pop().get('id')]
+            start = event.get("start")
+            stop = event.get("stop")
+            generation_time = event.get("generation_time")
+            gauge_info = event.xpath("gauge").pop()
+            gauge = gauges[(gauge_info.get("name"), gauge_info.get("system"))]
+            explicit_ref = explicit_refs[event.get("explicit_reference")]
 
             # Insert the event into the list for bulk ingestion
-            listEvents.append (dict (event_uuid = id, start = start,
-                                     stop = stop, generation_time = generationTime,
+            list_events.append (dict (event_uuid = id, start = start,
+                                     stop = stop, generation_time = generation_time,
                                      ingestion_time = datetime.datetime.now(),
                                      gauge_id = gauge.gauge_id,
-                                     explicit_ref_id = explicitRef.explicit_ref_id,
+                                     explicit_ref_id = explicit_ref.explicit_ref_id,
                                      processing_uuid = source.processing_uuid))
         # end for
             
         # Bulk insert events
-        self.session.bulk_insert_mappings(Event, listEvents)
+        self.session.bulk_insert_mappings(Event, list_events)
+        self.session.commit()
+
+        return
+
+
+    def _insert_annotations(self, data, annotation_cnfs, explicit_refs, source):
+        """
+        """
+        self.session.begin_nested()
+        list_annotations = []
+        annotations = data("/gsd/data/annotation")
+        for annotation in annotations:
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            generation_time = annotation.get("generation_time")
+            annotation_cnf_info = annotation.xpath("annotation_cnf").pop()
+            annotation_cnf = annotation_cnfs[(annotation_cnf_info.get("name"), annotation_cnf_info.get("system"))]
+            explicit_ref = explicit_refs[annotation.get("explicit_reference")]
+
+            # Insert the annotation into the list for bulk ingestion
+            list_annotations.append (dict (annotation_uuid = id, generation_time = generation_time,
+                                     ingestion_time = datetime.datetime.now(),
+                                     annotation_cnf_id = annotation_cnf.annotation_cnf_id,
+                                     explicit_ref_id = explicit_ref.explicit_ref_id,
+                                     processing_uuid = source.processing_uuid))
+        # end for
+            
+        # Bulk insert annotations
+        self.session.bulk_insert_mappings(Annotation, list_annotations)
         self.session.commit()
 
         return

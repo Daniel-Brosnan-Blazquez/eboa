@@ -21,22 +21,23 @@
   <!-- Mandatory tag -->
   <source 
      name="test_input1.xml" 
-     generationTime="2018-06-06T13:33:29"
-     validityStart="2018-06-05T02:07:03"
-     validityStop="2018-06-05T02:07:36"/>
+     generation_time="2018-06-06T13:33:29"
+     validity_start="2018-06-05T02:07:03"
+     validity_stop="2018-06-05T02:07:36"/>
   <data>
+    <explicit_reference id="test_explicit_ref1" group="test_explicit_ref_group1">
+      <links>
+        <link back_ref="true" name="test_link_name1">test_explicit_ref2</link>
+      </links>
+    </explicit_reference>
     <!-- Generation time is also included on events and annotations 
          because the source could be omitted
       -->
     <event start="2018-06-05T02:07:03"
            stop="2018-06-05T02:07:36"
-           generationTime="2018-06-06T13:33:29"
-           key="test_key1">
-      <explicitRef id="test_explicit_ref1" group="test_explicit_ref_group1">
-        <links>
-          <link name="test_link_name1" id="explicit_ref_link_id1"></link>
-        </links>
-      </explicitRef>
+           generation_time="2018-06-06T13:33:29"
+           key="test_key1"
+           explicit_reference="test_explicit_ref1">
       <!-- gauge system is optional
            insertionType can be:
            SIMPLE_UPDATE
@@ -47,10 +48,10 @@
              system="test_gauge_system1"
              insertionType="SIMPLE_UPDATE"/>
       <links>
-        <link name="test_link_name1" id="event_link_id1"/>
+        <link back_ref="true" name="test_link_name1">event_link_id1</link>
       </links>
       <values name="test_object_name1">
-        <!-- Allowed types of values:
+        <!-- Allowed types for values:
              text
              boolean (true, false)
              double
@@ -68,20 +69,13 @@
     </event>
     <event start="2018-06-05T02:07:03"
            stop="2018-06-05T02:07:36"
-           generationTime="2018-06-06T13:33:29"
-           key="test_key2">
-      <explicitRef id="test_explicit_ref2" group="test_explicit_ref_group1">
-        <links>
-          <link name="test_link_name1" id="explicit_ref_link_id1"></link>
-        </links>
-      </explicitRef>
+           generation_time="2018-06-06T13:33:29"
+           key="test_key2"
+           explicit_reference="test_explicit_ref2">
       <!-- gauge system is optional -->
       <gauge name="test_gauge_name2"
              system="test_gauge_system2"
              insertionType="SIMPLE_UPDATE"/>
-      <links>
-        <link name="test_link_name1" id="event_link_id1"/>
-      </links>
       <values name="test_object_name2">
         <!-- Allowed types of values:
              text
@@ -99,9 +93,9 @@
         </values>
       </values>
     </event>
-    <annotation explicitReference="test_explicit_ref1"
-                generationTime="2018-06-06T13:33:29">
-      <annotationCnf name="test_annotation_cnf_name1"
+    <annotation explicit_reference="test_explicit_ref1"
+                generation_time="2018-06-06T13:33:29">
+      <annotation_cnf name="test_annotation_cnf_name1"
                      system="test_annotation_cnf_name1"/>
       <values name="test_object_name1">
         <value name="test_text_name1" type="text">test text1</value>
