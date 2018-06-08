@@ -41,7 +41,7 @@ CREATE TABLE gsdm.event_tb(
 	ingestion_time timestamp NOT NULL,
 	gauge_id integer NOT NULL,
 	explicit_ref_id integer,
-	processing_uuid uuid NOT NULL,
+	processing_uuid uuid,
 	CONSTRAINT event_tb_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
 
@@ -180,7 +180,7 @@ CREATE TABLE gsdm.annot_tb(
 	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	explicit_ref_id integer NOT NULL,
-	processing_uuid uuid NOT NULL,
+	processing_uuid uuid,
 	annotation_cnf_id integer NOT NULL,
 	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid),
 	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)

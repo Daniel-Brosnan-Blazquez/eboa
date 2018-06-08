@@ -734,7 +734,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#d4bcfa"
 	 src-table="gsdm.dim_processing_tb"
 	 dst-table="gsdm.event_tb"
-	 src-required="true" dst-required="false"
+	 src-required="false" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
 		<position x="0" y="0"/>
@@ -917,7 +917,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#8086b1"
 	 src-table="gsdm.dim_processing_tb"
 	 dst-table="gsdm.annot_tb"
-	 src-required="true" dst-required="false"
+	 src-required="false" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
 		<position x="0" y="0"/>
@@ -996,7 +996,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="gsdm.explicit_ref_tb"
 	 dst-table="gsdm.explicit_ref_links_tb"
 	 src-required="true" dst-required="false"
-	del-action="CASCADE"/>
+	del-action="CASCADE">
+	<label ref-type="src-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
 
 <index name="pk_events_tb" table="gsdm.event_tb"
 	 concurrent="false" unique="true" fast-update="false" buffering="false"
