@@ -26,7 +26,8 @@ class DimProcessing(Base):
     dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
     dimSignature = relationship("DimSignature", backref="dimProcessings")
 
-    def __init__(self, filename, validityStart, validityStop, generationTime, ingestionTime, execVersion, dimSignature):
+    def __init__(self, processingUuid, filename, validityStart, validityStop, generationTime, ingestionTime, execVersion, dimSignature):
+        self.processing_uuid = processingUuid
         self.filename = filename
         self.validity_start = validityStart
         self.validity_stop = validityStop
