@@ -67,6 +67,9 @@ class Engine():
         # Insert explicit reference groups
         explicitRefs = self.insertExplicitRefs(data, explicitRefGroups)
 
+        # Insert events
+        self.insertEvents(data, gauges, explicitRefs, source)
+
         self.session.commit()
         self.session.close()
         print("All information has been committed")
@@ -229,7 +232,36 @@ class Engine():
                 # Nothing done. Close transaction
                 self.session.rollback()
             # end if
-            dictExplicitRefs[explicitRef] = explicitRefDdbb
+            dictExplicitRefs[name] = explicitRefDdbb
         # end for
 
         return dictExplicitRefs
+
+    def insertEvents(self, data, gauges, explicitRefs, source):
+        """
+        """
+        listEvents = []
+        events = data('/gsd/data/event')
+        for event in events:
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            start = event.get('start')
+            stop = event.get('stop')
+            generationTime = event.get('generationTime')
+            gaugeInfo = event.xpath('gauge').pop()
+            gauge = gauges[(gaugeInfo.get('name'), gaugeInfo.get('system'))]
+            explicitRef = explicitRefs[event.xpath('explicitRef').pop().get('id')]
+
+            # Insert the event into the list for bulk ingestion
+            listEvents.append (dict (event_uuid = id, start = start,
+                                     stop = stop, generation_time = generationTime,
+                                     ingestion_time = datetime.datetime.now(),
+                                     gauge_id = gauge.gauge_id,
+                                     explicit_ref_id = explicitRef.explicit_ref_id,
+                                     processing_uuid = source.processing_uuid))
+        # end for
+            
+        # Bulk insert events
+        self.session.bulk_insert_mappings(Event, listEvents)
+        self.session.commit()
+
+        return
