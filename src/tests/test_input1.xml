@@ -25,7 +25,7 @@
      validity_start="2018-06-05T02:07:03"
      validity_stop="2018-06-05T02:07:36"/>
   <data>
-    <explicit_reference id="test_explicit_ref1" group="test_explicit_ref_group1">
+    <explicit_reference name="test_explicit_ref1" group="test_explicit_ref_group1">
       <links>
         <link back_ref="true" name="test_link_name1">test_explicit_ref2</link>
       </links>
@@ -47,8 +47,11 @@
       <gauge name="test_gauge_name1"
              system="test_gauge_system1"
              insertionType="SIMPLE_UPDATE"/>
+      <!-- If there is no id as attribute for the event, the operation
+      will be taken as insertion of a new event.
+        Otherwise, the operation will be taken as an update -->
       <links>
-        <link back_ref="true" name="test_link_name1">event_link_id1</link>
+        <link name="test_link_name1">event_link_id1</link>
       </links>
       <values name="test_object_name1">
         <!-- Allowed types for values:
@@ -72,6 +75,9 @@
            generation_time="2018-06-06T13:33:29"
            key="test_key2"
            explicit_reference="test_explicit_ref2">
+      <links>
+        <link name="test_link_name1">event_link_id1</link>
+      </links>
       <!-- gauge system is optional -->
       <gauge name="test_gauge_name2"
              system="test_gauge_system2"
@@ -96,7 +102,7 @@
     <annotation explicit_reference="test_explicit_ref1"
                 generation_time="2018-06-06T13:33:29">
       <annotation_cnf name="test_annotation_cnf_name1"
-                     system="test_annotation_cnf_name1"/>
+                     system="test_annotation_cnf_system1"/>
       <values name="test_object_name1">
         <value name="test_text_name1" type="text">test text1</value>
         <value name="test_boolean_name1" type="boolean">true</value>
