@@ -5,6 +5,10 @@ Written by DEIMOS Space S.L. (dibb)
 
 module gsdm
 """
+# Import python utilities
+import datetime
+import uuid
+import random
 import os
 import sys
 
@@ -14,20 +18,20 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import SQLalchemy exceptions
 from sqlalchemy.exc import IntegrityError
 
+# Import exceptions
+from .errors import InputError
+
+# Import datamodel
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry
+from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry, EventKey
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
-import datetime
-import uuid
-import pprint
-from math import pi
-import random
+
+# Import xml parser
 from lxml import etree
-import datetime
 
 class Engine():
 
@@ -158,15 +162,9 @@ class Engine():
         # Pass schema
     
         for self.operation in self.data.get("operations"):
-            # Open session
-            self.session = Session()
             if self.operation.get("mode") == "insert":
                 self._insert_data()
             # end if
-
-            # Commit data and close connection
-            self.session.commit()
-            self.session.close()
         # end for
         return
 
@@ -182,6 +180,12 @@ class Engine():
         self.expl_groups = {}
         self.explicit_refs = {}
 
+        # Open session
+        self.session = Session()
+
+        # Apply insertion types effects
+        self._apply_insertion_types()
+
         # Insert the DIM signature
         self._insert_dim_signature()
 
@@ -189,7 +193,7 @@ class Engine():
         if "source" in self.operation:
             try:
                 self._insert_source()
-            except:
+            except InputError:
                 # Log that the source file has been already been processed
                 print("The DIM Processing was already ingested")
                 self.session.rollback()
@@ -214,11 +218,31 @@ class Engine():
         self._insert_links_explicit_refs()
 
         # Insert events
-        self._insert_events()
+        try:
+            self._insert_events()
+        except InputError:
+            # Log that the links between events must be specified on at least two of them
+            print("Links between events must be specified on at least two of them")
+            self.session.rollback()
+            self.session.close()
+            return
+        # end try
 
         # Insert annotations
         self._insert_annotations()
 
+        # Commit data and close connection
+        self.session.commit()
+        self.session.close()
+        return
+
+    def _apply_insertion_types(self):
+        """
+        """
+        #self.session.begin_nested()
+        
+        
+        
         return
 
     def _insert_dim_signature(self):
@@ -228,7 +252,7 @@ class Engine():
         dim_signature = self.operation.get("dim_signature")
         dim_name = dim_signature.get("name")
         exec_name = dim_signature.get("exec")
-        self.session.add (DimSignature(dim_name, exec_name))
+        self.session.add(DimSignature(dim_name, exec_name))
         try:
             self.session.commit()
         except IntegrityError:
@@ -256,13 +280,13 @@ class Engine():
         self.source = DimProcessing(id, name, validity_start,
                                     validity_stop, generation_time, datetime.datetime.now(),
                                     exec_version, self.dim_signature)
-        self.session.add (self.source)
+        self.session.add(self.source)
         try:
             self.session.commit()
         except IntegrityError:
             # The DIM processing was already ingested
             self.session.rollback()
-            raise Exception("The data associated to the source with name {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested".format (name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, exec_version))
+            raise InputError("The data associated to the source with name {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested".format(name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, exec_version))
         # end try
 
         return
@@ -276,7 +300,7 @@ class Engine():
             name = gauge.get("name")
             system = gauge.get("system")
             gauge_ddbb = Gauge(name, self.dim_signature, system)
-            self.session.add (gauge_ddbb)
+            self.session.add(gauge_ddbb)
             try:
                 self.session.commit()
             except IntegrityError:
@@ -299,7 +323,7 @@ class Engine():
             name = annotation_cnf.get("name")
             system = annotation_cnf.get("system")
             annotation_cnf_ddbb = AnnotationCnf(name, self.dim_signature, system)
-            self.session.add (annotation_cnf_ddbb)
+            self.session.add(annotation_cnf_ddbb)
             try:
                 self.session.commit()
             except IntegrityError:
@@ -320,7 +344,7 @@ class Engine():
             if "group" in explicit_ref:
                 self.session.begin_nested()
                 expl_group_ddbb = ExplicitRefGrp(explicit_ref.get("group"))
-                self.session.add (expl_group_ddbb)
+                self.session.add(expl_group_ddbb)
                 try:
                     self.session.commit()
                 except IntegrityError:
@@ -350,7 +374,7 @@ class Engine():
                 explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
             # end if
             explicit_ref_ddbb = ExplicitRef(datetime.datetime.now(), explicit_ref, explicit_ref_grp)
-            self.session.add (explicit_ref_ddbb)
+            self.session.add(explicit_ref_ddbb)
             try:
                 self.session.commit()
             except IntegrityError:
@@ -367,7 +391,6 @@ class Engine():
     def _insert_links_explicit_refs(self):
         """
         """
-        self.session.begin_nested()
         list_explicit_reference_links = []
         for explicit_ref in list(filter(lambda i: i.get("links"), self.operation.get("explicit_references"))):
             for link in explicit_ref.get("links"):
@@ -387,15 +410,14 @@ class Engine():
 
         # Bulk insert links between explicit_references
         self.session.bulk_insert_mappings(ExplicitRefLink, list_explicit_reference_links)
-        self.session.commit()
 
         return
 
     def _insert_events(self):
         """
         """
-        self.session.begin_nested()
         list_events = []
+        list_keys = []
         list_event_links = {}
         for event in self.operation.get("events"):
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -405,6 +427,7 @@ class Engine():
             gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = self.explicit_refs[event.get("explicit_reference")]
+            key = event.get("key")
             # Insert the event into the list for bulk ingestion
             list_events.append(dict(event_uuid = id, start = start,
                                     stop = stop, generation_time = generation_time,
@@ -412,6 +435,9 @@ class Engine():
                                     gauge_id = gauge.gauge_id,
                                     explicit_ref_id = explicit_ref.explicit_ref_id,
                                     processing_uuid = self.source.processing_uuid))
+            # Insert the key into the list for bulk ingestion
+            list_keys.append(dict(event_key = key, event_uuid = id, generation_time = generation_time))
+
             # Build links for later ingestion
             if "links" in event:
                 for link in event["links"]:
@@ -419,21 +445,21 @@ class Engine():
                         list_event_links[link["link"]] = []
                     # end if
                     list_event_links[link["link"]].append({"name": link["name"],
-                                                          "event_uuid": id})
+                                                           "event_uuid": id})
                 # end for
             # end if
         # end for
-            
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events)
-        self.session.commit()
+        # Bulk insert keys
+        self.session.bulk_insert_mappings(EventKey, list_keys)
 
         # Insert links
         list_event_links_ddbb = []
         for links in list_event_links:
             event_uuids = set([i.get("event_uuid") for i in list_event_links[links]])
-            if len (event_uuids) == 1:
-                raise Exception("The link id between events has to be specified on at least two events")
+            if len(event_uuids) == 1:
+                raise InputError("The link id between events has to be specified on at least two events")
             # end if
             list_event_links_ddbb = [dict(event_uuid_link = x["event_uuid"],
                                           name = x["name"],
@@ -442,14 +468,12 @@ class Engine():
         # end for
         
         self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
-        self.session.commit()
 
         return
         
     def _insert_annotations(self):
         """
         """
-        self.session.begin_nested()
         list_annotations = []
         for annotation in self.operation.get("annotations"):
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -459,7 +483,7 @@ class Engine():
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
             # Insert the annotation into the list for bulk ingestion
-            list_annotations.append (dict (annotation_uuid = id, generation_time = generation_time,
+            list_annotations.append(dict(annotation_uuid = id, generation_time = generation_time,
                                      ingestion_time = datetime.datetime.now(),
                                      annotation_cnf_id = annotation_cnf.annotation_cnf_id,
                                      explicit_ref_id = explicit_ref.explicit_ref_id,
@@ -468,6 +492,5 @@ class Engine():
             
         # Bulk insert annotations
         self.session.bulk_insert_mappings(Annotation, list_annotations)
-        self.session.commit()
 
         return

@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine.engine import Engine
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry
+from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry, EventKey
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
@@ -35,6 +35,9 @@ for table in reversed(Base.metadata.sorted_tables):
 engine_gsdm = Engine()
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_input1.xml")
 print(json.dumps(engine_gsdm.data, indent=4))
+
+### PENDING checks on the parser
+
 engine_gsdm.treat_data()
 
 # Checks
@@ -188,6 +191,13 @@ for event in events:
         result = {"message":"NOK","color":"red"}
     # end if
     print(colored("Check", on_color="on_blue") + "_{}: Event link has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    event_key_ddbb = session.query(EventKey).filter(EventKey.event_uuid == event_ddbb.event_uuid, EventKey.event_key == event["key"]).first()
+    result = {"message":"OK","color":"green"}
+    if link_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 # end for
 
