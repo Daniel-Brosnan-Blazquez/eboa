@@ -28,6 +28,7 @@ from math import pi
 import random
 from lxml import etree
 import datetime
+from functools import reduce
 
 class Engine():
 
@@ -271,8 +272,8 @@ class Engine():
         """
         """
         for event in self.operation.get("events"):
-            gauge = event.get("gauge")
             self.session.begin_nested()
+            gauge = event.get("gauge")
             name = gauge.get("name")
             system = gauge.get("system")
             gauge_ddbb = Gauge(name, self.dim_signature, system)
@@ -324,7 +325,7 @@ class Engine():
                 try:
                     self.session.commit()
                 except IntegrityError:
-                    # The explicit reference group has been inserted already by other process while checking
+                    # The explicit reference group exists already into DDBB
                     self.session.rollback()
                     expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group).first()
                     pass
@@ -367,6 +368,7 @@ class Engine():
     def _insert_links_explicit_refs(self):
         """
         """
+        self.session.begin_nested()
         list_explicit_reference_links = []
         for explicit_ref in list(filter(lambda i: i.get("links"), self.operation.get("explicit_references"))):
             for link in explicit_ref.get("links"):
@@ -395,6 +397,7 @@ class Engine():
         """
         self.session.begin_nested()
         list_events = []
+        list_event_links = {}
         for event in self.operation.get("events"):
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             start = event.get("start")
@@ -403,7 +406,6 @@ class Engine():
             gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = self.explicit_refs[event.get("explicit_reference")]
-
             # Insert the event into the list for bulk ingestion
             list_events.append(dict(event_uuid = id, start = start,
                                     stop = stop, generation_time = generation_time,
@@ -411,10 +413,36 @@ class Engine():
                                     gauge_id = gauge.gauge_id,
                                     explicit_ref_id = explicit_ref.explicit_ref_id,
                                     processing_uuid = self.source.processing_uuid))
-            # end for
+            # Build links for later ingestion
+            if "links" in event:
+                for link in event["links"]:
+                    if not link["link"] in list_event_links:
+                        list_event_links[link["link"]] = []
+                    # end if
+                    list_event_links[link["link"]].append({"name": link["name"],
+                                                          "event_uuid": id})
+                # end for
+            # end if
+        # end for
             
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events)
+        self.session.commit()
+
+        # Insert links
+        list_event_links_ddbb = []
+        for links in list_event_links:
+            event_uuids = set([i.get("event_uuid") for i in list_event_links[links]])
+            if len (event_uuids) == 1:
+                raise Exception("The link id between events has to be specified on at least two events")
+            # end if
+            list_event_links_ddbb = [dict(event_uuid_link = x["event_uuid"],
+                                          name = x["name"],
+                                          event_uuid = y["event_uuid"])
+                                     for x in list_event_links[links] for y in list_event_links[links] if x != y]
+        # end for
+
+        self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
         self.session.commit()
 
         return
