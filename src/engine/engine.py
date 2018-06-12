@@ -31,49 +31,186 @@ import datetime
 
 class Engine():
 
-    session = Session()
-    data = None
-    dim_signature = None
-    source = None
-    gauges = {}
-    annotation_cnfs = {}
-    expl_groups = {}
-    explicit_refs = {}
-    
-    def insert_data(self, xml):
+    data = {}
+    operation = None
+
+    def parse_data_from_xml (self, xml):
         """
-        
         """
         # Parse data from the xml file
-        self.data = etree.XPathEvaluator(etree.parse(xml))
+        parsed_xml = etree.XPathEvaluator(etree.parse(xml))
+
+        # Pass schema
         
+        self.data["operations"] = []
+        for operation in parsed_xml("/gsd/operation"):
+            if operation.get("mode") == "insert":
+                self._parse_insert_operation_from_xml(operation)
+            # end if
+        # end for
+
+        return 
+
+    def _parse_insert_operation_from_xml(self, operation):
+        """
+        """
+        data = {}
+        data["mode"] = "insert"
+        # Extract dim_signature
+        data["dim_signature"] = {"name": operation.xpath("dim_signature")[0].get("name"),
+                                 "version": operation.xpath("dim_signature")[0].get("version"),
+                                 "exec": operation.xpath("dim_signature")[0].get("exec")}
+        # end if
+
+        # Extract source
+        if len (operation.xpath("source")) == 1:
+            data["source"] = {"name": operation.xpath("source")[0].get("name"),
+                              "generation_time": operation.xpath("source")[0].get("generation_time"),
+                              "validity_start": operation.xpath("source")[0].get("validity_start"),
+                              "validity_stop": operation.xpath("source")[0].get("validity_stop")} 
+        # end if
+
+        # Extract explicit_references
+        if len (operation.xpath("data/explicit_reference")) > 0:
+            data["explicit_references"] = []
+            for explicit_ref in operation.xpath("data/explicit_reference"):
+                explicit_reference = {}
+                explicit_reference["name"] = explicit_ref.get("name")
+                explicit_reference["group"] = explicit_ref.get("group")
+                # Add links
+                if len (explicit_ref.xpath("links/link")) > 0:
+                    links = []
+                    for link in explicit_ref.xpath("links/link"):
+                        link_info = {}
+                        link_info["name"] = link.get("name")
+                        link_info["link"] = link.text
+                        if link.get("back_ref"):
+                            link_info["back_ref"] = link.get("back_ref")
+                        # end if
+                        links.append(link_info)
+                    # end for
+                    explicit_reference["links"] = links
+                # end if
+                data["explicit_references"].append(explicit_reference)
+            # end for
+        # end if
+
+        # Extract events
+        if len (operation.xpath("data/event")) > 0:
+            data["events"] = []
+            for event in operation.xpath("data/event"):
+                event_info = {}
+                event_info["start"] = event.get("start")
+                event_info["stop"] = event.get("stop")
+                event_info["generation_time"] = event.get("generation_time")
+                if event.get("key"):
+                    event_info["key"] = event.get("key")
+                # end if
+                if event.get("explicit_reference"):
+                    event_info["explicit_reference"] = event.get("explicit_reference")
+                # end if
+                event_info["gauge"] = {"name": event.xpath("gauge")[0].get("name"),
+                                       "system": event.xpath("gauge")[0].get("system"),
+                                       "insertion_type": event.xpath("gauge")[0].get("insertion_type")}
+                # end if
+                # Add links
+                if len (event.xpath("links/link")) > 0:
+                    links = []
+                    for link in explicit_ref.xpath("links/link"):
+                        links.append({"name": link.get("name"),
+                                      "link": link.text})
+                    # end for
+                    event_info["links"] = links
+                # end if
+
+                # Add values
+                ### PENDING (recursive method)
+
+                data["events"].append(event_info)
+            # end for
+        # end if
+
+
+        # Extract annotations
+        if len (operation.xpath("data/annotation")) > 0:
+            data["annotations"] = []
+            for annotation in operation.xpath("data/annotation"):
+                annotation_info = {}
+                annotation_info["generation_time"] = annotation.get("generation_time")
+                annotation_info["explicit_reference"] = annotation.get("explicit_reference")
+                annotation_info["annotation_cnf"] = {"name": annotation.xpath("annotation_cnf")[0].get("name"),
+                                                     "system": annotation.xpath("annotation_cnf")[0].get("system")}
+                # end if
+                # Add values
+                ### PENDING (recursive method)
+
+                data["annotations"].append(annotation_info)
+            # end for
+        # end if
+
+        self.data["operations"].append(data)
+        return
+
+    def treat_data(self):
+        """
+        
+        """
+        # Pass schema
+    
+        for self.operation in self.data.get("operations"):
+            # Open session
+            self.session = Session()
+            if self.operation.get("mode") == "insert":
+                self._insert_data()
+            # end if
+
+            # Commit data and close connection
+            self.session.commit()
+            self.session.close()
+        # end for
+        return
+
+    def _insert_data(self):
+        """
+        
+        """
+        # Initialize context
+        self.dim_signature = None
+        self.source = None
+        self.gauges = {}
+        self.annotation_cnfs = {}
+        self.expl_groups = {}
+        self.explicit_refs = {}
+
         # Insert the DIM signature
         self._insert_dim_signature()
 
-        # Insert the source
-        try:
-            self._insert_source()
-        except:
-            # Log that the source file has been already been processed
-            print("The DIM Processing was already ingested")
-            self.session.rollback()
-            self.session.close()
-            return
-        # end try
+        # Insert the source if exists
+        if "source" in self.operation:
+            try:
+                self._insert_source()
+            except:
+                # Log that the source file has been already been processed
+                print("The DIM Processing was already ingested")
+                self.session.rollback()
+                self.session.close()
+                return
+            # end try
+        # end if
 
         # Insert gauges
         self._insert_gauges()
 
         # Insert annotation configuration
         self._insert_annotation_cnfs()
-
+        
         # Insert explicit reference groups
         self._insert_expl_groups()
 
         # Insert links between explicit references
         self._insert_explicit_refs()
 
-        # Insert annotations
+        # Insert explicit references
         self._insert_links_explicit_refs()
 
         # Insert events
@@ -82,15 +219,13 @@ class Engine():
         # Insert annotations
         self._insert_annotations()
 
-        self.session.commit()
-        self.session.close()
         return
 
     def _insert_dim_signature(self):
         """
         """
         self.session.begin_nested()
-        dim_signature = self.data("/gsd/dim_signature").pop()
+        dim_signature = self.operation.get("dim_signature")
         dim_name = dim_signature.get("name")
         exec_name = dim_signature.get("exec")
         self.session.add (DimSignature(dim_name, exec_name))
@@ -111,16 +246,16 @@ class Engine():
         """
         """
         self.session.begin_nested()
-        exec_version = self.data("/gsd/dim_signature/@version").pop()
-        source = self.data("/gsd/source").pop()
+        exec_version = self.operation.get("dim_signature").get("version")
+        source = self.operation.get("source")
         name = source.get("name")
         generation_time = source.get("generation_time")
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         self.source = DimProcessing(id, name, validity_start,
-                                      validity_stop, generation_time, datetime.datetime.now(),
-                                      exec_version, self.dim_signature)
+                                    validity_stop, generation_time, datetime.datetime.now(),
+                                    exec_version, self.dim_signature)
         self.session.add (self.source)
         try:
             self.session.commit()
@@ -135,8 +270,8 @@ class Engine():
     def _insert_gauges(self):
         """
         """
-        gauges = self.data("/gsd/data/event/gauge")
-        for gauge in gauges:
+        for event in self.operation.get("events"):
+            gauge = event.get("gauge")
             self.session.begin_nested()
             name = gauge.get("name")
             system = gauge.get("system")
@@ -158,9 +293,9 @@ class Engine():
     def _insert_annotation_cnfs(self):
         """
         """
-        annotation_cnfs = self.data("/gsd/data/annotation/annotation_cnf")
-        for annotation_cnf in annotation_cnfs:
+        for annotation in self.operation.get("annotations"):
             self.session.begin_nested()
+            annotation_cnf = annotation.get("annotation_cnf")
             name = annotation_cnf.get("name")
             system = annotation_cnf.get("system")
             annotation_cnf_ddbb = AnnotationCnf(name, self.dim_signature, system)
@@ -181,21 +316,21 @@ class Engine():
     def _insert_expl_groups(self):
         """
         """
-        expl_groups = self.data("/gsd/data/explicit_reference/@group")
-        for expl_group in expl_groups:
-            self.session.begin_nested()
-            
-            expl_group_ddbb = ExplicitRefGrp(expl_group)
-            self.session.add (expl_group_ddbb)
-            try:
-                self.session.commit()
-            except IntegrityError:
-                # The explicit reference group has been inserted already by other process while checking
-                self.session.rollback()
-                expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group).first()
-                pass
-            # end try
-            self.expl_groups[expl_group] = expl_group_ddbb
+        for explicit_ref in self.operation.get("explicit_references"):
+            if "group" in explicit_ref:
+                self.session.begin_nested()
+                expl_group_ddbb = ExplicitRefGrp(explicit_ref.get("group"))
+                self.session.add (expl_group_ddbb)
+                try:
+                    self.session.commit()
+                except IntegrityError:
+                    # The explicit reference group has been inserted already by other process while checking
+                    self.session.rollback()
+                    expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group).first()
+                    pass
+                # end try
+                self.expl_groups[explicit_ref.get("group")] = expl_group_ddbb
+            # end if
         # end for
 
         return
@@ -203,16 +338,17 @@ class Engine():
     def _insert_explicit_refs(self):
         """
         """
-        explicit_refs = self.data("/gsd/data/event/@explicit_reference")
-        data_node = self.data("/gsd/data").pop()
-        for explicit_ref in explicit_refs:
+        events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events")]
+        annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations")]
+        explicit_references = set(events_explicit_refs + annotations_explicit_refs)
+        for explicit_ref in explicit_references:
             self.session.begin_nested()
-            group = None
             explicit_ref_grp = None
-            group_list = data_node.xpath("explicit_reference[@name = $name]/@group", name = explicit_ref)
-            if len(group_list) == 1:
-                group = group_list.pop()
-                explicit_ref_grp = self.expl_groups[group]
+            # Get associated group if exists from the declared explicit references
+            declared_explicit_reference = next(iter(list(filter(lambda i: i.get("name") == explicit_ref, self.operation.get("explicit_references")))), None)
+            if declared_explicit_reference:
+                explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
+            # end if
             explicit_ref_ddbb = ExplicitRef(datetime.datetime.now(), explicit_ref, explicit_ref_grp)
             self.session.add (explicit_ref_ddbb)
             try:
@@ -232,12 +368,10 @@ class Engine():
         """
         """
         list_explicit_reference_links = []
-        explicit_refs_with_links = self.data("/gsd/data").pop().xpath("explicit_reference[boolean(links)]")
-        for explicit_ref in explicit_refs_with_links:
-            links = explicit_ref.xpath("links/link")
-            for link in links:
+        for explicit_ref in list(filter(lambda i: i.get("links"), self.operation.get("explicit_references"))):
+            for link in explicit_ref.get("links"):
                 explicit_ref_id1 = self.explicit_refs[explicit_ref.get("name")].explicit_ref_id
-                explicit_ref_id2 = self.explicit_refs[link.text].explicit_ref_id
+                explicit_ref_id2 = self.explicit_refs[link.get("link")].explicit_ref_id
                 list_explicit_reference_links.append(dict(explicit_ref_id_link = explicit_ref_id1,
                                                           name = link.get("name"), 
                                                           explicit_ref_id = explicit_ref_id2))
@@ -261,13 +395,12 @@ class Engine():
         """
         self.session.begin_nested()
         list_events = []
-        events = self.data("/gsd/data/event")
-        for event in events:
+        for event in self.operation.get("events"):
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             start = event.get("start")
             stop = event.get("stop")
             generation_time = event.get("generation_time")
-            gauge_info = event.xpath("gauge").pop()
+            gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = self.explicit_refs[event.get("explicit_reference")]
 
@@ -291,11 +424,10 @@ class Engine():
         """
         self.session.begin_nested()
         list_annotations = []
-        annotations = self.data("/gsd/data/annotation")
-        for annotation in annotations:
+        for annotation in self.operation.get("annotations"):
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             generation_time = annotation.get("generation_time")
-            annotation_cnf_info = annotation.xpath("annotation_cnf").pop()
+            annotation_cnf_info = annotation.get("annotation_cnf")
             annotation_cnf = self.annotation_cnfs[(annotation_cnf_info.get("name"), annotation_cnf_info.get("system"))]
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 

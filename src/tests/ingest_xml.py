@@ -21,6 +21,7 @@ from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 from termcolor import colored
 from inspect import currentframe, getframeinfo
+import json
 
 # Create session to connect to the database
 session = Session()
@@ -32,7 +33,9 @@ for table in reversed(Base.metadata.sorted_tables):
 
 # insert data from xml
 engine_gsdm = Engine()
-engine_gsdm.insert_data (os.path.dirname(os.path.abspath(__file__)) + "/test_input1.xml")
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_input1.xml")
+print(json.dumps(engine_gsdm.data, indent=4))
+engine_gsdm.treat_data()
 
 # Checks
 ## DIM Signature ingestion
