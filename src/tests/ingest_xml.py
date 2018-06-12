@@ -145,20 +145,24 @@ for explicit_reference in explicit_references:
 # end for
 
 ## Events ingestion
+list_events_ddbb = []
 events = [{"start": "2018-06-05T02:07:03",
            "stop": "2018-06-05T02:07:36",
            "generation_time": "2018-06-06T13:33:29",
            "key": "test_key1",
            "explicit_reference": "test_explicit_ref1",
-           "gauge": ("test_gauge_name1", "test_gauge_system1")},
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "link": "test_link_name1"},
           {"start": "2018-06-05T02:07:03",
            "stop": "2018-06-05T02:07:36",
            "generation_time": "2018-06-06T13:33:29",
            "key": "test_key2",
            "explicit_reference": "test_explicit_ref2",
-           "gauge": ("test_gauge_name2", "test_gauge_system2")}]
+           "gauge": ("test_gauge_name2", "test_gauge_system2"),
+           "link": "test_link_name2"}]
 for event in events:
     event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
+    list_events_ddbb.append(event_ddbb)
     print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
     result = {"message":"OK","color":"green"}
     if event_ddbb == None:
@@ -177,6 +181,13 @@ for event in events:
         result = {"message":"NOK","color":"red"}
     # end if
     print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the gauge correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    link_ddbb = session.query(EventLink).filter(EventLink.name == event["link"], EventLink.event_uuid_link == event_ddbb.event_uuid).first()
+    result = {"message":"OK","color":"green"}
+    if link_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event link has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 # end for
 
@@ -225,3 +236,30 @@ for explicit_reference_link in explicit_reference_links:
     print(colored("Check", on_color="on_blue") + "_{}: Link between explicit references has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 # end for
+
+## Links between explicit references ingestion
+explicit_reference_links = [{"explicit_ref1": "test_explicit_ref1", 
+                        "explicit_ref2": "test_explicit_ref2", 
+                        "link": "test_link_name1"},
+                       {"explicit_ref1": "test_explicit_ref2", 
+                        "explicit_ref2": "test_explicit_ref1", 
+                        "link": "test_link_name1"}]
+for explicit_reference_link in explicit_reference_links:
+    explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
+    explicit_reference_link_ddbb = session.query(ExplicitRefLink).filter(ExplicitRef.explicit_ref == explicit_reference_link["explicit_ref2"], ExplicitRefLink.name == explicit_reference_link["link"], ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id).first()
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
+    result = {"message":"OK","color":"green"}
+    if explicit_reference_link_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Link between explicit references has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+# end for
+
+## Links between events ingestion
+list_event_links = [session.query(EventLink).filter(EventLink.event_uuid_link == x.event_uuid, EventLink.event_uuid == y.event_uuid).first() for x in list_events_ddbb for y in list_events_ddbb if x != y]
+result = {"message":"OK","color":"green"}
+if len (list_event_links) != 2:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Event links have been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))

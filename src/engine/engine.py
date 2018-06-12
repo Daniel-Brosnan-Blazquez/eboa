@@ -28,7 +28,6 @@ from math import pi
 import random
 from lxml import etree
 import datetime
-from functools import reduce
 
 class Engine():
 
@@ -117,7 +116,7 @@ class Engine():
                 # Add links
                 if len (event.xpath("links/link")) > 0:
                     links = []
-                    for link in explicit_ref.xpath("links/link"):
+                    for link in event.xpath("links/link"):
                         links.append({"name": link.get("name"),
                                       "link": link.text})
                     # end for
@@ -441,7 +440,7 @@ class Engine():
                                           event_uuid = y["event_uuid"])
                                      for x in list_event_links[links] for y in list_event_links[links] if x != y]
         # end for
-
+        
         self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
         self.session.commit()
 

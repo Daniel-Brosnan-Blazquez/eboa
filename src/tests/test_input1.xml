@@ -77,7 +77,7 @@
              key="test_key2"
              explicit_reference="test_explicit_ref2">
         <links>
-          <link name="test_link_name1">event_link_id1</link>
+          <link name="test_link_name2">event_link_id1</link>
         </links>
         <gauge name="test_gauge_name2"
                system="test_gauge_system2"
