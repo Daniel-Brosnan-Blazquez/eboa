@@ -41,67 +41,72 @@ engine_gsdm.treat_data()
 ## DIM Signature ingestion
 dim_signature = {"dim_signature":"test_dim_signature1", "dim_exec_name": "test_exec1"}
 dim_signature_ddbb = session.query(DimSignature).filter(DimSignature.dim_signature == dim_signature["dim_signature"], DimSignature.dim_exec_name == dim_signature["dim_exec_name"]).first()
-print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_signature))
+print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_signature))
 result = {"message":"OK","color":"green"}
 if dim_signature_ddbb == None:
     result = {"message":"NOK","color":"red"}
 # end if
-print (colored("Check", on_color="on_blue") + "_{}: DIM signature has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+print(colored("Check", on_color="on_blue") + "_{}: DIM signature has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## DIM Processing ingestion
 dim_processing = {"filename": "test_input1.xml",
                   "validity_start": "2018-06-05T02:07:03",
                   "validity_stop": "2018-06-05T02:07:36",
-                  "generation_time": "2018-06-06T13:33:29"}
-dim_processing_ddbb = session.query(DimProcessing).filter(DimProcessing.filename == dim_processing["filename"], DimProcessing.validity_start == dim_processing["validity_start"], DimProcessing.validity_stop == dim_processing["validity_stop"], DimProcessing.generation_time == dim_processing["generation_time"]).first()
-print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_processing))
+                  "generation_time": "2018-06-06T13:33:29",
+                  "dim_exec_version": "1.0"}
+dim_processing_ddbb = session.query(DimProcessing).filter(DimProcessing.filename == dim_processing["filename"], DimProcessing.validity_start == dim_processing["validity_start"], DimProcessing.validity_stop == dim_processing["validity_stop"], DimProcessing.generation_time == dim_processing["generation_time"], DimProcessing.dim_exec_version == dim_processing["dim_exec_version"]).first()
+print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_processing))
 result = {"message":"OK","color":"green"}
 if dim_processing_ddbb == None:
     result = {"message":"NOK","color":"red"}
 # end if
-print (colored("Check", on_color="on_blue") + "_{}: DIM processing has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+print(colored("Check", on_color="on_blue") + "_{}: DIM processing has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 result = {"message":"OK","color":"green"}
 if dim_processing_ddbb.dim_signature_id != dim_signature_ddbb.dim_signature_id:
     result = {"message":"NOK","color":"red"}
 # end if
-print (colored("Check", on_color="on_blue") + "_{}: DIM processing has been associated to the DIM Signature correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+print(colored("Check", on_color="on_blue") + "_{}: DIM processing has been associated to the DIM Signature correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Gauges ingestion
+list_gauges = {}
 gauges = [{"name": "test_gauge_name1", "system": "test_gauge_system1"},
           {"name": "test_gauge_name2", "system": "test_gauge_system2"}]
 for gauge in gauges:
     gauge_ddbb = session.query(Gauge).filter(Gauge.name == gauge["name"], Gauge.system == gauge["system"]).first()
-    print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
+    list_gauges[(gauge["name"],gauge["system"])] = gauge_ddbb
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
     result = {"message":"OK","color":"green"}
     if gauge_ddbb == None:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Gauge has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Gauge has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     result = {"message":"OK","color":"green"}
     if gauge_ddbb.dim_signature_id != dim_signature_ddbb.dim_signature_id:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Gauge has been associated to the DIM Signature correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Gauge has been associated to the DIM signature correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 # end for
 
 ## Annotation Configuration ingestion
+list_annotation_cnfs = {}
 annotation_cnfs = [{"name": "test_annotation_cnf_name1", "system": "test_annotation_cnf_system1"}]
 for annotation_cnf in annotation_cnfs:
     annotation_cnf_ddbb = session.query(AnnotationCnf).filter(AnnotationCnf.name == annotation_cnf["name"], AnnotationCnf.system == annotation_cnf["system"]).first()
-    print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
+    list_annotation_cnfs[(annotation_cnf["name"],annotation_cnf["system"])] = annotation_cnf_ddbb
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation_cnf))
     result = {"message":"OK","color":"green"}
     if annotation_cnf_ddbb == None:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Annotation configuration has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Annotation configuration has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     result = {"message":"OK","color":"green"}
     if annotation_cnf_ddbb.dim_signature_id != dim_signature_ddbb.dim_signature_id:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Annotation configuration has been associated to the DIM Signature correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Annotation configuration has been associated to the DIM signature correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 # end for
 
 ## Explicit reference groups ingestion
@@ -110,12 +115,12 @@ list_expl_groups = {}
 for expl_group in expl_groups:
     expl_group_ddbb = session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group["name"]).first()
     list_expl_groups[expl_group["name"]] = expl_group_ddbb
-    print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(expl_group))
     result = {"message":"OK","color":"green"}
     if expl_group_ddbb == None:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Explicit reference group has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Explicit reference group has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 # end for
 
 ## Explicit reference ingestion
@@ -123,18 +128,100 @@ explicit_references = [{"explicit_ref": "test_explicit_ref1", "group": "test_exp
                        {"explicit_ref": "test_explicit_ref2"}]
 for explicit_reference in explicit_references:
     explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
-    print ("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference))
     result = {"message":"OK","color":"green"}
     if explicit_reference_ddbb == None:
         result = {"message":"NOK","color":"red"}
     # end if
-    print (colored("Check", on_color="on_blue") + "_{}: Explicit reference has been inserted correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    print(colored("Check", on_color="on_blue") + "_{}: Explicit reference has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "group" in explicit_reference:
         result = {"message":"OK","color":"green"}
         if explicit_reference_ddbb.expl_ref_cnf_id != list_expl_groups[explicit_reference["group"]].expl_ref_cnf_id:
             result = {"message":"NOK","color":"red"}
         # end if
-        print (colored("Check", on_color="on_blue") + "_{}: Explicit reference has been associated to the group correcly? ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+        print(colored("Check", on_color="on_blue") + "_{}: Explicit reference has been associated to the group correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
     # end if
+# end for
+
+## Events ingestion
+events = [{"start": "2018-06-05T02:07:03",
+           "stop": "2018-06-05T02:07:36",
+           "generation_time": "2018-06-06T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1")},
+          {"start": "2018-06-05T02:07:03",
+           "stop": "2018-06-05T02:07:36",
+           "generation_time": "2018-06-06T13:33:29",
+           "key": "test_key2",
+           "explicit_reference": "test_explicit_ref2",
+           "gauge": ("test_gauge_name2", "test_gauge_system2")}]
+for event in events:
+    event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
+    result = {"message":"OK","color":"green"}
+    if event_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    result = {"message":"OK","color":"green"}
+    if event_ddbb.processing_uuid != dim_processing_ddbb.processing_uuid:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the DIM processing correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    result = {"message":"OK","color":"green"}
+    if event_ddbb.gauge_id != list_gauges[event["gauge"]].gauge_id:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the gauge correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+# end for
+
+## Annotations ingestion
+annotations = [{"generation_time": "2018-06-06T13:33:29",
+           "explicit_reference": "test_explicit_ref1",
+           "annotation_cnf": ("test_annotation_cnf_name1", "test_annotation_cnf_system1")}]
+for annotation in annotations:
+    annotation_ddbb = session.query(Annotation).join(ExplicitRef).filter(Annotation.generation_time == annotation["generation_time"], ExplicitRef.explicit_ref == annotation["explicit_reference"]).first()
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation))
+    result = {"message":"OK","color":"green"}
+    if annotation_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Annotation has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    result = {"message":"OK","color":"green"}
+    if annotation_ddbb.processing_uuid != dim_processing_ddbb.processing_uuid:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Annotation has been associated to the DIM processing correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    result = {"message":"OK","color":"green"}
+    if annotation_ddbb.annotation_cnf_id != list_annotation_cnfs[annotation["annotation_cnf"]].annotation_cnf_id:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Annotation has been associated to the annotation configuration correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+# end for
+
+## Links between explicit references ingestion
+explicit_reference_links = [{"explicit_ref1": "test_explicit_ref1", 
+                        "explicit_ref2": "test_explicit_ref2", 
+                        "link": "test_link_name1"},
+                       {"explicit_ref1": "test_explicit_ref2", 
+                        "explicit_ref2": "test_explicit_ref1", 
+                        "link": "test_link_name1"}]
+for explicit_reference_link in explicit_reference_links:
+    explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
+    explicit_reference_link_ddbb = session.query(ExplicitRefLink).filter(ExplicitRef.explicit_ref == explicit_reference_link["explicit_ref2"], ExplicitRefLink.name == explicit_reference_link["link"], ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id).first()
+    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
+    result = {"message":"OK","color":"green"}
+    if explicit_reference_link_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Link between explicit references has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
 # end for
