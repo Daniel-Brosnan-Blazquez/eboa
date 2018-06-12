@@ -6,7 +6,7 @@ Written by DEIMOS Space S.L. (dibb)
 module gsdm
 """
 
-from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float
+from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float, Interval
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
@@ -21,7 +21,7 @@ class DimProcessing(Base):
     validity_stop = Column(DateTime)
     generation_time = Column(DateTime)
     ingestion_time = Column(DateTime)
-    ingestion_duration = Column(Float)
+    ingestion_duration = Column(Interval)
     dim_exec_version = Column(Text)
     dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
     dimSignature = relationship("DimSignature", backref="dimProcessings")
@@ -42,9 +42,9 @@ class DimProcessingStatus(Base):
     time_stamp = Column(DateTime)
     proc_status = Column(Integer, primary_key=True)
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
-    status = relationship("DimProcessing", backref="statuses")
+    source = relationship("DimProcessing", backref="statuses")
 
-    def __init__(self, time_stamp, status, dim_processing_status):
+    def __init__(self, time_stamp, status, dim_processing):
         self.time_stamp = time_stamp
-        self.status = status
-        self.status = dim_processing_status
+        self.proc_status = status
+        self.source = dim_processing

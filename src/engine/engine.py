@@ -193,6 +193,8 @@ class Engine():
         if "source" in self.operation:
             try:
                 self._insert_source()
+                self.ingestion_start = datetime.datetime.now()
+                self._insert_proc_status(1)
             except InputError:
                 # Log that the source file has been already been processed
                 print("The DIM Processing was already ingested")
@@ -231,6 +233,9 @@ class Engine():
         # Insert annotations
         self._insert_annotations()
 
+        if "source" in self.operation:
+            self._insert_proc_status(0,True)
+        
         # Commit data and close connection
         self.session.commit()
         self.session.close()
@@ -492,5 +497,21 @@ class Engine():
             
         # Bulk insert annotations
         self.session.bulk_insert_mappings(Annotation, list_annotations)
+
+        return
+
+    def _insert_proc_status(self, status, final = False):
+        """
+        """
+        self.session.begin_nested()
+        # Insert processing status
+        self.session.add(DimProcessingStatus(datetime.datetime.now(),status,self.source))
+
+        if final:
+            # Insert processing duration
+            self.source.ingestion_duration = datetime.datetime.now() - self.ingestion_start
+        # end if
+
+        self.session.commit()
 
         return
