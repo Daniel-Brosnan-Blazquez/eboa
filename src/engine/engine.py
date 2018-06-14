@@ -35,8 +35,14 @@ from lxml import etree
 
 class Engine():
 
-    data = {}
     operation = None
+
+    def __init__(self, data = {}):
+        """
+        """
+        self.data = data
+    
+        return
 
     def parse_data_from_xml (self, xml):
         """
@@ -45,7 +51,6 @@ class Engine():
         parsed_xml = etree.XPathEvaluator(etree.parse(xml))
 
         # Pass schema
-        
         self.data["operations"] = []
         for operation in parsed_xml("/gsd/operation"):
             if operation.get("mode") == "insert":
@@ -161,7 +166,7 @@ class Engine():
         """
         # Pass schema
     
-        for self.operation in self.data.get("operations"):
+        for self.operation in self.data.get("operations") or []:
             if self.operation.get("mode") == "insert":
                 self._insert_data()
             # end if
@@ -299,7 +304,7 @@ class Engine():
     def _insert_gauges(self):
         """
         """
-        for event in self.operation.get("events"):
+        for event in self.operation.get("events") or []:
             self.session.begin_nested()
             gauge = event.get("gauge")
             name = gauge.get("name")
@@ -322,7 +327,7 @@ class Engine():
     def _insert_annotation_cnfs(self):
         """
         """
-        for annotation in self.operation.get("annotations"):
+        for annotation in self.operation.get("annotations") or []:
             self.session.begin_nested()
             annotation_cnf = annotation.get("annotation_cnf")
             name = annotation_cnf.get("name")
@@ -345,7 +350,7 @@ class Engine():
     def _insert_expl_groups(self):
         """
         """
-        for explicit_ref in self.operation.get("explicit_references"):
+        for explicit_ref in self.operation.get("explicit_references") or []:
             if "group" in explicit_ref:
                 self.session.begin_nested()
                 expl_group_ddbb = ExplicitRefGrp(explicit_ref.get("group"))
@@ -367,14 +372,14 @@ class Engine():
     def _insert_explicit_refs(self):
         """
         """
-        events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events")]
-        annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations")]
+        events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events") or []]
+        annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or []]
         explicit_references = set(events_explicit_refs + annotations_explicit_refs)
         for explicit_ref in explicit_references:
             self.session.begin_nested()
             explicit_ref_grp = None
             # Get associated group if exists from the declared explicit references
-            declared_explicit_reference = next(iter(list(filter(lambda i: i.get("name") == explicit_ref, self.operation.get("explicit_references")))), None)
+            declared_explicit_reference = next(iter([i for i in self.operation.get("explicit_references") or [] if i.get("name") == explicit_ref]), None)
             if declared_explicit_reference:
                 explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
             # end if
@@ -397,8 +402,9 @@ class Engine():
         """
         """
         list_explicit_reference_links = []
-        for explicit_ref in list(filter(lambda i: i.get("links"), self.operation.get("explicit_references"))):
-            for link in explicit_ref.get("links"):
+        for explicit_ref in [i for i in self.operation.get("explicit_references") or [] if i.get("links")]:
+            print (explicit_ref)
+            for link in explicit_ref.get("links") or []:
                 explicit_ref_id1 = self.explicit_refs[explicit_ref.get("name")].explicit_ref_id
                 explicit_ref_id2 = self.explicit_refs[link.get("link")].explicit_ref_id
                 list_explicit_reference_links.append(dict(explicit_ref_id_link = explicit_ref_id1,
@@ -424,7 +430,7 @@ class Engine():
         list_events = []
         list_keys = []
         list_event_links = {}
-        for event in self.operation.get("events"):
+        for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             start = event.get("start")
             stop = event.get("stop")
@@ -433,15 +439,23 @@ class Engine():
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = self.explicit_refs[event.get("explicit_reference")]
             key = event.get("key")
+            visible = False
+            if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
+                visible = True
+            # end if
             # Insert the event into the list for bulk ingestion
-            list_events.append(dict(event_uuid = id, start = start,
-                                    stop = stop, generation_time = generation_time,
+            list_events.append(dict(event_uuid = id, start = start, stop = stop,
+                                    generation_time = generation_time,
                                     ingestion_time = datetime.datetime.now(),
                                     gauge_id = gauge.gauge_id,
                                     explicit_ref_id = explicit_ref.explicit_ref_id,
-                                    processing_uuid = self.source.processing_uuid))
+                                    processing_uuid = self.source.processing_uuid,
+                                    visible = visible))
             # Insert the key into the list for bulk ingestion
-            list_keys.append(dict(event_key = key, event_uuid = id, generation_time = generation_time))
+            list_keys.append(dict(event_key = key, event_uuid = id,
+                                  generation_time = generation_time, 
+                                  visible = False,
+                                  dim_signature_id = self.dim_signature.dim_signature_id))
 
             # Build links for later ingestion
             if "links" in event:
@@ -480,7 +494,7 @@ class Engine():
         """
         """
         list_annotations = []
-        for annotation in self.operation.get("annotations"):
+        for annotation in self.operation.get("annotations") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             generation_time = annotation.get("generation_time")
             annotation_cnf_info = annotation.get("annotation_cnf")
@@ -489,10 +503,11 @@ class Engine():
 
             # Insert the annotation into the list for bulk ingestion
             list_annotations.append(dict(annotation_uuid = id, generation_time = generation_time,
-                                     ingestion_time = datetime.datetime.now(),
-                                     annotation_cnf_id = annotation_cnf.annotation_cnf_id,
-                                     explicit_ref_id = explicit_ref.explicit_ref_id,
-                                     processing_uuid = self.source.processing_uuid))
+                                         ingestion_time = datetime.datetime.now(),
+                                         annotation_cnf_id = annotation_cnf.annotation_cnf_id,
+                                         explicit_ref_id = explicit_ref.explicit_ref_id,
+                                         processing_uuid = self.source.processing_uuid,
+                                         visible = False))
         # end for
             
         # Bulk insert annotations
