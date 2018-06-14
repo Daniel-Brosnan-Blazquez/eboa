@@ -413,8 +413,9 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- object: gsdm.event_keys_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.event_keys_tb CASCADE;
 CREATE TABLE gsdm.event_keys_tb(
-	event_key text,
+	event_key text NOT NULL,
 	generation_time timestamp NOT NULL,
+	visible boolean NOT NULL,
 	event_uuid uuid NOT NULL,
 	dim_signature_id integer NOT NULL
 );
@@ -572,12 +573,12 @@ CREATE UNIQUE INDEX pk_events_tb ON gsdm.event_tb
 	);
 -- ddl-end --
 
--- object: idx_events_gauge_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_events_gauge_id CASCADE;
-CREATE INDEX idx_events_gauge_id ON gsdm.event_tb
+-- object: idx_events_visible | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_events_visible CASCADE;
+CREATE INDEX idx_events_visible ON gsdm.event_tb
 	USING btree
 	(
-	  gauge_id
+	  visible
 	);
 -- ddl-end --
 
@@ -599,12 +600,12 @@ CREATE INDEX idx_events_stop ON gsdm.event_tb
 	);
 -- ddl-end --
 
--- object: idx_events_explicit_ref_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_events_explicit_ref_id CASCADE;
-CREATE INDEX idx_events_explicit_ref_id ON gsdm.event_tb
+-- object: idx_events_gauge_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_events_gauge_id CASCADE;
+CREATE INDEX idx_events_gauge_id ON gsdm.event_tb
 	USING btree
 	(
-	  explicit_ref_id
+	  gauge_id
 	);
 -- ddl-end --
 
@@ -626,12 +627,12 @@ CREATE INDEX idx_events_ingestion_time ON gsdm.event_tb
 	);
 -- ddl-end --
 
--- object: idx_events_processing_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_events_processing_uuid CASCADE;
-CREATE INDEX idx_events_processing_uuid ON gsdm.event_tb
+-- object: idx_events_explicit_ref_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_events_explicit_ref_id CASCADE;
+CREATE INDEX idx_events_explicit_ref_id ON gsdm.event_tb
 	USING btree
 	(
-	  processing_uuid
+	  explicit_ref_id
 	);
 -- ddl-end --
 
@@ -1058,21 +1059,21 @@ CREATE INDEX idx_annot_explicit_ref_id ON gsdm.annot_tb
 	);
 -- ddl-end --
 
+-- object: idx_annot_visible | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_visible CASCADE;
+CREATE INDEX idx_annot_visible ON gsdm.annot_tb
+	USING btree
+	(
+	  visible
+	);
+-- ddl-end --
+
 -- object: idx_annot_processing_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_annot_processing_uuid CASCADE;
 CREATE INDEX idx_annot_processing_uuid ON gsdm.annot_tb
 	USING btree
 	(
 	  processing_uuid
-	);
--- ddl-end --
-
--- object: idx_annot_annotation_cnf_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_annotation_cnf_id CASCADE;
-CREATE INDEX idx_annot_annotation_cnf_id ON gsdm.annot_tb
-	USING btree
-	(
-	  annotation_cnf_id
 	);
 -- ddl-end --
 
@@ -1229,12 +1230,12 @@ CREATE INDEX idx_dim_processing_status_processing_uuid ON gsdm.dim_processing_st
 	);
 -- ddl-end --
 
--- object: idx_event_keys_generation_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_event_keys_generation_time CASCADE;
-CREATE INDEX idx_event_keys_generation_time ON gsdm.event_keys_tb
+-- object: idx_event_keys_event_key | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_keys_event_key CASCADE;
+CREATE INDEX idx_event_keys_event_key ON gsdm.event_keys_tb
 	USING btree
 	(
-	  generation_time
+	  event_key
 	);
 -- ddl-end --
 
@@ -1260,6 +1261,60 @@ ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT unique_event_keys UNIQUE (event_ke
 ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES gsdm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: idx_event_keys_generation_time | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_keys_generation_time CASCADE;
+CREATE INDEX idx_event_keys_generation_time ON gsdm.event_keys_tb
+	USING btree
+	(
+	  generation_time
+	);
+-- ddl-end --
+
+-- object: idx_event_keys_visible | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_keys_visible CASCADE;
+CREATE INDEX idx_event_keys_visible ON gsdm.event_keys_tb
+	USING btree
+	(
+	  visible
+	);
+-- ddl-end --
+
+-- object: idx_event_keys_event_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_keys_event_uuid CASCADE;
+CREATE INDEX idx_event_keys_event_uuid ON gsdm.event_keys_tb
+	USING btree
+	(
+	  event_uuid
+	);
+-- ddl-end --
+
+-- object: idx_event_keys_dim_signature_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_event_keys_dim_signature_id CASCADE;
+CREATE INDEX idx_event_keys_dim_signature_id ON gsdm.event_keys_tb
+	USING btree
+	(
+	  dim_signature_id
+	);
+-- ddl-end --
+
+-- object: idx_events_processing_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_events_processing_uuid CASCADE;
+CREATE INDEX idx_events_processing_uuid ON gsdm.event_tb
+	USING btree
+	(
+	  processing_uuid
+	);
+-- ddl-end --
+
+-- object: idx_annot_annotation_cnf_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annot_annotation_cnf_id CASCADE;
+CREATE INDEX idx_annot_annotation_cnf_id ON gsdm.annot_tb
+	USING btree
+	(
+	  annotation_cnf_id
+	);
 -- ddl-end --
 
 
