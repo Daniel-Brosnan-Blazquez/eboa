@@ -273,3 +273,12 @@ if len (list_event_links) != 2:
     result = {"message":"NOK","color":"red"}
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: Event links have been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+
+## Parse xml with ERASE and REPLACE and EVENT KEYS insertion types
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_erase_and_replace_and_keys.xml")
+print(json.dumps(engine_gsdm.data, indent=4))
+
+### PENDING checks on the parser
+
+engine_gsdm.treat_data()
