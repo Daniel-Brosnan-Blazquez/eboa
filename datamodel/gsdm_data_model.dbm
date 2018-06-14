@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="225,543" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="225,639" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -39,6 +39,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
+	<column name="visible" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
 	<constraint name="event_tb_pk" type="pk-constr" table="gsdm.event_tb">
 		<columns names="event_uuid" ref-type="src-columns"/>
 	</constraint>
@@ -47,9 +50,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="explicit_ref_id" index="6"/>
-		<object name="gauge_id" index="5"/>
-		<object name="processing_uuid" index="7"/>
+		<object name="explicit_ref_id" index="7"/>
+		<object name="gauge_id" index="6"/>
+		<object name="processing_uuid" index="8"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -91,7 +94,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_processing_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
-	<position x="1020" y="1200"/>
+	<position x="1020" y="1220"/>
 	<column name="processing_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -320,6 +323,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
+	<column name="visible" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
 	<constraint name="annot_tb_pk" type="pk-constr" table="gsdm.annot_tb">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
@@ -328,9 +334,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="annotation_cnf_id" index="5"/>
-		<object name="explicit_ref_id" index="3"/>
-		<object name="processing_uuid" index="4"/>
+		<object name="annotation_cnf_id" index="6"/>
+		<object name="explicit_ref_id" index="4"/>
+		<object name="processing_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -561,7 +567,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_processing_status_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
-	<position x="1060" y="1380"/>
+	<position x="1060" y="1420"/>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -744,25 +750,21 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_keys_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
-	<position x="1040" y="780"/>
-	<column name="event_key" not-null="true">
+	<position x="1040" y="760"/>
+	<column name="event_key">
 		<type name="text" length="1"/>
 	</column>
 	<column name="generation_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
-	<constraint name="event_keys_tb_pk" type="pk-constr" table="gsdm.event_keys_tb">
-		<columns names="event_key" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_keys_tb">
-		<columns names="event_key" ref-type="src-columns"/>
-	</constraint>
 
 	<customidxs object-type="column">
+		<object name="dim_signature_id" index="3"/>
 		<object name="event_uuid" index="2"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
+		<object name="dim_signature_tb_fk" index="2"/>
 		<object name="event_tb_fk" index="1"/>
 	</customidxs>
 </table>
@@ -1612,6 +1614,19 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#435b67"
 	 src-table="gsdm.event_tb"
+	 dst-table="gsdm.event_keys_tb"
+	 src-required="true" dst-required="false"/>
+
+<constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_keys_tb">
+	<columns names="event_key,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<relationship name="dim_signature_tb_has_many_event_keys_tb" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#bc867e"
+	 src-table="gsdm.dim_signature_tb"
 	 dst-table="gsdm.event_keys_tb"
 	 src-required="true" dst-required="false"/>
 
