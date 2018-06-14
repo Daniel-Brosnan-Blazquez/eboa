@@ -19,6 +19,7 @@ class Annotation(Base):
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     generation_time = Column(DateTime)
     ingestion_time = Column(DateTime)
+    visible = Column(Boolean)
     annotation_cnf_id = Column(Integer, ForeignKey('annot_cnf_tb.annotation_cnf_id'))
     explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
@@ -26,10 +27,11 @@ class Annotation(Base):
     explicitRef = relationship("ExplicitRef", backref="annotations")
     source = relationship("DimProcessing", backref="annotations")
 
-    def __init__(self, annotation_uuid, generation_time, ingestion_time, annotation_cnf, explicit_ref, dim_processing = None):
+    def __init__(self, annotation_uuid, generation_time, ingestion_time, annotation_cnf, explicit_ref, dim_processing = None, visible = False):
         self.annotation_uuid = annotation_uuid
         self.generation_time = generation_time
         self.ingestion_time = ingestion_time
+        self.visible = visible
         self.annotationCnf = annotation_cnf
         self.explicitRef = explicit_ref
         self.source = dim_processing

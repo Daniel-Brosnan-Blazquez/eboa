@@ -21,6 +21,7 @@ class Event(Base):
     stop = Column(DateTime)
     generation_time = Column(DateTime)
     ingestion_time = Column(DateTime)
+    visible = Column(Boolean)
     gauge_id = Column(Integer, ForeignKey('gauge_cnf_tb.gauge_id'))
     explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
@@ -28,12 +29,13 @@ class Event(Base):
     explicitRef = relationship("ExplicitRef", backref="events")
     source = relationship("DimProcessing", backref="events")
 
-    def __init__(self, event_uuid, start, stop, generation_time, ingestion_time, gauge, explicit_ref = None, dim_processing = None):
+    def __init__(self, event_uuid, start, stop, generation_time, ingestion_time, gauge, explicit_ref = None, dim_processing = None, visible = True):
         self.event_uuid = event_uuid
         self.start = start
         self.stop = stop
         self.generation_time = generation_time
         self.ingestion_time = ingestion_time
+        self.visible = visible
         self.gauge = gauge
         self.explicitRef = explicit_ref
         self.source = dim_processing
@@ -56,13 +58,18 @@ class EventKey(Base):
 
     event_key = Column(Text, primary_key=True)
     generation_time = Column(DateTime)
+    visible = Column(Boolean)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventKeys")
+    dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
+    dim_signature = relationship("DimSignature", backref="eventKeys")
 
-    def __init__(self, key, generation_time, event):
+    def __init__(self, key, generation_time, event, dim_signature, visible = False):
         self.event_uuid_link = link
         self.generation_time = generation_time
+        self.visible = visible
         self.event = event
+        self.dim_signature = dim_signature
 
 class EventBoolean(Base):
     __tablename__ = 'event_boolean_tb'
