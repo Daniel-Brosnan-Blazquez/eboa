@@ -37,7 +37,7 @@ def createEvents (nEvents):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, generation_time = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id)
+        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, generation_time = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id, visible = True)
 
         # Insert the event into the database
         listEvents.append (event)
