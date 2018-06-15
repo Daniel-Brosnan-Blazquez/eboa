@@ -20,7 +20,7 @@ do
 done
 
 # Check that the init of the DDBB is being executed by Postgres
-if [ "$(whoami)" != "postgres" ]; then
+if [ "$(whoami)" != "postgres" ] && [ "$(whoami)" != "root" ]; then
         echo "ERROR: Script must be run as user: postgres"
         exit -1
 fi
@@ -41,19 +41,19 @@ then
 fi
 
 # Drop the DDBB
-psql -c "DROP DATABASE gsdmdb;"
+psql -U postgres -c "DROP DATABASE gsdmdb;"
 
 # Drop the gsdm role
-psql -c "DROP ROLE gsdm;"
+psql -U postgres -c "DROP ROLE gsdm;"
 
 # Create DDBB
-createdb gsdmdb
+psql -U postgres -c "CREATE DATABASE gsdmdb;"
 
 # Add extenstion for postgis
-psql -d gsdmdb -c "CREATE EXTENSION postgis;"
+psql -U postgres -d gsdmdb -c "CREATE EXTENSION postgis;"
 
 # Fill DDBB
-psql -d gsdmdb -f $DATAMODEL_FILE
+psql -U postgres -d gsdmdb -f $DATAMODEL_FILE
 status=$?
 
 if [ $status -ne 0 ];
