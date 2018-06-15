@@ -33,8 +33,8 @@ for table in reversed(Base.metadata.sorted_tables):
 
 # insert data from xml
 engine_gsdm = Engine()
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_input1.xml")
-print(json.dumps(engine_gsdm.data, indent=4))
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
+#print(json.dumps(engine_gsdm.data, indent=4))
 
 ### PENDING checks on the parser
 
@@ -52,7 +52,7 @@ if dim_signature_ddbb == None:
 print(colored("Check", on_color="on_blue") + "_{}: DIM signature has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## DIM Processing ingestion
-dim_processing = {"filename": "test_input1.xml",
+dim_processing = {"filename": "test_simple_update.xml",
                   "validity_start": "2018-06-05T02:07:03",
                   "validity_stop": "2018-06-05T02:07:36",
                   "generation_time": "2018-06-06T13:33:29",
@@ -70,6 +70,19 @@ if dim_processing_ddbb.dim_signature_id != dim_signature_ddbb.dim_signature_id:
     result = {"message":"NOK","color":"red"}
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: DIM processing has been associated to the DIM Signature correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == 0).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: The source with all the content has been ingested correctly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == 1).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: The start of the ingestion process for the source has been inserted correctly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
 
 ## Gauges ingestion
 list_gauges = {}
@@ -274,10 +287,38 @@ if len (list_event_links) != 2:
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: Event links have been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
+## Check that the same source is not ingested more than once
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == 2).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected duplication on the ingestion of the same source --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
-## Parse xml with ERASE and REPLACE and EVENT KEYS insertion types
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_erase_and_replace_and_keys.xml")
-print(json.dumps(engine_gsdm.data, indent=4))
+## Check that the validity period of the source has to be correctly specified (start lower than the stop)
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_validity_period_source.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_validity_period_source.xml", DimProcessingStatus.proc_status == 3).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specified on the source --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the validity period of the events has to be correctly specified (start lower than the stop)
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_period_events.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_period_events.xml", DimProcessingStatus.proc_status == 4).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specified on the events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check ERASE and REPLACE and EVENT KEYS insertion types
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
+#print(json.dumps(engine_gsdm.data, indent=4))
 
 ### PENDING checks on the parser
 
