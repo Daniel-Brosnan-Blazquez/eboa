@@ -101,16 +101,16 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="filename" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="validity_start" not-null="true">
+	<column name="validity_start">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="validity_stop" not-null="true">
+	<column name="validity_stop">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="generation_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="ingestion_time" not-null="true">
+	<column name="ingestion_time">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="ingestion_duration">
@@ -120,9 +120,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="1"/>
 	</column>
 	<constraint name="dim_processing_tb_pk" type="pk-constr" table="gsdm.dim_processing_tb">
-		<columns names="processing_uuid" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_processing_uuid" type="uq-constr" table="gsdm.dim_processing_tb">
 		<columns names="processing_uuid" ref-type="src-columns"/>
 	</constraint>
 
@@ -510,16 +507,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="event_links_tb_pk" type="pk-constr" table="gsdm.event_links_tb">
-		<columns names="event_uuid_link" ref-type="src-columns"/>
-	</constraint>
 
 	<customidxs object-type="column">
 		<object name="event_uuid" index="2"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="event_tb_fk" index="1"/>
+		<object name="event_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
@@ -1680,5 +1674,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 			<column name="annotation_cnf_id"/>
 		</idxelement>
 </index>
+
+<constraint name="unique_event_links" type="uq-constr" table="gsdm.event_links_tb">
+	<columns names="event_uuid_link,name,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_explicit_ref_links" type="uq-constr" table="gsdm.explicit_ref_links_tb">
+	<columns names="explicit_ref_id_link,name,explicit_ref_id" ref-type="src-columns"/>
+</constraint>
 
 </dbmodel>

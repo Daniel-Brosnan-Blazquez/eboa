@@ -71,15 +71,14 @@ ALTER TABLE gsdm.gauge_cnf_tb OWNER TO gsdm;
 CREATE TABLE gsdm.dim_processing_tb(
 	processing_uuid uuid NOT NULL,
 	filename text NOT NULL,
-	validity_start timestamp NOT NULL,
-	validity_stop timestamp NOT NULL,
+	validity_start timestamp,
+	validity_stop timestamp,
 	generation_time timestamp NOT NULL,
-	ingestion_time timestamp NOT NULL,
+	ingestion_time timestamp,
 	ingestion_duration interval,
 	dim_exec_version text NOT NULL,
 	dim_signature_id integer NOT NULL,
-	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid),
-	CONSTRAINT unique_processing_uuid UNIQUE (processing_uuid)
+	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid)
 
 );
 -- ddl-end --
@@ -271,9 +270,7 @@ ALTER TABLE gsdm.annot_cnf_tb OWNER TO gsdm;
 CREATE TABLE gsdm.event_links_tb(
 	event_uuid_link uuid NOT NULL,
 	name text NOT NULL,
-	event_uuid uuid NOT NULL,
-	CONSTRAINT event_links_tb_pk PRIMARY KEY (event_uuid_link)
-
+	event_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE gsdm.event_links_tb OWNER TO gsdm;
@@ -1315,6 +1312,16 @@ CREATE INDEX idx_annot_annotation_cnf_id ON gsdm.annot_tb
 	(
 	  annotation_cnf_id
 	);
+-- ddl-end --
+
+-- object: unique_event_links | type: CONSTRAINT --
+-- ALTER TABLE gsdm.event_links_tb DROP CONSTRAINT IF EXISTS unique_event_links CASCADE;
+ALTER TABLE gsdm.event_links_tb ADD CONSTRAINT unique_event_links UNIQUE (event_uuid_link,name,event_uuid);
+-- ddl-end --
+
+-- object: unique_explicit_ref_links | type: CONSTRAINT --
+-- ALTER TABLE gsdm.explicit_ref_links_tb DROP CONSTRAINT IF EXISTS unique_explicit_ref_links CASCADE;
+ALTER TABLE gsdm.explicit_ref_links_tb ADD CONSTRAINT unique_explicit_ref_links UNIQUE (explicit_ref_id_link,name,explicit_ref_id);
 -- ddl-end --
 
 
