@@ -36,6 +36,7 @@ from lxml import etree
 
 class Engine():
 
+    session = Session()
     operation = None
     exit_codes = {
         "OK": {
@@ -77,7 +78,79 @@ class Engine():
     
         return
 
-    def parse_data_from_xml (self, xml):
+    def get_dim_signatures(self):
+        """
+        """
+        
+        return self.session.query(DimSignature).all()
+
+    def get_sources(self):
+        """
+        """
+        
+        return self.session.query(DimProcessing).all()
+
+    def get_sources_statuses(self):
+        """
+        """
+        
+        return self.session.query(DimProcessingStatus).all()
+
+    def get_events(self):
+        """
+        """
+        
+        return self.session.query(Event).all()
+
+    def get_gauges(self):
+        """
+        """
+        
+        return self.session.query(Gauge).all()
+
+    def get_event_keys(self):
+        """
+        """
+        
+        return self.session.query(EventKey).all()
+
+    def get_event_links(self):
+        """
+        """
+        
+        return self.session.query(EventLink).all()
+
+    def get_annotations(self):
+        """
+        """
+        
+        return self.session.query(Annotation).all()
+
+    def get_annotations_configurations(self):
+        """
+        """
+        
+        return self.session.query(AnnotationCnf).all()
+
+    def get_explicit_references(self):
+        """
+        """
+        
+        return self.session.query(ExplicitRef).all()
+
+    def get_explicit_references_links(self):
+        """
+        """
+        
+        return self.session.query(ExplicitRefLink).all()
+
+    def get_explicit_references_groups(self):
+        """
+        """
+        
+        return self.session.query(ExplicitRefGrp).all()
+
+    def parse_data_from_xml(self, xml):
         """
         """
         # Parse data from the xml file
@@ -217,9 +290,6 @@ class Engine():
         self.annotation_cnfs = {}
         self.expl_groups = {}
         self.explicit_refs = {}
-
-        # Open session
-        self.session = Session()
 
         # Apply insertion types effects
         self._apply_insertion_types()
@@ -682,3 +752,4 @@ class Engine():
         self.session.commit()
 
         return
+

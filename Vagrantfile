@@ -27,21 +27,27 @@ Vagrant.configure("2") do |config|
     sudo pip3 install psycopg2
     # Install python ORM for postGIS
     sudo pip3 install geoalchemy2
+    # Install python terminal color features
+    sudo pip3 install termcolor
+    # Install python terminal color features
+    sudo pip3 install python-dateutil
+    # Install python library for reading and writing Excel 2010
+    sudo pip3 install openpyxl
+    # Install python library for reading and writing Excel 2010
+    sudo pip3 install lxml
     # Allow local connections to the DDBB
     sudo cp /var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba_bak.conf
     sudo sed -i 's/peer/trust/' /var/lib/pgsql/data/pg_hba.conf
     sudo sed -i 's/ident/trust/' /var/lib/pgsql/data/pg_hba.conf
     sudo service postgresql restart
-    # Create database
-    sudo psql -U postgres -c "CREATE DATABASE gsdmdb;"
-    # Apply extension to postGIS to the database
-    sudo psql -U postgres -d gsdmdb -c "CREATE EXTENSION postgis;"
-    # Create tables inside the database
-    sudo psql -U postgres -d gsdmdb -f /vagrant/datamodel/gsdm_data_model.sql
+    # Init database
+    sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/gsdm_data_model.sql
     # Execute tests
     cd /vagrant/src/tests/
     python3 initial_test.py
     python3 bulk_ingest_events.py
     python3 bulk_ingest_events_multiprocessing.py
+    python3 ingest_xml.py
+    python3 extract_data_to_xls.py
   SHELL
 end
