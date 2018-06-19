@@ -42,7 +42,7 @@ CREATE TABLE gsdm.event_tb(
 	visible boolean NOT NULL,
 	gauge_id integer NOT NULL,
 	explicit_ref_id integer,
-	processing_uuid uuid,
+	processing_uuid uuid NOT NULL,
 	CONSTRAINT event_tb_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
 
@@ -181,7 +181,7 @@ CREATE TABLE gsdm.annot_tb(
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
 	explicit_ref_id integer NOT NULL,
-	processing_uuid uuid,
+	processing_uuid uuid NOT NULL,
 	annotation_cnf_id integer NOT NULL,
 	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid),
 	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)
@@ -332,7 +332,7 @@ ALTER TABLE gsdm.event_boolean_tb OWNER TO gsdm;
 -- ALTER TABLE gsdm.event_boolean_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
 ALTER TABLE gsdm.event_boolean_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: gsdm.annot_boolean_tb | type: TABLE --
@@ -369,14 +369,14 @@ ALTER TABLE gsdm.annot_timestamp_tb OWNER TO gsdm;
 -- ALTER TABLE gsdm.annot_timestamp_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
 ALTER TABLE gsdm.annot_timestamp_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annot_tb_fk | type: CONSTRAINT --
 -- ALTER TABLE gsdm.annot_boolean_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
 ALTER TABLE gsdm.annot_boolean_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
 REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
@@ -439,7 +439,7 @@ ALTER TABLE gsdm.event_timestamp_tb OWNER TO gsdm;
 -- ALTER TABLE gsdm.event_timestamp_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
 ALTER TABLE gsdm.event_timestamp_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
@@ -1245,7 +1245,7 @@ ALTER TABLE gsdm.dim_processing_tb ADD CONSTRAINT unique_dim_processing UNIQUE (
 -- ALTER TABLE gsdm.event_keys_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
 ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: unique_event_keys | type: CONSTRAINT --
@@ -1257,7 +1257,7 @@ ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT unique_event_keys UNIQUE (event_ke
 -- ALTER TABLE gsdm.event_keys_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
 ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES gsdm.dim_signature_tb (dim_signature_id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: idx_event_keys_generation_time | type: INDEX --

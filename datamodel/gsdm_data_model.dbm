@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="225,639" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="225,627" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -617,7 +617,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#a26a06"
 	 src-table="gsdm.event_tb"
 	 dst-table="gsdm.event_boolean_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <table name="annot_boolean_tb">
 	<schema name="gsdm"/>
@@ -682,7 +683,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#b6e88e"
 	 src-table="gsdm.annot_tb"
 	 dst-table="gsdm.annot_timestamp_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="annot_tb_has_many_annot_boolean_tb" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -691,7 +693,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#08b8c3"
 	 src-table="gsdm.annot_tb"
 	 dst-table="gsdm.annot_boolean_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="dim_processing_tb_has_many_dim_processing_status_tb" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -734,7 +737,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#d4bcfa"
 	 src-table="gsdm.dim_processing_tb"
 	 dst-table="gsdm.event_tb"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
 		<position x="0" y="0"/>
@@ -805,7 +808,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#802ea1"
 	 src-table="gsdm.event_tb"
 	 dst-table="gsdm.event_timestamp_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="event_tb_has_many_event_double_tb" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -916,7 +920,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#8086b1"
 	 src-table="gsdm.dim_processing_tb"
 	 dst-table="gsdm.annot_tb"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
 		<position x="0" y="0"/>
@@ -1612,7 +1616,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#435b67"
 	 src-table="gsdm.event_tb"
 	 dst-table="gsdm.event_keys_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_keys_tb">
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
@@ -1625,7 +1630,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#bc867e"
 	 src-table="gsdm.dim_signature_tb"
 	 dst-table="gsdm.event_keys_tb"
-	 src-required="true" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <index name="idx_event_keys_generation_time" table="gsdm.event_keys_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
