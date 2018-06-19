@@ -40,11 +40,27 @@ then
     exit -1
 fi
 
-# Drop the DDBB
-psql -U postgres -c "DROP DATABASE gsdmdb;"
+# Check that there are no connections to the DDBB if exists
+DATABASE=`psql -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='gsdmdb'";`
+if [ $DATABASE -eq 1 ];
+then
+    CONNECTIONS=`psql -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'gsdmdb';"`
+    if [ $CONNECTIONS -ne 0 ];
+    then
+        echo "ERROR: There are $((CONNECTIONS + 0)) active connections to the DDBB"
+        exit -1
+    fi
+fi
 
-# Drop the gsdm role
-psql -U postgres -c "DROP ROLE gsdm;"
+# Remove DDBB if it exists
+if [ $DATABASE -eq 1 ];
+then
+    # Drop the DDBB
+    psql -U postgres -c "DROP DATABASE gsdmdb;"
+
+    # Drop the gsdm role
+    psql -U postgres -c "DROP ROLE gsdm;"
+fi
 
 # Create DDBB
 psql -U postgres -c "CREATE DATABASE gsdmdb;"
