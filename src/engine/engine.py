@@ -245,7 +245,10 @@ class Engine():
                 # end if
 
                 # Add values
-                ### PENDING (recursive method)
+                if len(event.xpath("values")) > 0:
+                    event_info["values"] = []
+                    self._parse_values_from_xml(event.xpath("values")[0], event_info["values"])
+                # end if
 
                 data["events"].append(event_info)
             # end for
@@ -263,13 +266,52 @@ class Engine():
                                                      "system": annotation.xpath("annotation_cnf")[0].get("system")}
                 # end if
                 # Add values
-                ### PENDING (recursive method)
+                if len(annotation.xpath("values")) > 0:
+                    annotation_info["values"] = []
+                    self._parse_values_from_xml(annotation.xpath("values")[0], annotation_info["values"])
+                # end if
 
                 data["annotations"].append(annotation_info)
             # end for
         # end if
 
         self.data["operations"].append(data)
+        return
+
+    def _parse_values_from_xml(self, node, parent, level_position = 0, child_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
+        """
+        """
+        parent_object = {"name": node.get("name"),
+                         "type": "object",
+                         "level_position": level_position,
+                         "child_position": child_position,
+                         "parent_level": parent_level,
+                         "parent_level_position": parent_level_position,
+                         "values": []
+                     }
+        parent.append(parent_object)
+        parent_level += 1
+        parent_level_position = level_position
+        child_position = 0
+        if not parent_level in level_positions:
+            # List for keeping track of the positions occupied in the level (parent_level = level - 1)
+            level_positions[parent_level] = 0
+        # end if
+        for child_node in node.xpath("child::*"):
+            if child_node.tag == "value":
+                parent_object["values"].append({"name": child_node.get("name"),
+                                         "type": child_node.get("type"),
+                                         "value": child_node.text,
+                                         "level_position": level_positions[parent_level],
+                                         "child_position": child_position,
+                                         "parent_level": parent_level,
+                                         "parent_level_position": parent_level_position
+                                     })
+            else:
+                self._parse_values_from_xml(child_node, parent_object["values"], level_positions[parent_level], child_position, parent_level, parent_level_position, level_positions)
+            # end if
+            child_position += 1
+            level_positions[parent_level] += 1
         return
 
     def treat_data(self):
