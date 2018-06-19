@@ -12,12 +12,14 @@ import random
 import os
 import sys
 from dateutil import parser
+from itertools import chain
 
 # Adding path to the datamodel package
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import SQLalchemy exceptions
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import func
 
 # Import exceptions
 from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested
@@ -41,33 +43,37 @@ class Engine():
     exit_codes = {
         "OK": {
             "status": 0,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly",
+            "exit_value": 0
         },
         "INGESTION_STARTED": {
             "status": 1,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested",
+            "exit_value": 1
         },
         "SOURCE_ALREADY_INGESTED": {
             "status": 2,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested",
+            "exit_value": 2
         },
-        "WRONG_PERIOD_SOURCE": {
+        "WRONG_SOURCE_PERIOD": {
             "status": 3,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})",
+            "exit_value": 3
         },
-        "WRONG_PERIOD_EVENT_SOURCE": {
+        "WRONG_EVENT_PERIOD": {
             "status": 4,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}",
+            "exit_value": 4
         },
-        "WRONG_PERIOD_EVENT": {
-            "message": "The event has a stop value {} lower than its start value {}"
+        "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})",
+            "exit_value": 5
         },
-        "INCOMPLTE_LINKS_SOURCE": {
-            "status": 5,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
-        },
-        "INCOMPLTE_LINKS": {
-            "message": "There is an event which defines the link id {} to other events that are not specified"
+        "INCOMPLETE_EVENT_LINKS": {
+            "status": 6,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified",
+            "exit_value": 6
         }
     }
 
@@ -271,13 +277,16 @@ class Engine():
         
         """
         # Pass schema
-    
+        
         for self.operation in self.data.get("operations") or []:
             if self.operation.get("mode") == "insert":
-                self._insert_data()
+                returned_value = self._insert_data()
+            # end if
+            if returned_value != self.exit_codes["OK"]["exit_value"]:
+                return returned_value
             # end if
         # end for
-        return
+        return self.exit_codes["OK"]["exit_value"]
 
     def _insert_data(self):
         """
@@ -290,44 +299,39 @@ class Engine():
         self.annotation_cnfs = {}
         self.expl_groups = {}
         self.explicit_refs = {}
-
-        # Apply insertion types effects
-        self._apply_insertion_types()
+        self.erase_and_replace_gauges = []
+        self.keys_events = []
 
         # Insert the DIM signature
         self._insert_dim_signature()
 
-        # Insert the source if exists
-        if "source" in self.operation:
-            try:
-                self._insert_source()
-                self.ingestion_start = datetime.datetime.now()
-                self._insert_proc_status(self.exit_codes["INGESTION_STARTED"]["status"])
-                ### Log that the ingestion of the source file has been started
-                print(self.exit_codes["INGESTION_STARTED"]["message"].format(
-                    self.operation["source"]["name"],
-                    self.dim_signature.dim_signature,
-                    self.dim_signature.dim_exec_name, 
-                    self.operation["dim_signature"]["version"]))
-            except SourceAlreadyIngested as e:
-                self.session.rollback()
-                self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"])
-                ### Log that the source file has been already been processed
-                print(e)
-                self.session.commit()
-                self.session.close()
-                return
-            # end try
-            except WrongPeriod as e:
-                self.session.rollback()
-                self._insert_proc_status(self.exit_codes["WRONG_PERIOD_SOURCE"]["status"])
-                ### Log that the source file has a wrong specified period as the stop is lower than the start
-                print(e)
-                self.session.commit()
-                self.session.close()
-                return
-            # end try
-        # end if
+        try:
+            self._insert_source()
+            self.ingestion_start = datetime.datetime.now()
+            self._insert_proc_status(self.exit_codes["INGESTION_STARTED"]["status"])
+            ### Log that the ingestion of the source file has been started
+            print(self.exit_codes["INGESTION_STARTED"]["message"].format(
+                self.operation["source"]["name"],
+                self.dim_signature.dim_signature,
+                self.dim_signature.dim_exec_name, 
+                self.operation["dim_signature"]["version"]))
+        except SourceAlreadyIngested as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"])
+            ### Log that the source file has been already been processed
+            print(e)
+            self.session.commit()
+            self.session.close()
+            return self.exit_codes["SOURCE_ALREADY_INGESTED"]["exit_value"]
+        except WrongPeriod as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"])
+            ### Log that the source file has a wrong specified period as the stop is lower than the start
+            print(e)
+            self.session.commit()
+            self.session.close()
+            return self.exit_codes["WRONG_SOURCE_PERIOD"]["exit_value"]
+        # end try
 
         # Insert gauges
         self._insert_gauges()
@@ -349,54 +353,42 @@ class Engine():
             self._insert_events()
         except WrongEventLink as e:
             self.session.rollback()
-            # If the data comes associated to a source then register the error on DDBB
-            if "source" in self.operation:
-                self._insert_proc_status(self.exit_codes["INCOMPLTE_LINKS_SOURCE"]["status"])
-            # end if
+            self._insert_proc_status(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"])
             self.session.commit()
             self.session.close()
             ### Log the error
             print(e)
-            return
+            return self.exit_codes["INCOMPLETE_EVENT_LINKS"]["exit_value"]
         except WrongPeriod as e:
             self.session.rollback()
-            # If the data comes associated to a source then register the error on DDBB
-            if "source" in self.operation:
-                self._insert_proc_status(self.exit_codes["WRONG_PERIOD_EVENT_SOURCE"]["status"])
-            # end if
+            self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
             self.session.commit()
             self.session.close()
             ### Log the error
             print(e)
-            return
+            return self.exit_codes["WRONG_EVENT_PERIOD"]["exit_value"]
         # end try
 
         # Insert annotations
         self._insert_annotations()
 
-        if "source" in self.operation:
-            self._insert_proc_status(self.exit_codes["OK"]["status"],True)
-            ### Log that the file has been ingested correctly
-            print(self.exit_codes["OK"]["message"].format(
-                    self.source.filename,
-                    self.dim_signature.dim_signature,
-                    self.dim_signature.dim_exec_name, 
-                    self.source.dim_exec_version))
-        # end if
+        ### Log that the file has been ingested correctly
+        self._insert_proc_status(self.exit_codes["OK"]["status"],True)
+        print(self.exit_codes["OK"]["message"].format(
+            self.source.filename,
+            self.dim_signature.dim_signature,
+            self.dim_signature.dim_exec_name, 
+            self.source.dim_exec_version))
+
+        # Review the inserted events (with modes EVENT_KEYS and
+        # ERASE_and_REPLACE) and annotations for removing the
+        # information that is deprecated
+        self._remove_deprecated_data()
         
         # Commit data and close connection
         self.session.commit()
         self.session.close()
-        return
-
-    def _apply_insertion_types(self):
-        """
-        """
-        #self.session.begin_nested()
-        
-        
-        
-        return
+        return self.exit_codes["OK"]["exit_value"]
 
     def _insert_dim_signature(self):
         """
@@ -456,7 +448,7 @@ class Engine():
                                                                        DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
                                                                        DimProcessing.dim_exec_version == version).first()
             # end try
-            raise WrongPeriod(self.exit_codes["WRONG_PERIOD_SOURCE"]["message"].format(name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, version, validity_stop, validity_start))
+            raise WrongPeriod(self.exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, version, validity_stop, validity_start))
         # end if
         self.source = DimProcessing(id, name,
                                     generation_time, version, self.dim_signature,
@@ -640,11 +632,7 @@ class Engine():
             if parser.parse(stop) < parser.parse(start):
                 # The period of the event is not correct (stop > start)
                 self.session.rollback()
-                if "source" in self.operation:
-                    raise WrongPeriod(self.exit_codes["WRONG_PERIOD_EVENT_SOURCE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
-                else:
-                    raise WrongPeriod(self.exit_codes["WRONG_PERIOD_EVENT"]["message"].format(stop, start))
-                # end if
+                raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
             # end if
 
             generation_time = event.get("generation_time")
@@ -655,6 +643,10 @@ class Engine():
             visible = False
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
                 visible = True
+            elif gauge_info["insertion_type"] == "ERASE_and_REPLACE":
+                self.erase_and_replace_gauges.append(gauge)
+            elif gauge_info["insertion_type"] == "EVENT_KEYS":
+                self.keys_events.append(key)
             # end if
             # Insert the event into the list for bulk ingestion
             list_events.append(dict(event_uuid = id, start = start, stop = stop,
@@ -692,11 +684,7 @@ class Engine():
             event_uuids = set([i.get("event_uuid") for i in list_event_links[link]])
             if len(event_uuids) == 1:
                 self.session.rollback()
-                if "source" in self.operation:
-                    raise WrongEventLink(self.exit_codes["INCOMPLTE_LINKS_SOURCE"]["message"].format(self.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.dim_exec_version, link))
-                else:
-                    raise WrongEventLink(self.exit_codes["INCOMPLTE_LINKS"]["message"].format(link))
-                # end if
+                raise WrongEventLink(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link))
             # end if
             list_event_links_ddbb = [dict(event_uuid_link = x["event_uuid"],
                                           name = x["name"],
@@ -752,4 +740,46 @@ class Engine():
         self.session.commit()
 
         return
+
+    def _remove_deprecated_data(self):
+        """
+        """
+        # Remove events due to ERASE_and_REPLACE insertion mode
+        #self._remove_deprecated_events_erase_and_replace()
+
+        # Remove events due to EVENT_KEYS insertion mode
+        self._remove_deprecated_events_event_keys()
+
+        # Remove annotations due to the generation time
+        #self._remove_deprecated_annotations()
+
+        return
+
+    def _remove_deprecated_events_event_keys(self):
+        """
+        """
+        self.session.begin_nested()
+
+        for key in self.keys_events:
+            print (key)
+            max_generation_time_query = self.session.query(func.max(Event.generation_time)).join(EventKey).filter(EventKey.event_key == key)
+
+            event_max_generation_time = self.session.query(Event).join(EventKey).filter(Event.generation_time == max_generation_time_query,
+                                                                                        EventKey.event_key == key).first()
+
+            # Delete deprecated events
+            events_uuids_to_delete = self.session.query(Event.event_uuid).join(EventKey).filter(Event.processing_uuid != event_max_generation_time.processing_uuid,
+                                                                                     EventKey.event_key == key)
+            self.session.query(Event).filter(Event.event_uuid == events_uuids_to_delete).delete(synchronize_session=False)
+
+            # Make events visible
+            events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.processing_uuid == event_max_generation_time.processing_uuid,
+                                                                                                EventKey.event_key == key)
+            self.session.query(EventKey).filter(EventKey.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
+        # end for
+
+        self.session.commit()
+
+        return
+
 

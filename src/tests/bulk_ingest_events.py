@@ -16,7 +16,7 @@ from datamodel.dim_signatures import DimSignature
 from datamodel.events import Event
 from datamodel.gauges import Gauge
 from datamodel.explicit_refs import ExplicitRef
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from datamodel.dim_processings import DimProcessing
 import datetime
 import uuid
 import time
@@ -26,13 +26,13 @@ nEvents = 10000
 # Create session to connect to the database
 session = Session()
 
-def createEvents (nEvents, explicitRef, gauge):
+def createEvents (nEvents, explicitRef, gauge, dimProcessing):
     listEvents = []
     for i in range(nEvents):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, generation_time = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id, visible = True)
+        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, generation_time = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id, visible = True, processing_uuid = dimProcessing.processing_uuid)
 
         # Insert the event into the database
         listEvents.append (event)
@@ -59,6 +59,21 @@ if __name__ == '__main__':
     
     if len (session.query(DimSignature).filter(DimSignature.dim_signature == 'TEST').all()) != 1:
         raise Exception("The DIM signature was not committed")
+
+    ################
+    # DIM Processing
+    ################
+    # Create dim_processing
+    processingTime = datetime.datetime.now()
+    processingUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    dimProcessing1 = DimProcessing (processingUuid, 'TEST', processingTime, "1.0", dimSignature1)
+
+    # Insert dim_processing into database
+    session.add (dimProcessing1)
+    session.commit()
+    
+    if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+        raise Exception("The DIM processing was not committed")
 
     ################
     # Explicit reference
@@ -96,7 +111,7 @@ if __name__ == '__main__':
     explicitRef1 = explicitRefs[0]
     gauge1 = gauges[0]
     startTime = time.time()
-    createEvents (nEvents, explicitRef1, gauge1)
+    createEvents (nEvents, explicitRef1, gauge1, dimProcessing1)
     stopTime = time.time()
 
     numberEvents = session.query(Event).count()

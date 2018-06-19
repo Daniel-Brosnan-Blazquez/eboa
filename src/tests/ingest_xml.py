@@ -289,7 +289,7 @@ print(colored("Check", on_color="on_blue") + "_{}: Event links have been inserte
 
 ## Check that the same source is not ingested more than once
 engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == 2).first()
+dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == engine_gsdm.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -299,7 +299,7 @@ print(colored("Check", on_color="on_blue") + "_{}: Detected duplication on the i
 ## Check that the validity period of the source has to be correctly specified (start lower than the stop)
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_validity_period_source.xml")
 engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_validity_period_source.xml", DimProcessingStatus.proc_status == 3).first()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_validity_period_source.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_SOURCE_PERIOD"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -309,12 +309,22 @@ print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specifi
 ## Check that the validity period of the events has to be correctly specified (start lower than the stop)
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_period_events.xml")
 engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_period_events.xml", DimProcessingStatus.proc_status == 4).first()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_period_events.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_EVENT_PERIOD"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specified on the events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the specified incomplete link between an event and another that does not exist is detected
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_incomplete_event_links.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_incomplete_event_links.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected incomplete specified links between events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")

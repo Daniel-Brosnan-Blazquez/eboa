@@ -26,12 +26,12 @@ nEvents = 10000
 # Create session to connect to the database
 session = Session()
 
-def createEvents (nEvents, explicitRef, gauge):
+def createEvents (nEvents, explicitRef, gauge, dimProcessing):
     for i in range(nEvents):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = Event (eventUuid, eventTime, eventTime, eventTime, eventTime,gauge, explicitRef)
+        event = Event (eventUuid, eventTime, eventTime, eventTime, eventTime,gauge, explicitRef, dimProcessing)
 
         # Insert the event into the database
         session.add (event)
@@ -59,6 +59,21 @@ if __name__ == '__main__':
     
     if len (session.query(DimSignature).filter(DimSignature.dim_signature == 'TEST').all()) != 1:
         raise Exception("The DIM signature was not committed")
+
+    ################
+    # DIM Processing
+    ################
+    # Create dim_processing
+    processingTime = datetime.datetime.now()
+    processingUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    dimProcessing1 = DimProcessing (processingUuid, 'TEST', processingTime, "1.0", dimSignature1)
+
+    # Insert dim_processing into database
+    session.add (dimProcessing1)
+    session.commit()
+    
+    if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+        raise Exception("The DIM processing was not committed")
 
     ################
     # Explicit reference
@@ -92,7 +107,7 @@ if __name__ == '__main__':
     # Events
     ################
     startTime = time.time()
-    createEvents (nEvents, explicitRef1, gauge1)
+    createEvents (nEvents, explicitRef1, gauge1, dimProcessing1)
     stopTime = time.time()
 
     numberEvents = session.query(Event).count()

@@ -45,6 +45,21 @@ if len (session.query(DimSignature).filter(DimSignature.dim_signature == 'TEST')
     raise Exception("The DIM signature was not committed")
 
 ################
+# DIM Processing
+################
+# Create dim_processing
+processingTime = datetime.datetime.now()
+processingUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+dimProcessing1 = DimProcessing (processingUuid, 'TEST', processingTime, "1.0", dimSignature1)
+
+# Insert dim_processing into database
+session.add (dimProcessing1)
+session.commit()
+
+if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+    raise Exception("The DIM processing was not committed")
+
+################
 # Explicit references
 ################
 # Create explicit reference
@@ -98,7 +113,7 @@ if len (session.query(Gauge).filter(Gauge.name == 'TEST').all()) != 1:
 # Create event
 event1Time = datetime.datetime.now()
 event1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-event1 = Event (event1Uuid, event1Time, event1Time, event1Time, event1Time,gauge1)
+event1 = Event (event1Uuid, event1Time, event1Time, event1Time, event1Time,gauge1, dim_processing = dimProcessing1)
 
 # Insert the event into the database
 session.add (event1)
@@ -110,7 +125,7 @@ if len (session.query(Event).filter(Event.event_uuid == event1Uuid).all()) != 1:
 # Create another event
 event2Time = datetime.datetime.now()
 event2Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-event2 = Event (event2Uuid, event2Time, event2Time, event2Time, event2Time,gauge1)
+event2 = Event (event2Uuid, event2Time, event2Time, event2Time, event2Time,gauge1, dim_processing = dimProcessing1)
 
 # Insert the event into the database
 session.add (event2)
@@ -190,7 +205,7 @@ if len (session.query(AnnotationCnf).filter(AnnotationCnf.name == 'TEST').all())
 # Create annotation
 annotation1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
 annotation1Time = datetime.datetime.now()
-annotation1 = Annotation (annotation1Uuid, annotation1Time, annotation1Time,annotationCnf1,explicitRef1)
+annotation1 = Annotation (annotation1Uuid, annotation1Time, annotation1Time,annotationCnf1,explicitRef1, dimProcessing1)
 
 # Insert annotation into database
 session.add (annotation1)
