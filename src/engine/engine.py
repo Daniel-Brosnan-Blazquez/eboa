@@ -27,11 +27,11 @@ from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongVal
 # Import datamodel
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean
+from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean
+from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from datamodel import annotations
 
 # Import xml parser
@@ -75,7 +75,7 @@ class Engine():
             "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
         },
         "ODD_NUMBER_OF_COORDINATES": {
-            "status": 7,
+            "status": 8,
             "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
         }
     }
@@ -612,9 +612,13 @@ class Engine():
     def _insert_explicit_refs(self):
         """
         """
+        # Join all sources of explicit references
         events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events") or []]
         annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or []]
-        explicit_references = set(events_explicit_refs + annotations_explicit_refs)
+        declared_explicit_refs = [i.get("name") for i in self.operation.get("explicit_references") or []]
+        linked_explicit_refs = [link.get("link") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("links") for link in explicit_ref.get("links")]
+
+        explicit_references = set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs)
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
             if not self.explicit_refs[explicit_ref]:
@@ -750,7 +754,9 @@ class Engine():
         self.session.bulk_insert_mappings(EventKey, list_keys)
 
         # Bulk insert values
-        self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+        if "objects" in list_values:
+            self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+        # end if
         if "booleans" in list_values:
             self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
         # end if
@@ -933,7 +939,9 @@ class Engine():
         self.session.bulk_insert_mappings(Annotation, list_annotations)
 
         # Bulk insert values
-        self.session.bulk_insert_mappings(AnnotationObject, list_values["objects"])
+        if "objects" in list_values:
+            self.session.bulk_insert_mappings(AnnotationObject, list_values["objects"])
+        # end if
         if "booleans" in list_values:
             self.session.bulk_insert_mappings(AnnotationBoolean, list_values["booleans"])
         # end if

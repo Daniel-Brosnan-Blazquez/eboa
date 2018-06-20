@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine.engine import Engine
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry, EventKey
+from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
@@ -325,6 +325,106 @@ if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: Detected incomplete specified links between events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the boolean value for an event has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_event.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_boolean_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong boolean value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the double value for an event has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_event.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_double_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong double value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the timestamp value for an event has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_event.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_timestamp_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong timestamp value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the geometry value for an event has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_event.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_geometry_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong geometry value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the geometry value for an event has a pair number of coordinates
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_event.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_odd_coordinates_geometry_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected odd number of coordinates in the geometry value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the boolean value for an annotation has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_annotation.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_boolean_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong boolean value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the double value for an annotation has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_annotation.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_double_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong double value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the timestamp value for an annotation has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_annotation.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_timestamp_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong timestamp value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the geometry value for an annotation has to be correctly specified
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_annotation.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected wrong geometry value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+## Check that the geometry value for an annotation has a pair number of coordinates
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_annotation.xml")
+engine_gsdm.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.filename == "test_wrong_odd_coordinates_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
+result = {"message":"OK","color":"green"}
+if dim_processing_status == None:
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: Detected odd number of coordinates in the geometry value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
