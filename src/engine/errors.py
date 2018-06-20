@@ -38,3 +38,23 @@ class WrongEventLink(Error):
 
     def __init__(self, message):
         self.message = message
+
+class WrongValue(Error):
+    """Exception raised when a provided value cannot be converted to its specified type.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class OddNumberOfCoordinates(Error):
+    """Exception raised when a provided geometry has an odd number of coordinates.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

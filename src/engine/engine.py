@@ -22,16 +22,17 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
 
 # Import exceptions
-from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested
+from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates
 
 # Import datamodel
 from datamodel.base import Session, engine, Base
 from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry, EventKey
+from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean
+from datamodel import annotations
 
 # Import xml parser
 from lxml import etree
@@ -43,37 +44,39 @@ class Engine():
     exit_codes = {
         "OK": {
             "status": 0,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly",
-            "exit_value": 0
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
         },
         "INGESTION_STARTED": {
             "status": 1,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested",
-            "exit_value": 1
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
         },
         "SOURCE_ALREADY_INGESTED": {
             "status": 2,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested",
-            "exit_value": 2
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
         },
         "WRONG_SOURCE_PERIOD": {
             "status": 3,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})",
-            "exit_value": 3
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
         },
         "WRONG_EVENT_PERIOD": {
             "status": 4,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}",
-            "exit_value": 4
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
         },
         "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})",
-            "exit_value": 5
+            "status": 5,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
         },
         "INCOMPLETE_EVENT_LINKS": {
             "status": 6,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified",
-            "exit_value": 6
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
+        },
+        "WRONG_VALUE": {
+            "status": 7,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
+        },
+        "ODD_NUMBER_OF_COORDINATES": {
+            "status": 7,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
         }
     }
 
@@ -278,40 +281,24 @@ class Engine():
         self.data["operations"].append(data)
         return
 
-    def _parse_values_from_xml(self, node, parent, level_position = 0, child_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
+    def _parse_values_from_xml(self, node, parent):
         """
         """
         parent_object = {"name": node.get("name"),
                          "type": "object",
-                         "level_position": level_position,
-                         "child_position": child_position,
-                         "parent_level": parent_level,
-                         "parent_level_position": parent_level_position,
                          "values": []
                      }
         parent.append(parent_object)
-        parent_level += 1
-        parent_level_position = level_position
-        child_position = 0
-        if not parent_level in level_positions:
-            # List for keeping track of the positions occupied in the level (parent_level = level - 1)
-            level_positions[parent_level] = 0
-        # end if
         for child_node in node.xpath("child::*"):
             if child_node.tag == "value":
                 parent_object["values"].append({"name": child_node.get("name"),
                                          "type": child_node.get("type"),
-                                         "value": child_node.text,
-                                         "level_position": level_positions[parent_level],
-                                         "child_position": child_position,
-                                         "parent_level": parent_level,
-                                         "parent_level_position": parent_level_position
+                                         "value": child_node.text
                                      })
             else:
-                self._parse_values_from_xml(child_node, parent_object["values"], level_positions[parent_level], child_position, parent_level, parent_level_position, level_positions)
+                self._parse_values_from_xml(child_node, parent_object["values"])
             # end if
-            child_position += 1
-            level_positions[parent_level] += 1
+        # end for
         return
 
     def treat_data(self):
@@ -324,11 +311,11 @@ class Engine():
             if self.operation.get("mode") == "insert":
                 returned_value = self._insert_data()
             # end if
-            if returned_value != self.exit_codes["OK"]["exit_value"]:
+            if returned_value != self.exit_codes["OK"]["status"]:
                 return returned_value
             # end if
         # end for
-        return self.exit_codes["OK"]["exit_value"]
+        return self.exit_codes["OK"]["status"]
 
     def _insert_data(self):
         """
@@ -364,7 +351,7 @@ class Engine():
             print(e)
             self.session.commit()
             self.session.close()
-            return self.exit_codes["SOURCE_ALREADY_INGESTED"]["exit_value"]
+            return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"])
@@ -372,7 +359,7 @@ class Engine():
             print(e)
             self.session.commit()
             self.session.close()
-            return self.exit_codes["WRONG_SOURCE_PERIOD"]["exit_value"]
+            return self.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
         # end try
 
         # Insert gauges
@@ -400,7 +387,7 @@ class Engine():
             self.session.close()
             ### Log the error
             print(e)
-            return self.exit_codes["INCOMPLETE_EVENT_LINKS"]["exit_value"]
+            return self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
@@ -408,11 +395,45 @@ class Engine():
             self.session.close()
             ### Log the error
             print(e)
-            return self.exit_codes["WRONG_EVENT_PERIOD"]["exit_value"]
+            return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
+        except WrongValue as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            self.session.commit()
+            self.session.close()
+            ### Log the error
+            print(e)
+            return self.exit_codes["WRONG_VALUE"]["status"]
+        except OddNumberOfCoordinates as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            self.session.commit()
+            self.session.close()
+            ### Log the error
+            print(e)
+            return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         # end try
 
         # Insert annotations
-        self._insert_annotations()
+        try:
+            self._insert_annotations()
+        except WrongValue as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            self.session.commit()
+            self.session.close()
+            ### Log the error
+            print(e)
+            return self.exit_codes["WRONG_VALUE"]["status"]
+        except OddNumberOfCoordinates as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            self.session.commit()
+            self.session.close()
+            ### Log the error
+            print(e)
+            return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        # end try
 
         ### Log that the file has been ingested correctly
         self._insert_proc_status(self.exit_codes["OK"]["status"],True)
@@ -430,7 +451,7 @@ class Engine():
         # Commit data and close connection
         self.session.commit()
         self.session.close()
-        return self.exit_codes["OK"]["exit_value"]
+        return self.exit_codes["OK"]["status"]
 
     def _insert_dim_signature(self):
         """
@@ -667,6 +688,7 @@ class Engine():
         list_events = []
         list_keys = []
         list_event_links = {}
+        list_values = {}
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             start = event.get("start")
@@ -704,6 +726,13 @@ class Engine():
                                   visible = False,
                                   dim_signature_id = self.dim_signature.dim_signature_id))
 
+            # Insert values
+            if "values" in event:
+                entity_uuid = {"name": "event_uuid",
+                               "id": id
+                }
+                self._insert_values(event.get("values")[0], entity_uuid, list_values)
+            # end if
             # Build links for later ingestion
             if "links" in event:
                 for link in event["links"]:
@@ -719,6 +748,24 @@ class Engine():
         self.session.bulk_insert_mappings(Event, list_events)
         # Bulk insert keys
         self.session.bulk_insert_mappings(EventKey, list_keys)
+
+        # Bulk insert values
+        self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+        if "booleans" in list_values:
+            self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
+        # end if
+        if "texts" in list_values:
+            self.session.bulk_insert_mappings(EventText, list_values["texts"])
+        # end if
+        if "doubles" in list_values:
+            self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
+        # end if
+        if "timestamps" in list_values:
+            self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
+        # end if
+        if "geometries" in list_values:
+            self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+        # end if
 
         # Insert links
         list_event_links_ddbb = []
@@ -741,11 +788,123 @@ class Engine():
         self.session.commit()
 
         return
+
+    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, child_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
+        """
+        """
+        if not "objects" in list_values:
+            list_values["objects"] = []
+        # end if
+        list_values["objects"].append(dict([("name", values.get("name")),
+                                           ("level_position",  level_position),
+                                           ("child_position",  child_position),
+                                           ("parent_level",  parent_level),
+                                           ("parent_position",  parent_level_position),
+                                           (entity_uuid["name"], entity_uuid["id"])]
+        ))
+        parent_level += 1
+        parent_level_position = level_position
+        child_position = 0
+        if not parent_level in level_positions:
+            # List for keeping track of the positions occupied in the level (parent_level = level - 1)
+            level_positions[parent_level] = 0
+        # end if
+        for item in values["values"]:
+            if item["type"] == "object":
+                self._insert_values(item, entity_uuid, list_values, level_positions[parent_level], child_position, parent_level, parent_level_position, level_positions)
+            else:
+                value = bool(str(item.get("value")))
+                if item["type"] == "boolean":
+                    if not "booleans" in list_values:
+                        list_values["booleans"] = []
+                    # end if
+                    if item.get("value").lower() == "true":
+                        value = True
+                    elif item.get("value").lower() == "false":
+                        value = False
+                    else:
+                        self.session.rollback()
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                    list_to_use = list_values["booleans"]
+                elif item["type"] == "text":
+                    value = str(item.get("value"))
+                    if not "texts" in list_values:
+                        list_values["texts"] = []
+                    # end if
+                    list_to_use = list_values["texts"]
+                elif item["type"] == "double":
+                    try:
+                        value = float(item.get("value"))
+                    except ValueError:
+                        self.session.rollback()
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                    # end try
+                    if not "doubles" in list_values:
+                        list_values["doubles"] = []
+                    # end if
+                    list_to_use = list_values["doubles"]
+                elif item["type"] == "timestamp":
+                    try:
+                        value = parser.parse(item.get("value"))
+                    except ValueError:
+                        self.session.rollback()
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                    # end try
+                    if not "timestamps" in list_values:
+                        list_values["timestamps"] = []
+                    # end if
+                    list_to_use = list_values["timestamps"]
+                elif item["type"] == "geometry":
+                    list_coordinates = item.get("value").split(" ")
+                    if len (list_coordinates) % 2 != 0:
+                        self.session.rollback()
+                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value")))
+                    # end if
+                    coordinates = 0
+                    value = "POLYGON(("
+                    for coordinate in list_coordinates:
+                        if coordinates == 2:
+                            value = value + ","
+                            coordinates = 0
+                        # end if
+                        try:
+                            float(coordinate)
+                        except ValueError:
+                            self.session.rollback()
+                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, coordinate, "float"))
+                        # end try
+                        value = value + coordinate
+                        coordinates += 1
+                        if coordinates == 1:
+                            value = value + " "
+                        # end if
+                    # end for
+                    value = value + "))"
+                    if not "geometries" in list_values:
+                        list_values["geometries"] = []
+                    # end if
+                    list_to_use = list_values["geometries"]
+                # end if
+                list_to_use.append(dict([("name", item.get("name")),
+                                         ("value", value),
+                                         ("level_position",  level_position),
+                                         ("child_position",  child_position),
+                                         ("parent_level",  parent_level),
+                                         ("parent_position",  parent_level_position),
+                                         (entity_uuid["name"], entity_uuid["id"])]
+                                    ))
+            # end if
+            child_position += 1
+            level_positions[parent_level] += 1
+        # end for
+
+        return
         
     def _insert_annotations(self):
         """
         """
         list_annotations = []
+        list_values = {}
         for annotation in self.operation.get("annotations") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             generation_time = annotation.get("generation_time")
@@ -760,10 +919,37 @@ class Engine():
                                          explicit_ref_id = explicit_ref.explicit_ref_id,
                                          processing_uuid = self.source.processing_uuid,
                                          visible = False))
+            # Insert values
+            if "values" in annotation:
+                entity_uuid = {"name": "annotation_uuid",
+                               "id": id
+                }
+                self._insert_values(annotation.get("values")[0], entity_uuid, list_values)
+            # end if
+
         # end for
             
         # Bulk insert annotations
         self.session.bulk_insert_mappings(Annotation, list_annotations)
+
+        # Bulk insert values
+        self.session.bulk_insert_mappings(AnnotationObject, list_values["objects"])
+        if "booleans" in list_values:
+            self.session.bulk_insert_mappings(AnnotationBoolean, list_values["booleans"])
+        # end if
+        if "texts" in list_values:
+            self.session.bulk_insert_mappings(AnnotationText, list_values["texts"])
+        # end if
+        if "doubles" in list_values:
+            self.session.bulk_insert_mappings(AnnotationDouble, list_values["doubles"])
+        # end if
+        if "timestamps" in list_values:
+            self.session.bulk_insert_mappings(AnnotationTimestamp, list_values["timestamps"])
+        # end if
+        if "geometries" in list_values:
+            self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
+        # end if
+
 
         return
 
@@ -803,7 +989,6 @@ class Engine():
         self.session.begin_nested()
 
         for key in self.keys_events:
-            print (key)
             max_generation_time_query = self.session.query(func.max(Event.generation_time)).join(EventKey).filter(EventKey.event_key == key)
 
             event_max_generation_time = self.session.query(Event).join(EventKey).filter(Event.generation_time == max_generation_time_query,
