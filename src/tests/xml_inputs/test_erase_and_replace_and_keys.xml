@@ -6,13 +6,13 @@
         exec="test_exec1"/>
     <source
         name="test_erase_and_replace_and_keys.xml" 
-        generation_time="2018-06-06T13:33:29"
+        generation_time="2018-06-07T13:33:29"
         validity_start="2018-06-05T02:07:03"
         validity_stop="2018-06-05T02:07:36"/>
     <data>
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-06T13:33:29"
+             generation_time="2018-06-07T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -33,7 +33,7 @@
       </event>
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-06T13:33:29"
+             generation_time="2018-06-07T13:33:29"
              key="test_key2"
              explicit_reference="test_explicit_ref2">
         <links>
@@ -53,7 +53,7 @@
         </values>
       </event>
       <annotation explicit_reference="test_explicit_ref1"
-                  generation_time="2018-06-06T13:33:29">
+                  generation_time="2018-06-07T13:33:29">
         <annotation_cnf name="test_annotation_cnf_name1"
                         system="test_annotation_cnf_system1"/>
         <values name="test_object_name1">
