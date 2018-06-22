@@ -13,9 +13,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine.analysis import Analysis
 
-analysis = Analysis()
+def extract_data_to_xls():
+    analysis = Analysis()
+    
+    output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis.xlsx"
+    analysis.generate_workbook_from_ddbb(output_file)
+    
+    print("Data present into DDBB exported into the file " + output_file)
 
-output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis.xlsx"
-analysis.generate_workbook_from_ddbb(output_file)
-
-print("Data present into DDBB exported into the file " + output_file)
+if __name__ == "__main__":
+    extract_data_to_xls()

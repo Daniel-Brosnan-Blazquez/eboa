@@ -11,14 +11,22 @@ import sys
 # Adding path to the engine package
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Import engine of the DDBB
 from engine.engine import Engine
 from datamodel.base import Session, engine, Base
+
+# Import analysis module
+from engine.analysis import Analysis
+
+# Import datamodel
 from datamodel.dim_signatures import DimSignature
 from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
 from datamodel.gauges import Gauge
 from datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+
+# Import python utilities
 from termcolor import colored
 from inspect import currentframe, getframeinfo
 import json
@@ -433,3 +441,11 @@ engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/x
 ### PENDING checks on the parser
 
 engine_gsdm.treat_data()
+
+# Generate the excel file containing the inserted data into the DDBB
+analysis = Analysis()
+
+output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis.xlsx"
+analysis.generate_workbook_from_ddbb(output_file)
+
+print("Data present into DDBB exported into the file " + output_file)

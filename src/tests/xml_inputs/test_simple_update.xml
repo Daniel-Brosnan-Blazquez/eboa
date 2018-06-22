@@ -29,7 +29,7 @@
         <values name="test_object_name1">
           <value name="test_text_name1" type="text">test text1</value>
           <value name="test_timestamp_name1" type="timestamp">2018-06-06T13:33:29</value>
-          <value name="test_boolean_name1" type="boolean">true</value>
+          <value name="test_boolean_name1" type="boolean">false</value>
           <value name="test_double_name1" type="double">0.91234</value>
           <values name="test_object_name2">
             <value name="test_text_name2" type="text">test text2</value>

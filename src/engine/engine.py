@@ -17,9 +17,12 @@ from itertools import chain
 # Adding path to the datamodel package
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import SQLalchemy exceptions
+# Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func
+
+# Import GEOalchemy entities
+from geoalchemy2 import functions
 
 # Import exceptions
 from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates
@@ -158,6 +161,78 @@ class Engine():
         """
         
         return self.session.query(ExplicitRefGrp).all()
+
+    def get_event_booleans(self):
+        """
+        """
+        
+        return self.session.query(EventBoolean).all()
+
+    def get_event_texts(self):
+        """
+        """
+        
+        return self.session.query(EventText).all()
+
+    def get_event_doubles(self):
+        """
+        """
+        
+        return self.session.query(EventDouble).all()
+
+    def get_event_timestamps(self):
+        """
+        """
+        
+        return self.session.query(EventTimestamp).all()
+
+    def get_event_objects(self):
+        """
+        """
+        
+        return self.session.query(EventObject).all()
+
+    def get_event_geometries(self):
+        """
+        """
+        
+        return self.session.query(EventGeometry).all()
+
+    def get_annotation_booleans(self):
+        """
+        """
+        
+        return self.session.query(AnnotationBoolean).all()
+
+    def get_annotation_texts(self):
+        """
+        """
+        
+        return self.session.query(AnnotationText).all()
+
+    def get_annotation_doubles(self):
+        """
+        """
+        
+        return self.session.query(AnnotationDouble).all()
+
+    def get_annotation_timestamps(self):
+        """
+        """
+        
+        return self.session.query(AnnotationTimestamp).all()
+
+    def get_annotation_objects(self):
+        """
+        """
+        
+        return self.session.query(AnnotationObject).all()
+
+    def get_annotation_geometries(self):
+        """
+        """
+        
+        return self.session.query(AnnotationGeometry).all()
 
     def parse_data_from_xml(self, xml):
         """
