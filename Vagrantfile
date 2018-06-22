@@ -35,6 +35,8 @@ Vagrant.configure("2") do |config|
     sudo pip3 install openpyxl
     # Install python library for reading and writing Excel 2010
     sudo pip3 install lxml
+    # Install python libreary for converting to text the geometries
+    sudo pip3 install shapely
     # Allow local connections to the DDBB
     sudo cp /var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba_bak.conf
     sudo sed -i 's/peer/trust/' /var/lib/pgsql/data/pg_hba.conf
@@ -47,7 +49,6 @@ Vagrant.configure("2") do |config|
     python3 initial_test.py
     python3 bulk_ingest_events.py
     python3 bulk_ingest_events_multiprocessing.py
-    python3 ingest_xml.py
-    python3 extract_data_to_xls.py
+    python3 test_ingestion_xmls.py
   SHELL
 end
