@@ -173,9 +173,9 @@ CREATE TABLE gsdm.event_geometry_tb(
 ALTER TABLE gsdm.event_geometry_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_tb CASCADE;
-CREATE TABLE gsdm.annot_tb(
+-- object: gsdm.annotation_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_tb CASCADE;
+CREATE TABLE gsdm.annotation_tb(
 	annotation_uuid uuid NOT NULL,
 	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
@@ -183,17 +183,17 @@ CREATE TABLE gsdm.annot_tb(
 	explicit_ref_id integer NOT NULL,
 	processing_uuid uuid NOT NULL,
 	annotation_cnf_id integer NOT NULL,
-	CONSTRAINT annot_tb_pk PRIMARY KEY (annotation_uuid),
+	CONSTRAINT annotation_tb_pk PRIMARY KEY (annotation_uuid),
 	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)
 
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_text_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_text_tb CASCADE;
-CREATE TABLE gsdm.annot_text_tb(
+-- object: gsdm.annotation_text_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_text_tb CASCADE;
+CREATE TABLE gsdm.annotation_text_tb(
 	name text NOT NULL,
 	value text NOT NULL,
 	level_position integer NOT NULL,
@@ -203,12 +203,12 @@ CREATE TABLE gsdm.annot_text_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_text_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_text_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_double_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_double_tb CASCADE;
-CREATE TABLE gsdm.annot_double_tb(
+-- object: gsdm.annotation_double_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_double_tb CASCADE;
+CREATE TABLE gsdm.annotation_double_tb(
 	name text NOT NULL,
 	value double precision NOT NULL,
 	level_position integer NOT NULL,
@@ -218,12 +218,12 @@ CREATE TABLE gsdm.annot_double_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_double_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_double_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_object_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_object_tb CASCADE;
-CREATE TABLE gsdm.annot_object_tb(
+-- object: gsdm.annotation_object_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_object_tb CASCADE;
+CREATE TABLE gsdm.annotation_object_tb(
 	name text NOT NULL,
 	level_position integer NOT NULL,
 	child_position integer NOT NULL,
@@ -232,12 +232,12 @@ CREATE TABLE gsdm.annot_object_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_object_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_object_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_geometry_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_geometry_tb CASCADE;
-CREATE TABLE gsdm.annot_geometry_tb(
+-- object: gsdm.annotation_geometry_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_geometry_tb CASCADE;
+CREATE TABLE gsdm.annotation_geometry_tb(
 	name text NOT NULL,
 	value geometry NOT NULL,
 	level_position integer NOT NULL,
@@ -247,33 +247,33 @@ CREATE TABLE gsdm.annot_geometry_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_geometry_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_geometry_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_cnf_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_cnf_tb CASCADE;
-CREATE TABLE gsdm.annot_cnf_tb(
+-- object: gsdm.annotation_cnf_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_cnf_tb CASCADE;
+CREATE TABLE gsdm.annotation_cnf_tb(
 	annotation_cnf_id serial NOT NULL,
 	name text NOT NULL,
 	system text,
 	dim_signature_id integer NOT NULL,
-	CONSTRAINT annot_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
+	CONSTRAINT annotation_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
 	CONSTRAINT unique_annotation_cnf UNIQUE (name,system)
 
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_cnf_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_cnf_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.event_links_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.event_links_tb CASCADE;
-CREATE TABLE gsdm.event_links_tb(
+-- object: gsdm.event_link_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.event_link_tb CASCADE;
+CREATE TABLE gsdm.event_link_tb(
 	event_uuid_link uuid NOT NULL,
 	name text NOT NULL,
 	event_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.event_links_tb OWNER TO gsdm;
+ALTER TABLE gsdm.event_link_tb OWNER TO gsdm;
 -- ddl-end --
 
 -- object: gsdm.explicit_ref_cnf_tb | type: TABLE --
@@ -289,9 +289,9 @@ CREATE TABLE gsdm.explicit_ref_cnf_tb(
 ALTER TABLE gsdm.explicit_ref_cnf_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.explicit_ref_links_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.explicit_ref_links_tb CASCADE;
-CREATE TABLE gsdm.explicit_ref_links_tb(
+-- object: gsdm.explicit_ref_link_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.explicit_ref_link_tb CASCADE;
+CREATE TABLE gsdm.explicit_ref_link_tb(
 	explicit_ref_id_link integer NOT NULL,
 	name text NOT NULL,
 	explicit_ref_id integer NOT NULL,
@@ -299,7 +299,7 @@ CREATE TABLE gsdm.explicit_ref_links_tb(
 
 );
 -- ddl-end --
-ALTER TABLE gsdm.explicit_ref_links_tb OWNER TO gsdm;
+ALTER TABLE gsdm.explicit_ref_link_tb OWNER TO gsdm;
 -- ddl-end --
 
 -- object: gsdm.dim_processing_status_tb | type: TABLE --
@@ -335,9 +335,9 @@ REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: gsdm.annot_boolean_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_boolean_tb CASCADE;
-CREATE TABLE gsdm.annot_boolean_tb(
+-- object: gsdm.annotation_boolean_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_boolean_tb CASCADE;
+CREATE TABLE gsdm.annotation_boolean_tb(
 	name text NOT NULL,
 	value boolean NOT NULL,
 	level_position integer NOT NULL,
@@ -347,12 +347,12 @@ CREATE TABLE gsdm.annot_boolean_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_boolean_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_boolean_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: gsdm.annot_timestamp_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.annot_timestamp_tb CASCADE;
-CREATE TABLE gsdm.annot_timestamp_tb(
+-- object: gsdm.annotation_timestamp_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.annotation_timestamp_tb CASCADE;
+CREATE TABLE gsdm.annotation_timestamp_tb(
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	level_position integer NOT NULL,
@@ -362,20 +362,20 @@ CREATE TABLE gsdm.annot_timestamp_tb(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.annot_timestamp_tb OWNER TO gsdm;
+ALTER TABLE gsdm.annotation_timestamp_tb OWNER TO gsdm;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_timestamp_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_timestamp_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_timestamp_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_timestamp_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_boolean_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_boolean_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_boolean_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_boolean_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -387,8 +387,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: explicit_ref_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
+-- ALTER TABLE gsdm.annotation_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
 REFERENCES gsdm.explicit_ref_tb (explicit_ref_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -407,9 +407,9 @@ REFERENCES gsdm.dim_processing_tb (processing_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: gsdm.event_keys_tb | type: TABLE --
--- DROP TABLE IF EXISTS gsdm.event_keys_tb CASCADE;
-CREATE TABLE gsdm.event_keys_tb(
+-- object: gsdm.event_key_tb | type: TABLE --
+-- DROP TABLE IF EXISTS gsdm.event_key_tb CASCADE;
+CREATE TABLE gsdm.event_key_tb(
 	event_key text NOT NULL,
 	generation_time timestamp NOT NULL,
 	visible boolean NOT NULL,
@@ -417,7 +417,7 @@ CREATE TABLE gsdm.event_keys_tb(
 	dim_signature_id integer NOT NULL
 );
 -- ddl-end --
-ALTER TABLE gsdm.event_keys_tb OWNER TO gsdm;
+ALTER TABLE gsdm.event_key_tb OWNER TO gsdm;
 -- ddl-end --
 
 -- object: gsdm.event_timestamp_tb | type: TABLE --
@@ -470,31 +470,31 @@ REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_text_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_text_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_text_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_text_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_object_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_object_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_object_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_object_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_double_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_double_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_double_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_double_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_geometry_tb DROP CONSTRAINT IF EXISTS annot_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_geometry_tb ADD CONSTRAINT annot_tb_fk FOREIGN KEY (annotation_uuid)
-REFERENCES gsdm.annot_tb (annotation_uuid) MATCH FULL
+-- object: annotation_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_geometry_tb DROP CONSTRAINT IF EXISTS annotation_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_geometry_tb ADD CONSTRAINT annotation_tb_fk FOREIGN KEY (annotation_uuid)
+REFERENCES gsdm.annotation_tb (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -506,22 +506,22 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_processing_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
+-- ALTER TABLE gsdm.annotation_tb DROP CONSTRAINT IF EXISTS dim_processing_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_tb ADD CONSTRAINT dim_processing_tb_fk FOREIGN KEY (processing_uuid)
 REFERENCES gsdm.dim_processing_tb (processing_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: annot_cnf_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_tb DROP CONSTRAINT IF EXISTS annot_cnf_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_tb ADD CONSTRAINT annot_cnf_tb_fk FOREIGN KEY (annotation_cnf_id)
-REFERENCES gsdm.annot_cnf_tb (annotation_cnf_id) MATCH FULL
+-- object: annotation_cnf_tb_fk | type: CONSTRAINT --
+-- ALTER TABLE gsdm.annotation_tb DROP CONSTRAINT IF EXISTS annotation_cnf_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_tb ADD CONSTRAINT annotation_cnf_tb_fk FOREIGN KEY (annotation_cnf_id)
+REFERENCES gsdm.annotation_cnf_tb (annotation_cnf_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_links_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE gsdm.event_links_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
+-- ALTER TABLE gsdm.event_link_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
+ALTER TABLE gsdm.event_link_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -541,8 +541,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: dim_signature_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.annot_cnf_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
-ALTER TABLE gsdm.annot_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
+-- ALTER TABLE gsdm.annotation_cnf_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
+ALTER TABLE gsdm.annotation_cnf_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES gsdm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -555,8 +555,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: explicit_ref_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.explicit_ref_links_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
-ALTER TABLE gsdm.explicit_ref_links_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
+-- ALTER TABLE gsdm.explicit_ref_link_tb DROP CONSTRAINT IF EXISTS explicit_ref_tb_fk CASCADE;
+ALTER TABLE gsdm.explicit_ref_link_tb ADD CONSTRAINT explicit_ref_tb_fk FOREIGN KEY (explicit_ref_id)
 REFERENCES gsdm.explicit_ref_tb (explicit_ref_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -786,153 +786,153 @@ CREATE INDEX idx_event_geometry_value ON gsdm.event_geometry_tb
 	);
 -- ddl-end --
 
--- object: idx_annot_boolean_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_boolean_annotation_uuid ON gsdm.annot_boolean_tb
+-- object: idx_annotation_boolean_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_boolean_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_boolean_annotation_uuid ON gsdm.annotation_boolean_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_boolean_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_value CASCADE;
-CREATE INDEX idx_annot_boolean_value ON gsdm.annot_boolean_tb
+-- object: idx_annotation_boolean_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_boolean_value CASCADE;
+CREATE INDEX idx_annotation_boolean_value ON gsdm.annotation_boolean_tb
 	USING btree
 	(
 	  value
 	);
 -- ddl-end --
 
--- object: idx_annot_boolean_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_boolean_name CASCADE;
-CREATE INDEX idx_annot_boolean_name ON gsdm.annot_boolean_tb
+-- object: idx_annotation_boolean_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_boolean_name CASCADE;
+CREATE INDEX idx_annotation_boolean_name ON gsdm.annotation_boolean_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_timestamp_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_timestamp_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_timestamp_annotation_uuid ON gsdm.annot_timestamp_tb
+-- object: idx_annotation_timestamp_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_timestamp_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_timestamp_annotation_uuid ON gsdm.annotation_timestamp_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_timestamp_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_timestamp_value CASCADE;
-CREATE INDEX idx_annot_timestamp_value ON gsdm.annot_timestamp_tb
+-- object: idx_annotation_timestamp_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_timestamp_value CASCADE;
+CREATE INDEX idx_annotation_timestamp_value ON gsdm.annotation_timestamp_tb
 	USING btree
 	(
 	  value
 	);
 -- ddl-end --
 
--- object: idx_annot_timestamp_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_timestamp_name CASCADE;
-CREATE INDEX idx_annot_timestamp_name ON gsdm.annot_timestamp_tb
+-- object: idx_annotation_timestamp_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_timestamp_name CASCADE;
+CREATE INDEX idx_annotation_timestamp_name ON gsdm.annotation_timestamp_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_text_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_text_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_text_annotation_uuid ON gsdm.annot_text_tb
+-- object: idx_annotation_text_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_text_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_text_annotation_uuid ON gsdm.annotation_text_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_text_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_text_value CASCADE;
-CREATE INDEX idx_annot_text_value ON gsdm.annot_text_tb
+-- object: idx_annotation_text_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_text_value CASCADE;
+CREATE INDEX idx_annotation_text_value ON gsdm.annotation_text_tb
 	USING btree
 	(
 	  value
 	);
 -- ddl-end --
 
--- object: idx_annot_text_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_text_name CASCADE;
-CREATE INDEX idx_annot_text_name ON gsdm.annot_text_tb
+-- object: idx_annotation_text_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_text_name CASCADE;
+CREATE INDEX idx_annotation_text_name ON gsdm.annotation_text_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_double_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_double_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_double_annotation_uuid ON gsdm.annot_double_tb
+-- object: idx_annotation_double_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_double_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_double_annotation_uuid ON gsdm.annotation_double_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_double_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_double_value CASCADE;
-CREATE INDEX idx_annot_double_value ON gsdm.annot_double_tb
+-- object: idx_annotation_double_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_double_value CASCADE;
+CREATE INDEX idx_annotation_double_value ON gsdm.annotation_double_tb
 	USING btree
 	(
 	  value
 	);
 -- ddl-end --
 
--- object: idx_annot_double_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_double_name CASCADE;
-CREATE INDEX idx_annot_double_name ON gsdm.annot_double_tb
+-- object: idx_annotation_double_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_double_name CASCADE;
+CREATE INDEX idx_annotation_double_name ON gsdm.annotation_double_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_object_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_object_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_object_annotation_uuid ON gsdm.annot_object_tb
+-- object: idx_annotation_object_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_object_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_object_annotation_uuid ON gsdm.annotation_object_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_object_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_object_name CASCADE;
-CREATE INDEX idx_annot_object_name ON gsdm.annot_object_tb
+-- object: idx_annotation_object_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_object_name CASCADE;
+CREATE INDEX idx_annotation_object_name ON gsdm.annotation_object_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_geometry_annotation_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_annotation_uuid CASCADE;
-CREATE INDEX idx_annot_geometry_annotation_uuid ON gsdm.annot_geometry_tb
+-- object: idx_annotation_geometry_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_geometry_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_geometry_annotation_uuid ON gsdm.annotation_geometry_tb
 	USING btree
 	(
 	  annotation_uuid
 	);
 -- ddl-end --
 
--- object: idx_annot_geometry_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_name CASCADE;
-CREATE INDEX idx_annot_geometry_name ON gsdm.annot_geometry_tb
+-- object: idx_annotation_geometry_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_geometry_name CASCADE;
+CREATE INDEX idx_annotation_geometry_name ON gsdm.annotation_geometry_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_geometry_value | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_geometry_value CASCADE;
-CREATE INDEX idx_annot_geometry_value ON gsdm.annot_geometry_tb
+-- object: idx_annotation_geometry_value | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_geometry_value CASCADE;
+CREATE INDEX idx_annotation_geometry_value ON gsdm.annotation_geometry_tb
 	USING gist
 	(
 	  value
@@ -968,7 +968,7 @@ CREATE INDEX idx_gauge_cnf_dim_signature_id ON gsdm.gauge_cnf_tb
 
 -- object: idx_event_links_name | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_links_name CASCADE;
-CREATE INDEX idx_event_links_name ON gsdm.event_links_tb
+CREATE INDEX idx_event_links_name ON gsdm.event_link_tb
 	USING btree
 	(
 	  name
@@ -977,7 +977,7 @@ CREATE INDEX idx_event_links_name ON gsdm.event_links_tb
 
 -- object: idx_event_links_event_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_links_event_uuid CASCADE;
-CREATE INDEX idx_event_links_event_uuid ON gsdm.event_links_tb
+CREATE INDEX idx_event_links_event_uuid ON gsdm.event_link_tb
 	USING btree
 	(
 	  event_uuid
@@ -1002,72 +1002,72 @@ CREATE INDEX idx_dim_signature_dim_exec_name ON gsdm.dim_signature_tb
 	);
 -- ddl-end --
 
--- object: idx_annot_cnf_name | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_cnf_name CASCADE;
-CREATE INDEX idx_annot_cnf_name ON gsdm.annot_cnf_tb
+-- object: idx_annotation_cnf_name | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_cnf_name CASCADE;
+CREATE INDEX idx_annotation_cnf_name ON gsdm.annotation_cnf_tb
 	USING btree
 	(
 	  name
 	);
 -- ddl-end --
 
--- object: idx_annot_cnf_system | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_cnf_system CASCADE;
-CREATE INDEX idx_annot_cnf_system ON gsdm.annot_cnf_tb
+-- object: idx_annotation_cnf_system | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_cnf_system CASCADE;
+CREATE INDEX idx_annotation_cnf_system ON gsdm.annotation_cnf_tb
 	USING btree
 	(
 	  system
 	);
 -- ddl-end --
 
--- object: idx_annot_cnf_dim_signature_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_cnf_dim_signature_id CASCADE;
-CREATE INDEX idx_annot_cnf_dim_signature_id ON gsdm.annot_cnf_tb
+-- object: idx_annotation_cnf_dim_signature_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_cnf_dim_signature_id CASCADE;
+CREATE INDEX idx_annotation_cnf_dim_signature_id ON gsdm.annotation_cnf_tb
 	USING btree
 	(
 	  dim_signature_id
 	);
 -- ddl-end --
 
--- object: idx_annot_ingestion_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_ingestion_time CASCADE;
-CREATE INDEX idx_annot_ingestion_time ON gsdm.annot_tb
+-- object: idx_annotation_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_ingestion_time CASCADE;
+CREATE INDEX idx_annotation_ingestion_time ON gsdm.annotation_tb
 	USING btree
 	(
 	  ingestion_time
 	);
 -- ddl-end --
 
--- object: idx_annot_generation_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_generation_time CASCADE;
-CREATE INDEX idx_annot_generation_time ON gsdm.annot_tb
+-- object: idx_annotation_generation_time | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_generation_time CASCADE;
+CREATE INDEX idx_annotation_generation_time ON gsdm.annotation_tb
 	USING btree
 	(
 	  generation_time
 	);
 -- ddl-end --
 
--- object: idx_annot_explicit_ref_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_explicit_ref_id CASCADE;
-CREATE INDEX idx_annot_explicit_ref_id ON gsdm.annot_tb
+-- object: idx_annotation_explicit_ref_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_explicit_ref_id CASCADE;
+CREATE INDEX idx_annotation_explicit_ref_id ON gsdm.annotation_tb
 	USING btree
 	(
 	  explicit_ref_id
 	);
 -- ddl-end --
 
--- object: idx_annot_visible | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_visible CASCADE;
-CREATE INDEX idx_annot_visible ON gsdm.annot_tb
+-- object: idx_annotation_visible | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_visible CASCADE;
+CREATE INDEX idx_annotation_visible ON gsdm.annotation_tb
 	USING btree
 	(
 	  visible
 	);
 -- ddl-end --
 
--- object: idx_annot_processing_uuid | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_processing_uuid CASCADE;
-CREATE INDEX idx_annot_processing_uuid ON gsdm.annot_tb
+-- object: idx_annotation_processing_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_processing_uuid CASCADE;
+CREATE INDEX idx_annotation_processing_uuid ON gsdm.annotation_tb
 	USING btree
 	(
 	  processing_uuid
@@ -1076,7 +1076,7 @@ CREATE INDEX idx_annot_processing_uuid ON gsdm.annot_tb
 
 -- object: idx_explicit_ref_links_name | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_explicit_ref_links_name CASCADE;
-CREATE INDEX idx_explicit_ref_links_name ON gsdm.explicit_ref_links_tb
+CREATE INDEX idx_explicit_ref_links_name ON gsdm.explicit_ref_link_tb
 	USING btree
 	(
 	  name
@@ -1085,7 +1085,7 @@ CREATE INDEX idx_explicit_ref_links_name ON gsdm.explicit_ref_links_tb
 
 -- object: idx_explicit_ref_links_explicit_ref_id | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_explicit_ref_links_explicit_ref_id CASCADE;
-CREATE INDEX idx_explicit_ref_links_explicit_ref_id ON gsdm.explicit_ref_links_tb
+CREATE INDEX idx_explicit_ref_links_explicit_ref_id ON gsdm.explicit_ref_link_tb
 	USING btree
 	(
 	  explicit_ref_id
@@ -1229,7 +1229,7 @@ CREATE INDEX idx_dim_processing_status_processing_uuid ON gsdm.dim_processing_st
 
 -- object: idx_event_keys_event_key | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_keys_event_key CASCADE;
-CREATE INDEX idx_event_keys_event_key ON gsdm.event_keys_tb
+CREATE INDEX idx_event_keys_event_key ON gsdm.event_key_tb
 	USING btree
 	(
 	  event_key
@@ -1242,27 +1242,27 @@ ALTER TABLE gsdm.dim_processing_tb ADD CONSTRAINT unique_dim_processing UNIQUE (
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_keys_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
-ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
+-- ALTER TABLE gsdm.event_key_tb DROP CONSTRAINT IF EXISTS event_tb_fk CASCADE;
+ALTER TABLE gsdm.event_key_tb ADD CONSTRAINT event_tb_fk FOREIGN KEY (event_uuid)
 REFERENCES gsdm.event_tb (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: unique_event_keys | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_keys_tb DROP CONSTRAINT IF EXISTS unique_event_keys CASCADE;
-ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT unique_event_keys UNIQUE (event_key,event_uuid);
+-- ALTER TABLE gsdm.event_key_tb DROP CONSTRAINT IF EXISTS unique_event_keys CASCADE;
+ALTER TABLE gsdm.event_key_tb ADD CONSTRAINT unique_event_keys UNIQUE (event_key,event_uuid);
 -- ddl-end --
 
 -- object: dim_signature_tb_fk | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_keys_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
-ALTER TABLE gsdm.event_keys_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
+-- ALTER TABLE gsdm.event_key_tb DROP CONSTRAINT IF EXISTS dim_signature_tb_fk CASCADE;
+ALTER TABLE gsdm.event_key_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES gsdm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: idx_event_keys_generation_time | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_keys_generation_time CASCADE;
-CREATE INDEX idx_event_keys_generation_time ON gsdm.event_keys_tb
+CREATE INDEX idx_event_keys_generation_time ON gsdm.event_key_tb
 	USING btree
 	(
 	  generation_time
@@ -1271,7 +1271,7 @@ CREATE INDEX idx_event_keys_generation_time ON gsdm.event_keys_tb
 
 -- object: idx_event_keys_visible | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_keys_visible CASCADE;
-CREATE INDEX idx_event_keys_visible ON gsdm.event_keys_tb
+CREATE INDEX idx_event_keys_visible ON gsdm.event_key_tb
 	USING btree
 	(
 	  visible
@@ -1280,7 +1280,7 @@ CREATE INDEX idx_event_keys_visible ON gsdm.event_keys_tb
 
 -- object: idx_event_keys_event_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_keys_event_uuid CASCADE;
-CREATE INDEX idx_event_keys_event_uuid ON gsdm.event_keys_tb
+CREATE INDEX idx_event_keys_event_uuid ON gsdm.event_key_tb
 	USING btree
 	(
 	  event_uuid
@@ -1289,7 +1289,7 @@ CREATE INDEX idx_event_keys_event_uuid ON gsdm.event_keys_tb
 
 -- object: idx_event_keys_dim_signature_id | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_event_keys_dim_signature_id CASCADE;
-CREATE INDEX idx_event_keys_dim_signature_id ON gsdm.event_keys_tb
+CREATE INDEX idx_event_keys_dim_signature_id ON gsdm.event_key_tb
 	USING btree
 	(
 	  dim_signature_id
@@ -1305,9 +1305,9 @@ CREATE INDEX idx_events_processing_uuid ON gsdm.event_tb
 	);
 -- ddl-end --
 
--- object: idx_annot_annotation_cnf_id | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annot_annotation_cnf_id CASCADE;
-CREATE INDEX idx_annot_annotation_cnf_id ON gsdm.annot_tb
+-- object: idx_annotation_annotation_cnf_id | type: INDEX --
+-- DROP INDEX IF EXISTS gsdm.idx_annotation_annotation_cnf_id CASCADE;
+CREATE INDEX idx_annotation_annotation_cnf_id ON gsdm.annotation_tb
 	USING btree
 	(
 	  annotation_cnf_id
@@ -1315,13 +1315,13 @@ CREATE INDEX idx_annot_annotation_cnf_id ON gsdm.annot_tb
 -- ddl-end --
 
 -- object: unique_event_links | type: CONSTRAINT --
--- ALTER TABLE gsdm.event_links_tb DROP CONSTRAINT IF EXISTS unique_event_links CASCADE;
-ALTER TABLE gsdm.event_links_tb ADD CONSTRAINT unique_event_links UNIQUE (event_uuid_link,name,event_uuid);
+-- ALTER TABLE gsdm.event_link_tb DROP CONSTRAINT IF EXISTS unique_event_links CASCADE;
+ALTER TABLE gsdm.event_link_tb ADD CONSTRAINT unique_event_links UNIQUE (event_uuid_link,name,event_uuid);
 -- ddl-end --
 
 -- object: unique_explicit_ref_links | type: CONSTRAINT --
--- ALTER TABLE gsdm.explicit_ref_links_tb DROP CONSTRAINT IF EXISTS unique_explicit_ref_links CASCADE;
-ALTER TABLE gsdm.explicit_ref_links_tb ADD CONSTRAINT unique_explicit_ref_links UNIQUE (explicit_ref_id_link,name,explicit_ref_id);
+-- ALTER TABLE gsdm.explicit_ref_link_tb DROP CONSTRAINT IF EXISTS unique_explicit_ref_links CASCADE;
+ALTER TABLE gsdm.explicit_ref_link_tb ADD CONSTRAINT unique_explicit_ref_links UNIQUE (explicit_ref_id_link,name,explicit_ref_id);
 -- ddl-end --
 
 

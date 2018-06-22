@@ -307,7 +307,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<table name="annot_tb">
+<table name="annotation_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1420" y="1060"/>
@@ -323,10 +323,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="visible" not-null="true">
 		<type name="boolean" length="0"/>
 	</column>
-	<constraint name="annot_tb_pk" type="pk-constr" table="gsdm.annot_tb">
+	<constraint name="annotation_tb_pk" type="pk-constr" table="gsdm.annotation_tb">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_annotation" type="uq-constr" table="gsdm.annot_tb">
+	<constraint name="unique_annotation" type="uq-constr" table="gsdm.annotation_tb">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
 
@@ -337,13 +337,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_cnf_tb_fk" index="2"/>
+		<object name="annotation_cnf_tb_fk" index="2"/>
 		<object name="dim_processing_tb_fk" index="1"/>
 		<object name="explicit_ref_tb_fk" index="3"/>
 	</customidxs>
 </table>
 
-<table name="annot_text_tb">
+<table name="annotation_text_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="840"/>
@@ -371,11 +371,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_tb_fk" index="0"/>
+		<object name="annotation_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
-<table name="annot_double_tb">
+<table name="annotation_double_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="980"/>
@@ -403,11 +403,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_tb_fk" index="0"/>
+		<object name="annotation_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
-<table name="annot_object_tb">
+<table name="annotation_object_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="1260"/>
@@ -432,11 +432,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_tb_fk" index="0"/>
+		<object name="annotation_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
-<table name="annot_geometry_tb">
+<table name="annotation_geometry_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="1400"/>
@@ -464,11 +464,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_tb_fk" index="0"/>
+		<object name="annotation_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
-<table name="annot_cnf_tb">
+<table name="annotation_cnf_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1420" y="960"/>
@@ -481,10 +481,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="system">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="annot_cnf_tb_pk" type="pk-constr" table="gsdm.annot_cnf_tb">
+	<constraint name="annotation_cnf_tb_pk" type="pk-constr" table="gsdm.annotation_cnf_tb">
 		<columns names="annotation_cnf_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_annotation_cnf" type="uq-constr" table="gsdm.annot_cnf_tb">
+	<constraint name="unique_annotation_cnf" type="uq-constr" table="gsdm.annotation_cnf_tb">
 		<columns names="name,system" ref-type="src-columns"/>
 	</constraint>
 
@@ -497,7 +497,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<table name="event_links_tb">
+<table name="event_link_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1040" y="960"/>
@@ -535,7 +535,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="explicit_ref_links_tb">
+<table name="explicit_ref_link_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1420" y="1200"/>
@@ -545,7 +545,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_links_tb_pk" type="pk-constr" table="gsdm.explicit_ref_links_tb">
+	<constraint name="explicit_ref_links_tb_pk" type="pk-constr" table="gsdm.explicit_ref_link_tb">
 		<columns names="explicit_ref_id_link" ref-type="src-columns"/>
 	</constraint>
 
@@ -620,7 +620,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<table name="annot_boolean_tb">
+<table name="annotation_boolean_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="700"/>
@@ -648,11 +648,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="annot_tb_fk" index="0"/>
+		<object name="annotation_tb_fk" index="0"/>
 	</customidxs>
 </table>
 
-<table name="annot_timestamp_tb">
+<table name="annotation_timestamp_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1780" y="1120"/>
@@ -676,23 +676,23 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<relationship name="annot_tb_has_many_annot_timestamp_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_timestamp_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#b6e88e"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_timestamp_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_timestamp_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annot_tb_has_many_annot_boolean_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_boolean_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#08b8c3"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_boolean_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_boolean_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -706,13 +706,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_ref_tb_has_many_annot_tb" type="rel1n"
+<relationship name="explicit_ref_tb_has_many_annotation_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#2cc8ae"
 	 src-table="gsdm.explicit_ref_tb"
-	 dst-table="gsdm.annot_tb"
+	 dst-table="gsdm.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -744,7 +744,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="event_keys_tb">
+<table name="event_key_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
 	<position x="1040" y="740"/>
@@ -855,33 +855,33 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annot_tb_has_many_annot_string_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_string_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#860d13"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_text_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_text_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annot_tb_has_many_annot_object_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_object_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#a9c016"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_object_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_object_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annot_tb_has_many_annot_double_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_double_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#9373f2"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_double_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_double_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="name-label">
@@ -889,13 +889,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="annot_tb_has_many_annot_geometry_tb" type="rel1n"
+<relationship name="annotation_tb_has_many_annotation_geometry_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#543aed"
-	 src-table="gsdm.annot_tb"
-	 dst-table="gsdm.annot_geometry_tb"
+	 src-table="gsdm.annotation_tb"
+	 dst-table="gsdm.annotation_geometry_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -913,13 +913,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="dim_processing_tb_has_many_annot_tb" type="rel1n"
+<relationship name="dim_processing_tb_has_many_annotation_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#8086b1"
 	 src-table="gsdm.dim_processing_tb"
-	 dst-table="gsdm.annot_tb"
+	 dst-table="gsdm.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
@@ -927,13 +927,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="annot_cnf_tb_has_many_annot_tb" type="rel1n"
+<relationship name="annotation_cnf_tb_has_many_annotation_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#85b7e8"
-	 src-table="gsdm.annot_cnf_tb"
-	 dst-table="gsdm.annot_tb"
+	 src-table="gsdm.annotation_cnf_tb"
+	 dst-table="gsdm.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -943,7 +943,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#7a8e98"
 	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_links_tb"
+	 dst-table="gsdm.event_link_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -971,13 +971,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="dim_signature_tb_has_many_annot_cnf_tb" type="rel1n"
+<relationship name="dim_signature_tb_has_many_annotation_cnf_tb" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#a32138"
 	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.annot_cnf_tb"
+	 dst-table="gsdm.annotation_cnf_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -997,7 +997,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#7b71e0"
 	 src-table="gsdm.explicit_ref_tb"
-	 dst-table="gsdm.explicit_ref_links_tb"
+	 dst-table="gsdm.explicit_ref_link_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
@@ -1205,7 +1205,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_boolean_annotation_uuid" table="gsdm.annot_boolean_tb"
+<index name="idx_annotation_boolean_annotation_uuid" table="gsdm.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1213,7 +1213,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_boolean_value" table="gsdm.annot_boolean_tb"
+<index name="idx_annotation_boolean_value" table="gsdm.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1221,7 +1221,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_boolean_name" table="gsdm.annot_boolean_tb"
+<index name="idx_annotation_boolean_name" table="gsdm.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1229,7 +1229,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_timestamp_annotation_uuid" table="gsdm.annot_timestamp_tb"
+<index name="idx_annotation_timestamp_annotation_uuid" table="gsdm.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1237,7 +1237,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_timestamp_value" table="gsdm.annot_timestamp_tb"
+<index name="idx_annotation_timestamp_value" table="gsdm.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1245,7 +1245,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_timestamp_name" table="gsdm.annot_timestamp_tb"
+<index name="idx_annotation_timestamp_name" table="gsdm.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1253,7 +1253,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_text_annotation_uuid" table="gsdm.annot_text_tb"
+<index name="idx_annotation_text_annotation_uuid" table="gsdm.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1261,7 +1261,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_text_value" table="gsdm.annot_text_tb"
+<index name="idx_annotation_text_value" table="gsdm.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1269,7 +1269,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_text_name" table="gsdm.annot_text_tb"
+<index name="idx_annotation_text_name" table="gsdm.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1277,7 +1277,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_double_annotation_uuid" table="gsdm.annot_double_tb"
+<index name="idx_annotation_double_annotation_uuid" table="gsdm.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1285,7 +1285,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_double_value" table="gsdm.annot_double_tb"
+<index name="idx_annotation_double_value" table="gsdm.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1293,7 +1293,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_double_name" table="gsdm.annot_double_tb"
+<index name="idx_annotation_double_name" table="gsdm.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1301,7 +1301,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_object_annotation_uuid" table="gsdm.annot_object_tb"
+<index name="idx_annotation_object_annotation_uuid" table="gsdm.annotation_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1309,7 +1309,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_object_name" table="gsdm.annot_object_tb"
+<index name="idx_annotation_object_name" table="gsdm.annotation_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1317,7 +1317,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_geometry_annotation_uuid" table="gsdm.annot_geometry_tb"
+<index name="idx_annotation_geometry_annotation_uuid" table="gsdm.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1325,7 +1325,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_geometry_name" table="gsdm.annot_geometry_tb"
+<index name="idx_annotation_geometry_name" table="gsdm.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1333,7 +1333,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_geometry_value" table="gsdm.annot_geometry_tb"
+<index name="idx_annotation_geometry_value" table="gsdm.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="gist" factor="0">
 		<idxelement use-sorting="false">
@@ -1365,7 +1365,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_links_name" table="gsdm.event_links_tb"
+<index name="idx_event_links_name" table="gsdm.event_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1373,7 +1373,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_links_event_uuid" table="gsdm.event_links_tb"
+<index name="idx_event_links_event_uuid" table="gsdm.event_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1397,7 +1397,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_cnf_name" table="gsdm.annot_cnf_tb"
+<index name="idx_annotation_cnf_name" table="gsdm.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1405,7 +1405,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_cnf_system" table="gsdm.annot_cnf_tb"
+<index name="idx_annotation_cnf_system" table="gsdm.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1413,7 +1413,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_cnf_dim_signature_id" table="gsdm.annot_cnf_tb"
+<index name="idx_annotation_cnf_dim_signature_id" table="gsdm.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1421,7 +1421,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_ingestion_time" table="gsdm.annot_tb"
+<index name="idx_annotation_ingestion_time" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1429,7 +1429,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_generation_time" table="gsdm.annot_tb"
+<index name="idx_annotation_generation_time" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1437,7 +1437,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_explicit_ref_id" table="gsdm.annot_tb"
+<index name="idx_annotation_explicit_ref_id" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1445,7 +1445,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_visible" table="gsdm.annot_tb"
+<index name="idx_annotation_visible" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1453,7 +1453,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_processing_uuid" table="gsdm.annot_tb"
+<index name="idx_annotation_processing_uuid" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1461,7 +1461,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_links_name" table="gsdm.explicit_ref_links_tb"
+<index name="idx_explicit_ref_links_name" table="gsdm.explicit_ref_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1469,7 +1469,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_links_explicit_ref_id" table="gsdm.explicit_ref_links_tb"
+<index name="idx_explicit_ref_links_explicit_ref_id" table="gsdm.explicit_ref_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1597,7 +1597,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_event_key" table="gsdm.event_keys_tb"
+<index name="idx_event_keys_event_key" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1615,11 +1615,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#435b67"
 	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_keys_tb"
+	 dst-table="gsdm.event_key_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_keys_tb">
+<constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_key_tb">
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
 </constraint>
 
@@ -1629,11 +1629,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#bc867e"
 	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.event_keys_tb"
+	 dst-table="gsdm.event_key_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<index name="idx_event_keys_generation_time" table="gsdm.event_keys_tb"
+<index name="idx_event_keys_generation_time" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1641,7 +1641,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_visible" table="gsdm.event_keys_tb"
+<index name="idx_event_keys_visible" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1649,7 +1649,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_event_uuid" table="gsdm.event_keys_tb"
+<index name="idx_event_keys_event_uuid" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1657,7 +1657,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_dim_signature_id" table="gsdm.event_keys_tb"
+<index name="idx_event_keys_dim_signature_id" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1673,7 +1673,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annot_annotation_cnf_id" table="gsdm.annot_tb"
+<index name="idx_annotation_annotation_cnf_id" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1681,11 +1681,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<constraint name="unique_event_links" type="uq-constr" table="gsdm.event_links_tb">
+<constraint name="unique_event_links" type="uq-constr" table="gsdm.event_link_tb">
 	<columns names="event_uuid_link,name,event_uuid" ref-type="src-columns"/>
 </constraint>
 
-<constraint name="unique_explicit_ref_links" type="uq-constr" table="gsdm.explicit_ref_links_tb">
+<constraint name="unique_explicit_ref_links" type="uq-constr" table="gsdm.explicit_ref_link_tb">
 	<columns names="explicit_ref_id_link,name,explicit_ref_id" ref-type="src-columns"/>
 </constraint>
 
