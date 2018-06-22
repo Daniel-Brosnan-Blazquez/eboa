@@ -36,7 +36,7 @@ class ExplicitRefGrp(Base):
         self.name = name
 
 class ExplicitRefLink(Base):
-    __tablename__ = 'explicit_ref_links_tb'
+    __tablename__ = 'explicit_ref_link_tb'
 
     explicit_ref_id_link = Column(Integer, primary_key=True)
     name = Column(Text)

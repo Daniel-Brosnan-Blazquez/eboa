@@ -41,7 +41,7 @@ class Event(Base):
         self.source = dim_processing
 
 class EventLink(Base):
-    __tablename__ = 'event_links_tb'
+    __tablename__ = 'event_link_tb'
 
     event_uuid_link = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     name = Column(Text)
@@ -54,7 +54,7 @@ class EventLink(Base):
         self.event = event
 
 class EventKey(Base):
-    __tablename__ = 'event_keys_tb'
+    __tablename__ = 'event_key_tb'
 
     event_key = Column(Text, primary_key=True)
     generation_time = Column(DateTime)
