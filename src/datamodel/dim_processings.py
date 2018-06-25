@@ -16,7 +16,7 @@ class DimProcessing(Base):
     __tablename__ = 'dim_processing_tb'
 
     processing_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
-    filename = Column(Text)
+    name = Column(Text)
     validity_start = Column(DateTime)
     validity_stop = Column(DateTime)
     generation_time = Column(DateTime)
@@ -26,9 +26,9 @@ class DimProcessing(Base):
     dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
     dimSignature = relationship("DimSignature", backref="dimProcessings")
 
-    def __init__(self, processing_uuid, filename, generation_time, exec_version, dim_signature, validity_start = None, validity_stop = None, ingestion_time = None):
+    def __init__(self, processing_uuid, name, generation_time, exec_version, dim_signature, validity_start = None, validity_stop = None, ingestion_time = None):
         self.processing_uuid = processing_uuid
-        self.filename = filename
+        self.name = name
         self.validity_start = validity_start
         self.validity_stop = validity_stop
         self.generation_time = generation_time

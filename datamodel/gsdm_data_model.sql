@@ -70,7 +70,7 @@ ALTER TABLE gsdm.gauge_cnf_tb OWNER TO gsdm;
 -- DROP TABLE IF EXISTS gsdm.dim_processing_tb CASCADE;
 CREATE TABLE gsdm.dim_processing_tb(
 	processing_uuid uuid NOT NULL,
-	filename text NOT NULL,
+	name text NOT NULL,
 	validity_start timestamp,
 	validity_stop timestamp,
 	generation_time timestamp NOT NULL,
@@ -1133,7 +1133,7 @@ CREATE INDEX idx_explicit_ref_cnf_name ON gsdm.explicit_ref_cnf_tb
 CREATE INDEX idx_processing_filename ON gsdm.dim_processing_tb
 	USING btree
 	(
-	  filename
+	  name
 	);
 -- ddl-end --
 
@@ -1238,7 +1238,7 @@ CREATE INDEX idx_event_keys_event_key ON gsdm.event_key_tb
 
 -- object: unique_dim_processing | type: CONSTRAINT --
 -- ALTER TABLE gsdm.dim_processing_tb DROP CONSTRAINT IF EXISTS unique_dim_processing CASCADE;
-ALTER TABLE gsdm.dim_processing_tb ADD CONSTRAINT unique_dim_processing UNIQUE (filename,dim_signature_id,dim_exec_version);
+ALTER TABLE gsdm.dim_processing_tb ADD CONSTRAINT unique_dim_processing UNIQUE (name,dim_signature_id,dim_exec_version);
 -- ddl-end --
 
 -- object: event_tb_fk | type: CONSTRAINT --

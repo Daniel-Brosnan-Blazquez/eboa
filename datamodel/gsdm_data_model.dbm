@@ -98,7 +98,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="processing_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
-	<column name="filename" not-null="true">
+	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
 	<column name="validity_start">
@@ -1513,7 +1513,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
-			<column name="filename"/>
+			<column name="name"/>
 		</idxelement>
 </index>
 
@@ -1606,7 +1606,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </index>
 
 <constraint name="unique_dim_processing" type="uq-constr" table="gsdm.dim_processing_tb">
-	<columns names="filename,dim_signature_id,dim_exec_version" ref-type="src-columns"/>
+	<columns names="name,dim_signature_id,dim_exec_version" ref-type="src-columns"/>
 </constraint>
 
 <relationship name="event_tb_has_many_event_keys_tb" type="rel1n"
