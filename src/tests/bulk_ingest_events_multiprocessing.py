@@ -31,7 +31,7 @@ def createEvents (nEvents):
     session = Session ()
     explicitRef = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == 'TEST').all()[0]
     gauge = session.query(Gauge).filter(Gauge.name == 'TEST').all()[0]
-    dimProcessing = session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()[0]
+    dimProcessing = session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all()[0]
 
     listEvents = []
     for i in range(nEvents):
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     session.add (dimProcessing1)
     session.commit()
     
-    if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+    if len (session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all()) != 1:
         raise Exception("The DIM processing was not committed")
 
     ################

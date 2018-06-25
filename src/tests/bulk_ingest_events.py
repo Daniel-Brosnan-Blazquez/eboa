@@ -72,7 +72,7 @@ if __name__ == '__main__':
     session.add (dimProcessing1)
     session.commit()
     
-    if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+    if len (session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all()) != 1:
         raise Exception("The DIM processing was not committed")
 
     ################
