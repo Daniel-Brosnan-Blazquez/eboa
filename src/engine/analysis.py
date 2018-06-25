@@ -17,7 +17,7 @@ class Analysis():
     workbook = Workbook()
     engine = Engine()
 
-    def generate_workbook_from_ddbb(self, filename):
+    def generate_workbook_from_ddbb(self, name):
         """
         """
         # Remove the sheet created by default
@@ -49,7 +49,7 @@ class Analysis():
         self._insert_annotation_geometries()
 
         # Save the workbook into the file specified
-        self.workbook.save(filename)
+        self.workbook.save(name)
 
         return
 
@@ -96,10 +96,10 @@ class Analysis():
         
         # Get data
         sources = self.engine.get_sources()
-        data = [[str(i.processing_uuid),i.filename,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,i.dim_signature_id] for i in sources]
+        data = [[str(i.processing_uuid),i.name,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,i.dim_signature_id] for i in sources]
         
         # Insert headings into the worksheet
-        ws.append(["processing_uuid", "filename", "validity_start", "validity_stop", "generation_time", "ingestion_time", "ingestion_duration", "dim_exec_version", "dim_signature_id"])
+        ws.append(["processing_uuid", "name", "validity_start", "validity_stop", "generation_time", "ingestion_time", "ingestion_duration", "dim_exec_version", "dim_signature_id"])
 
         # Insert data into the worksheet
         for row in data:
