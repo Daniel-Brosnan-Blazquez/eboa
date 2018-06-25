@@ -23,6 +23,7 @@ from sqlalchemy.sql import func
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
+from geoalchemy2.shape import to_shape
 
 # Import exceptions
 from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates
@@ -90,29 +91,274 @@ class Engine():
     
         return
 
-    def get_dim_signatures(self):
-        """
-        """
-        
-        return self.session.query(DimSignature).all()
+    #################
+    # QUERY METHODS #
+    #################
 
-    def get_sources(self):
+    def get_source(self, name):
         """
         """
-        
-        return self.session.query(DimProcessing).all()
+        # Get start of the query
+        start_query = datetime.datetime.now()
 
-    def get_sources_statuses(self):
-        """
-        """
-        
-        return self.session.query(DimProcessingStatus).all()
+        # Generate metadata of the query
+        data = {}
+        data["mode"] = "query"
+        data["request"] = {"name": "get_source",
+                           "parameters": {"name": name}
+                       }
+                
+        # Get the dim_processing from the DDBB
+        dim_processing = self.get_sources([name])
 
-    def get_events(self):
+        if len(dim_processing) == 0:
+            ### Log that the name provided does not exist into DDBB
+            print("There is no dim_processing into the DDBB with name {}".format(name))
+            return -1
+        # end if
+
+        data["source"] = {"processing_uuid": dim_processing[0].processing_uuid,
+                          "name": dim_processing[0].name,
+                          "generation_time": dim_processing[0].generation_time,
+                          "validity_start": dim_processing[0].validity_start,
+                          "validity_stop": dim_processing[0].validity_stop,
+                          "ingestion_time": dim_processing[0].ingestion_time,
+                          "ingestion_duration": dim_processing[0].ingestion_duration.total_seconds()
+                      }
+
+        exec_version = dim_processing[0].dim_exec_version
+
+        # Get the status of the source from the DDBB
+        dim_processing_status = self.get_sources_statuses([dim_processing[0].processing_uuid])
+
+        # Get the dim_signature from the DDBB
+        dim_signature = self.get_dim_signatures([dim_processing[0].dim_signature_id])
+
+        data["dim_signature"] = {"name": dim_signature[0].dim_signature,
+                                 "version": exec_version,
+                                 "exec": dim_signature[0].dim_exec_name
+                      }
+
+        # Get the events from the DDBB
+        events = self.get_events([dim_processing[0].processing_uuid])
+
+        if len(events) > 0:
+            data["events"] = []
+            for event in events:
+                event_info = {"event_uuid": event.event_uuid,
+                              "start": event.start,
+                              "stop": event.stop,
+                              "generation_time": event.generation_time,
+                              "ingestion_time": event.ingestion_time
+                          }
+                values = self.get_event_values([event.event_uuid])
+                if len (values) > 0:
+                    event_info["values"] = []
+                    self._build_values_structure(values, event_info["values"])
+                # end if
+                data["events"].append(event_info)
+            # end for
+        # en if
+
+        # Get the annotations from the DDBB
+        annotations = self.get_annotations([dim_processing[0].processing_uuid])
+        if len(annotations) > 0:
+            data["annotations"] = []
+            for annotation in annotations:
+                annotation_info = {"annotation_uuid": annotation.annotation_uuid,
+                              "generation_time": annotation.generation_time,
+                              "ingestion_time": annotation.ingestion_time,
+                              "visible": annotation.visible
+                          }
+                values = self.get_annotation_values([annotation.annotation_uuid])
+                if len (values) > 0:
+                    annotation_info["values"] = []
+                    self._build_values_structure(values, annotation_info["values"])
+                # end if
+                data["annotations"].append(annotation_info)
+            # end for
+        # en if
+
+        # Annotate the stop of the query
+        stop_query = datetime.datetime.now()
+
+        data["request"]["duration"] = (stop_query - start_query).total_seconds()
+
+        return data
+
+    def get_source_xml(self, name, output):
         """
         """
-        
-        return self.session.query(Event).all()
+        # Get the data from DDBB
+        data = self.get_source(name)
+
+        # Get start of the query
+        start_parsing = datetime.datetime.now()
+
+        gsd = etree.Element("gsd")
+
+        operation = etree.SubElement(gsd, "operation", mode=data["mode"])
+
+        # Include the request
+        request = etree.SubElement(operation, "request", name="get_source_xml", duration=str(data["request"]["duration"]))
+        if "parameters" in data["request"]:
+            parameters = etree.SubElement(request, "parameters")
+            for parameter in data["request"]["parameters"]:
+                tag = etree.SubElement(parameters, parameter)
+                tag.text = data["request"]["parameters"][parameter]
+            # end for
+        # end if
+
+        # Include the DIM signature
+        etree.SubElement(operation, "dim_signature", name=data["dim_signature"]["name"], 
+                         version=data["dim_signature"]["version"], 
+                         exec=data["dim_signature"]["exec"])
+        # Include the DIM processing
+        etree.SubElement(operation, "source", name=data["source"]["name"], 
+                         generation_time=str(data["source"]["generation_time"]), 
+                         validity_start=str(data["source"]["validity_start"]), 
+                         validity_stop=str(data["source"]["validity_stop"]), 
+                         ingestion_time=str(data["source"]["ingestion_time"]), 
+                         ingestion_duration=str(data["source"]["ingestion_duration"]))
+
+        data_xml = etree.SubElement(operation, "dim_signature")
+
+        # Include events
+        for event in data["events"]:
+            event_xml = etree.SubElement(data_xml, "event", id=str(event["event_uuid"]), start=str(event["start"]),
+                             stop=str(event["stop"]), generation_time=str(event["generation_time"]),
+                             ingestion_time=str(event["ingestion_time"]))
+            if "values" in event:
+                self._transform_value_to_xml(event["values"][0], event_xml)
+        # end for
+
+        # Include annotations
+        for annotation in data["annotations"]:
+            annotation_xml = etree.SubElement(data_xml, "annotation",
+                                              id=str(annotation["annotation_uuid"]),
+                                              generation_time=str(annotation["generation_time"]),
+                                              ingestion_time=str(annotation["ingestion_time"]))
+            if "values" in annotation:
+                self._transform_value_to_xml(annotation["values"][0], annotation_xml)
+        # end for
+
+        # Annotate the duration of the parsing
+        parsing_duration = (datetime.datetime.now() - start_parsing).total_seconds()
+        request.set("parsing_duration", str(parsing_duration))
+
+        etree.ElementTree(gsd).write(output, pretty_print=True)
+        return
+
+    def _transform_value_to_xml(self, values, node):
+        """
+        """
+        values_xml = etree.SubElement(node, "values", name=values["name"])
+
+        for item in values["values"]:
+            if item["type"] == "object":
+                self._transform_value_to_xml(item, values_xml)
+            else:
+                value = etree.SubElement(values_xml, "value", name=item["name"],
+                                 type=item["type"])
+                if item["type"] == "geometry":
+                    value.text = to_shape(item["value"]).to_wkt().replace("POLYGON ((", "").replace("))", "").replace(",", "")
+                else:
+                    value.text = str(item["value"])
+                # end if
+            # end if
+        # end for
+
+        return
+
+    def _build_values_structure(self, values, structure, level_position = 0, parent_level = -1, parent_level_position = 0):
+        """
+        """
+        object_entity = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_level_position and value.level_position == level_position][0]
+
+        object_entity_structure = {"name": object_entity.name,
+                                   "type": "object",
+                                   "values": []
+        }
+
+        child_values = sorted([value for value in values if value.parent_level == parent_level + 1 and value.parent_position == level_position], key=lambda x: x.level_position)
+        structure.append(object_entity_structure)
+        for value in child_values:
+            if type(value) in [EventBoolean, AnnotationBoolean]:
+                value_type = "boolean"
+            elif type(value) in [EventDouble, AnnotationDouble]:
+                value_type = "double"
+            elif type(value) in [EventTimestamp, AnnotationTimestamp]:
+                value_type = "timestamp"
+            elif type(value) in [EventGeometry, AnnotationGeometry]:
+                value_type = "geometry"
+            elif type(value) in [EventObject, AnnotationObject]:
+                value_type = "object"
+            else:
+                value_type = "text"
+            # end if
+
+            if value_type != "object":
+                object_entity_structure["values"].append({"name": value.name,
+                                                          "type": value_type,
+                                                          "value": value.value
+                                                      })
+            else:
+                self._build_values_structure(values, object_entity_structure["values"], value.level_position, parent_level + 1, level_position)
+            # end if
+        # end for
+        return
+
+    def get_dim_signatures(self, dim_signature_ids = None):
+        """
+        """
+        if dim_signature_ids:
+            if type(dim_signature_ids) != list:
+                raise
+            # end if
+            dim_signatures = self.session.query(DimSignature).filter(DimSignature.dim_signature_id.in_(tuple(dim_signature_ids))).all()
+        else:
+            dim_signatures = self.session.query(DimSignature).all()
+        # end if
+        return dim_signatures
+
+    def get_sources(self, names = None):
+        """
+        """
+        if names:
+            if type(names) != list:
+                raise
+            # end if
+            sources = self.session.query(DimProcessing).filter(DimProcessing.name.in_(tuple(names))).all()
+        else:
+            sources = self.session.query(DimProcessing).all()
+        # end if
+        return sources
+
+    def get_sources_statuses(self, processing_uuids = None):
+        """
+        """
+        if processing_uuids:
+            if type(processing_uuids) != list:
+                raise
+            # end if
+            source_statuses = self.session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid.in_(tuple(processing_uuids))).all()
+        else:
+            source_statuses = self.session.query(DimProcessingStatus).all()
+        # end if
+        return source_statuses
+
+    def get_events(self, processing_uuids = None):
+        """
+        """
+        if processing_uuids:
+            if type(processing_uuids) != list:
+                raise
+            # end if
+            events = self.session.query(Event).filter(Event.processing_uuid.in_(tuple(processing_uuids))).all()
+        else:
+            events = self.session.query(Event).all()
+        # end if
+        return events
 
     def get_gauges(self):
         """
@@ -132,11 +378,18 @@ class Engine():
         
         return self.session.query(EventLink).all()
 
-    def get_annotations(self):
+    def get_annotations(self, processing_uuids = None):
         """
         """
-        
-        return self.session.query(Annotation).all()
+        if processing_uuids:
+            if type(processing_uuids) != list:
+                raise
+            # end if
+            events = self.session.query(Annotation).filter(Annotation.processing_uuid.in_(tuple(processing_uuids))).all()
+        else:
+            events = self.session.query(Annotation).all()
+        # end if
+        return events
 
     def get_annotations_configurations(self):
         """
@@ -234,6 +487,64 @@ class Engine():
         
         return self.session.query(AnnotationGeometry).all()
 
+    def get_event_values(self, event_uuids = None):
+        """
+        """
+        values = []
+        for value_class in [EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp]:
+            if event_uuids:
+                if type(event_uuids) != list:
+                    raise
+                # end if
+                values.append(self.get_event_values_type(value_class, event_uuids))
+            else:
+                values.append(self.get_event_values_type(value_class))
+            # end if
+        # end for
+        return [value for values_per_class in values for value in values_per_class]
+        
+    def get_event_values_type(self, value_class, event_uuids = None):
+        """
+        """
+        if event_uuids:
+            if type(event_uuids) != list:
+                raise
+            # end if
+            values = self.session.query(value_class).filter(value_class.event_uuid.in_(tuple(event_uuids))).all()
+        else:
+            values = self.session.query(value_class).all()
+        # end if
+        return values
+
+    def get_annotation_values(self, annotation_uuids = None):
+        """
+        """
+        values = []
+        for value_class in [AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp]:
+            if annotation_uuids:
+                if type(annotation_uuids) != list:
+                    raise
+                # end if
+                values.append(self.get_annotation_values_type(value_class, annotation_uuids))
+            else:
+                values.append(self.get_annotation_values_type(value_class))
+            # end if
+        # end for
+        return [value for values_per_class in values for value in values_per_class]
+        
+    def get_annotation_values_type(self, value_class, annotation_uuids = None):
+        """
+        """
+        if annotation_uuids:
+            if type(annotation_uuids) != list:
+                raise
+            # end if
+            values = self.session.query(value_class).filter(value_class.annotation_uuid.in_(tuple(annotation_uuids))).all()
+        else:
+            values = self.session.query(value_class).all()
+        # end if
+        return values
+
     def parse_data_from_xml(self, xml):
         """
         """
@@ -249,6 +560,10 @@ class Engine():
         # end for
 
         return 
+
+    ###################
+    # PARSING METHODS #
+    ###################
 
     def _parse_insert_operation_from_xml(self, operation):
         """
@@ -392,6 +707,10 @@ class Engine():
         # end for
         return self.exit_codes["OK"]["status"]
 
+    #####################
+    # INSERTION METHODS #
+    #####################
+
     def _insert_data(self):
         """
         
@@ -513,10 +832,11 @@ class Engine():
         ### Log that the file has been ingested correctly
         self._insert_proc_status(self.exit_codes["OK"]["status"],True)
         print(self.exit_codes["OK"]["message"].format(
-            self.source.filename,
+            self.source.name,
             self.dim_signature.dim_signature,
             self.dim_signature.dim_exec_name, 
             self.source.dim_exec_version))
+        self.source.ingestion_time = datetime.datetime.now()
 
         # Review the inserted events (with modes EVENT_KEYS and
         # ERASE_and_REPLACE) and annotations for removing the
@@ -560,7 +880,7 @@ class Engine():
         generation_time = source.get("generation_time")
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
-        self.source = self.session.query(DimProcessing).filter(DimProcessing.filename == name,
+        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
                                                                DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
                                                                DimProcessing.dim_exec_version == version).first()
         if self.source and self.source.ingestion_duration:
@@ -582,7 +902,7 @@ class Engine():
             except IntegrityError:
                 # The DIM processing was already ingested
                 self.session.rollback()
-                self.source = self.session.query(DimProcessing).filter(DimProcessing.filename == name,
+                self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
                                                                        DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
                                                                        DimProcessing.dim_exec_version == version).first()
             # end try
@@ -597,7 +917,7 @@ class Engine():
         except IntegrityError:
             # The DIM processing has been ingested between the query and the insertion
             self.session.rollback()
-            self.source = self.session.query(DimProcessing).filter(DimProcessing.filename == name,
+            self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
                                                                    DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
                                                                    DimProcessing.dim_exec_version == version).first()
             raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
@@ -775,7 +1095,7 @@ class Engine():
             if parser.parse(stop) < parser.parse(start):
                 # The period of the event is not correct (stop > start)
                 self.session.rollback()
-                raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
+                raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
             # end if
 
             generation_time = event.get("generation_time")
@@ -854,7 +1174,7 @@ class Engine():
             event_uuids = set([i.get("event_uuid") for i in list_event_links[link]])
             if len(event_uuids) == 1:
                 self.session.rollback()
-                raise WrongEventLink(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link))
+                raise WrongEventLink(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link))
             # end if
             list_event_links_ddbb = [dict(event_uuid_link = x["event_uuid"],
                                           name = x["name"],
@@ -905,7 +1225,7 @@ class Engine():
                         value = False
                     else:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
                     list_to_use = list_values["booleans"]
                 elif item["type"] == "text":
                     value = str(item.get("value"))
@@ -918,7 +1238,7 @@ class Engine():
                         value = float(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
                     # end try
                     if not "doubles" in list_values:
                         list_values["doubles"] = []
@@ -929,7 +1249,7 @@ class Engine():
                         value = parser.parse(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
                     # end try
                     if not "timestamps" in list_values:
                         list_values["timestamps"] = []
@@ -939,7 +1259,7 @@ class Engine():
                     list_coordinates = item.get("value").split(" ")
                     if len (list_coordinates) % 2 != 0:
                         self.session.rollback()
-                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value")))
+                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value")))
                     # end if
                     coordinates = 0
                     value = "POLYGON(("
@@ -952,7 +1272,7 @@ class Engine():
                             float(coordinate)
                         except ValueError:
                             self.session.rollback()
-                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.filename, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, coordinate, "float"))
+                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, coordinate, "float"))
                         # end try
                         value = value + coordinate
                         coordinates += 1
@@ -968,7 +1288,7 @@ class Engine():
                 # end if
                 list_to_use.append(dict([("name", item.get("name")),
                                          ("value", value),
-                                         ("level_position",  level_position),
+                                         ("level_position",  level_positions[parent_level]),
                                          ("child_position",  child_position),
                                          ("parent_level",  parent_level),
                                          ("parent_position",  parent_level_position),
@@ -1091,5 +1411,4 @@ class Engine():
         self.session.commit()
 
         return
-
 
