@@ -1193,7 +1193,7 @@ class Engine():
 
         return
 
-    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, child_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
+    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
         """
         """
         if not "objects" in list_values:
@@ -1201,21 +1201,19 @@ class Engine():
         # end if
         list_values["objects"].append(dict([("name", values.get("name")),
                                            ("level_position",  level_position),
-                                           ("child_position",  child_position),
                                            ("parent_level",  parent_level),
                                            ("parent_position",  parent_level_position),
                                            (entity_uuid["name"], entity_uuid["id"])]
         ))
         parent_level += 1
         parent_level_position = level_position
-        child_position = 0
         if not parent_level in level_positions:
             # List for keeping track of the positions occupied in the level (parent_level = level - 1)
             level_positions[parent_level] = 0
         # end if
         for item in values["values"]:
             if item["type"] == "object":
-                self._insert_values(item, entity_uuid, list_values, level_positions[parent_level], child_position, parent_level, parent_level_position, level_positions)
+                self._insert_values(item, entity_uuid, list_values, level_positions[parent_level], parent_level, parent_level_position, level_positions)
             else:
                 value = bool(str(item.get("value")))
                 if item["type"] == "boolean":
@@ -1292,13 +1290,11 @@ class Engine():
                 list_to_use.append(dict([("name", item.get("name")),
                                          ("value", value),
                                          ("level_position",  level_positions[parent_level]),
-                                         ("child_position",  child_position),
                                          ("parent_level",  parent_level),
                                          ("parent_position",  parent_level_position),
                                          (entity_uuid["name"], entity_uuid["id"])]
                                     ))
             # end if
-            child_position += 1
             level_positions[parent_level] += 1
         # end for
 

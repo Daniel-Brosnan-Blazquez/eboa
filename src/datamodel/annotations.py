@@ -56,7 +56,6 @@ class AnnotationBoolean(Base):
     name = Column(Text)
     value = Column(Boolean)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -65,11 +64,10 @@ class AnnotationBoolean(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, value, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
@@ -80,7 +78,6 @@ class AnnotationText(Base):
     name = Column(Text)
     value = Column(Text)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -89,11 +86,10 @@ class AnnotationText(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, value, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
@@ -104,7 +100,6 @@ class AnnotationDouble(Base):
     name = Column(Text)
     value = Column(Float)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -113,11 +108,10 @@ class AnnotationDouble(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, value, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
@@ -128,7 +122,6 @@ class AnnotationTimestamp(Base):
     name = Column(Text)
     value = Column(DateTime)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -137,11 +130,10 @@ class AnnotationTimestamp(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, value, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
@@ -151,7 +143,6 @@ class AnnotationObject(Base):
 
     name = Column(Text)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -160,10 +151,9 @@ class AnnotationObject(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
@@ -174,7 +164,6 @@ class AnnotationGeometry(Base):
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_tb.annotation_uuid'))
@@ -183,11 +172,10 @@ class AnnotationGeometry(Base):
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, annotation):
+    def __init__(self, name, value, level_position, parent_level, parent_position, annotation):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation

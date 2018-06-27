@@ -384,10 +384,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_booleans()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -410,10 +410,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_texts()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -436,10 +436,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_doubles()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -462,10 +462,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_timestamps()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -488,10 +488,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_objects()
-        data = [[i.name,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -514,10 +514,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_event_geometries()
-        data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
+        data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "event_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "event_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -540,10 +540,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_booleans()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -566,10 +566,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_texts()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -592,10 +592,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_doubles()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -618,10 +618,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_timestamps()
-        data = [[i.name,i.value,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -644,10 +644,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_objects()
-        data = [[i.name,i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:
@@ -670,10 +670,10 @@ class Analysis():
         
         # Get data
         values = self.engine.get_annotation_geometries()
-        data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.child_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
+        data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
-        ws.append(["name", "value", "level_position", "child_position", "parent_level", "parent_position", "annotation_uuid"])
+        ws.append(["name", "value", "level_position", "parent_level", "parent_position", "annotation_uuid"])
 
         # Insert data into the worksheet
         for row in data:

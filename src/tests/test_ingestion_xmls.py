@@ -447,8 +447,6 @@ engine_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
 
 print("***Data present into DDBB exported into the xml file " + output_xml_file)
 
-#sys.stdin.read(1)
-
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
 #print(json.dumps(engine_gsdm.data, indent=4))

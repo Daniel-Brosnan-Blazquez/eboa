@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="225,627" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,595" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -195,9 +195,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -206,7 +203,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="6"/>
+		<object name="event_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -227,9 +224,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -238,7 +232,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="6"/>
+		<object name="event_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -256,9 +250,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -267,7 +258,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="5"/>
+		<object name="event_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -288,9 +279,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -299,7 +287,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="6"/>
+		<object name="event_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -356,9 +344,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -367,7 +352,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="annotation_uuid" index="6"/>
+		<object name="annotation_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -388,9 +373,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -399,7 +381,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="annotation_uuid" index="6"/>
+		<object name="annotation_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -417,9 +399,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -428,7 +407,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="annotation_uuid" index="5"/>
+		<object name="annotation_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -449,9 +428,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -460,7 +436,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="annotation_uuid" index="6"/>
+		<object name="annotation_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -591,9 +567,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -602,7 +575,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="6"/>
+		<object name="event_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -633,9 +606,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -644,7 +614,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="annotation_uuid" index="6"/>
+		<object name="annotation_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -665,15 +635,20 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
+
+	<customidxs object-type="column">
+		<object name="annotation_uuid" index="5"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="annotation_tb_fk" index="0"/>
+	</customidxs>
 </table>
 
 <relationship name="annotation_tb_has_many_annotation_timestamp_tb" type="rel1n"
@@ -782,9 +757,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="level_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<column name="child_position" not-null="true">
-		<type name="integer" length="1"/>
-	</column>
 	<column name="parent_level" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
@@ -793,7 +765,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 
 	<customidxs object-type="column">
-		<object name="event_uuid" index="6"/>
+		<object name="event_uuid" index="5"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">

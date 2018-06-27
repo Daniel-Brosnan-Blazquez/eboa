@@ -82,7 +82,6 @@ class EventBoolean(Base):
     name = Column(Text)
     value = Column(Boolean)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -91,11 +90,10 @@ class EventBoolean(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, value, level_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -106,7 +104,6 @@ class EventText(Base):
     name = Column(Text)
     value = Column(Text)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -115,11 +112,10 @@ class EventText(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, value, level_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -130,7 +126,6 @@ class EventDouble(Base):
     name = Column(Text)
     value = Column(Float)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -139,11 +134,10 @@ class EventDouble(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, value, level_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -154,7 +148,6 @@ class EventTimestamp(Base):
     name = Column(Text)
     value = Column(DateTime)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -163,11 +156,10 @@ class EventTimestamp(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, value, level_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -177,7 +169,6 @@ class EventObject(Base):
 
     name = Column(Text)
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -186,10 +177,9 @@ class EventObject(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, level_position, parent_level, parent_position, event):
         self.name = name
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -200,7 +190,6 @@ class EventGeometry(Base):
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
     level_position = Column(Integer)
-    child_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
@@ -209,11 +198,10 @@ class EventGeometry(Base):
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, child_position, parent_level, parent_position, event):
+    def __init__(self, name, value, level_position, parent_level, parent_position, event):
         self.name = name
         self.value = value
         self.level_position = level_position
-        self.child_position = child_position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event

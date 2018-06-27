@@ -120,7 +120,6 @@ CREATE TABLE gsdm.event_text_tb(
 	name text NOT NULL,
 	value text NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -135,7 +134,6 @@ CREATE TABLE gsdm.event_double_tb(
 	name text NOT NULL,
 	value double precision NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -149,7 +147,6 @@ ALTER TABLE gsdm.event_double_tb OWNER TO gsdm;
 CREATE TABLE gsdm.event_object_tb(
 	name text NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -164,7 +161,6 @@ CREATE TABLE gsdm.event_geometry_tb(
 	name text NOT NULL,
 	value geometry NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -197,7 +193,6 @@ CREATE TABLE gsdm.annotation_text_tb(
 	name text NOT NULL,
 	value text NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -212,7 +207,6 @@ CREATE TABLE gsdm.annotation_double_tb(
 	name text NOT NULL,
 	value double precision NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -226,7 +220,6 @@ ALTER TABLE gsdm.annotation_double_tb OWNER TO gsdm;
 CREATE TABLE gsdm.annotation_object_tb(
 	name text NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -241,7 +234,6 @@ CREATE TABLE gsdm.annotation_geometry_tb(
 	name text NOT NULL,
 	value geometry NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -319,7 +311,6 @@ CREATE TABLE gsdm.event_boolean_tb(
 	name text NOT NULL,
 	value boolean NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -341,7 +332,6 @@ CREATE TABLE gsdm.annotation_boolean_tb(
 	name text NOT NULL,
 	value boolean NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -356,7 +346,6 @@ CREATE TABLE gsdm.annotation_timestamp_tb(
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -426,7 +415,6 @@ CREATE TABLE gsdm.event_timestamp_tb(
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	level_position integer NOT NULL,
-	child_position integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
