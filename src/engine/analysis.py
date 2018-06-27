@@ -14,8 +14,9 @@ from .engine import Engine
 from geoalchemy2.shape import to_shape
 
 class Analysis():
-    workbook = Workbook()
-    engine = Engine()
+    def __init__(self):
+        self.workbook = Workbook()
+        self.engine = Engine()
 
     def generate_workbook_from_ddbb(self, name):
         """
