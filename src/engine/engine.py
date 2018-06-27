@@ -725,6 +725,7 @@ class Engine():
         self.expl_groups = {}
         self.explicit_refs = {}
         self.erase_and_replace_gauges = []
+        self.annotation_cnfs_explicit_refs = []
         self.keys_events = []
 
         # Insert the DIM signature
@@ -1315,6 +1316,10 @@ class Engine():
             annotation_cnf = self.annotation_cnfs[(annotation_cnf_info.get("name"), annotation_cnf_info.get("system"))]
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
+            self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
+                                                       "annotation_cnf": annotation_cnf
+                                                   })
+
             # Insert the annotation into the list for bulk ingestion
             list_annotations.append(dict(annotation_uuid = id, generation_time = generation_time,
                                          ingestion_time = datetime.datetime.now(),
@@ -1384,7 +1389,7 @@ class Engine():
         self._remove_deprecated_events_event_keys()
 
         # Remove annotations due to the generation time
-        #self._remove_deprecated_annotations()
+        self._remove_deprecated_annotations()
 
         return
 
@@ -1428,7 +1433,7 @@ class Engine():
                                                                   explicit_ref_id = event.explicit_ref_id,
                                                                   processing_uuid = event.processing_uuid,
                                                                   visible = True))
-                            ### Insert also new values
+                            ### Insert also associated values, links and event key
                         # end for
                         break
                     # end if
@@ -1437,12 +1442,12 @@ class Engine():
                     validity_stop = filtered_timeline_points[next_timestamp]
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
-                    max_generation_time_query = self.session.query(func.max(Event.generation_time)).filter(Event.gauge_id == gauge.gauge_id,
+                    max_generation_time = self.session.query(func.max(Event.generation_time)).filter(Event.gauge_id == gauge.gauge_id,
                                                                                                            Event.start <= validity_stop,
                                                                                                            Event.stop >= validity_start)
                 
                     # Get the related event
-                    event_max_generation_time = self.session.query(Event).filter(Event.generation_time == max_generation_time_query,
+                    event_max_generation_time = self.session.query(Event).filter(Event.generation_time == max_generation_time,
                                                                                  Event.gauge_id == gauge.gauge_id,
                                                                                  Event.start <= validity_stop,
                                                                                  Event.stop >= validity_start).first()
@@ -1465,7 +1470,7 @@ class Engine():
                                                                       explicit_ref_id = event.explicit_ref_id,
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
-                                ### Insert also new values
+                                ### Insert also associated values, links and event key
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
@@ -1481,7 +1486,7 @@ class Engine():
                                                      Event.stop <= validity_stop).delete(synchronize_session="fetch")
 
                     # Get the events ending on the current period to be removed
-                    events_not_staying_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time_query,
+                    events_not_staying_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time,
                                                                                            Event.gauge_id == gauge.gauge_id,
                                                                                            Event.start <= validity_start,
                                                                                            Event.stop >= validity_start,
@@ -1489,7 +1494,7 @@ class Engine():
                                                                                            Event.processing_uuid != event_max_generation_time.processing_uuid).all()
 
                     # Get the events ending on the current period to be removed
-                    events_not_staying_not_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time_query,
+                    events_not_staying_not_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time,
                                                                                                Event.gauge_id == gauge.gauge_id,
                                                                                                Event.start <= validity_stop,
                                                                                                Event.stop >= validity_stop,
@@ -1514,7 +1519,7 @@ class Engine():
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
                             # end if
-                            ### Insert also new values
+                            ### Insert also associated values, links and event key
                             if event.stop > validity_stop:
                                 list_split_events[event.event_uuid] = event
                             else:
@@ -1530,15 +1535,44 @@ class Engine():
             _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
         # end for
 
+        # Bulk insert events
+        self.session.bulk_insert_mappings(Event, list_events_to_be_created)
+        # # Bulk insert keys
+        # self.session.bulk_insert_mappings(EventKey, list_keys)
+
+        # # Bulk insert values
+        # if "objects" in list_values:
+        #     self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+        # # end if
+        # if "booleans" in list_values:
+        #     self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
+        # # end if
+        # if "texts" in list_values:
+        #     self.session.bulk_insert_mappings(EventText, list_values["texts"])
+        # # end if
+        # if "doubles" in list_values:
+        #     self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
+        # # end if
+        # if "timestamps" in list_values:
+        #     self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
+        # # end if
+        # if "geometries" in list_values:
+        #     self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+        # # end if
+
+        # # Bulk insert links
+        # self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
+
+
         return
 
     def _remove_deprecated_events_event_keys(self):
         """
         """
         for key in self.keys_events:
-            max_generation_time_query = self.session.query(func.max(Event.generation_time)).join(EventKey).filter(EventKey.event_key == key)
+            max_generation_time = self.session.query(func.max(Event.generation_time)).join(EventKey).filter(EventKey.event_key == key)
 
-            event_max_generation_time = self.session.query(Event).join(EventKey).filter(Event.generation_time == max_generation_time_query,
+            event_max_generation_time = self.session.query(Event).join(EventKey).filter(Event.generation_time == max_generation_time,
                                                                                         EventKey.event_key == key).first()
 
             # Delete deprecated events
@@ -1551,6 +1585,34 @@ class Engine():
                                                                                                 EventKey.event_key == key)
             self.session.query(EventKey).filter(EventKey.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
             self.session.query(Event).filter(Event.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
+        # end for
+
+        return
+
+    def _remove_deprecated_annotations(self):
+        """
+        """
+        for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs:
+            annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
+            explicit_ref = annotation_cnf_explicit_ref["explicit_ref"]
+            max_generation_time = self.session.query(func.max(Annotation.generation_time)).join(AnnotationCnf).join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id, 
+                                                                                                                                              ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+
+            annotation_max_generation_time = self.session.query(Annotation).join(AnnotationCnf).join(ExplicitRef).filter(Annotation.generation_time == max_generation_time,
+                                                                                                                         AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
+                                                                                                                         ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id).first()
+
+            # Delete deprecated annotations
+            annotations_uuids_to_delete = self.session.query(Annotation.annotation_uuid).join(AnnotationCnf).join(ExplicitRef).filter(Annotation.processing_uuid != annotation_max_generation_time.processing_uuid,
+                                                                                                                                      AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
+                                                                                                                                      ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+            self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_delete).delete(synchronize_session=False)
+
+            # Make annotations visible
+            annotations_uuids_to_update = self.session.query(Annotation.annotation_uuid).join(AnnotationCnf).join(ExplicitRef).filter(Annotation.processing_uuid == annotation_max_generation_time.processing_uuid,
+                                                                                                                                      AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
+                                                                                                                                      ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+            self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_update).update({"visible": True}, synchronize_session=False)
         # end for
 
         return
