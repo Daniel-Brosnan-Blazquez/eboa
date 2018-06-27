@@ -42,6 +42,9 @@ class ExplicitRefLink(Base):
     name = Column(Text)
     explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
     explicitRef = relationship("ExplicitRef", backref="explicitRefLinks")
+    __mapper_args__ = {
+        'primary_key':[explicit_ref_id_link, name, explicit_ref_id]
+    }
 
     def __init__(self, link, name, explicitRef):
         self.explicit_ref_id_link = link

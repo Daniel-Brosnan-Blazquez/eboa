@@ -40,9 +40,12 @@ class DimProcessingStatus(Base):
     __tablename__ = 'dim_processing_status_tb'
 
     time_stamp = Column(DateTime)
-    proc_status = Column(Integer, primary_key=True)
+    proc_status = Column(Integer)
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
     source = relationship("DimProcessing", backref="statuses")
+    __mapper_args__ = {
+        'primary_key':[proc_status, processing_uuid]
+    }
 
     def __init__(self, time_stamp, status, dim_processing):
         self.time_stamp = time_stamp
