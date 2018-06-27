@@ -176,14 +176,103 @@ events = [{"start": "2018-06-05T02:07:03",
            "key": "test_key1",
            "explicit_reference": "test_explicit_ref1",
            "gauge": ("test_gauge_name1", "test_gauge_system1"),
-           "link": "test_link_name1"},
+           "link": "test_link_name1",
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
           {"start": "2018-06-05T02:07:03",
            "stop": "2018-06-05T02:07:36",
            "generation_time": "2018-06-06T13:33:29",
            "key": "test_key2",
            "explicit_reference": "test_explicit_ref2",
            "gauge": ("test_gauge_name2", "test_gauge_system2"),
-           "link": "test_link_name2"}]
+           "link": "test_link_name2",
+           "values":[
+               {"name": "test_object_name2",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name2",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name2",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name3",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name3",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 3},
+               {"name": "test_geometry2",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 3}
+           ]}
+      ]
 for event in events:
     event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
     list_events_ddbb.append(event_ddbb)
@@ -220,12 +309,60 @@ for event in events:
     # end if
     print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
+    if "values" in event:
+        values_ddbb = engine_gsdm.get_event_values([event_ddbb.event_uuid])
+        for value in event["values"]:
+            value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
+            result = {"message":"OK","color":"green"}
+            if len(value_ddbb) != 1:
+                result = {"message":"NOK","color":"red"}
+            # end if
+            print(colored("Check", on_color="on_blue") + "_{}: Event value has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+        # end for
+    # end if
+
 # end for
 
 ## Annotations ingestion
 annotations = [{"generation_time": "2018-06-06T13:33:29",
-           "explicit_reference": "test_explicit_ref1",
-           "annotation_cnf": ("test_annotation_cnf_name1", "test_annotation_cnf_system1")}]
+                "explicit_reference": "test_explicit_ref1",
+                "annotation_cnf": ("test_annotation_cnf_name1", "test_annotation_cnf_system1"),
+                "values":[
+                    {"name": "test_object_name1",
+                     "level_position": 0,
+                     "parent_level": -1,
+                     "parent_position": 0},
+                    {"name": "test_text_name1",
+                     "level_position": 0,
+                     "parent_level": 0,
+                     "parent_position": 0},
+                    {"name": "test_timestamp_name1",
+                     "level_position": 1,
+                     "parent_level": 0,
+                     "parent_position": 0},
+                    {"name": "test_boolean_name1",
+                     "level_position": 2,
+                     "parent_level": 0,
+                     "parent_position": 0},
+                    {"name": "test_double_name1",
+                     "level_position": 3,
+                     "parent_level": 0,
+                     "parent_position": 0},
+                    {"name": "test_object_name2",
+                     "level_position": 4,
+                     "parent_level": 0,
+                     "parent_position": 0},
+                    {"name": "test_text_name2",
+                     "level_position": 0,
+                     "parent_level": 1,
+                     "parent_position": 4},
+                    {"name": "test_geometry1",
+                     "level_position": 1,
+                     "parent_level": 1,
+                     "parent_position": 4}
+                ]
+            }]
 for annotation in annotations:
     annotation_ddbb = session.query(Annotation).join(ExplicitRef).filter(Annotation.generation_time == annotation["generation_time"], ExplicitRef.explicit_ref == annotation["explicit_reference"]).first()
     print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation))

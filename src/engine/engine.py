@@ -46,9 +46,12 @@ class Engine():
     # Set the synchronized module
     synchronized = lockutils.synchronized_with_prefix('gsdm-')
 
-    def __init__(self, data = {}):
+    def __init__(self, data = None):
         """
         """
+        if data == None:
+            data = {}
+        # end if
         self.data = data
         self.session = Session()
         self.operation = None
@@ -1193,9 +1196,12 @@ class Engine():
 
         return
 
-    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, parent_level = -1, parent_level_position = 0, level_positions = {}):
+    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, parent_level = -1, parent_level_position = 0, level_positions = None):
         """
         """
+        if level_positions == None:
+            level_positions = {}
+        # end if
         if not "objects" in list_values:
             list_values["objects"] = []
         # end if
