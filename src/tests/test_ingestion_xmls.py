@@ -434,6 +434,21 @@ if dim_processing_status == None:
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: Detected odd number of coordinates in the geometry value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
+# Generate the excel file containing the inserted data into the DDBB
+analysis = Analysis()
+output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis_after_simple_update.xlsx"
+analysis.generate_workbook_from_ddbb(output_file)
+
+print("***Data present into DDBB exported into the excel file " + output_file)
+
+# Generate the xml file containing the inserted data into the DDBB
+output_xml_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/test_simple_update_query.xml"
+engine_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
+
+print("***Data present into DDBB exported into the xml file " + output_xml_file)
+
+#sys.stdin.read(1)
+
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
 #print(json.dumps(engine_gsdm.data, indent=4))
@@ -444,15 +459,9 @@ engine_gsdm.treat_data()
 
 # Generate the excel file containing the inserted data into the DDBB
 analysis = Analysis()
-
-output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis.xlsx"
+output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis_after_erase_and_replace.xlsx"
 analysis.generate_workbook_from_ddbb(output_file)
 
 print("***Data present into DDBB exported into the excel file " + output_file)
-
-output_xml_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/test_simple_update_query.xml"
-engine_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
-
-print("***Data present into DDBB exported into the xml file " + output_xml_file)
 
 sys.exit()

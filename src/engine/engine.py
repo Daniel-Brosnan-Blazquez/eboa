@@ -13,6 +13,7 @@ import os
 import sys
 from dateutil import parser
 from itertools import chain
+from oslo_concurrency import lockutils
 
 # Adding path to the datamodel package
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,52 +43,53 @@ from datamodel import annotations
 from lxml import etree
 
 class Engine():
-
-    session = Session()
-    operation = None
-    exit_codes = {
-        "OK": {
-            "status": 0,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
-        },
-        "INGESTION_STARTED": {
-            "status": 1,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
-        },
-        "SOURCE_ALREADY_INGESTED": {
-            "status": 2,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
-        },
-        "WRONG_SOURCE_PERIOD": {
-            "status": 3,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
-        },
-        "WRONG_EVENT_PERIOD": {
-            "status": 4,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
-        },
-        "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
-            "status": 5,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
-        },
-        "INCOMPLETE_EVENT_LINKS": {
-            "status": 6,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
-        },
-        "WRONG_VALUE": {
-            "status": 7,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
-        },
-        "ODD_NUMBER_OF_COORDINATES": {
-            "status": 8,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
-        }
-    }
+    # Set the synchronized module
+    synchronized = lockutils.synchronized_with_prefix('gsdm-')
 
     def __init__(self, data = {}):
         """
         """
         self.data = data
+        self.session = Session()
+        self.operation = None
+        self.exit_codes = {
+            "OK": {
+                "status": 0,
+                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
+            },
+            "INGESTION_STARTED": {
+                "status": 1,
+                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
+            },
+            "SOURCE_ALREADY_INGESTED": {
+                "status": 2,
+                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
+            },
+            "WRONG_SOURCE_PERIOD": {
+                "status": 3,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
+            },
+            "WRONG_EVENT_PERIOD": {
+                "status": 4,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
+            },
+            "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
+                "status": 5,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
+            },
+            "INCOMPLETE_EVENT_LINKS": {
+                "status": 6,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
+            },
+            "WRONG_VALUE": {
+                "status": 7,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
+            },
+            "ODD_NUMBER_OF_COORDINATES": {
+                "status": 8,
+                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
+            }
+        }
     
         return
 
@@ -315,7 +317,7 @@ class Engine():
             if type(dim_signature_ids) != list:
                 raise
             # end if
-            dim_signatures = self.session.query(DimSignature).filter(DimSignature.dim_signature_id.in_(tuple(dim_signature_ids))).all()
+            dim_signatures = self.session.query(DimSignature).filter(DimSignature.dim_signature_id.in_(dim_signature_ids)).all()
         else:
             dim_signatures = self.session.query(DimSignature).all()
         # end if
@@ -328,7 +330,7 @@ class Engine():
             if type(names) != list:
                 raise
             # end if
-            sources = self.session.query(DimProcessing).filter(DimProcessing.name.in_(tuple(names))).all()
+            sources = self.session.query(DimProcessing).filter(DimProcessing.name.in_(names)).all()
         else:
             sources = self.session.query(DimProcessing).all()
         # end if
@@ -341,7 +343,7 @@ class Engine():
             if type(processing_uuids) != list:
                 raise
             # end if
-            source_statuses = self.session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid.in_(tuple(processing_uuids))).all()
+            source_statuses = self.session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid.in_(processing_uuids)).all()
         else:
             source_statuses = self.session.query(DimProcessingStatus).all()
         # end if
@@ -354,7 +356,7 @@ class Engine():
             if type(processing_uuids) != list:
                 raise
             # end if
-            events = self.session.query(Event).filter(Event.processing_uuid.in_(tuple(processing_uuids))).all()
+            events = self.session.query(Event).filter(Event.processing_uuid.in_(processing_uuids)).all()
         else:
             events = self.session.query(Event).all()
         # end if
@@ -385,7 +387,7 @@ class Engine():
             if type(processing_uuids) != list:
                 raise
             # end if
-            events = self.session.query(Annotation).filter(Annotation.processing_uuid.in_(tuple(processing_uuids))).all()
+            events = self.session.query(Annotation).filter(Annotation.processing_uuid.in_(processing_uuids)).all()
         else:
             events = self.session.query(Annotation).all()
         # end if
@@ -510,7 +512,7 @@ class Engine():
             if type(event_uuids) != list:
                 raise
             # end if
-            values = self.session.query(value_class).filter(value_class.event_uuid.in_(tuple(event_uuids))).all()
+            values = self.session.query(value_class).filter(value_class.event_uuid.in_(event_uuids)).all()
         else:
             values = self.session.query(value_class).all()
         # end if
@@ -539,7 +541,7 @@ class Engine():
             if type(annotation_uuids) != list:
                 raise
             # end if
-            values = self.session.query(value_class).filter(value_class.annotation_uuid.in_(tuple(annotation_uuids))).all()
+            values = self.session.query(value_class).filter(value_class.annotation_uuid.in_(annotation_uuids)).all()
         else:
             values = self.session.query(value_class).all()
         # end if
@@ -1376,7 +1378,7 @@ class Engine():
         """
         """
         # Remove events due to ERASE_and_REPLACE insertion mode
-        #self._remove_deprecated_events_erase_and_replace()
+        self._remove_deprecated_events_by_erase_and_replace()
 
         # Remove events due to EVENT_KEYS insertion mode
         self._remove_deprecated_events_event_keys()
@@ -1386,11 +1388,153 @@ class Engine():
 
         return
 
+    def _remove_deprecated_events_by_erase_and_replace(self):
+        """
+        """
+        list_events_to_be_created = []
+        list_events_to_be_created_not_ending_on_period = {}
+        list_split_events = {}
+        for gauge in self.erase_and_replace_gauges:
+            # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
+            # /dev/shm is shared memory (RAM)
+            lock = 'erase_and_replace' + str(gauge.gauge_id)
+            @self.synchronized(lock, external=True, lock_path="/dev/shm")
+            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
+                # Get the sources of events intersecting the validity period
+                sources = self.session.query(DimProcessing).join(Event).filter(Event.gauge_id == gauge.gauge_id,
+                                                                               Event.start <= self.source.validity_stop,
+                                                                               Event.stop >= self.source.validity_start)
+                
+                # Get the timeline of validity periods intersecting
+                timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
+
+                filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
+
+                # Sort list
+                filtered_timeline_points.sort()
+
+                # Iterate through the periods
+                next_timestamp = 1
+                for timestamp in filtered_timeline_points:
+                    
+                    # Check if for the last period there are pending splits
+                    if next_timestamp == len(filtered_timeline_points):
+                        for event in list_split_events:
+                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                            list_events_to_be_created.append(dict(event_uuid = id, start = timestamp, stop = event.stop,
+                                                                  generation_time = event.generation_time,
+                                                                  ingestion_time = datetime.datetime.now(),
+                                                                  gauge_id = gauge.gauge_id,
+                                                                  explicit_ref_id = event.explicit_ref_id,
+                                                                  processing_uuid = event.processing_uuid,
+                                                                  visible = True))
+                            ### Insert also new values
+                        # end for
+                        break
+                    # end if
+
+                    validity_start = timestamp
+                    validity_stop = filtered_timeline_points[next_timestamp]
+                    next_timestamp += 1
+                    # Get the maximum generation time at this moment
+                    max_generation_time_query = self.session.query(func.max(Event.generation_time)).filter(Event.gauge_id == gauge.gauge_id,
+                                                                                                           Event.start <= validity_stop,
+                                                                                                           Event.stop >= validity_start)
+                
+                    # Get the related event
+                    event_max_generation_time = self.session.query(Event).filter(Event.generation_time == max_generation_time_query,
+                                                                                 Event.gauge_id == gauge.gauge_id,
+                                                                                 Event.start <= validity_stop,
+                                                                                 Event.stop >= validity_start).first()
+
+                    # Events related to the DIM processing with the maximum generation time
+                    events_max_generation_time = self.session.query(Event).filter(Event.processing_uuid == event_max_generation_time.processing_uuid,
+                                                                                  Event.gauge_id == gauge.gauge_id,
+                                                                                  Event.start <= validity_stop,
+                                                                                  Event.stop >= validity_start).all()
+                    
+                    # Review events with higher generation time in the period
+                    for event in events_max_generation_time:
+                        if event.event_uuid in list_split_events:
+                            if event.stop <= validity_stop:
+                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                list_events_to_be_created.append(dict(event_uuid = id, start = validity_start, stop = event.stop,
+                                                                      generation_time = event.generation_time,
+                                                                      ingestion_time = datetime.datetime.now(),
+                                                                      gauge_id = gauge.gauge_id,
+                                                                      explicit_ref_id = event.explicit_ref_id,
+                                                                      processing_uuid = event.processing_uuid,
+                                                                      visible = True))
+                                ### Insert also new values
+                            else:
+                                list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
+                            # end if
+                            del list_split_events[event.event_uuid]
+                        # end if
+                        event.visible = True
+                    # end for
+
+                    # Delete deprecated events fully contained into the validity period
+                    self.session.query(Event).filter(Event.processing_uuid != event_max_generation_time.processing_uuid,
+                                                     Event.gauge_id == gauge.gauge_id,
+                                                     Event.start >= validity_start,
+                                                     Event.stop <= validity_stop).delete(synchronize_session="fetch")
+
+                    # Get the events ending on the current period to be removed
+                    events_not_staying_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time_query,
+                                                                                           Event.gauge_id == gauge.gauge_id,
+                                                                                           Event.start <= validity_start,
+                                                                                           Event.stop >= validity_start,
+                                                                                           Event.stop <= validity_stop,
+                                                                                           Event.processing_uuid != event_max_generation_time.processing_uuid).all()
+
+                    # Get the events ending on the current period to be removed
+                    events_not_staying_not_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time_query,
+                                                                                               Event.gauge_id == gauge.gauge_id,
+                                                                                               Event.start <= validity_stop,
+                                                                                               Event.stop >= validity_stop,
+                                                                                               Event.processing_uuid != event_max_generation_time.processing_uuid).all()
+
+                    events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
+                    for event in events_not_staying:
+                        if not event.event_uuid in list_split_events:
+                            if event.start < validity_start:
+                                if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                    start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                else:
+                                    start = event.start
+                                # end if
+                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                list_events_to_be_created.append(dict(event_uuid = id, start = start, stop = validity_start,
+                                                                      generation_time = event.generation_time,
+                                                                      ingestion_time = datetime.datetime.now(),
+                                                                      gauge_id = gauge.gauge_id,
+                                                                      explicit_ref_id = event.explicit_ref_id,
+                                                                      processing_uuid = event.processing_uuid,
+                                                                      visible = True))
+                            # end if
+                            ### Insert also new values
+                            if event.stop > validity_stop:
+                                list_split_events[event.event_uuid] = event
+                            else:
+                                self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
+                            # end if
+                        elif event.event_uuid in list_split_events and event.stop <= validity_stop:
+                            self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
+                            del list_split_events[event.event_uuid]
+                        # end if
+                    # end for
+                # end for
+            # end def
+            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
+        # end for
+
+        return
+
     def _remove_deprecated_events_event_keys(self):
         """
         """
-        self.session.begin_nested()
-
         for key in self.keys_events:
             max_generation_time_query = self.session.query(func.max(Event.generation_time)).join(EventKey).filter(EventKey.event_key == key)
 
@@ -1406,9 +1550,8 @@ class Engine():
             events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.processing_uuid == event_max_generation_time.processing_uuid,
                                                                                                 EventKey.event_key == key)
             self.session.query(EventKey).filter(EventKey.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
+            self.session.query(Event).filter(Event.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
         # end for
-
-        self.session.commit()
 
         return
 
