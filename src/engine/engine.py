@@ -835,6 +835,11 @@ class Engine():
             return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         # end try
 
+        # Review the inserted events (with modes EVENT_KEYS and
+        # ERASE_and_REPLACE) and annotations for removing the
+        # information that is deprecated
+        self._remove_deprecated_data()
+
         ### Log that the file has been ingested correctly
         self._insert_proc_status(self.exit_codes["OK"]["status"],True)
         print(self.exit_codes["OK"]["message"].format(
@@ -843,11 +848,6 @@ class Engine():
             self.dim_signature.dim_exec_name, 
             self.source.dim_exec_version))
         self.source.ingestion_time = datetime.datetime.now()
-
-        # Review the inserted events (with modes EVENT_KEYS and
-        # ERASE_and_REPLACE) and annotations for removing the
-        # information that is deprecated
-        self._remove_deprecated_data()
         
         # Commit data and close connection
         self.session.commit()
@@ -1399,8 +1399,6 @@ class Engine():
         """
         """
         list_events_to_be_created = []
-        list_events_to_be_created_not_ending_on_period = {}
-        list_split_events = {}
         for gauge in self.erase_and_replace_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
@@ -1409,8 +1407,8 @@ class Engine():
             def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
                 sources = self.session.query(DimProcessing).join(Event).filter(Event.gauge_id == gauge.gauge_id,
-                                                                               Event.start <= self.source.validity_stop,
-                                                                               Event.stop >= self.source.validity_start)
+                                                                               Event.start < self.source.validity_stop,
+                                                                               Event.stop > self.source.validity_start)
                 
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
@@ -1426,8 +1424,12 @@ class Engine():
                     
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
-                        for event in list_split_events:
+                        for event_uuid in list_split_events:
+                            event = list_split_events[event_uuid]
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                            if timestamp > event.stop:
+                                raise
+                            # end if
                             list_events_to_be_created.append(dict(event_uuid = id, start = timestamp, stop = event.stop,
                                                                   generation_time = event.generation_time,
                                                                   ingestion_time = datetime.datetime.now(),
@@ -1436,6 +1438,8 @@ class Engine():
                                                                   processing_uuid = event.processing_uuid,
                                                                   visible = True))
                             ### Insert also associated values, links and event key
+                            # Remove event
+                            self.session.query(Event).filter(Event.event_uuid == event_uuid).delete(synchronize_session=False)
                         # end for
                         break
                     # end if
@@ -1445,25 +1449,32 @@ class Engine():
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
                     max_generation_time = self.session.query(func.max(Event.generation_time)).filter(Event.gauge_id == gauge.gauge_id,
-                                                                                                           Event.start <= validity_stop,
-                                                                                                           Event.stop >= validity_start)
+                                                                                                           Event.start < validity_stop,
+                                                                                                           Event.stop > validity_start)
                 
+                    # The period does not contain events
+                    if max_generation_time.first()[0] == None:
+                        break
+                    # end if
                     # Get the related event
                     event_max_generation_time = self.session.query(Event).filter(Event.generation_time == max_generation_time,
                                                                                  Event.gauge_id == gauge.gauge_id,
-                                                                                 Event.start <= validity_stop,
-                                                                                 Event.stop >= validity_start).first()
+                                                                                 Event.start < validity_stop,
+                                                                                 Event.stop > validity_start).first()
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = self.session.query(Event).filter(Event.processing_uuid == event_max_generation_time.processing_uuid,
                                                                                   Event.gauge_id == gauge.gauge_id,
-                                                                                  Event.start <= validity_stop,
-                                                                                  Event.stop >= validity_start).all()
+                                                                                  Event.start < validity_stop,
+                                                                                  Event.stop > validity_start).all()
                     
                     # Review events with higher generation time in the period
                     for event in events_max_generation_time:
                         if event.event_uuid in list_split_events:
                             if event.stop <= validity_stop:
+                                if validity_start > event.stop:
+                                    raise
+                                # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 list_events_to_be_created.append(dict(event_uuid = id, start = validity_start, stop = event.stop,
                                                                       generation_time = event.generation_time,
@@ -1491,15 +1502,15 @@ class Engine():
                     events_not_staying_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time,
                                                                                            Event.gauge_id == gauge.gauge_id,
                                                                                            Event.start <= validity_start,
-                                                                                           Event.stop >= validity_start,
+                                                                                           Event.stop > validity_start,
                                                                                            Event.stop <= validity_stop,
                                                                                            Event.processing_uuid != event_max_generation_time.processing_uuid).all()
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_not_ending_on_period = self.session.query(Event).filter(Event.generation_time <= max_generation_time,
                                                                                                Event.gauge_id == gauge.gauge_id,
-                                                                                               Event.start <= validity_stop,
-                                                                                               Event.stop >= validity_stop,
+                                                                                               Event.start < validity_stop,
+                                                                                               Event.stop > validity_stop,
                                                                                                Event.processing_uuid != event_max_generation_time.processing_uuid).all()
 
                     events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
@@ -1511,6 +1522,9 @@ class Engine():
                                     del list_events_to_be_created_not_ending_on_period[event.event_uuid]
                                 else:
                                     start = event.start
+                                # end if
+                                if start > validity_start:
+                                    raise
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 list_events_to_be_created.append(dict(event_uuid = id, start = start, stop = validity_start,
@@ -1534,6 +1548,8 @@ class Engine():
                     # end for
                 # end for
             # end def
+            list_events_to_be_created_not_ending_on_period = {}
+            list_split_events = {}
             _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
         # end for
 

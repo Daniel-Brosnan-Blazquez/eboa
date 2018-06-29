@@ -7,11 +7,11 @@
     <source
         name="test_erase_and_replace_and_keys.xml" 
         generation_time="2018-06-07T13:33:29"
-        validity_start="2018-06-05T02:07:03"
-        validity_stop="2018-06-05T02:07:36"/>
+        validity_start="2018-06-05T02:07:15"
+        validity_stop="2018-06-05T06:07:15"/>
     <data>
-      <event start="2018-06-05T02:07:03"
-             stop="2018-06-05T02:07:36"
+      <event start="2018-06-05T02:07:15"
+             stop="2018-06-05T06:07:15"
              generation_time="2018-06-07T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
@@ -31,8 +31,8 @@
           </values>
         </values>
       </event>
-      <event start="2018-06-05T02:07:03"
-             stop="2018-06-05T02:07:36"
+      <event start="2018-06-05T02:07:43"
+             stop="2018-06-05T02:07:56"
              generation_time="2018-06-07T13:33:29"
              key="test_key2"
              explicit_reference="test_explicit_ref2">

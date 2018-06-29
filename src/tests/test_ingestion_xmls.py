@@ -30,6 +30,7 @@ from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, Ann
 from termcolor import colored
 from inspect import currentframe, getframeinfo
 import json
+from dateutil.parser import parse
 
 # Create session to connect to the database
 session = Session()
@@ -52,7 +53,7 @@ engine_gsdm.treat_data()
 ## DIM Signature ingestion
 dim_signature = {"dim_signature":"test_dim_signature1", "dim_exec_name": "test_exec1"}
 dim_signature_ddbb = session.query(DimSignature).filter(DimSignature.dim_signature == dim_signature["dim_signature"], DimSignature.dim_exec_name == dim_signature["dim_exec_name"]).first()
-print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_signature))
+print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_signature))
 result = {"message":"OK","color":"green"}
 if dim_signature_ddbb == None:
     result = {"message":"NOK","color":"red"}
@@ -66,7 +67,7 @@ dim_processing = {"name": "test_simple_update.xml",
                   "generation_time": "2018-06-06T13:33:29",
                   "dim_exec_version": "1.0"}
 dim_processing_ddbb = session.query(DimProcessing).filter(DimProcessing.name == dim_processing["name"], DimProcessing.validity_start == dim_processing["validity_start"], DimProcessing.validity_stop == dim_processing["validity_stop"], DimProcessing.generation_time == dim_processing["generation_time"], DimProcessing.dim_exec_version == dim_processing["dim_exec_version"]).first()
-print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_processing))
+print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(dim_processing))
 result = {"message":"OK","color":"green"}
 if dim_processing_ddbb == None:
     result = {"message":"NOK","color":"red"}
@@ -99,7 +100,7 @@ gauges = [{"name": "test_gauge_name1", "system": "test_gauge_system1"},
 for gauge in gauges:
     gauge_ddbb = session.query(Gauge).filter(Gauge.name == gauge["name"], Gauge.system == gauge["system"]).first()
     list_gauges[(gauge["name"],gauge["system"])] = gauge_ddbb
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(gauge))
     result = {"message":"OK","color":"green"}
     if gauge_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -119,7 +120,7 @@ annotation_cnfs = [{"name": "test_annotation_cnf_name1", "system": "test_annotat
 for annotation_cnf in annotation_cnfs:
     annotation_cnf_ddbb = session.query(AnnotationCnf).filter(AnnotationCnf.name == annotation_cnf["name"], AnnotationCnf.system == annotation_cnf["system"]).first()
     list_annotation_cnfs[(annotation_cnf["name"],annotation_cnf["system"])] = annotation_cnf_ddbb
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation_cnf))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation_cnf))
     result = {"message":"OK","color":"green"}
     if annotation_cnf_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -139,7 +140,7 @@ list_expl_groups = {}
 for expl_group in expl_groups:
     expl_group_ddbb = session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == expl_group["name"]).first()
     list_expl_groups[expl_group["name"]] = expl_group_ddbb
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(expl_group))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(expl_group))
     result = {"message":"OK","color":"green"}
     if expl_group_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -152,7 +153,7 @@ explicit_references = [{"explicit_ref": "test_explicit_ref1", "group": "test_exp
                        {"explicit_ref": "test_explicit_ref2"}]
 for explicit_reference in explicit_references:
     explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference))
     result = {"message":"OK","color":"green"}
     if explicit_reference_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -276,7 +277,7 @@ events = [{"start": "2018-06-05T02:07:03",
 for event in events:
     event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
     list_events_ddbb.append(event_ddbb)
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
     result = {"message":"OK","color":"green"}
     if event_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -317,7 +318,7 @@ for event in events:
             if len(value_ddbb) != 1:
                 result = {"message":"NOK","color":"red"}
             # end if
-            print(colored("Check", on_color="on_blue") + "_{}: Event value has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+            print(colored("Check", on_color="on_blue") + "_{}: Event value with name {} has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno, value["name"]) + colored(result["message"], result["color"], attrs=['bold']))
 
         # end for
     # end if
@@ -337,11 +338,11 @@ annotations = [{"generation_time": "2018-06-06T13:33:29",
                      "level_position": 0,
                      "parent_level": 0,
                      "parent_position": 0},
-                    {"name": "test_timestamp_name1",
+                    {"name": "test_boolean_name1",
                      "level_position": 1,
                      "parent_level": 0,
                      "parent_position": 0},
-                    {"name": "test_boolean_name1",
+                    {"name": "test_timestamp_name1",
                      "level_position": 2,
                      "parent_level": 0,
                      "parent_position": 0},
@@ -365,7 +366,7 @@ annotations = [{"generation_time": "2018-06-06T13:33:29",
             }]
 for annotation in annotations:
     annotation_ddbb = session.query(Annotation).join(ExplicitRef).filter(Annotation.generation_time == annotation["generation_time"], ExplicitRef.explicit_ref == annotation["explicit_reference"]).first()
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation))
     result = {"message":"OK","color":"green"}
     if annotation_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -384,6 +385,19 @@ for annotation in annotations:
     # end if
     print(colored("Check", on_color="on_blue") + "_{}: Annotation has been associated to the annotation configuration correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
+    if "values" in annotation:
+        values_ddbb = engine_gsdm.get_annotation_values([annotation_ddbb.annotation_uuid])
+        for value in annotation["values"]:
+            value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
+            result = {"message":"OK","color":"green"}
+            if len(value_ddbb) != 1:
+                result = {"message":"NOK","color":"red"}
+            # end if
+            print(colored("Check", on_color="on_blue") + "_{}: Annotation value with name {} has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno, value["name"]) + colored(result["message"], result["color"], attrs=['bold']))
+
+        # end for
+    # end if
+
 # end for
 
 ## Links between explicit references ingestion
@@ -396,7 +410,7 @@ explicit_reference_links = [{"explicit_ref1": "test_explicit_ref1",
 for explicit_reference_link in explicit_reference_links:
     explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
     explicit_reference_link_ddbb = session.query(ExplicitRefLink).filter(ExplicitRef.explicit_ref == explicit_reference_link["explicit_ref2"], ExplicitRefLink.name == explicit_reference_link["link"], ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id).first()
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
     result = {"message":"OK","color":"green"}
     if explicit_reference_link_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -415,7 +429,7 @@ explicit_reference_links = [{"explicit_ref1": "test_explicit_ref1",
 for explicit_reference_link in explicit_reference_links:
     explicit_reference_ddbb = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_reference["explicit_ref"]).first()
     explicit_reference_link_ddbb = session.query(ExplicitRefLink).filter(ExplicitRef.explicit_ref == explicit_reference_link["explicit_ref2"], ExplicitRefLink.name == explicit_reference_link["link"], ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id).first()
-    print("Details_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(explicit_reference_link))
     result = {"message":"OK","color":"green"}
     if explicit_reference_link_ddbb == None:
         result = {"message":"NOK","color":"red"}
@@ -584,6 +598,376 @@ engine_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
 
 print("***Data present into DDBB exported into the xml file " + output_xml_file)
 
+## Check multiple insertion operations
+engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_multiple_operations.xml")
+engine_gsdm.treat_data()
+
+events = [{"start": "2018-06-05T03:07:03",
+           "stop": "2018-06-05T03:07:36",
+           "generation_time": "2018-06-06T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
+          {"start": "2018-06-05T04:07:03",
+           "stop": "2018-06-05T04:07:36",
+           "generation_time": "2020-06-06T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
+          {"start": "2018-06-05T05:07:03",
+           "stop": "2018-06-05T05:07:36",
+           "generation_time": "2018-06-06T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
+          {"start": "2018-06-05T06:07:03",
+           "stop": "2018-06-05T06:07:36",
+           "generation_time": "2020-06-06T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
+          {"start": "2018-06-05T01:07:03",
+           "stop": "2018-06-05T08:07:36",
+           "generation_time": "2016-06-01T13:33:29",
+           "key": "test_key1",
+           "explicit_reference": "test_explicit_ref1",
+           "gauge": ("test_gauge_name1", "test_gauge_system1"),
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]}
+      ]
+for event in events:
+    event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
+    list_events_ddbb.append(event_ddbb)
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
+    result = {"message":"OK","color":"green"}
+    if event_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    result = {"message":"OK","color":"green"}
+    if event_ddbb.gauge_id != list_gauges[event["gauge"]].gauge_id:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the gauge correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    event_key_ddbb = session.query(EventKey).filter(EventKey.event_uuid == event_ddbb.event_uuid, EventKey.event_key == event["key"]).first()
+    result = {"message":"OK","color":"green"}
+    if link_ddbb == None:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+
+    if "values" in event:
+        values_ddbb = engine_gsdm.get_event_values([event_ddbb.event_uuid])
+        for value in event["values"]:
+            value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
+            result = {"message":"OK","color":"green"}
+            if len(value_ddbb) != 1:
+                result = {"message":"NOK","color":"red"}
+            # end if
+            print(colored("Check", on_color="on_blue") + "_{}: Event value with name {} has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno, value["name"]) + colored(result["message"], result["color"], attrs=['bold']))
+
+        # end for
+    # end if
+
+# end for
+
+# Generate the excel file containing the inserted data into the DDBB
+analysis = Analysis()
+output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis_after_multiple_operations.xlsx"
+analysis.generate_workbook_from_ddbb(output_file)
+
+print("***Data present into DDBB exported into the excel file " + output_file)
+
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
 engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
 #print(json.dumps(engine_gsdm.data, indent=4))
@@ -591,6 +975,49 @@ engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/x
 ### PENDING checks on the parser
 
 engine_gsdm.treat_data()
+
+events = [{"start": "2018-06-05T01:07:03",
+           "stop": "2018-06-05T02:07:15",
+           "generation_time": "2016-06-01T13:33:29"},
+          {"start": "2018-06-05T02:07:03",
+           "stop": "2018-06-05T02:07:15",
+           "generation_time": "2018-06-06T13:33:29"},
+          {"start": "2018-06-05T02:07:15",
+           "stop": "2018-06-05T04:07:03",
+           "generation_time": "2018-06-07T13:33:29"},
+          {"start": "2018-06-05T02:07:43",
+           "stop": "2018-06-05T02:07:56",
+           "generation_time": "2018-06-07T13:33:29"},
+          {"start": "2018-06-05T04:07:03",
+           "stop": "2018-06-05T04:07:36",
+           "generation_time": "2020-06-06T13:33:29"},
+          {"start": "2018-06-05T04:07:36",
+           "stop": "2018-06-05T06:07:03",
+           "generation_time": "2018-06-07T13:33:29"},
+          {"start": "2018-06-05T06:07:03",
+           "stop": "2018-06-05T06:07:36",
+           "generation_time": "2020-06-06T13:33:29"},
+          {"start": "2018-06-05T06:07:15",
+           "stop": "2018-06-05T08:07:36",
+           "generation_time": "2016-06-01T13:33:29"}
+]
+events_ddbb = session.query(Event).order_by(Event.start).all()
+result = {"message":"OK","color":"green"}
+if len(events_ddbb) != len(events):
+    result = {"message":"NOK","color":"red"}
+# end if
+print(colored("Check", on_color="on_blue") + "_{}: The number of events inserted {} is the expected {} --> ".format(getframeinfo(currentframe()).lineno, len(events_ddbb), len(events)) + colored(result["message"], result["color"], attrs=['bold']))
+for event_ddbb in events_ddbb:
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event_ddbb.__dict__))
+    event = [event for event in events if parse(event["start"]) == event_ddbb.start and 
+             parse(event["stop"]) == event_ddbb.stop and 
+             parse(event["generation_time"]) == event_ddbb.generation_time]
+    result = {"message":"OK","color":"green"}
+    if len(event) == 0:
+        result = {"message":"NOK","color":"red"}
+    # end if
+    print(colored("Check", on_color="on_blue") + "_{}: Event has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+# end for
 
 # Generate the excel file containing the inserted data into the DDBB
 analysis = Analysis()
