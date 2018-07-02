@@ -6,12 +6,20 @@ Written by DEIMOS Space S.L. (dibb)
 module gsdm
 """
 # Import openpyxl functionalities
+import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from .engine import Engine
+from .plotting import generate_gantt
 
 # Import GEOalchemy entities
 from geoalchemy2.shape import to_shape
+
+# Import matplotlib
+from openpyxl.drawing.image import Image
+
+# Import python utilities
+import numpy
 
 class Analysis():
     def __init__(self):
@@ -21,6 +29,7 @@ class Analysis():
     def generate_workbook_from_ddbb(self, name):
         """
         """
+        self.name = name
         # Remove the sheet created by default
         self.workbook.remove(self.workbook.active)
 
@@ -102,9 +111,17 @@ class Analysis():
         # Insert headings into the worksheet
         ws.append(["processing_uuid", "name", "validity_start", "validity_stop", "generation_time", "ingestion_time", "ingestion_duration", "dim_exec_version", "dim_signature_id"])
 
-        # Insert data into the worksheet
+        # Insert data into the worksheet and prepare it for creating the gantt
+        y_labels_gantt = []
+        data_gantt = []
         for row in data:
             ws.append(row)
+            validity_start = row[2]
+            validity_stop = row[3]
+            if validity_start != None and validity_stop != None:
+                y_labels_gantt.append(row[1])
+                data_gantt.append({"start": validity_start, "stop": validity_stop, "color": "blue", "text": row[4]})
+            # end if
         # end for
 
         # Applying styles
@@ -112,6 +129,10 @@ class Analysis():
         row.font = Font(name="mono",bold="True")
 
         self._adjust_column_width(ws)
+
+        filename = generate_gantt(y_labels_gantt, data_gantt)
+        img = Image(filename)
+        ws.add_image(img, "A" + str(len(data)+4))
 
         return
 
@@ -154,9 +175,17 @@ class Analysis():
         # Insert headings into the worksheet
         ws.append(["event_uuid", "start", "stop", "generation_time", "ingestion_time", "visible", "gauge_id", "explicit_ref_id", "processing_uuid"])
 
-        # Insert data into the worksheet
+        # Insert data into the worksheet and prepare it for creating the gantt
+        y_labels_gantt = []
+        data_gantt = []
         for row in data:
             ws.append(row)
+            start = row[1]
+            stop = row[2]
+            if start != None and stop != None:
+                y_labels_gantt.append(row[0])
+                data_gantt.append({"start": start, "stop": stop, "color": "blue", "text": row[3]})
+            # end if
         # end for
 
         # Applying styles
@@ -164,6 +193,10 @@ class Analysis():
         row.font = Font(name="mono",bold="True")
 
         self._adjust_column_width(ws)
+
+        filename = generate_gantt(y_labels_gantt, data_gantt)
+        img = Image(filename)
+        ws.add_image(img, "A" + str(len(data)+4))
 
         return
 
