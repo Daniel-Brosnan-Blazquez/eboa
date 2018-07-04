@@ -110,7 +110,7 @@ if len (session.query(Gauge).filter(Gauge.name == 'TEST').all()) != 1:
 # Create event
 event1Time = datetime.datetime.now()
 event1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-event1 = Event (event1Uuid, event1Time, event1Time, event1Time, event1Time,gauge1, dim_processing = dimProcessing1)
+event1 = Event (event1Uuid, event1Time, event1Time, event1Time,gauge1, dim_processing = dimProcessing1)
 
 # Insert the event into the database
 session.add (event1)
@@ -122,7 +122,7 @@ if len (session.query(Event).filter(Event.event_uuid == event1Uuid).all()) != 1:
 # Create another event
 event2Time = datetime.datetime.now()
 event2Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-event2 = Event (event2Uuid, event2Time, event2Time, event2Time, event2Time,gauge1, dim_processing = dimProcessing1)
+event2 = Event (event2Uuid, event2Time, event2Time, event2Time,gauge1, dim_processing = dimProcessing1)
 
 # Insert the event into the database
 session.add (event2)
@@ -144,7 +144,7 @@ if len (session.query(EventLink).filter(EventLink.name == 'TEST').all()) != 1:
 
 # Add text to the event
 name = 'TEST'
-eventText1 = EventText (name, 'TEST', 0, 0, 0, 0, event1)
+eventText1 = EventText (name, 'TEST', 0, 0, 0, event1)
 
 # Insert the text into the database
 session.add (eventText1)
@@ -155,7 +155,7 @@ if len (session.query(EventText).filter(EventText.event_uuid == event1Uuid).all(
 
 # Add double to the event
 name = 'TEST'
-eventDouble1 = EventDouble (name, pi, 1, 1, 0, 0, event1)
+eventDouble1 = EventDouble (name, pi, 1, 0, 0, event1)
 
 # Insert the float into the database
 session.add (eventDouble1)
@@ -166,7 +166,7 @@ if len (session.query(EventDouble).filter(EventDouble.event_uuid == event1Uuid).
 
 # Add object to the event
 name = 'TEST'
-eventObject1 = EventObject (name, 1, 1, 0, 0, event1)
+eventObject1 = EventObject (name, 1, 0, 0, event1)
 
 # Insert the object into the database
 session.add (eventObject1)
@@ -177,7 +177,7 @@ if len (session.query(EventObject).filter(EventObject.event_uuid == event1Uuid).
 
 # Add geometry to the event
 name = 'TEST'
-eventGeometry1 = EventGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 1, 0, 0, event1)
+eventGeometry1 = EventGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 0, 0, event1)
 
 # Insert the geometry into the database
 session.add (eventGeometry1)
@@ -202,7 +202,7 @@ if len (session.query(AnnotationCnf).filter(AnnotationCnf.name == 'TEST').all())
 # Create annotation
 annotation1Uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
 annotation1Time = datetime.datetime.now()
-annotation1 = Annotation (annotation1Uuid, annotation1Time, annotation1Time,annotationCnf1,explicitRef1, dimProcessing1)
+annotation1 = Annotation (annotation1Uuid, annotation1Time,annotationCnf1,explicitRef1, dimProcessing1)
 
 # Insert annotation into database
 session.add (annotation1)
@@ -213,7 +213,7 @@ if len (session.query(Annotation).filter(Annotation.annotation_uuid == annotatio
 
 # Add text to the annotation
 name = 'TEST'
-annotationText1 = AnnotationText (name, 'TEST', 0, 0, 0, 0, annotation1)
+annotationText1 = AnnotationText (name, 'TEST', 0, 0, 0, annotation1)
 
 # Insert the text into the database
 session.add (annotationText1)
@@ -224,7 +224,7 @@ if len (session.query(AnnotationText).filter(AnnotationText.annotation_uuid == a
 
 # Add double to the annotation
 name = 'TEST'
-annotationDouble1 = AnnotationDouble (name, pi, 1, 1, 0, 0, annotation1)
+annotationDouble1 = AnnotationDouble (name, pi, 1, 0, 0, annotation1)
 
 # Insert the float into the database
 session.add (annotationDouble1)
@@ -235,7 +235,7 @@ if len (session.query(AnnotationDouble).filter(AnnotationDouble.annotation_uuid 
 
 # Add object to the annotation
 name = 'TEST'
-annotationObject1 = AnnotationObject (name, 1, 1, 0, 0, annotation1)
+annotationObject1 = AnnotationObject (name, 1, 0, 0, annotation1)
 
 # Insert the object into the database
 session.add (annotationObject1)
@@ -246,7 +246,7 @@ if len (session.query(AnnotationObject).filter(AnnotationObject.annotation_uuid 
 
 # Add geometry to the annotation
 name = 'TEST'
-annotationGeometry1 = AnnotationGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 1, 0, 0, annotation1)
+annotationGeometry1 = AnnotationGeometry (name, 'POLYGON((3 0,6 0,6 3,3 3,3 0))', 1, 0, 0, annotation1)
 
 # Insert the geometry into the database
 session.add (annotationGeometry1)

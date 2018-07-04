@@ -8,15 +8,12 @@ module gsdm
 import os
 import sys
 
-# Adding path to the datamodel package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from datamodel.dim_signatures import DimSignature
-from datamodel.base import Session, engine, Base
-from datamodel.events import Event
-from datamodel.gauges import Gauge
-from datamodel.explicit_refs import ExplicitRef
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.events import Event
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.explicit_refs import ExplicitRef
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 import datetime
 import uuid
 import time
@@ -27,13 +24,13 @@ nProcesses = 10
 nEvents = 1000
 session = Session ()
 
-def createEvents (nEvents, explicitRef, gauge):
+def createEvents (nEvents, explicitRef, gauge, dimProcessing):
     session = Session ()
     for i in range(nEvents):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = Event (eventUuid, eventTime, eventTime, eventTime, eventTime,gauge, explicitRef)
+        event = Event (eventUuid, eventTime, eventTime, eventTime,gauge, explicitRef, dimProcessing)
 
         # Insert the event into the database
         session.add (event)
@@ -60,6 +57,18 @@ if __name__ == '__main__':
     
     if len (session.query(DimSignature).filter(DimSignature.dim_signature == 'TEST').all()) != 1:
         raise Exception("The DIM signature was not committed")
+
+    ################
+    # DIM Processing
+    ################
+    # Create dim_processing
+    processingTime = datetime.datetime.now()
+    processingUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    dimProcessing1 = DimProcessing (processingUuid, 'TEST', processingTime, "1.0", dimSignature1)
+
+    # Insert dim_processing into database
+    session.add (dimProcessing1)
+    session.commit()
 
     ################
     # Explicit reference
@@ -100,7 +109,7 @@ if __name__ == '__main__':
     startTime = time.time()
     print ('Running {} processes...'.format(nProcesses))
 
-    workers = [Process(target=createEvents, args=(nEvents, explicitRef1, gauge1)) for x in range(nProcesses)]
+    workers = [Process(target=createEvents, args=(nEvents, explicitRef1, gauge1, dimProcessing1)) for x in range(nProcesses)]
     [x.start() for x in workers]
     [x.join() for x in workers]
     print ('Done!')

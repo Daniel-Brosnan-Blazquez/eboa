@@ -8,15 +8,12 @@ module gsdm
 import os
 import sys
 
-# Adding path to the datamodel package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from datamodel.dim_signatures import DimSignature
-from datamodel.base import Session, engine, Base
-from datamodel.events import Event
-from datamodel.gauges import Gauge
-from datamodel.explicit_refs import ExplicitRef
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.events import Event
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.explicit_refs import ExplicitRef
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 import datetime
 import uuid
 import time
@@ -38,7 +35,7 @@ def createEvents (nEvents):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, generation_time = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id, visible = True, processing_uuid = dimProcessing.processing_uuid)
+        event = dict (event_uuid = eventUuid, start = eventTime, stop = eventTime, ingestion_time = eventTime, gauge_id = gauge.gauge_id, explicit_ref_id = explicitRef.explicit_ref_id, visible = True, processing_uuid = dimProcessing.processing_uuid)
 
         # Insert the event into the database
         listEvents.append (event)

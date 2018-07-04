@@ -177,10 +177,10 @@ class Analysis():
         
         # Get data
         events = self.engine.get_events()
-        data = [[str(i.event_uuid),i.start,i.stop,i.generation_time,i.ingestion_time,i.visible, i.gauge_id,i.explicit_ref_id,str(i.processing_uuid)] for i in events]
+        data = [[str(i.event_uuid),i.start,i.stop,i.ingestion_time,i.visible, i.gauge_id,i.explicit_ref_id,str(i.processing_uuid)] for i in events]
         
         # Insert headings into the worksheet
-        ws.append(["event_uuid", "start", "stop", "generation_time", "ingestion_time", "visible", "gauge_id", "explicit_ref_id", "processing_uuid"])
+        ws.append(["event_uuid", "start", "stop", "ingestion_time", "visible", "gauge_id", "explicit_ref_id", "processing_uuid"])
 
         # Insert data into the worksheet and prepare it for creating the gantt
         y_labels_gantt = []
@@ -242,10 +242,10 @@ class Analysis():
         
         # Get data
         event_keys = self.engine.get_event_keys()
-        data = [[i.event_key,i.generation_time,i.visible,str(i.event_uuid),i.dim_signature_id] for i in event_keys]
+        data = [[i.event_key,i.visible,str(i.event_uuid),i.dim_signature_id] for i in event_keys]
         
         # Insert headings into the worksheet
-        ws.append(["event_key", "generation_time", "visible", "event_uuid", "dim_signature_id"])
+        ws.append(["event_key", "visible", "event_uuid", "dim_signature_id"])
 
         # Insert data into the worksheet
         for row in data:
@@ -294,10 +294,10 @@ class Analysis():
         
         # Get data
         annotations = self.engine.get_annotations()
-        data = [[str(i.annotation_uuid),i.generation_time,i.ingestion_time,i.visible,i.explicit_ref_id,str(i.processing_uuid),i.annotation_cnf_id] for i in annotations]
+        data = [[str(i.annotation_uuid),i.ingestion_time,i.visible,i.explicit_ref_id,str(i.processing_uuid),i.annotation_cnf_id] for i in annotations]
         
         # Insert headings into the worksheet
-        ws.append(["annotation_uuid", "generation_time", "ingestion_time", "visible", "explicit_ref_id", "processing_uuid", "annotation_cnf_id"])
+        ws.append(["annotation_uuid", "ingestion_time", "visible", "explicit_ref_id", "processing_uuid", "annotation_cnf_id"])
 
         # Insert data into the worksheet
         for row in data:

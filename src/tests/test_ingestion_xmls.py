@@ -272,7 +272,7 @@ events = [{"start": "2018-06-05T02:07:03",
            ]}
       ]
 for event in events:
-    event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
+    event_ddbb = session.query(Event).join(ExplicitRef).join(DimProcessing).filter(Event.start == event["start"], Event.stop == event["stop"], DimProcessing.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
     list_events_ddbb.append(event_ddbb)
     print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
     result = {"message":"OK","color":"green"}
@@ -362,7 +362,7 @@ annotations = [{"generation_time": "2018-06-06T13:33:29",
                 ]
             }]
 for annotation in annotations:
-    annotation_ddbb = session.query(Annotation).join(ExplicitRef).filter(Annotation.generation_time == annotation["generation_time"], ExplicitRef.explicit_ref == annotation["explicit_reference"]).first()
+    annotation_ddbb = session.query(Annotation).join(DimProcessing).join(ExplicitRef).filter(DimProcessing.generation_time == annotation["generation_time"], ExplicitRef.explicit_ref == annotation["explicit_reference"]).first()
     print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(annotation))
     result = {"message":"OK","color":"green"}
     if annotation_ddbb == None:
@@ -921,7 +921,7 @@ events = [{"start": "2018-06-05T03:07:03",
            ]}
       ]
 for event in events:
-    event_ddbb = session.query(Event).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], Event.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
+    event_ddbb = session.query(Event).join(DimProcessing).join(ExplicitRef).filter(Event.start == event["start"], Event.stop == event["stop"], DimProcessing.generation_time == event["generation_time"], ExplicitRef.explicit_ref == event["explicit_reference"]).first()
     list_events_ddbb.append(event_ddbb)
     print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event))
     result = {"message":"OK","color":"green"}
@@ -998,17 +998,20 @@ events = [{"start": "2018-06-05T01:07:03",
            "stop": "2018-06-05T08:07:36",
            "generation_time": "2016-06-01T13:33:29"}
 ]
-events_ddbb = session.query(Event).order_by(Event.start).all()
+events_ddbb = session.query(Event, DimProcessing.generation_time).join(DimProcessing).order_by(Event.start).all()
+print(events_ddbb)
 result = {"message":"OK","color":"green"}
 if len(events_ddbb) != len(events):
     result = {"message":"NOK","color":"red"}
 # end if
 print(colored("Check", on_color="on_blue") + "_{}: The number of events inserted {} is the expected {} --> ".format(getframeinfo(currentframe()).lineno, len(events_ddbb), len(events)) + colored(result["message"], result["color"], attrs=['bold']))
-for event_ddbb in events_ddbb:
-    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event_ddbb.__dict__))
+for info in events_ddbb:
+    generation_time = info[1]
+    event_ddbb = info[0]
+    print(colored("Details", on_color="on_green") + "_{}:".format(getframeinfo(currentframe()).lineno) + str(event_ddbb.__dict__) + "; 'generation_time': " + str(generation_time))
     event = [event for event in events if parse(event["start"]) == event_ddbb.start and 
              parse(event["stop"]) == event_ddbb.stop and 
-             parse(event["generation_time"]) == event_ddbb.generation_time]
+             parse(event["generation_time"]) == generation_time]
     result = {"message":"OK","color":"green"}
     if len(event) == 0:
         result = {"message":"NOK","color":"red"}

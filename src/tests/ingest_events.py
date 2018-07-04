@@ -8,15 +8,12 @@ module gsdm
 import os
 import sys
 
-# Adding path to the datamodel package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from datamodel.base import Session, engine, Base
-from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event
-from datamodel.gauges import Gauge
-from datamodel.explicit_refs import ExplicitRef
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.events import Event
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.explicit_refs import ExplicitRef
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 import datetime
 import uuid
 import time
@@ -31,7 +28,7 @@ def createEvents (nEvents, explicitRef, gauge, dimProcessing):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = Event (eventUuid, eventTime, eventTime, eventTime, eventTime,gauge, explicitRef, dimProcessing)
+        event = Event (eventUuid, eventTime, eventTime, eventTime,gauge, explicitRef, dimProcessing)
 
         # Insert the event into the database
         session.add (event)
@@ -72,7 +69,7 @@ if __name__ == '__main__':
     session.add (dimProcessing1)
     session.commit()
     
-    if len (session.query(DimProcessing).filter(DimProcessing.filename == 'TEST').all()) != 1:
+    if len (session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all()) != 1:
         raise Exception("The DIM processing was not committed")
 
     ################

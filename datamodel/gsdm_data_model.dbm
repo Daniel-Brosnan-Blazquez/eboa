@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,595" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,564" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -33,9 +33,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="stop" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="generation_time" not-null="true">
-		<type name="timestamp" length="1"/>
-	</column>
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -50,9 +47,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="explicit_ref_id" index="7"/>
-		<object name="gauge_id" index="6"/>
-		<object name="processing_uuid" index="8"/>
+		<object name="explicit_ref_id" index="6"/>
+		<object name="gauge_id" index="5"/>
+		<object name="processing_uuid" index="7"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -302,9 +299,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="annotation_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
-	<column name="generation_time" not-null="true">
-		<type name="timestamp" length="1"/>
-	</column>
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -319,9 +313,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="annotation_cnf_id" index="6"/>
-		<object name="explicit_ref_id" index="4"/>
-		<object name="processing_uuid" index="5"/>
+		<object name="annotation_cnf_id" index="5"/>
+		<object name="explicit_ref_id" index="3"/>
+		<object name="processing_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -726,16 +720,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="event_key" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="generation_time" not-null="true">
-		<type name="timestamp" length="1"/>
-	</column>
 	<column name="visible" not-null="true">
 		<type name="boolean" length="0"/>
 	</column>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_id" index="4"/>
-		<object name="event_uuid" index="3"/>
+		<object name="dim_signature_id" index="3"/>
+		<object name="event_uuid" index="2"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -1014,14 +1005,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
 			<column name="gauge_id"/>
-		</idxelement>
-</index>
-
-<index name="idx_events_generation_time" table="gsdm.event_tb"
-	 concurrent="false" unique="false" fast-update="false" buffering="false"
-	 index-type="btree" factor="0">
-		<idxelement use-sorting="false">
-			<column name="generation_time"/>
 		</idxelement>
 </index>
 
@@ -1401,14 +1384,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_generation_time" table="gsdm.annotation_tb"
-	 concurrent="false" unique="false" fast-update="false" buffering="false"
-	 index-type="btree" factor="0">
-		<idxelement use-sorting="false">
-			<column name="generation_time"/>
-		</idxelement>
-</index>
-
 <index name="idx_annotation_explicit_ref_id" table="gsdm.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
@@ -1604,14 +1579,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="gsdm.event_key_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
-
-<index name="idx_event_keys_generation_time" table="gsdm.event_key_tb"
-	 concurrent="false" unique="false" fast-update="false" buffering="false"
-	 index-type="btree" factor="0">
-		<idxelement use-sorting="false">
-			<column name="generation_time"/>
-		</idxelement>
-</index>
 
 <index name="idx_event_keys_visible" table="gsdm.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"

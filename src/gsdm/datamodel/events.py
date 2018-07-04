@@ -19,7 +19,6 @@ class Event(Base):
     event_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     start = Column(DateTime)
     stop = Column(DateTime)
-    generation_time = Column(DateTime)
     ingestion_time = Column(DateTime)
     visible = Column(Boolean)
     gauge_id = Column(Integer, ForeignKey('gauge_cnf_tb.gauge_id'))
@@ -29,11 +28,10 @@ class Event(Base):
     explicitRef = relationship("ExplicitRef", backref="events")
     source = relationship("DimProcessing", backref="events")
 
-    def __init__(self, event_uuid, start, stop, generation_time, ingestion_time, gauge, explicit_ref = None, dim_processing = None, visible = True):
+    def __init__(self, event_uuid, start, stop, ingestion_time, gauge, explicit_ref = None, dim_processing = None, visible = True):
         self.event_uuid = event_uuid
         self.start = start
         self.stop = stop
-        self.generation_time = generation_time
         self.ingestion_time = ingestion_time
         self.visible = visible
         self.gauge = gauge
@@ -59,7 +57,6 @@ class EventKey(Base):
     __tablename__ = 'event_key_tb'
 
     event_key = Column(Text)
-    generation_time = Column(DateTime)
     visible = Column(Boolean)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventKeys")
@@ -69,9 +66,8 @@ class EventKey(Base):
         'primary_key':[event_uuid]
     }
 
-    def __init__(self, key, generation_time, event, dim_signature, visible = False):
+    def __init__(self, key, event, dim_signature, visible = False):
         self.event_uuid_link = link
-        self.generation_time = generation_time
         self.visible = visible
         self.event = event
         self.dim_signature = dim_signature

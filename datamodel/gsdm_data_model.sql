@@ -37,7 +37,6 @@ CREATE TABLE gsdm.event_tb(
 	event_uuid uuid NOT NULL,
 	start timestamp NOT NULL,
 	stop timestamp NOT NULL,
-	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
 	gauge_id integer NOT NULL,
@@ -173,7 +172,6 @@ ALTER TABLE gsdm.event_geometry_tb OWNER TO gsdm;
 -- DROP TABLE IF EXISTS gsdm.annotation_tb CASCADE;
 CREATE TABLE gsdm.annotation_tb(
 	annotation_uuid uuid NOT NULL,
-	generation_time timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
 	explicit_ref_id integer NOT NULL,
@@ -400,7 +398,6 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- DROP TABLE IF EXISTS gsdm.event_key_tb CASCADE;
 CREATE TABLE gsdm.event_key_tb(
 	event_key text NOT NULL,
-	generation_time timestamp NOT NULL,
 	visible boolean NOT NULL,
 	event_uuid uuid NOT NULL,
 	dim_signature_id integer NOT NULL
@@ -591,15 +588,6 @@ CREATE INDEX idx_events_gauge_id ON gsdm.event_tb
 	USING btree
 	(
 	  gauge_id
-	);
--- ddl-end --
-
--- object: idx_events_generation_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_events_generation_time CASCADE;
-CREATE INDEX idx_events_generation_time ON gsdm.event_tb
-	USING btree
-	(
-	  generation_time
 	);
 -- ddl-end --
 
@@ -1026,15 +1014,6 @@ CREATE INDEX idx_annotation_ingestion_time ON gsdm.annotation_tb
 	);
 -- ddl-end --
 
--- object: idx_annotation_generation_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_annotation_generation_time CASCADE;
-CREATE INDEX idx_annotation_generation_time ON gsdm.annotation_tb
-	USING btree
-	(
-	  generation_time
-	);
--- ddl-end --
-
 -- object: idx_annotation_explicit_ref_id | type: INDEX --
 -- DROP INDEX IF EXISTS gsdm.idx_annotation_explicit_ref_id CASCADE;
 CREATE INDEX idx_annotation_explicit_ref_id ON gsdm.annotation_tb
@@ -1246,15 +1225,6 @@ ALTER TABLE gsdm.event_key_tb ADD CONSTRAINT unique_event_keys UNIQUE (event_key
 ALTER TABLE gsdm.event_key_tb ADD CONSTRAINT dim_signature_tb_fk FOREIGN KEY (dim_signature_id)
 REFERENCES gsdm.dim_signature_tb (dim_signature_id) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
--- ddl-end --
-
--- object: idx_event_keys_generation_time | type: INDEX --
--- DROP INDEX IF EXISTS gsdm.idx_event_keys_generation_time CASCADE;
-CREATE INDEX idx_event_keys_generation_time ON gsdm.event_key_tb
-	USING btree
-	(
-	  generation_time
-	);
 -- ddl-end --
 
 -- object: idx_event_keys_visible | type: INDEX --
