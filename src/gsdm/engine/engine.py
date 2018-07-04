@@ -10,13 +10,9 @@ import datetime
 import uuid
 import random
 import os
-import sys
 from dateutil import parser
 from itertools import chain
 from oslo_concurrency import lockutils
-
-# Adding path to the datamodel package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -30,14 +26,13 @@ from geoalchemy2.shape import to_shape
 from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates
 
 # Import datamodel
-from datamodel.base import Session, engine, Base
-from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from datamodel.gauges import Gauge
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
-from datamodel import annotations
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import xml parser
 from lxml import etree

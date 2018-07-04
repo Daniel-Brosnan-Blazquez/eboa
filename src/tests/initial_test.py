@@ -8,16 +8,13 @@ module gsdm
 import os
 import sys
 
-# Adding path to the datamodel package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from datamodel.base import Session, engine, Base
-from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry
-from datamodel.gauges import Gauge
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.events import Event, EventLink, EventText, EventDouble, EventObject, EventGeometry
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 import datetime
 import uuid
 import pprint

@@ -8,23 +8,20 @@ module gsdm
 import os
 import sys
 
-# Adding path to the engine package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Import engine of the DDBB
-from engine.engine import Engine
-from datamodel.base import Session, engine, Base
+from gsdm.engine.engine import Engine
+from gsdm.datamodel.base import Session, engine, Base
 
 # Import analysis module
-from engine.analysis import Analysis
+from gsdm.engine.analysis import Analysis
 
 # Import datamodel
-from datamodel.dim_signatures import DimSignature
-from datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
-from datamodel.gauges import Gauge
-from datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 
 # Import python utilities
 from termcolor import colored
