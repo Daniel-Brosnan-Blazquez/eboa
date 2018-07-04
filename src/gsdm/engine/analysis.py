@@ -20,6 +20,7 @@ from openpyxl.drawing.image import Image
 
 # Import python utilities
 import numpy
+import os
 
 class Analysis():
     def __init__(self):
@@ -30,6 +31,7 @@ class Analysis():
         """
         """
         self.name = name
+        self.files_to_remove = []
         # Remove the sheet created by default
         self.workbook.remove(self.workbook.active)
 
@@ -60,6 +62,10 @@ class Analysis():
 
         # Save the workbook into the file specified
         self.workbook.save(name)
+
+        for file in self.files_to_remove:
+            os.remove(file)
+        # end for
 
         return
 
@@ -131,6 +137,7 @@ class Analysis():
         self._adjust_column_width(ws)
 
         filename = generate_gantt(y_labels_gantt, data_gantt)
+        self.files_to_remove.append(filename)
         img = Image(filename)
         ws.add_image(img, "A" + str(len(data)+4))
 
@@ -195,6 +202,7 @@ class Analysis():
         self._adjust_column_width(ws)
 
         filename = generate_gantt(y_labels_gantt, data_gantt)
+        self.files_to_remove.append(filename)
         img = Image(filename)
         ws.add_image(img, "A" + str(len(data)+4))
 

@@ -8,10 +8,7 @@ module gsdm
 import os
 import sys
 
-# Adding path to the engine package
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from engine.analysis import Analysis
+from gsdm.engine.analysis import Analysis
 
 def extract_data_to_xls():
     analysis = Analysis()
