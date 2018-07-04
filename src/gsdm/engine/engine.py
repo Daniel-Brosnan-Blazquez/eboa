@@ -1382,7 +1382,10 @@ class Engine():
     def _remove_deprecated_events_by_erase_and_replace(self):
         """
         """
-        list_events_to_be_created = []
+        list_events_to_be_created = {"events": [],
+                                     "values": [],
+                                     "keys": [],
+                                     "links": []}
         for gauge in self.erase_and_replace_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
@@ -1414,12 +1417,17 @@ class Engine():
                             if timestamp > event.stop:
                                 raise
                             # end if
-                            list_events_to_be_created.append(dict(event_uuid = id, start = timestamp, stop = event.stop,
+                            list_events_to_be_created["events"].append(dict(event_uuid = id, start = timestamp, stop = event.stop,
                                                                   ingestion_time = datetime.datetime.now(),
                                                                   gauge_id = gauge.gauge_id,
                                                                   explicit_ref_id = event.explicit_ref_id,
                                                                   processing_uuid = event.processing_uuid,
                                                                   visible = True))
+                            values = self.get_event_values([event_uuid])
+                            for value in values:
+                                
+                            # end if
+                            print(values)
                             ### Insert also associated values, links and event key
                             # Remove event
                             self.session.query(Event).filter(Event.event_uuid == event_uuid).delete(synchronize_session=False)
@@ -1459,7 +1467,7 @@ class Engine():
                                     raise
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                list_events_to_be_created.append(dict(event_uuid = id, start = validity_start, stop = event.stop,
+                                list_events_to_be_created["events"].append(dict(event_uuid = id, start = validity_start, stop = event.stop,
                                                                       ingestion_time = datetime.datetime.now(),
                                                                       gauge_id = gauge.gauge_id,
                                                                       explicit_ref_id = event.explicit_ref_id,
@@ -1509,7 +1517,7 @@ class Engine():
                                     raise
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                list_events_to_be_created.append(dict(event_uuid = id, start = start, stop = validity_start,
+                                list_events_to_be_created["events"].append(dict(event_uuid = id, start = start, stop = validity_start,
                                                                       ingestion_time = datetime.datetime.now(),
                                                                       gauge_id = gauge.gauge_id,
                                                                       explicit_ref_id = event.explicit_ref_id,
@@ -1535,7 +1543,7 @@ class Engine():
         # end for
 
         # Bulk insert events
-        self.session.bulk_insert_mappings(Event, list_events_to_be_created)
+        self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
         # # Bulk insert keys
         # self.session.bulk_insert_mappings(EventKey, list_keys)
 

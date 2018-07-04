@@ -999,7 +999,6 @@ events = [{"start": "2018-06-05T01:07:03",
            "generation_time": "2016-06-01T13:33:29"}
 ]
 events_ddbb = session.query(Event, DimProcessing.generation_time).join(DimProcessing).order_by(Event.start).all()
-print(events_ddbb)
 result = {"message":"OK","color":"green"}
 if len(events_ddbb) != len(events):
     result = {"message":"NOK","color":"red"}
