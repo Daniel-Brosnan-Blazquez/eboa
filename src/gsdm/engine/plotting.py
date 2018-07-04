@@ -7,6 +7,7 @@ module gsdm
 """
 # Import matplotlib
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as plt_dates
 

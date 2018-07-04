@@ -3,7 +3,6 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
-
   config.vm.provision "shell", inline: <<-SHELL
     # Install access to Red-Hat packages for python and PostGIS
     sudo yum install -y epel-release
@@ -21,24 +20,8 @@ Vagrant.configure("2") do |config|
     sudo yum install -y python34
     # Install python package manager
     sudo yum install -y python34-pip
-    # Install python ORM for postgreSQL
-    sudo pip3 install sqlalchemy
-    # Install python DBApi for postgreSQL
-    sudo pip3 install psycopg2
-    # Install python ORM for postGIS
-    sudo pip3 install geoalchemy2
-    # Install python terminal color features
-    sudo pip3 install termcolor
-    # Install python terminal color features
-    sudo pip3 install python-dateutil
-    # Install python library for reading and writing Excel 2010
-    sudo pip3 install openpyxl
-    # Install python library for reading and writing Excel 2010
-    sudo pip3 install lxml
-    # Install python libreary for converting to text the geometries
-    sudo pip3 install shapely
-    # Install python module coverage for making coverage analysis of code
-    sudo pip3 install coverage
+    # Install python module matplotlib for creating gantts inside the excel files
+    sudo yum install -y python34-tkinter
     # Allow local connections to the DDBB
     sudo cp /var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba_bak.conf
     sudo sed -i 's/peer/trust/' /var/lib/pgsql/data/pg_hba.conf
@@ -46,6 +29,13 @@ Vagrant.configure("2") do |config|
     sudo service postgresql restart
     # Init database
     sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/gsdm_data_model.sql
+    # Install python terminal color features
+    sudo pip3 install termcolor
+    # Install python module coverage for making coverage analysis of code
+    sudo pip3 install coverage
+    # Install gsdm
+    cd /vagrant/
+    sudo pip3 install -e src
     # Execute tests
     cd /vagrant/src/tests/
     python3 initial_test.py
