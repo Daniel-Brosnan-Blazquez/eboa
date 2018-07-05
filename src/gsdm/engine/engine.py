@@ -1383,7 +1383,7 @@ class Engine():
         """
         """
         list_events_to_be_created = {"events": [],
-                                     "values": [],
+                                     "values": {},
                                      "keys": [],
                                      "links": []}
         for gauge in self.erase_and_replace_gauges:
@@ -1423,11 +1423,8 @@ class Engine():
                                                                   explicit_ref_id = event.explicit_ref_id,
                                                                   processing_uuid = event.processing_uuid,
                                                                   visible = True))
-                            values = self.get_event_values([event_uuid])
-                            for value in values:
-                                
-                            # end if
-                            print(values)
+                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
+
                             ### Insert also associated values, links and event key
                             # Remove event
                             self.session.query(Event).filter(Event.event_uuid == event_uuid).delete(synchronize_session=False)
@@ -1473,6 +1470,7 @@ class Engine():
                                                                       explicit_ref_id = event.explicit_ref_id,
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])                                
                                 ### Insert also associated values, links and event key
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
@@ -1523,6 +1521,7 @@ class Engine():
                                                                       explicit_ref_id = event.explicit_ref_id,
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                             # end if
                             ### Insert also associated values, links and event key
                             if event.stop > validity_stop:
@@ -1547,25 +1546,25 @@ class Engine():
         # # Bulk insert keys
         # self.session.bulk_insert_mappings(EventKey, list_keys)
 
-        # # Bulk insert values
-        # if "objects" in list_values:
-        #     self.session.bulk_insert_mappings(EventObject, list_values["objects"])
-        # # end if
-        # if "booleans" in list_values:
-        #     self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
-        # # end if
-        # if "texts" in list_values:
-        #     self.session.bulk_insert_mappings(EventText, list_values["texts"])
-        # # end if
-        # if "doubles" in list_values:
-        #     self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
-        # # end if
-        # if "timestamps" in list_values:
-        #     self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
-        # # end if
-        # if "geometries" in list_values:
-        #     self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
-        # # end if
+        # Bulk insert values
+        if EventObject in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+        # end if
+        if EventBoolean in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+        # end if
+        if EventText in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+        # end if
+        if EventDouble in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+        # end if
+        if EventTimestamp in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+        # end if
+        if EventGeometry in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+        # end if
 
         # # Bulk insert links
         # self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
@@ -1573,6 +1572,30 @@ class Engine():
 
         return
 
+    def _replicate_event_values(self, from_event_uuid, to_event_uuid, list_values_to_be_created):
+        """
+        """
+        values = self.get_event_values([from_event_uuid])
+        for value in values:
+            if not type(value) in list_values_to_be_created:
+                list_values_to_be_created[type(value)] = []
+            # end if
+            value_to_insert = {"event_uuid": to_event_uuid,
+                               "name": value.name,
+                               "level_position": value.level_position,
+                               "parent_level": value.parent_level,
+                               "parent_position": value.parent_position
+            }
+            if not type(value) in (EventObject, EventGeometry):
+                value_to_insert["value"] = value.value
+            elif type(value) == EventGeometry:
+                value_to_insert["value"] = to_shape(value.value).to_wkt()
+            # end if
+            list_values_to_be_created[type(value)].append(value_to_insert)
+        # end for
+        
+        return
+    
     def _remove_deprecated_events_event_keys(self):
         """
         """
