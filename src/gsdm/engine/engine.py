@@ -362,17 +362,33 @@ class Engine():
         
         return self.session.query(Gauge).all()
 
-    def get_event_keys(self):
+    def get_event_keys(self, event_uuids = None):
         """
         """
-        
-        return self.session.query(EventKey).all()
+        if event_uuids:
+            if type(event_uuids) != list:
+                raise
+            # end if
+            keys = self.session.query(EventKey).filter(EventKey.event_uuid.in_(event_uuids)).all()
+        else:
+            keys = self.session.query(EventKey).all()
+        # end if
 
-    def get_event_links(self):
+        return keys
+
+    def get_event_links(self, event_uuids = None):
         """
         """
-        
-        return self.session.query(EventLink).all()
+        if event_uuids:
+            if type(event_uuids) != list:
+                raise
+            # end if
+            links = self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids)).all()
+        else:
+            links = self.session.query(EventLink).all()
+        # end if
+
+        return links
 
     def get_annotations(self, processing_uuids = None):
         """
@@ -1112,9 +1128,15 @@ class Engine():
                                     explicit_ref_id = explicit_ref.explicit_ref_id,
                                     processing_uuid = self.source.processing_uuid,
                                     visible = visible))
+
+            # Make the key visible only in case it is not going to be inserted as EVENT_KEYS
+            visible = True
+            if gauge_info["insertion_type"] == "EVENT_KEYS":
+                visible = False
+            # end if
             # Insert the key into the list for bulk ingestion
             list_keys.append(dict(event_key = key, event_uuid = id,
-                                  visible = False,
+                                  visible = visible,
                                   dim_signature_id = self.dim_signature.dim_signature_id))
 
             # Insert values
@@ -1424,8 +1446,8 @@ class Engine():
                                                                   processing_uuid = event.processing_uuid,
                                                                   visible = True))
                             self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
-
-                            ### Insert also associated values, links and event key
+                            self._replicate_event_links(event_uuid, id, list_events_to_be_created["links"])
+                            self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
                             # Remove event
                             self.session.query(Event).filter(Event.event_uuid == event_uuid).delete(synchronize_session=False)
                         # end for
@@ -1470,8 +1492,9 @@ class Engine():
                                                                       explicit_ref_id = event.explicit_ref_id,
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])                                
-                                ### Insert also associated values, links and event key
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
+                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
@@ -1522,8 +1545,9 @@ class Engine():
                                                                       processing_uuid = event.processing_uuid,
                                                                       visible = True))
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
+                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             # end if
-                            ### Insert also associated values, links and event key
                             if event.stop > validity_stop:
                                 list_split_events[event.event_uuid] = event
                             else:
@@ -1543,8 +1567,10 @@ class Engine():
 
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
-        # # Bulk insert keys
-        # self.session.bulk_insert_mappings(EventKey, list_keys)
+        # Bulk insert keys
+        self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+        # Bulk insert links
+        self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
 
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
@@ -1565,10 +1591,6 @@ class Engine():
         if EventGeometry in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
         # end if
-
-        # # Bulk insert links
-        # self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
-
 
         return
 
@@ -1595,7 +1617,32 @@ class Engine():
         # end for
         
         return
-    
+
+    def _replicate_event_links(self, from_event_uuid, to_event_uuid, list_links_to_be_created):
+        """
+        """
+        links = self.get_event_links([from_event_uuid])
+        for link in links:
+            list_links_to_be_created.append(dict(name = link.name,
+                                                 event_uuid_link = to_event_uuid,
+                                                 event_uuid = link.event_uuid))
+        # end for
+        
+        return
+
+    def _replicate_event_keys(self, from_event_uuid, to_event_uuid, list_keys_to_be_created):
+        """
+        """
+        keys = self.get_event_keys([from_event_uuid])
+        for key in keys:
+            list_keys_to_be_created.append(dict(event_key = key.event_key,
+                                                event_uuid = to_event_uuid,
+                                                visible = True,
+                                                dim_signature_id = key.dim_signature_id))
+        # end for
+        
+        return
+
     def _remove_deprecated_events_event_keys(self):
         """
         """
