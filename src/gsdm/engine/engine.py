@@ -1495,6 +1495,7 @@ class Engine():
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
