@@ -28,7 +28,7 @@ class Event(Base):
     explicitRef = relationship("ExplicitRef", backref="events")
     source = relationship("DimProcessing", backref="events")
 
-    def __init__(self, event_uuid, start, stop, ingestion_time, gauge, explicit_ref = None, dim_processing = None, visible = True):
+    def __init__(self, event_uuid, start, stop, ingestion_time, gauge, dim_processing, explicit_ref = None, visible = True):
         self.event_uuid = event_uuid
         self.start = start
         self.stop = stop
@@ -67,7 +67,7 @@ class EventKey(Base):
     }
 
     def __init__(self, key, event, dim_signature, visible = False):
-        self.event_uuid_link = link
+        self.event_key = key
         self.visible = visible
         self.event = event
         self.dim_signature = dim_signature
