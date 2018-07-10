@@ -29,7 +29,11 @@ from inspect import currentframe, getframeinfo
 import json
 from dateutil.parser import parse
 
+# Import profiling module
+import sqltap
+
 # Create session to connect to the database
+profiler = sqltap.start()
 session = Session()
 
 # Clear all tables before executing the test
@@ -1034,6 +1038,67 @@ events = [{"start": "2018-06-05T01:07:03",
                 "parent_level": 1,
                 "parent_position": 8}
            ]},
+          {"start": "2018-06-05T01:07:05",
+           "stop": "2018-06-05T02:07:15",
+           "generation_time": "2016-06-01T13:33:29",
+           "values":[
+               {"name": "test_object_name1",
+                "level_position": 0,
+                "parent_level": -1,
+                "parent_position": 0},
+               {"name": "test_text_name1",
+                "level_position": 0,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_timestamp_name1",
+                "level_position": 1,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name1",
+                "level_position": 2,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name1",
+                "level_position": 3,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name2",
+                "level_position": 4,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name2",
+                "level_position": 0,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_geometry1",
+                "level_position": 1,
+                "parent_level": 1,
+                "parent_position": 4},
+               {"name": "test_text_name10",
+                "level_position": 5,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_boolean_name10",
+                "level_position": 6,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_double_name10",
+                "level_position": 7,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_object_name11",
+                "level_position": 8,
+                "parent_level": 0,
+                "parent_position": 0},
+               {"name": "test_text_name11",
+                "level_position": 2,
+                "parent_level": 1,
+                "parent_position": 8},
+               {"name": "test_geometry10",
+                "level_position": 3,
+                "parent_level": 1,
+                "parent_position": 8}
+           ]},
           {"start": "2018-06-05T02:07:03",
            "stop": "2018-06-05T02:07:15",
            "generation_time": "2018-06-06T13:33:29",
@@ -1493,5 +1558,8 @@ output_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/analysis_after_
 analysis.generate_workbook_from_ddbb(output_file)
 
 print("***Data present into DDBB exported into the excel file " + output_file)
+
+statistics = profiler.collect()
+sqltap.report(statistics, "report.html", report_format="html")
 
 sys.exit()
