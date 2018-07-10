@@ -26,7 +26,7 @@ class Annotation(Base):
     explicitRef = relationship("ExplicitRef", backref="annotations")
     source = relationship("DimProcessing", backref="annotations")
 
-    def __init__(self, annotation_uuid, ingestion_time, annotation_cnf, explicit_ref, dim_processing = None, visible = False):
+    def __init__(self, annotation_uuid, ingestion_time, annotation_cnf, explicit_ref, dim_processing, visible = False):
         self.annotation_uuid = annotation_uuid
         self.ingestion_time = ingestion_time
         self.visible = visible
