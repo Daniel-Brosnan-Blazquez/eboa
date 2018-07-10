@@ -1091,6 +1091,41 @@ class Engine():
 
         return
 
+    def _insert_event(self, list_events, id, start, stop, gauge, explicit_ref_id, visible, source = None, source_id = None):
+        """
+        """
+        if not type(start) == datetime.datetime:
+            start = parser.parse(start)
+        # end if
+        if not type(stop) == datetime.datetime:
+            stop = parser.parse(stop)
+        # end if
+        if stop < start:
+            # The period of the event is not correct (stop > start)
+            self.session.rollback()
+            raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
+        # end if
+        
+        if source == None:
+            source = self.session.query(DimProcessing).filter(DimProcessing.processing_uuid == source_id).first()
+        # end if
+
+        source_start = source.validity_start
+        source_stop = source.validity_stop
+        if stop < source_start or start > source_stop:
+            # The period of the event is not inside the validity period of the input
+            self.session.rollback()
+            raise WrongPeriod(self.exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, start, stop, source_start, source_stop))
+        # end if
+            
+        list_events.append(dict(event_uuid = id, start = start, stop = stop,
+                                ingestion_time = datetime.datetime.now(),
+                                gauge_id = gauge.gauge_id,
+                                explicit_ref_id = explicit_ref_id,
+                                processing_uuid = source.processing_uuid,
+                                visible = visible))
+        return
+
     def _insert_events(self):
         """
         """
@@ -1103,12 +1138,6 @@ class Engine():
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             start = event.get("start")
             stop = event.get("stop")
-            if parser.parse(stop) < parser.parse(start):
-                # The period of the event is not correct (stop > start)
-                self.session.rollback()
-                raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
-            # end if
-
             gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = self.explicit_refs[event.get("explicit_reference")]
@@ -1122,12 +1151,8 @@ class Engine():
                 self.keys_events.append(key)
             # end if
             # Insert the event into the list for bulk ingestion
-            list_events.append(dict(event_uuid = id, start = start, stop = stop,
-                                    ingestion_time = datetime.datetime.now(),
-                                    gauge_id = gauge.gauge_id,
-                                    explicit_ref_id = explicit_ref.explicit_ref_id,
-                                    processing_uuid = self.source.processing_uuid,
-                                    visible = visible))
+            self._insert_event(list_events, id, start, stop, gauge, explicit_ref.explicit_ref_id,
+                                    visible, source = self.source)
 
             # Make the key visible only in case it is not going to be inserted as EVENT_KEYS
             visible = True
@@ -1439,12 +1464,8 @@ class Engine():
                             if timestamp > event.stop:
                                 raise
                             # end if
-                            list_events_to_be_created["events"].append(dict(event_uuid = id, start = timestamp, stop = event.stop,
-                                                                  ingestion_time = datetime.datetime.now(),
-                                                                  gauge_id = gauge.gauge_id,
-                                                                  explicit_ref_id = event.explicit_ref_id,
-                                                                  processing_uuid = event.processing_uuid,
-                                                                  visible = True))
+                            self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
+                                               gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                             self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
                             self._replicate_event_links(event_uuid, id, list_events_to_be_created["links"])
                             self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
@@ -1486,12 +1507,8 @@ class Engine():
                                     raise
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                list_events_to_be_created["events"].append(dict(event_uuid = id, start = validity_start, stop = event.stop,
-                                                                      ingestion_time = datetime.datetime.now(),
-                                                                      gauge_id = gauge.gauge_id,
-                                                                      explicit_ref_id = event.explicit_ref_id,
-                                                                      processing_uuid = event.processing_uuid,
-                                                                      visible = True))
+                                self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
+                                                   gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
@@ -1539,12 +1556,8 @@ class Engine():
                                     raise
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                list_events_to_be_created["events"].append(dict(event_uuid = id, start = start, stop = validity_start,
-                                                                      ingestion_time = datetime.datetime.now(),
-                                                                      gauge_id = gauge.gauge_id,
-                                                                      explicit_ref_id = event.explicit_ref_id,
-                                                                      processing_uuid = event.processing_uuid,
-                                                                      visible = True))
+                                self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
+                                                   gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
