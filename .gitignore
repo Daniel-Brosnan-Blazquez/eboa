@@ -3,4 +3,4 @@ __pycache__
 .py*
 .vagrant
 .coverage
-*egg-info
+*egg*
