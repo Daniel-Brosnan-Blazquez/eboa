@@ -1,6 +1,6 @@
 <!-- gsd stands for ground segment data.
      Schema will be provided by GSDM but the application wll be able to choose which to use -->
-<gsd schema="test_schema1">
+<gsd>
   <operation mode="insert">
     <!-- Dates are specified following ISO 8601 (all considered following UTC)
          YYYY-MM-DDThh:mm:ss.s
@@ -52,7 +52,7 @@
                system="test_gauge_system1"
                insertion_type="SIMPLE_UPDATE"/>
         <links>
-          <link name="test_link_name1">event_link_id1</link>
+          <link name="test_link_name1" link_mode="by_name">event_link_id1</link>
         </links>
         <values name="test_object_name1">
           <!-- Allowed types for values:
