@@ -14,6 +14,7 @@ from dateutil import parser
 from itertools import chain
 from oslo_concurrency import lockutils
 import json
+import logging
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -37,6 +38,38 @@ from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 
 # Import xml parser
 from lxml import etree
+
+if "GSDM_RESOURCES_PATH" in os.environ:
+    # Get the path to the resources of the gsdm
+    gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
+    # Get configuration
+    with open(gsdm_resources_path + "config/engine.json") as json_data_file:
+        config = json.load(json_data_file)
+else:
+    raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
+# end if
+
+# Define logging configuration
+logger = logging.getLogger(__name__)
+if "GSDM_LOG_LEVEL" in os.environ:
+    logging_level = os.environ["GSDM_LOG_LEVEL"]
+else:
+    logging_level = logging.INFO
+# end if
+# Set logging level
+logger.setLevel(logging_level)
+# Set the path to the log file
+file_handler = logging.FileHandler(gsdm_resources_path + "/" + config["LOG_PATH"])
+# Add format to the logs
+formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+if "GSDM_STREAM_LOG" in os.environ:
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+# end if
 
 class Engine():
     # Set the synchronized module
@@ -85,16 +118,6 @@ class Engine():
         }
     }
 
-    if "GSDM_RESOURCES_PATH" in os.environ:
-        # Get the path to the resources of the gsdm
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-        # Get configuration
-        with open(gsdm_resources_path + "config/engine.json") as json_data_file:
-            config = json.load(json_data_file)
-    else:
-        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
-    # end if
-
     def __init__(self, data = None):
         """
         """
@@ -128,8 +151,8 @@ class Engine():
         dim_processing = self.get_sources([name])
 
         if len(dim_processing) == 0:
-            ### Log that the name provided does not exist into DDBB
-            print("There is no dim_processing into the DDBB with name {}".format(name))
+            # Log that the name provided does not exist into DDBB
+            logger.error("There is no dim_processing into the DDBB with name {}".format(name))
             return -1
         # end if
 
@@ -586,7 +609,7 @@ class Engine():
 
         # Pass schema
         if check_schema:
-            schema_path = self.gsdm_resources_path + "/" + self.config["RELATIVE_SCHEMA_PATH"]
+            schema_path = gsdm_resources_path + "/" + config["RELATIVE_SCHEMA_PATH"]
             parsed_schema = etree.parse(schema_path)
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
@@ -594,7 +617,7 @@ class Engine():
                 xml_name = os.path.basename(xml)
                 self._insert_source_without_dim_signature(xml_name)
                 self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
-                print(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
+                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
                 schema.assertValid(parsed_xml)
             # end if
         # end if
@@ -776,8 +799,8 @@ class Engine():
             self._insert_source()
             self.ingestion_start = datetime.datetime.now()
             self._insert_proc_status(self.exit_codes["INGESTION_STARTED"]["status"])
-            ### Log that the ingestion of the source file has been started
-            print(self.exit_codes["INGESTION_STARTED"]["message"].format(
+            # Log that the ingestion of the source file has been started
+            logger.info(self.exit_codes["INGESTION_STARTED"]["message"].format(
                 self.operation["source"]["name"],
                 self.dim_signature.dim_signature,
                 self.dim_signature.dim_exec_name, 
@@ -785,16 +808,16 @@ class Engine():
         except SourceAlreadyIngested as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"])
-            ### Log that the source file has been already been processed
-            print(e)
+            # Log that the source file has been already been processed
+            logger.error(e)
             self.session.commit()
             self.session.close()
             return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"])
-            ### Log that the source file has a wrong specified period as the stop is lower than the start
-            print(e)
+            # Log that the source file has a wrong specified period as the stop is lower than the start
+            logger.error(e)
             self.session.commit()
             self.session.close()
             return self.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
@@ -823,32 +846,32 @@ class Engine():
             self._insert_proc_status(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
         except WrongValue as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         # end try
 
@@ -860,16 +883,16 @@ class Engine():
             self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
             self.session.commit()
             self.session.close()
-            ### Log the error
-            print(e)
+            # Log the error
+            logger.error(e)
             return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         # end try
 
@@ -878,9 +901,9 @@ class Engine():
         # information that is deprecated
         self._remove_deprecated_data()
 
-        ### Log that the file has been ingested correctly
+        # Log that the file has been ingested correctly
         self._insert_proc_status(self.exit_codes["OK"]["status"],True)
-        print(self.exit_codes["OK"]["message"].format(
+        logger.info(self.exit_codes["OK"]["message"].format(
             self.source.name,
             self.dim_signature.dim_signature,
             self.dim_signature.dim_exec_name, 

@@ -1,3 +1,4 @@
 {
-    "RELATIVE_SCHEMA_PATH": "schemas/gsd_schema.xsd"
+    "RELATIVE_SCHEMA_PATH": "schemas/gsd_schema.xsd",
+    "LOG_PATH": "log/gsdm_engine.log"
 }
