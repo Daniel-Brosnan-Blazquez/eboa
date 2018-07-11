@@ -13,6 +13,7 @@ import os
 from dateutil import parser
 from itertools import chain
 from oslo_concurrency import lockutils
+import json
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -23,7 +24,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates
+from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable
 
 # Import datamodel
 from gsdm.datamodel.base import Session, engine, Base
@@ -41,6 +42,59 @@ class Engine():
     # Set the synchronized module
     synchronized = lockutils.synchronized_with_prefix('gsdm-')
 
+    exit_codes = {
+        "OK": {
+            "status": 0,
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
+        },
+        "INGESTION_STARTED": {
+            "status": 1,
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
+        },
+        "SOURCE_ALREADY_INGESTED": {
+            "status": 2,
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
+        },
+        "WRONG_SOURCE_PERIOD": {
+            "status": 3,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
+        },
+        "WRONG_EVENT_PERIOD": {
+            "status": 4,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
+        },
+        "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
+            "status": 5,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
+        },
+        "INCOMPLETE_EVENT_LINKS": {
+            "status": 6,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
+        },
+        "WRONG_VALUE": {
+            "status": 7,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
+        },
+        "ODD_NUMBER_OF_COORDINATES": {
+            "status": 8,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
+        },
+        "FILE_NOT_VALID": {
+            "status": 9,
+            "message": "The source file with name {} does not pass the schema verification"
+        }
+    }
+
+    if "GSDM_RESOURCES_PATH" in os.environ:
+        # Get the path to the resources of the gsdm
+        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
+        # Get configuration
+        with open(gsdm_resources_path + "config/engine.json") as json_data_file:
+            config = json.load(json_data_file)
+    else:
+        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
+    # end if
+
     def __init__(self, data = None):
         """
         """
@@ -50,44 +104,6 @@ class Engine():
         self.data = data
         self.session = Session()
         self.operation = None
-        self.exit_codes = {
-            "OK": {
-                "status": 0,
-                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
-            },
-            "INGESTION_STARTED": {
-                "status": 1,
-                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
-            },
-            "SOURCE_ALREADY_INGESTED": {
-                "status": 2,
-                "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
-            },
-            "WRONG_SOURCE_PERIOD": {
-                "status": 3,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
-            },
-            "WRONG_EVENT_PERIOD": {
-                "status": 4,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
-            },
-            "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
-                "status": 5,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
-            },
-            "INCOMPLETE_EVENT_LINKS": {
-                "status": 6,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
-            },
-            "WRONG_VALUE": {
-                "status": 7,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
-            },
-            "ODD_NUMBER_OF_COORDINATES": {
-                "status": 8,
-                "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
-            }
-        }
     
         return
 
@@ -195,10 +211,10 @@ class Engine():
 
         gsd = etree.Element("gsd")
 
-        operation = etree.SubElement(gsd, "operation", mode=data["mode"])
+        query = etree.SubElement(gsd, "query", mode=data["mode"])
 
         # Include the request
-        request = etree.SubElement(operation, "request", name="get_source_xml", duration=str(data["request"]["duration"]))
+        request = etree.SubElement(query, "request", name="get_source_xml", duration=str(data["request"]["duration"]))
         if "parameters" in data["request"]:
             parameters = etree.SubElement(request, "parameters")
             for parameter in data["request"]["parameters"]:
@@ -208,18 +224,18 @@ class Engine():
         # end if
 
         # Include the DIM signature
-        etree.SubElement(operation, "dim_signature", name=data["dim_signature"]["name"], 
+        etree.SubElement(query, "dim_signature", name=data["dim_signature"]["name"], 
                          version=data["dim_signature"]["version"], 
                          exec=data["dim_signature"]["exec"])
         # Include the DIM processing
-        etree.SubElement(operation, "source", name=data["source"]["name"], 
+        etree.SubElement(query, "source", name=data["source"]["name"], 
                          generation_time=str(data["source"]["generation_time"]), 
                          validity_start=str(data["source"]["validity_start"]), 
                          validity_stop=str(data["source"]["validity_stop"]), 
                          ingestion_time=str(data["source"]["ingestion_time"]), 
                          ingestion_duration=str(data["source"]["ingestion_duration"]))
 
-        data_xml = etree.SubElement(operation, "dim_signature")
+        data_xml = etree.SubElement(query, "data")
 
         # Include events
         for event in data["events"]:
@@ -557,25 +573,40 @@ class Engine():
         # end if
         return values
 
-    def parse_data_from_xml(self, xml):
+    ###################
+    # PARSING METHODS #
+    ###################
+
+    def parse_data_from_xml(self, xml, check_schema = True):
         """
         """
         # Parse data from the xml file
-        parsed_xml = etree.XPathEvaluator(etree.parse(xml))
+        parsed_xml = etree.parse(xml)
+        xpath_xml = etree.XPathEvaluator(parsed_xml)
 
         # Pass schema
+        if check_schema:
+            schema_path = self.gsdm_resources_path + "/" + self.config["RELATIVE_SCHEMA_PATH"]
+            parsed_schema = etree.parse(schema_path)
+            schema = etree.XMLSchema(parsed_schema)
+            valid = schema.validate(parsed_xml)
+            if not valid:
+                xml_name = os.path.basename(xml)
+                self._insert_source_without_dim_signature(xml_name)
+                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+                print(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
+                schema.assertValid(parsed_xml)
+            # end if
+        # end if
+
         self.data["operations"] = []
-        for operation in parsed_xml("/gsd/operation"):
-            if operation.get("mode") == "insert":
+        for operation in xpath_xml("/gsd/child::*"):
+            if operation.tag == "insert":
                 self._parse_insert_operation_from_xml(operation)
             # end if
         # end for
 
         return 
-
-    ###################
-    # PARSING METHODS #
-    ###################
 
     def _parse_insert_operation_from_xml(self, operation):
         """
@@ -935,6 +966,20 @@ class Engine():
                                                               self.dim_signature.dim_signature,
                                                               self.dim_signature.dim_exec_name, 
                                                               version))
+        # end try
+
+        return
+
+    def _insert_source_without_dim_signature(self, name):
+        """
+        """
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        self.source = DimProcessing(id, name)
+        self.session.add(self.source)
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
         # end try
 
         return
@@ -1399,7 +1444,6 @@ class Engine():
     def _insert_proc_status(self, status, final = False):
         """
         """
-        self.session.begin_nested()
         # Insert processing status
         self.session.add(DimProcessingStatus(datetime.datetime.now(),status,self.source))
 
