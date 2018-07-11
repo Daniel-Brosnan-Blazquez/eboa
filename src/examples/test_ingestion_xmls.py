@@ -1564,6 +1564,6 @@ analysis.generate_workbook_from_ddbb(output_file)
 print("***Data present into DDBB exported into the excel file " + output_file)
 
 statistics = profiler.collect()
-sqltap.report(statistics, "report.html", report_format="html")
+sqltap.report(statistics, "tmp/report.html", report_format="html")
 
 sys.exit()
