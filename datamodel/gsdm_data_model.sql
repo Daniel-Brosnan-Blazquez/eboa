@@ -72,11 +72,11 @@ CREATE TABLE gsdm.dim_processing_tb(
 	name text NOT NULL,
 	validity_start timestamp,
 	validity_stop timestamp,
-	generation_time timestamp NOT NULL,
+	generation_time timestamp,
 	ingestion_time timestamp,
 	ingestion_duration interval,
-	dim_exec_version text NOT NULL,
-	dim_signature_id integer NOT NULL,
+	dim_exec_version text,
+	dim_signature_id integer,
 	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid)
 
 );

@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,564" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,506" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -91,7 +91,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_processing_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
-	<position x="1020" y="1220"/>
+	<position x="1040" y="1220"/>
 	<column name="processing_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -104,7 +104,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="validity_stop">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="generation_time" not-null="true">
+	<column name="generation_time">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="ingestion_time">
@@ -113,7 +113,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_duration">
 		<type name="interval" length="0"/>
 	</column>
-	<column name="dim_exec_version" not-null="true">
+	<column name="dim_exec_version">
 		<type name="text" length="1"/>
 	</column>
 	<constraint name="dim_processing_tb_pk" type="pk-constr" table="gsdm.dim_processing_tb">
@@ -927,7 +927,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#e763e7"
 	 src-table="gsdm.dim_signature_tb"
 	 dst-table="gsdm.dim_processing_tb"
-	 src-required="true" dst-required="false"
+	 src-required="false" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
 		<position x="0" y="0"/>
