@@ -1,5 +1,5 @@
 <gsd>
-  <operation mode="insert">
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -18,14 +18,13 @@
       </explicit_reference>
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-07T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
                system="test_gauge_system1"
                insertion_type="EVENT_KEYS"/>
         <links>
-          <link name="test_link_name1">event_link_id1</link>
+          <link name="test_link_name1" link_mode="by_ref">event_link_id1</link>
         </links>
         <values name="test_object_name1">
           <value name="test_text_name1" type="text">test text1</value>
@@ -39,11 +38,10 @@
       </event>
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-07T13:33:29"
              key="test_key2"
              explicit_reference="test_explicit_ref2">
         <links>
-          <link name="test_link_name2">event_link_id1</link>
+          <link name="test_link_name2" link_mode="by_ref">event_link_id1</link>
         </links>
         <gauge name="test_gauge_name2"
                system="test_gauge_system2"
@@ -59,5 +57,5 @@
         </values>
       </event>
     </data>
-  </operation>
+  </insert>
 </gsd>

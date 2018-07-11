@@ -1,7 +1,7 @@
 <!-- gsd stands for ground segment data.
      Schema will be provided by GSDM but the application wll be able to choose which to use -->
 <gsd>
-  <operation mode="insert">
+  <insert>
     <!-- Dates are specified following ISO 8601 (all considered following UTC)
          YYYY-MM-DDThh:mm:ss.s
          where:
@@ -39,7 +39,6 @@
       -->
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <!-- gauge system is optional
@@ -52,7 +51,7 @@
                system="test_gauge_system1"
                insertion_type="SIMPLE_UPDATE"/>
         <links>
-          <link name="test_link_name1" link_mode="by_name">event_link_id1</link>
+          <link name="test_link_name1" link_mode="by_ref" link_mode="by_name">event_link_id1</link>
         </links>
         <values name="test_object_name1">
           <!-- Allowed types for values:
@@ -76,11 +75,10 @@
       </event>
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
-             generation_time="2018-06-06T13:33:29"
              key="test_key2"
              explicit_reference="test_explicit_ref2">
         <links>
-          <link name="test_link_name2">event_link_id1</link>
+          <link name="test_link_name2" link_mode="by_ref">event_link_id1</link>
         </links>
         <gauge name="test_gauge_name2"
                system="test_gauge_system2"
@@ -96,8 +94,7 @@
         </values>
       </event>
       <!-- annotation_cnf system is optional -->
-      <annotation explicit_reference="test_explicit_ref1"
-                  generation_time="2018-06-06T13:33:29">
+      <annotation explicit_reference="test_explicit_ref1">
         <annotation_cnf name="test_annotation_cnf_name1"
                         system="test_annotation_cnf_system1"/>
         <values name="test_object_name1">
@@ -111,5 +108,5 @@
         </values>
       </annotation>
     </data>
-  </operation>
+  </insert>
 </gsd>

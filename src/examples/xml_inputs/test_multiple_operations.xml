@@ -1,5 +1,5 @@
 <gsd>
-  <operation mode="insert">
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -12,7 +12,6 @@
     <data>
       <event start="2018-06-05T03:07:03"
              stop="2018-06-05T03:07:36"
-             generation_time="2018-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -37,8 +36,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -51,7 +50,6 @@
     <data>
       <event start="2018-06-05T04:07:03"
              stop="2018-06-05T04:07:36"
-             generation_time="2020-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -76,8 +74,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -90,7 +88,6 @@
     <data>
       <event start="2018-06-05T04:07:15"
              stop="2018-06-05T04:10:36"
-             generation_time="2019-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -115,8 +112,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -129,7 +126,6 @@
     <data>
       <event start="2018-06-05T05:07:03"
              stop="2018-06-05T05:07:36"
-             generation_time="2018-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -154,8 +150,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -168,7 +164,6 @@
     <data>
       <event start="2018-06-05T06:07:03"
              stop="2018-06-05T06:07:36"
-             generation_time="2020-06-06T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -193,8 +188,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -207,7 +202,6 @@
     <data>
       <event start="2018-06-05T01:07:03"
              stop="2018-06-05T08:07:36"
-             generation_time="2016-06-01T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -232,8 +226,8 @@
         </values>
       </event>
     </data>
-  </operation>
-  <operation mode="insert">
+  </insert>
+  <insert>
     <dim_signature
         name="test_dim_signature1"
         version="1.0"
@@ -246,7 +240,6 @@
     <data>
       <event start="2018-06-05T01:07:05"
              stop="2018-06-05T05:30:36"
-             generation_time="2016-06-01T13:33:29"
              key="test_key1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
@@ -271,5 +264,5 @@
         </values>
       </event>
     </data>
-  </operation>
+  </insert>
 </gsd>
