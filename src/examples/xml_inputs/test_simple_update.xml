@@ -24,6 +24,7 @@
                insertion_type="SIMPLE_UPDATE"/>
         <links>
           <link name="test_link_name1" link_mode="by_ref">event_link_id1</link>
+          <link name="test_link_name2" link_mode="by_ref">event_link_id2</link>
         </links>
         <values name="test_object_name1">
           <value name="test_text_name1" type="text">test text1</value>
@@ -49,6 +50,7 @@
              explicit_reference="test_explicit_ref2">
         <links>
           <link name="test_link_name2" link_mode="by_ref">event_link_id1</link>
+          <link name="test_link_name3" link_mode="by_ref">event_link_id2</link>
         </links>
         <gauge name="test_gauge_name2"
                system="test_gauge_system2"

@@ -674,7 +674,9 @@ class Engine():
                     links = []
                     for link in event.xpath("links/link"):
                         links.append({"name": link.get("name"),
-                                      "link": link.text})
+                                      "link": link.text,
+                                      "link_mode": link.get("link_mode"),
+                                      "back_ref": link.get("back_ref")})
                     # end for
                     event_info["links"] = links
                 # end if
@@ -1177,7 +1179,8 @@ class Engine():
         self.session.begin_nested()
         list_events = []
         list_keys = []
-        list_event_links = {}
+        list_event_links_by_ref = {}
+        list_event_links_by_uuid_ddbb = []
         list_values = {}
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1216,14 +1219,20 @@ class Engine():
                 }
                 self._insert_values(event.get("values")[0], entity_uuid, list_values)
             # end if
-            # Build links for later ingestion
+            # Build links by reference for later ingestion
             if "links" in event:
                 for link in event["links"]:
-                    if not link["link"] in list_event_links:
-                        list_event_links[link["link"]] = []
+                    if link["link_mode"] == "by_ref":
+                        if not link["link"] in list_event_links_by_ref:
+                            list_event_links_by_ref[link["link"]] = []
+                        # end if
+                        list_event_links_by_ref[link["link"]].append({"name": link["name"],
+                                                                      "event_uuid": id})
+                    else:
+                        list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = id,
+                                                                  name = link["name"],
+                                                                  event_uuid = link["link"]))
                     # end if
-                    list_event_links[link["link"]].append({"name": link["name"],
-                                                           "event_uuid": id})
                 # end for
             # end if
         # end for
@@ -1252,21 +1261,22 @@ class Engine():
             self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
         # end if
 
-        # Insert links
-        list_event_links_ddbb = []
-        for link in list_event_links:
-            event_uuids = set([i.get("event_uuid") for i in list_event_links[link]])
+        # Insert links by reference
+        list_event_links_by_ref_ddbb = []
+        for link in list_event_links_by_ref:
+            event_uuids = set([i.get("event_uuid") for i in list_event_links_by_ref[link]])
             if len(event_uuids) == 1:
                 self.session.rollback()
                 raise WrongEventLink(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link))
             # end if
-            list_event_links_ddbb = [dict(event_uuid_link = x["event_uuid"],
+            list_event_links_by_ref_ddbb = list_event_links_by_ref_ddbb + [dict(event_uuid_link = x["event_uuid"],
                                           name = x["name"],
                                           event_uuid = y["event_uuid"])
-                                     for x in list_event_links[link] for y in list_event_links[link] if x != y]
+                                     for x in list_event_links_by_ref[link] for y in list_event_links_by_ref[link] if x != y]
         # end for
         
         # Bulk insert links
+        list_event_links_ddbb = list_event_links_by_ref_ddbb
         self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
 
         # Commit data

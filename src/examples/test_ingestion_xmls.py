@@ -178,7 +178,8 @@ events = [{"start": "2018-06-05T02:07:03",
            "key": "test_key1",
            "explicit_reference": "test_explicit_ref1",
            "gauge": ("test_gauge_name1", "test_gauge_system1"),
-           "link": "test_link_name1",
+           "links": [{"name": "test_link_name1"},
+                     {"name": "test_link_name2"}],
            "values":[
                {"name": "test_object_name1",
                 "level_position": 0,
@@ -243,7 +244,8 @@ events = [{"start": "2018-06-05T02:07:03",
            "key": "test_key2",
            "explicit_reference": "test_explicit_ref2",
            "gauge": ("test_gauge_name2", "test_gauge_system2"),
-           "link": "test_link_name2",
+           "links": [{"name": "test_link_name2"},
+                     {"name": "test_link_name3"}],
            "values":[
                {"name": "test_object_name2",
                 "level_position": 0,
@@ -297,12 +299,14 @@ for event in events:
     # end if
     print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the gauge correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
-    link_ddbb = session.query(EventLink).filter(EventLink.name == event["link"], EventLink.event_uuid_link == event_ddbb.event_uuid).first()
-    result = {"message":"OK","color":"green"}
-    if link_ddbb == None:
-        result = {"message":"NOK","color":"red"}
-    # end if
-    print(colored("Check", on_color="on_blue") + "_{}: Event link has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    for link in event["links"]:
+        link_ddbb = session.query(EventLink).filter(EventLink.name == link["name"], EventLink.event_uuid_link == event_ddbb.event_uuid).first()
+        result = {"message":"OK","color":"green"}
+        if link_ddbb == None:
+            result = {"message":"NOK","color":"red"}
+        # end if
+        print(colored("Check", on_color="on_blue") + "_{}: Event link has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
+    # end for
 
     event_key_ddbb = session.query(EventKey).filter(EventKey.event_uuid == event_ddbb.event_uuid, EventKey.event_key == event["key"]).first()
     result = {"message":"OK","color":"green"}
