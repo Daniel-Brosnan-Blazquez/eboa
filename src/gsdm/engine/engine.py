@@ -15,6 +15,7 @@ from itertools import chain
 from oslo_concurrency import lockutils
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -54,12 +55,12 @@ logger = logging.getLogger(__name__)
 if "GSDM_LOG_LEVEL" in os.environ:
     logging_level = os.environ["GSDM_LOG_LEVEL"]
 else:
-    logging_level = logging.INFO
+    logging_level = eval("logging." + config["LOG"]["LEVEL"])
 # end if
 # Set logging level
 logger.setLevel(logging_level)
 # Set the path to the log file
-file_handler = logging.FileHandler(gsdm_resources_path + "/" + config["LOG_PATH"])
+file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=10, backupCount=10)
 # Add format to the logs
 formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
 file_handler.setFormatter(formatter)
