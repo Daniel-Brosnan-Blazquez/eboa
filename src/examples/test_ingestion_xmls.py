@@ -43,7 +43,9 @@ for table in reversed(Base.metadata.sorted_tables):
 
 # insert data from xml
 engine_gsdm = Engine()
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
+
+engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/test_simple_update.json")
+#engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
 #print(json.dumps(engine_gsdm.data, indent=4))
 
 ### PENDING checks on the parser
