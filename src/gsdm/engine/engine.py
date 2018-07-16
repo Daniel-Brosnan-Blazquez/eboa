@@ -44,7 +44,7 @@ if "GSDM_RESOURCES_PATH" in os.environ:
     # Get the path to the resources of the gsdm
     gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
     # Get configuration
-    with open(gsdm_resources_path + "config/engine.json") as json_data_file:
+    with open(gsdm_resources_path + "/" + "config/engine.json") as json_data_file:
         config = json.load(json_data_file)
 else:
     raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
@@ -60,7 +60,7 @@ else:
 # Set logging level
 logger.setLevel(logging_level)
 # Set the path to the log file
-file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=10, backupCount=10)
+file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
 # Add format to the logs
 formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
 file_handler.setFormatter(formatter)
@@ -618,8 +618,16 @@ class Engine():
                 xml_name = os.path.basename(xml)
                 self._insert_source_without_dim_signature(xml_name)
                 self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+                # Insert the parse error into the DDBB
+                self.source.parse_error = str(schema.error_log.last_error)
+                # Insert the content of the file into the DDBB
+                with open(xml,'r') as xml_file:
+                    self.source.content_text = xml_file.read()
+                self.session.commit()
+                self.session.close()
+                # Log the error
                 logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
-                schema.assertValid(parsed_xml)
+                return self.exit_codes["FILE_NOT_VALID"]["status"]
             # end if
         # end if
 
@@ -819,6 +827,8 @@ class Engine():
             self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"])
             # Log that the source file has a wrong specified period as the stop is lower than the start
             logger.error(e)
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             return self.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
@@ -845,6 +855,8 @@ class Engine():
         except WrongEventLink as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -853,6 +865,8 @@ class Engine():
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -861,6 +875,8 @@ class Engine():
         except WrongValue as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -869,6 +885,8 @@ class Engine():
         except OddNumberOfCoordinates as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -882,6 +900,8 @@ class Engine():
         except WrongValue as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -890,6 +910,8 @@ class Engine():
         except OddNumberOfCoordinates as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
@@ -910,6 +932,9 @@ class Engine():
             self.dim_signature.dim_exec_name, 
             self.source.dim_exec_version))
         self.source.ingestion_time = datetime.datetime.now()
+
+        # Remove if the content was inserted due to errors processing the input
+        self.source.content_json = None
         
         # Commit data and close connection
         self.session.commit()
