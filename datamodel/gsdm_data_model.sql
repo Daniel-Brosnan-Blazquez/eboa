@@ -76,6 +76,9 @@ CREATE TABLE gsdm.dim_processing_tb(
 	ingestion_time timestamp,
 	ingestion_duration interval,
 	dim_exec_version text,
+	content_json json,
+	content_text text,
+	parse_error text,
 	dim_signature_id integer,
 	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid)
 

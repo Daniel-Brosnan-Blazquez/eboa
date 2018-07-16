@@ -91,7 +91,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_processing_tb">
 	<schema name="gsdm"/>
 	<role name="gsdm"/>
-	<position x="1040" y="1220"/>
+	<position x="1040" y="1200"/>
 	<column name="processing_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -116,12 +116,21 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="dim_exec_version">
 		<type name="text" length="1"/>
 	</column>
+	<column name="content_json">
+		<type name="json" length="0"/>
+	</column>
+	<column name="content_text">
+		<type name="text" length="0"/>
+	</column>
+	<column name="parse_error">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="dim_processing_tb_pk" type="pk-constr" table="gsdm.dim_processing_tb">
 		<columns names="processing_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_id" index="8"/>
+		<object name="dim_signature_id" index="9"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
