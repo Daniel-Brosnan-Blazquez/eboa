@@ -1,5 +1,6 @@
 {
-    "RELATIVE_SCHEMA_PATH": "schemas/gsd_schema.xsd",
+    "RELATIVE_XML_SCHEMA_PATH": "schemas/gsd_schema.xsd",
+    "RELATIVE_JSON_SCHEMA_PATH": "schemas/gsd_schema.json",
     "LOG": {
         "PATH": "log/gsdm_engine.log",
         "LEVEL": "INFO",

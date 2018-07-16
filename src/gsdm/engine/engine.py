@@ -16,6 +16,7 @@ from oslo_concurrency import lockutils
 import json
 import logging
 from logging.handlers import RotatingFileHandler
+import jsonschema
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -71,6 +72,15 @@ if "GSDM_STREAM_LOG" in os.environ:
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 # end if
+
+# Auxiliary functions
+def is_datetime(date):
+    try:
+        parser.parse(date)
+    except:
+        return False
+    else:
+        return True
 
 class Engine():
     # Set the synchronized module
@@ -600,22 +610,88 @@ class Engine():
     ###################
     # PARSING METHODS #
     ###################
+    def parse_data_from_json(self, json_path, check_schema = True):
+        """
+        """
+        json_name = os.path.basename(json_path)
+        # Parse data from the json file
+        try:
+            with open(json_path) as input_file:
+                data = json.load(input_file)
+        except ValueError:
+            self._insert_source_without_dim_signature(json_name)
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            self.source.parse_error = "The json file cannot be loaded as it has a wrong structure"
+            # Insert the content of the file into the DDBB
+            with open(json_path) as input_file:
+                self.source.content_text = input_file.read()
+            self.session.commit()
+            self.session.close()
+            # Log the error
+            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
+            return self.exit_codes["FILE_NOT_VALID"]["status"]
+        # end try
 
-    def parse_data_from_xml(self, xml, check_schema = True):
+        if check_schema:
+            jsonschema.FormatChecker.checkers["date-time"] = (is_datetime, ())
+            schema_path = gsdm_resources_path + "/" + config["RELATIVE_JSON_SCHEMA_PATH"]
+            with open(schema_path) as schema_file:
+                schema = json.load(schema_file)
+
+            try:
+                jsonschema.validate(data, schema, format_checker=jsonschema.FormatChecker())
+            except jsonschema.exceptions.ValidationError as e:
+                print(e)
+                self._insert_source_without_dim_signature(json_name)
+                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+                self.source.parse_error = "Schema does not validate the json file"
+                # Insert the content of the file into the DDBB
+                with open(json_path) as input_file:
+                    self.source.content_text = input_file.read()
+                self.session.commit()
+                self.session.close()
+                # Log the error
+                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
+                return self.exit_codes["FILE_NOT_VALID"]["status"]
+            # end if
+
+        # end if
+
+        self.data=data
+
+        return 
+
+    def parse_data_from_xml(self, xml_path, check_schema = True):
         """
         """
+        xml_name = os.path.basename(xml_path)
         # Parse data from the xml file
-        parsed_xml = etree.parse(xml)
+        try:
+            parsed_xml = etree.parse(xml_path)
+        except etree.XMLSyntaxError as e:
+            self._insert_source_without_dim_signature(xml_name)
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            # Insert the parse error into the DDBB
+            self.source.parse_error = str(e)
+            # Insert the content of the file into the DDBB
+            with open(xml,'r') as xml_file:
+                self.source.content_text = xml_file.read()
+            self.session.commit()
+            self.session.close()
+            # Log the error
+            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
+            return self.exit_codes["FILE_NOT_VALID"]["status"]
+        # end try
+
         xpath_xml = etree.XPathEvaluator(parsed_xml)
 
         # Pass schema
         if check_schema:
-            schema_path = gsdm_resources_path + "/" + config["RELATIVE_SCHEMA_PATH"]
+            schema_path = gsdm_resources_path + "/" + config["RELATIVE_XML_SCHEMA_PATH"]
             parsed_schema = etree.parse(schema_path)
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
             if not valid:
-                xml_name = os.path.basename(xml)
                 self._insert_source_without_dim_signature(xml_name)
                 self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
                 # Insert the parse error into the DDBB
@@ -766,6 +842,10 @@ class Engine():
         # end for
         return
 
+    #####################
+    # INSERTION METHODS #
+    #####################
+
     def treat_data(self):
         """
         
@@ -781,10 +861,6 @@ class Engine():
             # end if
         # end for
         return self.exit_codes["OK"]["status"]
-
-    #####################
-    # INSERTION METHODS #
-    #####################
 
     def _insert_data(self):
         """
