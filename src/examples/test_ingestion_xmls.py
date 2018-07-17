@@ -10,6 +10,7 @@ import sys
 
 # Import engine of the DDBB
 from gsdm.engine.engine import Engine
+from gsdm.engine.query import Query
 from gsdm.datamodel.base import Session, engine, Base
 
 # Import analysis module
@@ -41,9 +42,10 @@ for table in reversed(Base.metadata.sorted_tables):
     engine.execute(table.delete())
 # end for
 
-# insert data from xml
 engine_gsdm = Engine()
+query_gsdm = Query()
 
+# insert data from xml
 engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/test_simple_update.json")
 #engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
 #print(json.dumps(engine_gsdm.data, indent=4))
@@ -318,7 +320,7 @@ for event in events:
     print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in event:
-        values_ddbb = engine_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
         for value in event["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -393,7 +395,7 @@ for annotation in annotations:
     print(colored("Check", on_color="on_blue") + "_{}: Annotation has been associated to the annotation configuration correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in annotation:
-        values_ddbb = engine_gsdm.get_annotation_values([annotation_ddbb.annotation_uuid])
+        values_ddbb = query_gsdm.get_annotation_values([annotation_ddbb.annotation_uuid])
         for value in annotation["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -601,7 +603,7 @@ print("***Data present into DDBB exported into the excel file " + output_file)
 
 # Generate the xml file containing the inserted data into the DDBB
 output_xml_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/test_simple_update_query.xml"
-engine_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
+query_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
 
 print("***Data present into DDBB exported into the xml file " + output_xml_file)
 
@@ -954,7 +956,7 @@ for event in events:
     print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in event:
-        values_ddbb = engine_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
         for value in event["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -1532,7 +1534,7 @@ for info in events_ddbb:
 
     if len(event) == 1 and "values" in event[0]:
         number_values += len(event[0]["values"])
-        values_ddbb = engine_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
         result = {"message":"OK","color":"green"}
         if len(values_ddbb) != len(event[0]["values"]):
             result = {"message":"NOK","color":"red"}
@@ -1552,7 +1554,7 @@ for info in events_ddbb:
 # end for
 
 result = {"message":"OK","color":"green"}
-values_ddbb = engine_gsdm.get_event_values()
+values_ddbb = query_gsdm.get_event_values()
 if number_values != len(values_ddbb):
     result = {"message":"NOK","color":"red"}
 # end if

@@ -9,7 +9,7 @@ module gsdm
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from .engine import Engine
+from .query import Query
 from .plotting import generate_gantt
 
 # Import GEOalchemy entities
@@ -25,7 +25,7 @@ import os
 class Analysis():
     def __init__(self):
         self.workbook = Workbook()
-        self.engine = Engine()
+        self.query_gsdm = Query()
 
     def generate_workbook_from_ddbb(self, name):
         """
@@ -85,7 +85,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_signature_tb")
         
         # Get data
-        dim_signatures = self.engine.get_dim_signatures()
+        dim_signatures = self.query_gsdm.get_dim_signatures()
         data = [[i.dim_signature_id,i.dim_signature,i.dim_exec_name] for i in dim_signatures]
         
         # Insert headings into the worksheet
@@ -111,7 +111,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_processing_tb")
         
         # Get data
-        sources = self.engine.get_sources()
+        sources = self.query_gsdm.get_sources()
         data = [[str(i.processing_uuid),i.name,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,i.dim_signature_id] for i in sources]
         
         # Insert headings into the worksheet
@@ -150,7 +150,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_processing_status_tb")
         
         # Get data
-        sources_statuses = self.engine.get_sources_statuses()
+        sources_statuses = self.query_gsdm.get_sources_statuses()
         data = [[i.time_stamp,i.proc_status,str(i.processing_uuid)] for i in sources_statuses]
         
         # Insert headings into the worksheet
@@ -176,7 +176,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_tb")
         
         # Get data
-        events = self.engine.get_events()
+        events = self.query_gsdm.get_events()
         data = [[str(i.event_uuid),i.start,i.stop,i.ingestion_time,i.visible, i.gauge_id,i.explicit_ref_id,str(i.processing_uuid)] for i in events]
         
         # Insert headings into the worksheet
@@ -215,7 +215,7 @@ class Analysis():
         ws = self.workbook.create_sheet("gauge_cnf_tb")
         
         # Get data
-        gauges = self.engine.get_gauges()
+        gauges = self.query_gsdm.get_gauges()
         data = [[i.gauge_id,i.system,i.name,i.dim_signature_id] for i in gauges]
         
         # Insert headings into the worksheet
@@ -241,7 +241,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_keys_tb")
         
         # Get data
-        event_keys = self.engine.get_event_keys()
+        event_keys = self.query_gsdm.get_event_keys()
         data = [[i.event_key,i.visible,str(i.event_uuid),i.dim_signature_id] for i in event_keys]
         
         # Insert headings into the worksheet
@@ -267,7 +267,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_links_tb")
         
         # Get data
-        event_links = self.engine.get_event_links()
+        event_links = self.query_gsdm.get_event_links()
         data = [[str(i.event_uuid_link),i.name,str(i.event_uuid)] for i in event_links]
         
         # Insert headings into the worksheet
@@ -293,7 +293,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annot_tb")
         
         # Get data
-        annotations = self.engine.get_annotations()
+        annotations = self.query_gsdm.get_annotations()
         data = [[str(i.annotation_uuid),i.ingestion_time,i.visible,i.explicit_ref_id,str(i.processing_uuid),i.annotation_cnf_id] for i in annotations]
         
         # Insert headings into the worksheet
@@ -319,7 +319,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annot_cnf_tb")
         
         # Get data
-        annotations = self.engine.get_annotations_configurations()
+        annotations = self.query_gsdm.get_annotations_configurations()
         data = [[i.annotation_cnf_id,i.system,i.name,i.dim_signature_id] for i in annotations]
         
         # Insert headings into the worksheet
@@ -346,7 +346,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_tb")
         
         # Get data
-        explicit_refs = self.engine.get_explicit_references()
+        explicit_refs = self.query_gsdm.get_explicit_references()
         data = [[i.explicit_ref_id,i.ingestion_time,i.explicit_ref,i.expl_ref_cnf_id] for i in explicit_refs]
         
         # Insert headings into the worksheet
@@ -372,7 +372,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_links_tb")
         
         # Get data
-        explicit_refs_links = self.engine.get_explicit_references_links()
+        explicit_refs_links = self.query_gsdm.get_explicit_references_links()
         data = [[i.explicit_ref_id_link,i.name,i.explicit_ref_id] for i in explicit_refs_links]
         
         # Insert headings into the worksheet
@@ -398,7 +398,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_cnf_tb")
         
         # Get data
-        explicit_refs_groups = self.engine.get_explicit_references_groups()
+        explicit_refs_groups = self.query_gsdm.get_explicit_references_groups()
         data = [[i.expl_ref_cnf_id,i.name] for i in explicit_refs_groups]
         
         # Insert headings into the worksheet
@@ -424,7 +424,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_boolean_tb")
         
         # Get data
-        values = self.engine.get_event_booleans()
+        values = self.query_gsdm.get_event_booleans()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -450,7 +450,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_text_tb")
         
         # Get data
-        values = self.engine.get_event_texts()
+        values = self.query_gsdm.get_event_texts()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -476,7 +476,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_double_tb")
         
         # Get data
-        values = self.engine.get_event_doubles()
+        values = self.query_gsdm.get_event_doubles()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -502,7 +502,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_timestamp_tb")
         
         # Get data
-        values = self.engine.get_event_timestamps()
+        values = self.query_gsdm.get_event_timestamps()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -528,7 +528,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_object_tb")
         
         # Get data
-        values = self.engine.get_event_objects()
+        values = self.query_gsdm.get_event_objects()
         data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -554,7 +554,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_geometry_tb")
         
         # Get data
-        values = self.engine.get_event_geometries()
+        values = self.query_gsdm.get_event_geometries()
         data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -580,7 +580,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_boolean_tb")
         
         # Get data
-        values = self.engine.get_annotation_booleans()
+        values = self.query_gsdm.get_annotation_booleans()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -606,7 +606,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_text_tb")
         
         # Get data
-        values = self.engine.get_annotation_texts()
+        values = self.query_gsdm.get_annotation_texts()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -632,7 +632,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_double_tb")
         
         # Get data
-        values = self.engine.get_annotation_doubles()
+        values = self.query_gsdm.get_annotation_doubles()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -658,7 +658,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_timestamp_tb")
         
         # Get data
-        values = self.engine.get_annotation_timestamps()
+        values = self.query_gsdm.get_annotation_timestamps()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -684,7 +684,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_object_tb")
         
         # Get data
-        values = self.engine.get_annotation_objects()
+        values = self.query_gsdm.get_annotation_objects()
         data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -710,7 +710,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_geometry_tb")
         
         # Get data
-        values = self.engine.get_annotation_geometries()
+        values = self.query_gsdm.get_annotation_geometries()
         data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
