@@ -23,12 +23,18 @@ import numpy
 import os
 
 class Analysis():
+    """Class for providing analysis on the data stored into the DDBB
+    """
     def __init__(self):
         self.workbook = Workbook()
         self.query_gsdm = Query()
 
     def generate_workbook_from_ddbb(self, name):
         """
+        Method to generate a workbook from the data inside the DDBB
+        
+        :param name: name of the workbook
+        :type name: str
         """
         self.name = name
         self.files_to_remove = []
