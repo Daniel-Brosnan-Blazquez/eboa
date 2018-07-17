@@ -17,6 +17,7 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 import jsonschema
+from functools import wraps
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError
@@ -78,6 +79,15 @@ if "GSDM_STREAM_LOG" in os.environ:
 
 # Auxiliary functions
 def is_datetime(date):
+    """
+    Function for the parsing of dates inside json files
+    
+    :param date: date to be parsed
+    :type date: str
+
+    :return: True if date is a correct date, False otherwise
+    :rtype: bool
+    """
     try:
         parser.parse(date)
     except:
@@ -87,8 +97,16 @@ def is_datetime(date):
 
 def debug(method):
     """
+    Function for profiling methods when logging_level is DEBUG
+    
+    :param method: method to be profiled
+    :type method: function
+
+    :return: returned value of the method
+    :rtype: int
     """
-    def wrapper(*args, **kwargs):
+    @wraps(method)
+    def _wrapper(*args, **kwargs):
         if logging_level == logging.DEBUG:
             start = datetime.datetime.now()
         # end if
@@ -99,9 +117,14 @@ def debug(method):
         # end if
         return exit_value
 
-    return wrapper
+    return _wrapper
 
 class Engine():
+    """Class for communicating with the engine of the gsdm module
+
+    Provides access to the logic for inserting, deleting and updating
+    the information stored into the DDBB
+    """
     # Set the synchronized module
     synchronized = lockutils.synchronized_with_prefix('gsdm-')
 
@@ -150,6 +173,10 @@ class Engine():
 
     def __init__(self, data = None):
         """
+        Instantiation method
+
+        :param data: data provided to be treat by the engine (default None)
+        :type data: dict
         """
         if data == None:
             data = {}
@@ -166,6 +193,10 @@ class Engine():
     ###################
     def generate_json(self, json_path):
         """
+        Method to generate a json file from the data managed by the engine
+
+        :param json_path: path to the json file to be generated
+        :type json_path: str
         """
         with open(json_path, "w") as output_file:
             json.dump(self.data, output_file)
@@ -175,12 +206,18 @@ class Engine():
     @debug
     def parse_data_from_json(self, json_path, check_schema = True):
         """
+        Method to parse a json file for later treatment of its content
+        
+        :param json_path: path to the json file to be parsed
+        :type json_path: str
+        :param check_schema: indicates whether to pass a schema over the json file or not
+        :type check_schema: bool
         """
-        json_name = os.path.basename(json_path)
         # Parse data from the json file
         try:
             with open(json_path) as input_file:
                 data = json.load(input_file)
+
         except ValueError:
             self._insert_source_without_dim_signature(json_name)
             self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
@@ -218,7 +255,6 @@ class Engine():
             # end if
 
         # end if
-
         self.data=data
 
         return 
@@ -226,6 +262,12 @@ class Engine():
     @debug
     def parse_data_from_xml(self, xml_path, check_schema = True):
         """
+        Method to parse an xml file for later treatment of its content
+        
+        :param xml_path: path to the xml file to be parsed
+        :type xml_path: str
+        :param check_schema: indicates whether to pass a schema over the xml file or not
+        :type check_schema: bool
         """
         xml_name = os.path.basename(xml_path)
         # Parse data from the xml file
@@ -269,7 +311,6 @@ class Engine():
                 return self.exit_codes["FILE_NOT_VALID"]["status"]
             # end if
         # end if
-
         self.data["operations"] = []
         for operation in xpath_xml("/gsd/child::*"):
             if operation.tag == "insert":
@@ -282,6 +323,10 @@ class Engine():
     @debug
     def _parse_insert_operation_from_xml(self, operation):
         """
+        Method to parse the insert element inside an xml file
+
+        :param operation: xml element pointing to the insert tag
+        :type operation: xml element
         """
         data = {}
         data["mode"] = "insert"
@@ -388,6 +433,12 @@ class Engine():
 
     def _parse_values_from_xml(self, node, parent):
         """
+        Method to parse the values element inside an xml file
+
+        :param node: xml element pointing to the values element
+        :type node: xml element
+        :param parent: list of values
+        :type parent: list
         """
         parent_object = {"name": node.get("name"),
                          "type": "object",
@@ -412,7 +463,7 @@ class Engine():
 
     def treat_data(self):
         """
-        
+        Method to treat the data stored in self.data
         """
         # Pass schema
         
@@ -429,7 +480,7 @@ class Engine():
     @debug
     def _insert_data(self):
         """
-        
+        Method to insert the data into the DDBB for an operation of mode insert
         """
         # Initialize context
         self.dim_signature = None
@@ -585,6 +636,7 @@ class Engine():
     @debug
     def _insert_dim_signature(self):
         """
+        Method to insert the DIM signature
         """
         dim_signature = self.operation.get("dim_signature")
         dim_name = dim_signature.get("name")
@@ -610,6 +662,7 @@ class Engine():
     @debug
     def _insert_source(self):
         """
+        Method to insert the DIM processing
         """
         version = self.operation.get("dim_signature").get("version")
         source = self.operation.get("source")
@@ -667,6 +720,10 @@ class Engine():
 
     def _insert_source_without_dim_signature(self, name):
         """
+        Method to insert the DIM processing but without an associated dim_signature
+
+        :param name: name of the DIM processing
+        :type name: str
         """
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         self.source = DimProcessing(id, name)
@@ -682,6 +739,7 @@ class Engine():
     @debug
     def _insert_gauges(self):
         """
+        Method to insert the gauges
         """
         gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"))  for event in self.operation.get("events") or []]
         unique_gauges = set(gauges)
@@ -711,6 +769,7 @@ class Engine():
     @debug        
     def _insert_annotation_cnfs(self):
         """
+        Method to insert the annotation configurations
         """
         annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"))  for annotation in self.operation.get("annotations") or []]
         unique_annotation_cnfs = set(annotation_cnfs)
@@ -740,6 +799,7 @@ class Engine():
     @debug
     def _insert_expl_groups(self):
         """
+        Method to insert the groups of explicit references
         """
         for explicit_ref in self.operation.get("explicit_references") or []:
             if "group" in explicit_ref:
@@ -763,6 +823,7 @@ class Engine():
     @debug
     def _insert_explicit_refs(self):
         """
+        Method to insert the explicit references
         """
         # Join all sources of explicit references
         events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events") or []]
@@ -800,6 +861,7 @@ class Engine():
     @debug
     def _insert_links_explicit_refs(self):
         """
+        Method to insert the links between explicit references
         """
         list_explicit_reference_links = []
         for explicit_ref in [i for i in self.operation.get("explicit_references") or [] if i.get("links")]:
@@ -840,6 +902,26 @@ class Engine():
 
     def _insert_event(self, list_events, id, start, stop, gauge, explicit_ref_id, visible, source = None, source_id = None):
         """
+        Method to insert an event
+
+        :param list_events: list to add the created events for later buld ingestion
+        :type list_events: list
+        :param id: identifier of the event
+        :type id: uuid
+        :param start: datetime
+        :type start: start date of the period of the event
+        :param stop: datetime
+        :type stop: stop date of the period of the event
+        :param gauge: reference to the associated gauge
+        :type gauge: sqlalchemy object
+        :param explicit_ref_id: identifier of the associated explicit reference
+        :type explicit_ref_id: int
+        :param visible: indicator of the visibility of the event
+        :type visible: bool
+        :param source: associated DIM processing (default None). Provide this parameter or source_id
+        :type source: sqlalchemy object
+        :param source_id: identifier of the associated DIM processing (default None). Provide this parameter or source
+        :type source_id: uuid
         """
         if not type(start) == datetime.datetime:
             start = parser.parse(start)
@@ -876,6 +958,7 @@ class Engine():
     @debug
     def _insert_events(self):
         """
+        Method to insert the events
         """
         self.session.begin_nested()
         list_events = []
@@ -992,6 +1075,22 @@ class Engine():
 
     def _insert_values(self, values, entity_uuid, list_values, level_position = 0, parent_level = -1, parent_level_position = 0, level_positions = None):
         """
+        Method to insert the values associated to events or annotations
+
+        :param values: list of values to be inserted
+        :type values: list
+        :param entity_uuid: identifier of the event or annotation
+        :type entity_uuid: uuid
+        :param list_values: list with the inserted values for later bulk ingestion
+        :type list_values: list
+        :param level_position: value position inside the structure of values
+        :type level_position: int
+        :param parent_level: level of the parent value inside the structure of values
+        :type parent_level: int
+        :param parent_level_position: position of the parent value inside the correspoding level of the structure of values
+        :type parent_level_position: int
+        :param level_positions: counter of the positions per level
+        :type level_positions: dict
         """
         if level_positions == None:
             level_positions = {}
@@ -1103,6 +1202,7 @@ class Engine():
     @debug
     def _insert_annotations(self):
         """
+        Method to insert the annotations
         """
         list_annotations = []
         list_values = {}
@@ -1161,6 +1261,12 @@ class Engine():
     @debug
     def _insert_proc_status(self, status, final = False):
         """
+        Method to insert the DIM processing status
+
+        :param status: code indicating the status of the processing of the file
+        :type status: int
+        :param final: boolean indicated whether it is a final status or not. This is to insert the ingestion duration in case of final = True
+        :type final: bool
         """
         # Insert processing status
         self.session.add(DimProcessingStatus(datetime.datetime.now(),status,self.source))
@@ -1177,6 +1283,7 @@ class Engine():
     @debug
     def _remove_deprecated_data(self):
         """
+        Method to remove the events and annotations that were overwritten by other data
         """
         # Remove events due to ERASE_and_REPLACE insertion mode
         self._remove_deprecated_events_by_erase_and_replace()
@@ -1192,6 +1299,7 @@ class Engine():
     @debug
     def _remove_deprecated_events_by_erase_and_replace(self):
         """
+        Method to remove events that were overwritten by other events due to ERASE and REPLACE insertion mode
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
@@ -1375,6 +1483,14 @@ class Engine():
     @debug
     def _replicate_event_values(self, from_event_uuid, to_event_uuid, list_values_to_be_created):
         """
+        Method to replicate the values associated to events that were overwritten partially by other events
+
+        :param from_event_uuid: original event where to get the associated values from
+        :type from_event_uuid: uuid
+        :param to_event_uuid: new event to associate the values
+        :type to_event_uuid: uuid
+        :param list_values_to_be_created: list of values to be stored later inside the DDBB
+        :type list_values_to_be_created: list
         """
         values = self.query.get_event_values([from_event_uuid])
         for value in values:
@@ -1399,6 +1515,14 @@ class Engine():
 
     def _replicate_event_links(self, from_event_uuid, to_event_uuid, list_links_to_be_created):
         """
+        Method to replicate the links associated to events that were overwritten partially by other events
+
+        :param from_event_uuid: original event where to get the associated values from
+        :type from_event_uuid: uuid
+        :param to_event_uuid: new event to associate the values
+        :type to_event_uuid: uuid
+        :param list_links_to_be_created: list of links between events to be stored later inside the DDBB
+        :type list_links_to_be_created: list
         """
         links = self.query.get_event_links([from_event_uuid])
         for link in links:
@@ -1411,6 +1535,14 @@ class Engine():
 
     def _replicate_event_keys(self, from_event_uuid, to_event_uuid, list_keys_to_be_created):
         """
+        Method to replicate the keys associated to events that were overwritten partially by other events
+
+        :param from_event_uuid: original event where to get the associated values from
+        :type from_event_uuid: uuid
+        :param to_event_uuid: new event to associate the values
+        :type to_event_uuid: uuid
+        :param list_keys_to_be_created: list of keys to be stored later inside the DDBB
+        :type list_keys_to_be_created: list
         """
         keys = self.query.get_event_keys([from_event_uuid])
         for key in keys:
@@ -1425,6 +1557,7 @@ class Engine():
     @debug
     def _remove_deprecated_events_event_keys(self):
         """
+        Method to remove events that were overwritten by other events due to EVENT_KEYS insertion mode
         """
         for key in self.keys_events:
             max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key)
@@ -1450,6 +1583,7 @@ class Engine():
     @debug
     def _remove_deprecated_annotations(self):
         """
+        Method to remove annotations that were overwritten by other annotations
         """
         for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs:
             annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
