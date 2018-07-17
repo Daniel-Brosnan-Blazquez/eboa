@@ -712,7 +712,7 @@ class Engine():
     def _insert_annotation_cnfs(self):
         """
         """
-        annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"))  for event in self.operation.get("annotations") or []]
+        annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"))  for annotation in self.operation.get("annotations") or []]
         unique_annotation_cnfs = set(annotation_cnfs)
         for annotation in unique_annotation_cnfs:
             name = annotation[0]
