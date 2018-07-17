@@ -57,7 +57,7 @@ else:
 # Define logging configuration
 logger = logging.getLogger(__name__)
 if "GSDM_LOG_LEVEL" in os.environ:
-    logging_level = os.environ["GSDM_LOG_LEVEL"]
+    logging_level = eval("logging." + os.environ["GSDM_LOG_LEVEL"])
 else:
     logging_level = eval("logging." + config["LOG"]["LEVEL"])
 # end if
@@ -84,6 +84,22 @@ def is_datetime(date):
         return False
     else:
         return True
+
+def debug(method):
+    """
+    """
+    def wrapper(*args, **kwargs):
+        if logging_level == logging.DEBUG:
+            start = datetime.datetime.now()
+        # end if
+        exit_value = method(*args, **kwargs)
+        if logging_level == logging.DEBUG:
+            stop = datetime.datetime.now()
+            logger.debug("Method {} lasted {} seconds.".format(method.__name__, (stop - start).total_seconds()))
+        # end if
+        return exit_value
+
+    return wrapper
 
 class Engine():
     # Set the synchronized module
@@ -155,7 +171,8 @@ class Engine():
             json.dump(self.data, output_file)
 
         return
-    
+
+    @debug
     def parse_data_from_json(self, json_path, check_schema = True):
         """
         """
@@ -187,7 +204,6 @@ class Engine():
             try:
                 jsonschema.validate(data, schema, format_checker=jsonschema.FormatChecker())
             except jsonschema.exceptions.ValidationError as e:
-                print(e)
                 self._insert_source_without_dim_signature(json_name)
                 self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
                 self.source.parse_error = "Schema does not validate the json file"
@@ -207,6 +223,7 @@ class Engine():
 
         return 
 
+    @debug
     def parse_data_from_xml(self, xml_path, check_schema = True):
         """
         """
@@ -262,6 +279,7 @@ class Engine():
 
         return 
 
+    @debug
     def _parse_insert_operation_from_xml(self, operation):
         """
         """
@@ -408,6 +426,7 @@ class Engine():
         # end for
         return self.exit_codes["OK"]["status"]
 
+    @debug
     def _insert_data(self):
         """
         
@@ -562,7 +581,8 @@ class Engine():
         self.session.commit()
         self.session.close()
         return self.exit_codes["OK"]["status"]
-
+        
+    @debug
     def _insert_dim_signature(self):
         """
         """
@@ -571,7 +591,8 @@ class Engine():
         exec_name = dim_signature.get("exec")
         self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
         if not self.dim_signature:
-            self.session.add(DimSignature(dim_name, exec_name))
+            self.dim_signature = DimSignature(dim_name, exec_name)
+            self.session.add(self.dim_signature)
             try:
                 self.session.commit()
             except IntegrityError:
@@ -579,13 +600,14 @@ class Engine():
                 # query and the insertion. Roll back transaction for
                 # re-using the session
                 self.session.rollback()
+                # Get the stored DIM signature
+                self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
                 pass
             # end try
-            # Get the stored DIM signature
-            self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
         # end if
         return
-        
+
+    @debug
     def _insert_source(self):
         """
         """
@@ -657,13 +679,15 @@ class Engine():
 
         return
         
+    @debug
     def _insert_gauges(self):
         """
         """
-        for event in self.operation.get("events") or []:
-            gauge = event.get("gauge")
-            name = gauge.get("name")
-            system = gauge.get("system")
+        gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"))  for event in self.operation.get("events") or []]
+        unique_gauges = set(gauges)
+        for gauge in unique_gauges:
+            name = gauge[0]
+            system = gauge[1]
             self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == self.dim_signature.dim_signature_id).first()
             if not self.gauges[(name,system)]:
                 self.session.begin_nested()
@@ -683,14 +707,16 @@ class Engine():
         # end for
 
         return
-        
+
+    @debug        
     def _insert_annotation_cnfs(self):
         """
         """
-        for annotation in self.operation.get("annotations") or []:
-            annotation_cnf = annotation.get("annotation_cnf")
-            name = annotation_cnf.get("name")
-            system = annotation_cnf.get("system")
+        annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"))  for event in self.operation.get("annotations") or []]
+        unique_annotation_cnfs = set(annotation_cnfs)
+        for annotation in unique_annotation_cnfs:
+            name = annotation[0]
+            system = annotation[1]
             self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == self.dim_signature.dim_signature_id).first()
             if not self.annotation_cnfs[(name,system)]:
                 self.session.begin_nested()
@@ -710,7 +736,8 @@ class Engine():
         # end for
 
         return
-        
+
+    @debug
     def _insert_expl_groups(self):
         """
         """
@@ -732,7 +759,8 @@ class Engine():
         # end for
 
         return
-        
+
+    @debug
     def _insert_explicit_refs(self):
         """
         """
@@ -769,6 +797,7 @@ class Engine():
 
         return
         
+    @debug
     def _insert_links_explicit_refs(self):
         """
         """
@@ -844,6 +873,7 @@ class Engine():
                                 visible = visible))
         return
 
+    @debug
     def _insert_events(self):
         """
         """
@@ -1070,6 +1100,7 @@ class Engine():
 
         return
         
+    @debug
     def _insert_annotations(self):
         """
         """
@@ -1127,6 +1158,7 @@ class Engine():
 
         return
 
+    @debug
     def _insert_proc_status(self, status, final = False):
         """
         """
@@ -1142,6 +1174,7 @@ class Engine():
 
         return
 
+    @debug
     def _remove_deprecated_data(self):
         """
         """
@@ -1156,6 +1189,7 @@ class Engine():
 
         return
 
+    @debug
     def _remove_deprecated_events_by_erase_and_replace(self):
         """
         """
@@ -1338,6 +1372,7 @@ class Engine():
 
         return
 
+    @debug
     def _replicate_event_values(self, from_event_uuid, to_event_uuid, list_values_to_be_created):
         """
         """
@@ -1387,6 +1422,7 @@ class Engine():
         
         return
 
+    @debug
     def _remove_deprecated_events_event_keys(self):
         """
         """
@@ -1411,6 +1447,7 @@ class Engine():
 
         return
 
+    @debug
     def _remove_deprecated_annotations(self):
         """
         """
