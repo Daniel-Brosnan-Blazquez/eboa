@@ -610,6 +610,14 @@ class Engine():
     ###################
     # PARSING METHODS #
     ###################
+    def generate_json(self, json_path):
+        """
+        """
+        with open(json_path, "w") as output_file:
+            json.dump(self.data, output_file)
+
+        return
+    
     def parse_data_from_json(self, json_path, check_schema = True):
         """
         """
@@ -674,7 +682,7 @@ class Engine():
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
-            with open(xml,'r') as xml_file:
+            with open(xml,"r") as xml_file:
                 self.source.content_text = xml_file.read()
             self.session.commit()
             self.session.close()
@@ -697,7 +705,7 @@ class Engine():
                 # Insert the parse error into the DDBB
                 self.source.parse_error = str(schema.error_log.last_error)
                 # Insert the content of the file into the DDBB
-                with open(xml,'r') as xml_file:
+                with open(xml_path,"r") as xml_file:
                     self.source.content_text = xml_file.read()
                 self.session.commit()
                 self.session.close()
@@ -1323,8 +1331,12 @@ class Engine():
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events.append(key)
             # end if
+            explicit_ref_id = None
+            if explicit_ref != None:
+                explicit_ref_id = explicit_ref.explicit_ref_id
+            # end if
             # Insert the event into the list for bulk ingestion
-            self._insert_event(list_events, id, start, stop, gauge, explicit_ref.explicit_ref_id,
+            self._insert_event(list_events, id, start, stop, gauge, explicit_ref_id,
                                     visible, source = self.source)
 
             # Make the key visible only in case it is not going to be inserted as EVENT_KEYS
@@ -1333,10 +1345,11 @@ class Engine():
                 visible = False
             # end if
             # Insert the key into the list for bulk ingestion
-            list_keys.append(dict(event_key = key, event_uuid = id,
-                                  visible = visible,
-                                  dim_signature_id = self.dim_signature.dim_signature_id))
-
+            if key != None:
+                list_keys.append(dict(event_key = key, event_uuid = id,
+                                      visible = visible,
+                                      dim_signature_id = self.dim_signature.dim_signature_id))
+            # end if
             # Insert values
             if "values" in event:
                 entity_uuid = {"name": "event_uuid",
@@ -1615,7 +1628,7 @@ class Engine():
         for gauge in self.erase_and_replace_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
-            lock = 'erase_and_replace' + str(gauge.gauge_id)
+            lock = "erase_and_replace" + str(gauge.gauge_id)
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
             def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
