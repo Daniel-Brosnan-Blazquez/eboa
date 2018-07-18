@@ -119,6 +119,10 @@ def debug(method):
 
     return _wrapper
 
+def race_condition():
+    """ Commit function for race conditions checks """
+    return
+
 class Engine():
     """Class for communicating with the engine of the gsdm module
 
@@ -646,6 +650,7 @@ class Engine():
             self.dim_signature = DimSignature(dim_name, exec_name)
             self.session.add(self.dim_signature)
             try:
+                race_condition()
                 self.session.commit()
             except IntegrityError:
                 # The DIM signature has been inserted between the
