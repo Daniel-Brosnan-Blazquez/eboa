@@ -66,8 +66,9 @@ class TestEngine(unittest.TestCase):
         and to have only once the same dim_sigature registered
         """
         self.test_insert_dim_signature()
+        self.test_insert_dim_signature()
 
-    def test_race_condition_dim_signature(self):
+    def test_race_condition_insert_dim_signature(self):
         """
         Method to test the race condition that could be produced if the
         dim_signature does not exist and it is going to be created by
@@ -100,9 +101,117 @@ class TestEngine(unittest.TestCase):
         self.engine_gsdm._insert_dim_signature()
         self.engine_gsdm._insert_source()
 
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).all()
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
 
-        assert len(dim_signature_ddbb) == 1
+        assert len(source_ddbb) == 1
+
+    def test_insert_source_again(self):
+        self.test_insert_source()
+        data = self.engine_gsdm.operation
+
+        self.engine_gsdm.ingestion_start = datetime.datetime.now()
+        self.engine_gsdm._insert_proc_status(0, final = True)
+        
+        try:
+            self.test_insert_source()
+        except:
+            pass
+
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+
+        assert len(source_ddbb) == 1
+
+    def test_insert_source_wrong_validity(self):
+        """
+        Method to test that the engine protects the ingestion from a wrong
+        validity period where the start is greater than the stop
+        """
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source_wrong_period.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T10:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"}
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        try:
+            self.engine_gsdm._insert_source()
+        except:
+            pass
+
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+
+        assert len(source_ddbb) == 1
+
+    def test_race_condition_insert_source_wrong_validity(self):
+        """Method to test the race condition that could be produced if two
+        processes try to ingest the same source with a wrong period
+
+        """
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source_wrong_period.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T10:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"}
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm_race_conditions.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        self.engine_gsdm_race_conditions._insert_dim_signature()
+        def insert_source_race_condition():
+            try:
+                self.engine_gsdm_race_conditions._insert_source()
+            except:
+                pass
+
+        def insert_source():
+            try:
+                self.engine_gsdm._insert_source()
+            except:
+                pass
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_source_race_condition):
+            insert_source()
+
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+
+        assert len(source_ddbb) == 1
+
+    def test_race_condition_insert_source(self):
+        """Method to test the race condition that could be produced if two
+        processes try to ingest the same source
+
+        """
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"}
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm_race_conditions.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        self.engine_gsdm_race_conditions._insert_dim_signature()
+        def insert_source_race_condition():
+            try:
+                self.engine_gsdm_race_conditions._insert_source()
+            except:
+                pass
+
+        def insert_source():
+            try:
+                self.engine_gsdm._insert_source()
+            except:
+                pass
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_source_race_condition):
+            insert_source()
 
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
 
@@ -115,3 +224,71 @@ class TestEngine(unittest.TestCase):
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == name).all()
 
         assert len(source_ddbb) == 1
+
+    def test_insert_source_without_dim_signature_again(self):
+        self.test_insert_source_without_dim_signature()
+        self.test_insert_source_without_dim_signature()
+
+    def test_insert_gauge(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        self.test_insert_source()
+        data = {"gauge": {
+            "name": "GAUGE",
+            "system": "SYSTEM"
+        }}
+        self.engine_gsdm.operation["events"] = [data]
+        self.engine_gsdm._insert_gauges()
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm.session.commit()
+
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["gauge"]["name"], Gauge.system == data["gauge"]["system"]).all()
+
+        assert len(gauge_ddbb) == 1
+
+    def test_race_condition_insert_gauge(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{"gauge": {
+                    "name": "GAUGE",
+                    "system": "SYSTEM"
+                }}]
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        self.engine_gsdm._insert_source()
+        self.engine_gsdm_race_conditions.operation = data
+        self.engine_gsdm_race_conditions._insert_dim_signature()
+        try:
+            self.engine_gsdm_race_conditions._insert_source()
+        except:
+            pass
+        # end try
+
+        def insert_gauges():
+            self.engine_gsdm._insert_gauges()
+            self.engine_gsdm.session.commit()
+            self.engine_gsdm.session.close()
+
+        def insert_gauges_race_condition():
+            self.engine_gsdm_race_conditions._insert_gauges()
+            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_gsdm_race_conditions.session.close()
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_gauges_race_condition):
+            insert_gauges()
+
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm_race_conditions.session.commit()
+
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).all()
+
+        assert len(gauge_ddbb) == 1

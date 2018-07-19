@@ -481,11 +481,7 @@ class Engine():
         # end for
         return self.exit_codes["OK"]["status"]
 
-    @debug
-    def _insert_data(self):
-        """
-        Method to insert the data into the DDBB for an operation of mode insert
-        """
+    def _initialize_context_insert_data(self):
         # Initialize context
         self.dim_signature = None
         self.source = None
@@ -497,6 +493,16 @@ class Engine():
         self.annotation_cnfs_explicit_refs = []
         self.keys_events = []
 
+        return
+
+    @debug
+    def _insert_data(self):
+        """
+        Method to insert the data into the DDBB for an operation of mode insert
+        """
+        # Initialize context
+        self._initialize_context_insert_data()
+        
         # Insert the DIM signature
         self._insert_dim_signature()
 
@@ -693,6 +699,7 @@ class Engine():
                                         version, self.dim_signature)
             self.session.add(self.source)
             try:
+                race_condition()
                 self.session.commit()
             except IntegrityError:
                 # The DIM processing was already ingested
@@ -708,6 +715,7 @@ class Engine():
                                     validity_start, validity_stop)
         self.session.add(self.source)
         try:
+            race_condition()
             self.session.commit()
         except IntegrityError:
             # The DIM processing has been ingested between the query and the insertion
@@ -731,13 +739,17 @@ class Engine():
         :type name: str
         """
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        self.source = DimProcessing(id, name)
-        self.session.add(self.source)
-        try:
+        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name).first()
+        if not self.source:
+            self.source = DimProcessing(id, name)
+            self.session.add(self.source)
+            # If there is a race condition here the gsdm will insert a
+            # new row with the same name as the unique constraint is
+            # not violated with NULL values in the associated columns
+            # (not really important as this is a function for
+            # registering the wrong usage of the API)
             self.session.commit()
-        except IntegrityError:
-            self.session.rollback()
-        # end try
+        # end if
 
         return
         
@@ -757,6 +769,7 @@ class Engine():
                 self.gauges[(name,system)] = Gauge(name, self.dim_signature, system)
                 self.session.add(self.gauges[(name,system)])
                 try:
+                    race_condition()
                     self.session.commit()
                 except IntegrityError:
                     # The gauge has been inserted between the query and the insertion. Roll back transaction for
@@ -768,7 +781,6 @@ class Engine():
                 # end try
             # end if
         # end for
-
         return
 
     @debug        
@@ -965,7 +977,6 @@ class Engine():
         """
         Method to insert the events
         """
-        self.session.begin_nested()
         list_events = []
         list_keys = []
         list_event_links_by_ref = {}
@@ -1030,6 +1041,7 @@ class Engine():
                 # end for
             # end if
         # end for
+        self.session.begin_nested()
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events)
         # Bulk insert keys
