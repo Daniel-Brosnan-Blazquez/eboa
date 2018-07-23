@@ -799,6 +799,7 @@ class Engine():
                 self.annotation_cnfs[(name,system)] = AnnotationCnf(name, self.dim_signature, system)
                 self.session.add(self.annotation_cnfs[(name,system)])
                 try:
+                    race_condition()
                     self.session.commit()
                 except IntegrityError:
                     # The annotation has been inserted between the query and the insertion. Roll back transaction for
@@ -824,6 +825,7 @@ class Engine():
                 expl_group_ddbb = ExplicitRefGrp(explicit_ref.get("group"))
                 self.session.add(expl_group_ddbb)
                 try:
+                    race_condition()
                     self.session.commit()
                 except IntegrityError:
                     # The explicit reference group exists already into DDBB
@@ -862,6 +864,7 @@ class Engine():
                 self.explicit_refs[explicit_ref] = ExplicitRef(datetime.datetime.now(), explicit_ref, explicit_ref_grp)
                 self.session.add(self.explicit_refs[explicit_ref])
                 try:
+                    race_condition()
                     self.session.commit()
                 except IntegrityError:
                     # The explicit reference has been inserted between the query and the insertion. Roll back transaction for

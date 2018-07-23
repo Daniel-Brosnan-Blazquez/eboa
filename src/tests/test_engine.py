@@ -292,3 +292,169 @@ class TestEngine(unittest.TestCase):
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).all()
 
         assert len(gauge_ddbb) == 1
+
+    def test_insert_annotation(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        self.test_insert_source()
+        data = {"annotation_cnf": {
+            "name": "ANNOTATION_CNF",
+            "system": "SYSTEM"
+        }}
+        self.engine_gsdm.operation["annotations"] = [data]
+        self.engine_gsdm._insert_annotation_cnfs()
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm.session.commit()
+
+        annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotation_cnf"]["name"], AnnotationCnf.system == data["annotation_cnf"]["system"]).all()
+
+        assert len(annotation_cnf_ddbb) == 1
+
+    def test_race_condition_insert_annotation(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "annotations": [{"annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                }}]
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        self.engine_gsdm._insert_source()
+        self.engine_gsdm_race_conditions.operation = data
+        self.engine_gsdm_race_conditions._insert_dim_signature()
+        try:
+            self.engine_gsdm_race_conditions._insert_source()
+        except:
+            pass
+        # end try
+
+        def insert_annotations_cnf():
+            self.engine_gsdm._insert_annotation_cnfs()
+            self.engine_gsdm.session.commit()
+
+        def insert_annotations_cnf_race_condition():
+            self.engine_gsdm_race_conditions._insert_annotation_cnfs()
+            self.engine_gsdm_race_conditions.session.commit()
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_annotations_cnf_race_condition):
+            insert_annotations_cnf()
+
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm_race_conditions.session.commit()
+
+        annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).all()
+
+        assert len(annotation_cnf_ddbb) == 1
+
+    def test_insert_expl_group(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        data = {"explicit_references": [{
+            "group": "EXPL_GROUP"
+        }]}
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_expl_groups()
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm.session.commit()
+
+        expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == data["explicit_references"][0]["group"]).all()
+
+        assert len(expl_group_ddbb) == 1
+
+    def test_race_condition_insert_expl_group(self):
+        """
+        Method to test the race condition that could be produced if the
+        group for explicit references does not exist and it is going to be created by
+        two instances
+        """
+        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        data = {"explicit_references": [{
+            "group": "EXPL_GROUP"
+        }]}
+        self.engine_gsdm.operation = data
+        self.engine_gsdm_race_conditions.operation = data
+
+        def insert_expl_group():
+            self.engine_gsdm._insert_expl_groups()
+            self.engine_gsdm.session.commit()
+
+        def insert_expl_group_race_condition():
+            self.engine_gsdm_race_conditions._insert_expl_groups()
+            self.engine_gsdm_race_conditions.session.commit()
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_expl_group_race_condition):
+            insert_expl_group()
+
+        expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == data["explicit_references"][0]["group"]).all()
+
+        assert len(expl_group_ddbb) == 1
+
+    def test_insert_explicit_reference(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        data = {"explicit_references": [{
+            "name": "EXPLICIT_REFERENCE",
+            "links": [{"link": "EXPLICIT_REFERENCE_LINK"}]
+        }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
+                }],
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION"
+                }]
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_explicit_refs()
+        # Call commit as the method uses the nested operation
+        self.engine_gsdm.session.commit()
+
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).all()
+
+        assert len(explicit_reference_ddbb) == 1
+
+        explicit_reference_link_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["links"][0]["link"]).all()
+
+        assert len(explicit_reference_link_ddbb) == 1
+
+        explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).all()
+
+        assert len(explicit_reference_event_ddbb) == 1
+
+        explicit_reference_annotation_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["annotations"][0]["explicit_reference"]).all()
+
+        assert len(explicit_reference_annotation_ddbb) == 1
+
+    def test_insert_race_condition_explicit_reference(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        data = {"explicit_references": [{
+            "name": "EXPLICIT_REFERENCE"}]
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm_race_conditions.operation = data
+
+        def insert_explicit_reference():
+            self.engine_gsdm._insert_explicit_refs()
+            self.engine_gsdm.session.commit()
+
+        def insert_explicit_reference_race_condition():
+            self.engine_gsdm_race_conditions._insert_explicit_refs()
+            self.engine_gsdm_race_conditions.session.commit()
+
+        with before_after.before("gsdm.engine.engine.race_condition", insert_explicit_reference_race_condition):
+            insert_explicit_reference()
+
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).all()
+
+        assert len(explicit_reference_ddbb) == 1
