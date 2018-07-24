@@ -68,3 +68,13 @@ class GsdmResourcesPathNotAvailable(Error):
 
     def __init__(self, message):
         self.message = message
+
+class WrongGeometry(Error):
+    """Exception raised when the geometry value is not accepted by the engine
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

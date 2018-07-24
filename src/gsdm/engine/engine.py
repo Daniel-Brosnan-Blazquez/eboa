@@ -20,7 +20,7 @@ import jsonschema
 from functools import wraps
 
 # Import SQLalchemy entities
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.sql import func
 
 # Import GEOalchemy entities
@@ -28,7 +28,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable
+from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
 
 # Import datamodel
 from gsdm.datamodel.base import Session, engine, Base
@@ -172,6 +172,10 @@ class Engine():
         "FILE_NOT_VALID": {
             "status": 9,
             "message": "The source file with name {} does not pass the schema verification"
+        },
+        "WRONG_GEOMETRY": {
+            "status": 10,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines a wrong geometry. The exception raised has been the following: {}"
         }
     }
 
@@ -893,6 +897,7 @@ class Engine():
                     self.session.begin_nested()
                     self.session.add(ExplicitRefLink(explicit_ref1.explicit_ref_id, link.get("name"), explicit_ref2))
                     try:
+                        race_condition()
                         self.session.commit()
                     except IntegrityError:
                         # The link exists already into DDBB
@@ -907,6 +912,7 @@ class Engine():
                         self.session.begin_nested()
                         self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_id, link.get("name"), explicit_ref1))
                         try:
+                            race_condition()
                             self.session.commit()
                         except IntegrityError:
                             # The link exists already into DDBB
@@ -961,7 +967,7 @@ class Engine():
 
         source_start = source.validity_start
         source_stop = source.validity_stop
-        if stop < source_start or start > source_stop:
+        if start < source_start or stop > source_stop:
             # The period of the event is not inside the validity period of the input
             self.session.rollback()
             raise WrongPeriod(self.exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, start, stop, source_start, source_stop))
@@ -991,7 +997,10 @@ class Engine():
             stop = event.get("stop")
             gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
-            explicit_ref = self.explicit_refs[event.get("explicit_reference")]
+            explicit_ref = None
+            if event.get("explicit_reference") in self.explicit_refs:
+                explicit_ref = self.explicit_refs[event.get("explicit_reference")]
+            # end if
             key = event.get("key")
             visible = False
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
@@ -1009,11 +1018,6 @@ class Engine():
             self._insert_event(list_events, id, start, stop, gauge, explicit_ref_id,
                                     visible, source = self.source)
 
-            # Make the key visible only in case it is not going to be inserted as EVENT_KEYS
-            visible = True
-            if gauge_info["insertion_type"] == "EVENT_KEYS":
-                visible = False
-            # end if
             # Insert the key into the list for bulk ingestion
             if key != None:
                 list_keys.append(dict(event_key = key, event_uuid = id,
@@ -1067,7 +1071,11 @@ class Engine():
             self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
         # end if
         if "geometries" in list_values:
-            self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+            try:
+                self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+            except InternalError as e:
+                self.session.rollback()
+                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, e))
         # end if
 
         # Insert links by reference
