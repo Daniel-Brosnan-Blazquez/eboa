@@ -37,16 +37,33 @@ import sqltap
 profiler = sqltap.start()
 session = Session()
 
-# Clear all tables before executing the test
-for table in reversed(Base.metadata.sorted_tables):
-    engine.execute(table.delete())
-# end for
-
 engine_gsdm = Engine()
 query_gsdm = Query()
 
-#engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/test_ingestion_10000_events.json")
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/test_ingestion_10000_events.xml")
+usage="Usage: " + sys.argv[0] + " input_file"
+
+if len(sys.argv) != 2:
+    print(usage)
+    sys.exit(-1)
+# end if
+
+file_path = sys.argv[1]
+
+if not os.path.isfile(file_path):
+    print(usage)
+    sys.exit(-1)
+# end if
+
+if file_path.split(".")[1] == "json":
+    # Clear all tables before executing the test
+    for table in reversed(Base.metadata.sorted_tables):
+        engine.execute(table.delete())
+    # end for
+
+    engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
+else:
+    engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
+# end if
 
 engine_gsdm.treat_data()
 
