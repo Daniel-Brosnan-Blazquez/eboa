@@ -328,7 +328,32 @@ class Query():
             if type(event_uuids) != list:
                 raise
             # end if
-            links = self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids)).all()
+            links = self.session.query(EventLink).filter(EventLink.event_uuid.in_(event_uuids)).all()
+        else:
+            links = self.session.query(EventLink).all()
+        # end if
+
+        return links
+
+    def get_event_links_pointing_to_events(self, event_uuids, event_uuid_links):
+        """
+        """
+        if type(event_uuids) != list or type(event_uuid_links) != list:
+            raise
+        # end if
+        links = self.session.query(EventLink).filter(EventLink.event_uuid.in_(event_uuids),
+                                                     EventLink.event_uuid_link.in_(event_uuid_links)).all()
+
+        return links
+
+    def get_links_to_events(self, event_uuid_links = None):
+        """
+        """
+        if event_uuid_links:
+            if type(event_uuid_links) != list:
+                raise
+            # end if
+            links = self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuid_links)).all()
         else:
             links = self.session.query(EventLink).all()
         # end if
