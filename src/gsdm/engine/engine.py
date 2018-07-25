@@ -45,37 +45,47 @@ from gsdm.engine.query import Query
 # Import xml parser
 from lxml import etree
 
-if "GSDM_RESOURCES_PATH" in os.environ:
-    # Get the path to the resources of the gsdm
-    gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-    # Get configuration
-    with open(gsdm_resources_path + "/" + "config/engine.json") as json_data_file:
-        config = json.load(json_data_file)
-else:
-    raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
-# end if
+def read_configuration():
+    global gsdm_resources_path
+    global config
+    if "GSDM_RESOURCES_PATH" in os.environ:
+        # Get the path to the resources of the gsdm
+        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
+        # Get configuration
+        with open(gsdm_resources_path + "/" + "config/engine.json") as json_data_file:
+            config = json.load(json_data_file)
+    else:
+        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
+    # end if
 
-# Define logging configuration
-logger = logging.getLogger(__name__)
-if "GSDM_LOG_LEVEL" in os.environ:
-    logging_level = eval("logging." + os.environ["GSDM_LOG_LEVEL"])
-else:
-    logging_level = eval("logging." + config["LOG"]["LEVEL"])
-# end if
-# Set logging level
-logger.setLevel(logging_level)
-# Set the path to the log file
-file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
-# Add format to the logs
-formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+read_configuration()
 
-if "GSDM_STREAM_LOG" in os.environ:
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-# end if
+def define_logging_configuration():
+    global logger
+    global logging_level
+    # Define logging configuration
+    logger = logging.getLogger(__name__)
+    if "GSDM_LOG_LEVEL" in os.environ:
+        logging_level = eval("logging." + os.environ["GSDM_LOG_LEVEL"])
+    else:
+        logging_level = eval("logging." + config["LOG"]["LEVEL"])
+    # end if
+    # Set logging level
+    logger.setLevel(logging_level)
+    # Set the path to the log file
+    file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
+    # Add format to the logs
+    formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    if "GSDM_STREAM_LOG" in os.environ:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+    # end if
+
+define_logging_configuration()
 
 # Auxiliary functions
 def is_datetime(date):
@@ -199,18 +209,6 @@ class Engine():
     ###################
     # PARSING METHODS #
     ###################
-    def generate_json(self, json_path):
-        """
-        Method to generate a json file from the data managed by the engine
-
-        :param json_path: path to the json file to be generated
-        :type json_path: str
-        """
-        with open(json_path, "w") as output_file:
-            json.dump(self.data, output_file)
-
-        return
-
     @debug
     def parse_data_from_json(self, json_path, check_schema = True):
         """
@@ -221,6 +219,7 @@ class Engine():
         :param check_schema: indicates whether to pass a schema over the json file or not
         :type check_schema: bool
         """
+        json_name = os.path.basename(json_path)
         # Parse data from the json file
         try:
             with open(json_path) as input_file:
@@ -287,7 +286,7 @@ class Engine():
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
-            with open(xml,"r") as xml_file:
+            with open(xml_path,"r") as xml_file:
                 self.source.content_text = xml_file.read()
             self.session.commit()
             self.session.close()
@@ -474,7 +473,6 @@ class Engine():
         Method to treat the data stored in self.data
         """
         # Pass schema
-        
         for self.operation in self.data.get("operations") or []:
             if self.operation.get("mode") == "insert":
                 returned_value = self._insert_data()
@@ -509,7 +507,6 @@ class Engine():
         
         # Insert the DIM signature
         self._insert_dim_signature()
-
         try:
             self._insert_source()
             self.ingestion_start = datetime.datetime.now()
@@ -555,6 +552,7 @@ class Engine():
         # Insert explicit references
         self._insert_links_explicit_refs()
 
+        self.session.begin_nested()
         # Insert events
         try:
             self._insert_events()
@@ -1048,7 +1046,6 @@ class Engine():
                 # end for
             # end if
         # end for
-        self.session.begin_nested()
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events)
         # Bulk insert keys
@@ -1093,7 +1090,7 @@ class Engine():
         # end for
         
         # Bulk insert links
-        list_event_links_ddbb = list_event_links_by_ref_ddbb
+        list_event_links_ddbb = list_event_links_by_ref_ddbb + list_event_links_by_uuid_ddbb
         self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
 
         # Commit data
@@ -1333,6 +1330,8 @@ class Engine():
                                      "values": {},
                                      "keys": [],
                                      "links": []}
+        list_event_uuids_aliases = {}
+        list_events_to_be_removed = []
         for gauge in self.erase_and_replace_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
@@ -1361,16 +1360,13 @@ class Engine():
                         for event_uuid in list_split_events:
                             event = list_split_events[event_uuid]
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            if timestamp > event.stop:
-                                raise
-                            # end if
                             self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
                                                gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                             self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
-                            self._replicate_event_links(event_uuid, id, list_events_to_be_created["links"])
+                            self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
                             # Remove event
-                            self.session.query(Event).filter(Event.event_uuid == event_uuid).delete(synchronize_session=False)
+                            list_events_to_be_removed.append(event_uuid)
                         # end for
                         break
                     # end if
@@ -1403,16 +1399,13 @@ class Engine():
                     for event in events_max_generation_time:
                         if event.event_uuid in list_split_events:
                             if event.stop <= validity_stop:
-                                if validity_start > event.stop:
-                                    raise
-                                # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
                                                    gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
-                                self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
+                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
-                                self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
+                                list_events_to_be_removed.append(event.event_uuid)
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
@@ -1452,23 +1445,20 @@ class Engine():
                                 else:
                                     start = event.start
                                 # end if
-                                if start > validity_start:
-                                    raise
-                                # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
                                                    gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
-                                self._replicate_event_links(event.event_uuid, id, list_events_to_be_created["links"])
+                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             # end if
                             if event.stop > validity_stop:
                                 list_split_events[event.event_uuid] = event
                             else:
-                                self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
+                                list_events_to_be_removed.append(event.event_uuid)
                             # end if
                         elif event.event_uuid in list_split_events and event.stop <= validity_stop:
-                            self.session.query(Event).filter(Event.event_uuid == event.event_uuid).delete(synchronize_session=False)
+                            list_events_to_be_removed.append(event.event_uuid)
                             del list_split_events[event.event_uuid]
                         # end if
                     # end for
@@ -1484,7 +1474,11 @@ class Engine():
         # Bulk insert keys
         self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
         # Bulk insert links
+        self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
         self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+        # Remove the events that were partially affected by the erase and replace operation
+        self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
@@ -1541,24 +1535,55 @@ class Engine():
         
         return
 
-    def _replicate_event_links(self, from_event_uuid, to_event_uuid, list_links_to_be_created):
+    def _create_event_uuid_alias(self, event_uuid, alias, list_event_uuids_aliases):
+        """
+        """
+        if not event_uuid in list_event_uuids_aliases:
+            list_event_uuids_aliases[event_uuid] = []
+        # end if
+        list_event_uuids_aliases[event_uuid].append(alias)
+        
+        return
+
+    def _replicate_event_links(self, list_event_uuids_aliases, list_links_to_be_created):
         """
         Method to replicate the links associated to events that were overwritten partially by other events
 
-        :param from_event_uuid: original event where to get the associated values from
-        :type from_event_uuid: uuid
-        :param to_event_uuid: new event to associate the values
-        :type to_event_uuid: uuid
-        :param list_links_to_be_created: list of links between events to be stored later inside the DDBB
-        :type list_links_to_be_created: list
+        :param list_event_uuids_aliases: list of the aliases of the event_uuids
+        :type list_event_uuids_aliases: list
         """
-        links = self.query.get_event_links([from_event_uuid])
-        for link in links:
-            list_links_to_be_created.append(dict(name = link.name,
-                                                 event_uuid_link = to_event_uuid,
-                                                 event_uuid = link.event_uuid))
+        for event_uuid in list_event_uuids_aliases:
+            # Get links that point to it
+            links = self.query.get_event_links([event_uuid])
+            for link in links:
+                for alias in list_event_uuids_aliases[event_uuid]:
+                    if link.event_uuid_link in list_event_uuids_aliases:
+                        aliases_to_point = list_event_uuids_aliases[link.event_uuid_link]
+                    else:
+                        aliases_to_point = [link.event_uuid_link]
+                    # end if
+                    for alias_to_point in aliases_to_point:
+                        list_links_to_be_created.append(dict(name = link.name,
+                                                             event_uuid_link = alias_to_point,
+                                                             event_uuid = alias))
+                    # end for
+                # end for
+            # end for
+
+            # Get links that point from it
+            links = self.session.query(EventLink).filter(EventLink.event_uuid_link == event_uuid,
+                                                         EventLink.event_uuid.notin_(list(list_event_uuids_aliases.keys()))).all()
+            for link in links:
+                for alias in list_event_uuids_aliases[event_uuid]:
+                    list_links_to_be_created.append(dict(name = link.name,
+                                                         event_uuid_link = alias,
+                                                         event_uuid = link.event_uuid))
+                # end for
+                # Remove the link as the event_uuid_link is going to disappear
+                self.session.delete(link)
+            # end for
+            
         # end for
-        
         return
 
     def _replicate_event_keys(self, from_event_uuid, to_event_uuid, list_keys_to_be_created):

@@ -1,0 +1,15 @@
+{"operations": [
+    {
+        "mode": "insert",
+        "dim_signature": {
+            "exec": "test_exec1",
+            "name": "test_dim_signature1",
+            "version": "1.0"
+        },
+        "source": {
+            "name": "test_simple_update.json",
+            "validity_start": "2018-06-05T02:07:03",
+            "validity_stop": "2018-06-05T02:07:36"
+        }
+    }]
+}

@@ -1,0 +1,14 @@
+<sd>
+  <insert>
+    <dim_signature
+        name="test_dim_signature1"
+        version="1.0"
+        exec="test_exec1"/>
+    <source
+        name="test_wrong_structure.xml" 
+        validity_start="2018-06-05T02:07:03"
+        validity_stop="2018-06-05T02:07:36"/>
+    <data>
+    </data>
+  </insert>
+</gsd>
