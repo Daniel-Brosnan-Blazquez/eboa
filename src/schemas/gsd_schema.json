@@ -129,7 +129,7 @@
             "properties": {
                 "name": {"type": "string"},
                 "link": {"type": "string"},
-                "link_mode": {"type": "string"},
+                "link_mode": {"enum": ["by_ref", "by_uuid", null]},
                 "back_ref": {"enum": ["true", "false", null]}
             },
             "additionalProperties": false
