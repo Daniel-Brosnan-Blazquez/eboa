@@ -2815,6 +2815,7 @@ class TestEngine(unittest.TestCase):
 
     def test_no_gsdm_resources_path(self):
 
+        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
         del os.environ["GSDM_RESOURCES_PATH"]
 
         try:
@@ -2823,6 +2824,8 @@ class TestEngine(unittest.TestCase):
             assert True == True
         except:
             assert False == True
+
+        os.environ["GSDM_RESOURCES_PATH"] = gsdm_resources_path
 
     def test_change_logging_level(self):
 

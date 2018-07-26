@@ -14,6 +14,7 @@ import uuid
 import random
 
 # Import datamodel
+import gsdm.datamodel.base
 from gsdm.datamodel.base import Session, engine, Base
 from gsdm.datamodel.dim_signatures import DimSignature
 from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
@@ -21,6 +22,7 @@ from gsdm.datamodel.gauges import Gauge
 from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from gsdm.datamodel.errors import GsdmResourcesPathNotAvailable
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -222,5 +224,16 @@ class TestDatamodel(unittest.TestCase):
         
         assert len (self.session.query(AnnotationGeometry).filter(AnnotationGeometry.annotation_uuid == annotation1_uuid, AnnotationGeometry.name == "GEOMETRY_NAME", func.ST_AsText(AnnotationGeometry.value) == polygon, AnnotationGeometry.level_position == 5, AnnotationGeometry.parent_level == 0, AnnotationGeometry.parent_position == 0).all()) == 1
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_no_gsdm_resources_path(self):
+
+        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
+        del os.environ["GSDM_RESOURCES_PATH"]
+
+        try:
+            gsdm.datamodel.base.read_configuration()
+        except GsdmResourcesPathNotAvailable:
+            assert True == True
+        except:
+            assert False == True
+
+        os.environ["GSDM_RESOURCES_PATH"] = gsdm_resources_path
