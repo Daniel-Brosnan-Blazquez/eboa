@@ -125,6 +125,14 @@ class TestEngine(unittest.TestCase):
 
         assert len(source_ddbb) == 1
 
+    def test_insert_source_again_no_previous_ingestion_finished(self):
+        self.test_insert_source()
+        data = self.engine_gsdm.operation
+
+        returned_value = self.test_insert_source()
+
+        assert returned_value == None
+
     def test_insert_source_wrong_validity(self):
         """
         Method to test that the engine protects the ingestion from a wrong
@@ -2447,8 +2455,7 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        returned_value = self.engine_gsdm.treat_data(data)
 
         assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
 
