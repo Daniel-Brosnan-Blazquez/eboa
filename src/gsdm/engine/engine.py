@@ -468,10 +468,14 @@ class Engine():
     # INSERTION METHODS #
     #####################
 
-    def treat_data(self):
+    def treat_data(self, data = None):
         """
         Method to treat the data stored in self.data
         """
+        if data:
+            self.data = data
+        # end if
+
         # Pass schema
         for self.operation in self.data.get("operations") or []:
             if self.operation.get("mode") == "insert":
@@ -491,9 +495,9 @@ class Engine():
         self.annotation_cnfs = {}
         self.expl_groups = {}
         self.explicit_refs = {}
-        self.erase_and_replace_gauges = []
+        self.erase_and_replace_gauges = {}
         self.annotation_cnfs_explicit_refs = []
-        self.keys_events = []
+        self.keys_events = {}
 
         return
 
@@ -683,16 +687,7 @@ class Engine():
         generation_time = source.get("generation_time")
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
-        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
-                                                               DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
-                                                               DimProcessing.dim_exec_version == version).first()
-        if self.source and self.source.ingestion_duration:
-            # The source has been already ingested
-            raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
-                                                                                                     self.dim_signature.dim_signature,
-                                                                                                     self.dim_signature.dim_exec_name, 
-                                                                                                     version))
-        # end if
+
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         if parser.parse(validity_stop) < parser.parse(validity_start):
             # The validity period is not correct (stop > start)
@@ -712,6 +707,24 @@ class Engine():
             # end try
             raise WrongPeriod(self.exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, version, validity_stop, validity_start))
         # end if
+
+        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
+                                                               DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
+                                                               DimProcessing.dim_exec_version == version).first()
+        if self.source and self.source.ingestion_duration:
+            # The source has been already ingested
+            raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
+                                                                                                     self.dim_signature.dim_signature,
+                                                                                                     self.dim_signature.dim_exec_name, 
+                                                                                                     version))
+        elif self.source:
+            # Upadte the information
+            self.source.validity_start = validity_start
+            self.source.validity_stop = validity_stop
+            self.source.generation_time = generation_time
+            return
+        # end if
+
         self.source = DimProcessing(id, name,
                                     generation_time, version, self.dim_signature,
                                     validity_start, validity_stop)
@@ -924,7 +937,7 @@ class Engine():
 
         return
 
-    def _insert_event(self, list_events, id, start, stop, gauge, explicit_ref_id, visible, source = None, source_id = None):
+    def _insert_event(self, list_events, id, start, stop, gauge_id, explicit_ref_id, visible, source = None, source_id = None):
         """
         Method to insert an event
 
@@ -936,8 +949,8 @@ class Engine():
         :type start: start date of the period of the event
         :param stop: datetime
         :type stop: stop date of the period of the event
-        :param gauge: reference to the associated gauge
-        :type gauge: sqlalchemy object
+        :param gauge_id: reference to the associated gauge
+        :type gauge_id: int
         :param explicit_ref_id: identifier of the associated explicit reference
         :type explicit_ref_id: int
         :param visible: indicator of the visibility of the event
@@ -973,7 +986,7 @@ class Engine():
             
         list_events.append(dict(event_uuid = id, start = start, stop = stop,
                                 ingestion_time = datetime.datetime.now(),
-                                gauge_id = gauge.gauge_id,
+                                gauge_id = gauge_id,
                                 explicit_ref_id = explicit_ref_id,
                                 processing_uuid = source.processing_uuid,
                                 visible = visible))
@@ -1004,16 +1017,16 @@ class Engine():
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
                 visible = True
             elif gauge_info["insertion_type"] == "ERASE_and_REPLACE":
-                self.erase_and_replace_gauges.append(gauge)
+                self.erase_and_replace_gauges[gauge.gauge_id] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
-                self.keys_events.append(key)
+                self.keys_events[key] = None
             # end if
             explicit_ref_id = None
             if explicit_ref != None:
                 explicit_ref_id = explicit_ref.explicit_ref_id
             # end if
             # Insert the event into the list for bulk ingestion
-            self._insert_event(list_events, id, start, stop, gauge, explicit_ref_id,
+            self._insert_event(list_events, id, start, stop, gauge.gauge_id, explicit_ref_id,
                                     visible, source = self.source)
 
             # Insert the key into the list for bulk ingestion
@@ -1332,14 +1345,16 @@ class Engine():
                                      "links": []}
         list_event_uuids_aliases = {}
         list_events_to_be_removed = []
-        for gauge in self.erase_and_replace_gauges:
+        print(self.erase_and_replace_gauges)
+        for gauge_id in self.erase_and_replace_gauges:
+            print(gauge_id)
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
-            lock = "erase_and_replace" + str(gauge.gauge_id)
+            lock = "erase_and_replace" + str(gauge_id)
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
-            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
+            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_id, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
-                sources = self.session.query(DimProcessing).join(Event).filter(Event.gauge_id == gauge.gauge_id,
+                sources = self.session.query(DimProcessing).join(Event).filter(Event.gauge_id == gauge_id,
                                                                                Event.start < self.source.validity_stop,
                                                                                Event.stop > self.source.validity_start)
                 
@@ -1361,7 +1376,7 @@ class Engine():
                             event = list_split_events[event_uuid]
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                             self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                               gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                               gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
                             self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
                             self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
@@ -1375,7 +1390,7 @@ class Engine():
                     validity_stop = filtered_timeline_points[next_timestamp]
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
-                    max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).filter(Event.gauge_id == gauge.gauge_id,
+                    max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).filter(Event.gauge_id == gauge_id,
                                                                                                                          Event.start < validity_stop,
                                                                                                                          Event.stop > validity_start)
                 
@@ -1385,13 +1400,13 @@ class Engine():
                     # end if
                     # Get the related source
                     source_max_generation_time = self.session.query(DimProcessing).join(Event).filter(DimProcessing.generation_time == max_generation_time,
-                                                                                                     Event.gauge_id == gauge.gauge_id,
+                                                                                                     Event.gauge_id == gauge_id,
                                                                                                      Event.start < validity_stop,
                                                                                                      Event.stop > validity_start).first()
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = self.session.query(Event).filter(Event.processing_uuid == source_max_generation_time.processing_uuid,
-                                                                                  Event.gauge_id == gauge.gauge_id,
+                                                                                  Event.gauge_id == gauge_id,
                                                                                   Event.start < validity_stop,
                                                                                   Event.stop > validity_start).all()
                     
@@ -1401,7 +1416,7 @@ class Engine():
                             if event.stop <= validity_stop:
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                                   gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                                   gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
@@ -1416,13 +1431,13 @@ class Engine():
 
                     # Delete deprecated events fully contained into the validity period
                     self.session.query(Event).filter(Event.processing_uuid != source_max_generation_time.processing_uuid,
-                                                     Event.gauge_id == gauge.gauge_id,
+                                                     Event.gauge_id == gauge_id,
                                                      Event.start >= validity_start,
                                                      Event.stop <= validity_stop).delete(synchronize_session="fetch")
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_ending_on_period = self.session.query(Event).join(DimProcessing).filter(DimProcessing.generation_time <= max_generation_time,
-                                                                                                               Event.gauge_id == gauge.gauge_id,
+                                                                                                               Event.gauge_id == gauge_id,
                                                                                                                Event.start <= validity_start,
                                                                                                                Event.stop > validity_start,
                                                                                                                Event.stop <= validity_stop,
@@ -1430,7 +1445,7 @@ class Engine():
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_not_ending_on_period = self.session.query(Event).join(DimProcessing).filter(DimProcessing.generation_time <= max_generation_time,
-                                                                                                                   Event.gauge_id == gauge.gauge_id,
+                                                                                                                   Event.gauge_id == gauge_id,
                                                                                                                    Event.start < validity_stop,
                                                                                                                    Event.stop > validity_stop,
                                                                                                                    Event.processing_uuid != source_max_generation_time.processing_uuid).all()
@@ -1447,7 +1462,7 @@ class Engine():
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                                   gauge, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                                   gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
@@ -1466,7 +1481,7 @@ class Engine():
             # end def
             list_events_to_be_created_not_ending_on_period = {}
             list_split_events = {}
-            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
+            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_id, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
         # end for
 
         # Bulk insert events
