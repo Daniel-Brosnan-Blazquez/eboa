@@ -145,7 +145,7 @@ class Engine():
     exit_codes = {
         "OK": {
             "status": 0,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been ingested correctly"
+            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has ingested correctly {} event/s and {} annotation/s"
         },
         "INGESTION_STARTED": {
             "status": 1,
@@ -632,13 +632,25 @@ class Engine():
         # information that is deprecated
         self._remove_deprecated_data()
 
+        n_events = 0
+        if "events" in self.operation:
+            n_events = len(self.operation.get("events"))
+        # end if
+
+        n_annotations = 0
+        if "annotations" in self.operation:
+            n_annotations = len(self.operation.get("annotations"))
+        # end if
+
         # Log that the file has been ingested correctly
         self._insert_proc_status(self.exit_codes["OK"]["status"],True)
         logger.info(self.exit_codes["OK"]["message"].format(
             self.source.name,
             self.dim_signature.dim_signature,
             self.dim_signature.dim_exec_name, 
-            self.source.dim_exec_version))
+            self.source.dim_exec_version,
+            n_events,
+            n_annotations))
         self.source.ingestion_time = datetime.datetime.now()
 
         # Remove if the content was inserted due to errors processing the input
