@@ -2455,6 +2455,10 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
+        returned_value = self.engine_gsdm.validate_data(data, "source.xml")
+
+        assert returned_value == None
+        
         returned_value = self.engine_gsdm.treat_data(data)
 
         assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
