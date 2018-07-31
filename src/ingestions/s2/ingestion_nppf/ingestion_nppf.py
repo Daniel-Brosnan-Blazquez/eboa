@@ -316,20 +316,8 @@ def process_file(file_path):
 
     return data
 
-if __name__ == "__main__":
-    """
-    This will be not here. After all the needs are identified, the ingestions a priori will have only the method process_file and this method will be called from outside
-    """
-    args_parser = argparse.ArgumentParser(description='Process NPPFs.')
-    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
-                        help='path to the file to process', required=True)
-    args = args_parser.parse_args()
-
-    # Before calling to the processor there should be a validation of
-    # the file following a schema. Schema not available for NPPFs
-
+def command_process_file(file_path):
     # Process file
-    file_path = args.file_path[0]
     data = process_file(file_path)
 
     engine = Engine()
@@ -343,5 +331,22 @@ if __name__ == "__main__":
         # Treat data
         returned_value = engine.treat_data(data)
     # end if
+    
+    return returned_value
+
+if __name__ == "__main__":
+    """
+    This will be not here. After all the needs are identified, the ingestions a priori will have only the method process_file and this method will be called from outside
+    """
+    args_parser = argparse.ArgumentParser(description='Process NPPFs.')
+    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
+                        help='path to the file to process', required=True)
+    args = args_parser.parse_args()
+    file_path = args.file_path[0]
+
+    # Before calling to the processor there should be a validation of
+    # the file following a schema. Schema not available for NPPFs
+
+    returned_value = command_process_file(file_path)
     
     print(returned_value)

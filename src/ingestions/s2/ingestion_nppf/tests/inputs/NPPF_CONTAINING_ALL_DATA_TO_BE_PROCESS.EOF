@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Earth_Explorer_File>
+<Earth_Explorer_Header>
+  <Fixed_Header>
+    <File_Name>NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS</File_Name>
+    <File_Description/>
+    <Notes/>
+    <Mission>Sentinel2A</Mission>
+    <File_Class>OPER</File_Class>
+    <File_Type>MPL__NPPF_</File_Type>
+    <Validity_Period>
+      <Validity_Start>UTC=2018-07-20T11:00:00</Validity_Start>
+      <Validity_Stop>UTC=2018-08-06T14:00:00</Validity_Stop>
+    </Validity_Period>
+    <File_Version>0001</File_Version>
+    <Source>
+      <System>PDMC</System>
+      <Creator>MPL</Creator>
+      <Creator_Version>00.01</Creator_Version>
+      <Creation_Date>UTC=2018-07-16T11:41:50</Creation_Date>
+    </Source>
+  </Fixed_Header>
+  <Variable_Header>
+    <LogFile_Name>s2mp.log</LogFile_Name>
+  </Variable_Header>
+</Earth_Explorer_Header>
+<Data_Block>
+  <SPF version="2.0"/>
+  <List_of_EVRQs count="5746">
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T12:52:59.208</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRNOM</RQ_Name>
+        <RQ_Description>MMFU PS Record Nominal switch. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T12:52:59.208</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>183.7128</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="1">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_DUP</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene duplication flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>0</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T12:53:01.208</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSNOBS</RQ_Name>
+        <RQ_Description>MSI Imaging INS-NOBS mode</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T12:53:01.208</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>183.8334</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T12:58:42.860</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSIMID</RQ_Name>
+        <RQ_Description>MSI from Imaging to Idle</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T12:58:42.860</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>204.3992</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T12:58:47.360</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRSTP</RQ_Name>
+        <RQ_Description>MMFU PS Record Stop. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T12:58:47.360</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>204.6691</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T12:59:02.360</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSIDSB</RQ_Name>
+        <RQ_Description>MSI from Idle to Standby</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T12:59:02.360</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>205.5686</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T13:40:00.000</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MGSYQDEL</RQ_Name>
+        <RQ_Description>Delete queue request</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Ground Manual Schedule</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T13:40:00.000</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16065</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>351.3669</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="3">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>DORB_NO</RQ_Parameter_Name>
+            <RQ_Parameter_Description>DORB_NO</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>16065</RQ_Parameter_Value>
+          </RQ_Parameter>
+          <RQ_Parameter>
+            <RQ_Parameter_Name>DORB_ANG</RQ_Parameter_Name>
+            <RQ_Parameter_Description>DORB_ANG</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>61325</RQ_Parameter_Value>
+          </RQ_Parameter>
+          <RQ_Parameter>
+            <RQ_Parameter_Name>DTTQ_TIM</RQ_Parameter_Name>
+            <RQ_Parameter_Description>DTTQ_TIM</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>2018.201.13.40.00.000</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:02:08.695</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPXBSBOP</RQ_Name>
+        <RQ_Description>XBS X-band on - STBY to Operational</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:02:08.695</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>70.9228</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:02:32.734</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSSBID</RQ_Name>
+        <RQ_Description>MSI from Standby to Idle</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:02:32.734</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>72.3453</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:02:33.695</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMPNOM</RQ_Name>
+        <RQ_Description>MMFU PS Playback nominal "Data stored" </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:02:33.695</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>72.4021</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="1">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>MEM_FREE</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Memory freed flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>1</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:07:25.734</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRNOM</RQ_Name>
+        <RQ_Description>MMFU PS Record Nominal switch. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:07:25.734</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>89.6670</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="1">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_DUP</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene duplication flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>0</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:07:27.734</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSNOBS</RQ_Name>
+        <RQ_Description>MSI Imaging INS-NOBS mode</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:07:27.734</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>89.7852</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:08:53.218</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSIMID</RQ_Name>
+        <RQ_Description>MSI from Imaging to Idle</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:08:53.218</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>94.8369</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:08:57.718</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRSTP</RQ_Name>
+        <RQ_Description>MMFU PS Record Stop. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:08:57.718</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>95.1028</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:09:55.673</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRNRT</RQ_Name>
+        <RQ_Description>MMFU PS Record NRT switch. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:09:55.673</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>98.5282</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="1">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_DUP</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene duplication flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>0</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:09:57.673</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSSCAL</RQ_Name>
+        <RQ_Description>MSI Imaging SUN_CAL mode</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:09:57.673</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>98.6464</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:14:14.748</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMPSTP</RQ_Name>
+        <RQ_Description>MMFU Playback stop </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:14:14.748</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>113.8555</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="2">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_RWD</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene rewind flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>1</RQ_Parameter_Value>
+          </RQ_Parameter>
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_DUP</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene duplication flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>0</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:14:25.748</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMPBHS</RQ_Name>
+        <RQ_Description>MMFU HKTM/SAD PS Playback.</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:14:25.748</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>114.5071</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="2">
+          <RQ_Parameter>
+            <RQ_Parameter_Name>MEM_FRHK</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Memory freed flags for HKTM PS</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>1</RQ_Parameter_Value>
+          </RQ_Parameter>
+          <RQ_Parameter>
+            <RQ_Parameter_Name>MEM_FSAD</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Memory freed flags for SAD PS</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>0</RQ_Parameter_Value>
+          </RQ_Parameter>
+        </List_of_RQ_Parameters>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:14:57.748</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPXBOPSB</RQ_Name>
+        <RQ_Description>XBS X-band off - Operational to STBY</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:14:57.748</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>116.4033</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:16:04.581</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMSIMID</RQ_Name>
+        <RQ_Description>MSI from Imaging to Idle</RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:16:04.581</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>120.3662</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+    <EVRQ>
+      <EVRQ_Header>
+        <EVRQ_Time>UTC=2018-07-20T14:16:09.081</EVRQ_Time>
+        <EVRQ_Type>Request</EVRQ_Type>
+        <EVRQ_Description/>
+      </EVRQ_Header>
+      <RQ>
+        <RQ_Name>MPMMRSTP</RQ_Name>
+        <RQ_Description>MMFU PS Record Stop. </RQ_Description>
+        <RQ_Source>PDGS</RQ_Source>
+        <RQ_Destination>MPS</RQ_Destination>
+        <RQ_Type>Orbital Angle tagged Sequence</RQ_Type>
+        <RQ_Uplink_Time/>
+        <RQ_Execution_Time>UTC=2018-07-20T14:16:09.081</RQ_Execution_Time>
+        <RQ_Absolute_orbit>16066</RQ_Absolute_orbit>
+        <RQ_Time_from_ANX/>
+        <RQ_Deg_from_ANX>120.6331</RQ_Deg_from_ANX>
+        <List_of_RQ_Parameters count="0"/>
+        <List_of_RQ_Attributes count="0"/>
+      </RQ>
+    </EVRQ>
+  </List_of_EVRQs>
+</Data_Block>
+</Earth_Explorer_File>
