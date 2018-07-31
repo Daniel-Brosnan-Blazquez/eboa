@@ -48,6 +48,7 @@ if len(sys.argv) != 2:
 # end if
 
 file_path = sys.argv[1]
+file_name = os.path.basename(file_path)
 
 if not os.path.isfile(file_path):
     print(usage)
@@ -55,11 +56,6 @@ if not os.path.isfile(file_path):
 # end if
 
 if file_path.split(".")[1] == "json":
-    # Clear all tables before executing the test
-    for table in reversed(Base.metadata.sorted_tables):
-        engine.execute(table.delete())
-    # end for
-
     engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
 else:
     engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
@@ -81,7 +77,7 @@ if dim_signature_ddbb == None:
 print(colored("Check", on_color="on_blue") + "_{}: DIM signature has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## DIM Processing ingestion
-dim_processing = {"name": "test_ingestion_10000_events.xml",
+dim_processing = {"name": file_name,
                   "validity_start": "2018-06-05T02:07:03",
                   "validity_stop": "2018-06-05T08:07:36",
                   "generation_time": "2018-07-05T02:07:03",
