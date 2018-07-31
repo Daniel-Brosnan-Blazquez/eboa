@@ -78,3 +78,13 @@ class WrongGeometry(Error):
 
     def __init__(self, message):
         self.message = message
+
+class ErrorParsingDictionary(Error):
+    """Exception raised when the parsing has found a non supported structure
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

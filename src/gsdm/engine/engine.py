@@ -28,7 +28,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
+from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
 
 # Import datamodel
 from gsdm.datamodel.base import Session, engine, Base
@@ -45,6 +45,9 @@ from gsdm.engine.query import Query
 # Import xml parser
 from lxml import etree
 
+# Import parsing module
+import gsdm.engine.parsing as parsing
+
 def read_configuration():
     global gsdm_resources_path
     global config
@@ -60,9 +63,12 @@ def read_configuration():
 
 read_configuration()
 
+stream_handler = None
 def define_logging_configuration():
     global logger
     global logging_level
+    global stream_handler
+
     # Define logging configuration
     logger = logging.getLogger(__name__)
     if "GSDM_LOG_LEVEL" in os.environ:
@@ -83,6 +89,8 @@ def define_logging_configuration():
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
+    elif stream_handler:
+        logger.removeHandler(stream_handler)
     # end if
 
 define_logging_configuration()
@@ -240,17 +248,12 @@ class Engine():
         # end try
 
         if check_schema:
-            jsonschema.FormatChecker.checkers["date-time"] = (is_datetime, ())
-            schema_path = gsdm_resources_path + "/" + config["RELATIVE_JSON_SCHEMA_PATH"]
-            with open(schema_path) as schema_file:
-                schema = json.load(schema_file)
-
             try:
-                jsonschema.validate(data, schema, format_checker=jsonschema.FormatChecker())
-            except jsonschema.exceptions.ValidationError as e:
+                parsing.validate_data_dictionary(data)
+            except ErrorParsingDictionary as e:
                 self._insert_source_without_dim_signature(json_name)
                 self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
-                self.source.parse_error = "Schema does not validate the json file"
+                self.source.parse_error = str(e)
                 # Insert the content of the file into the DDBB
                 with open(json_path) as input_file:
                     self.source.content_text = input_file.read()
@@ -262,6 +265,7 @@ class Engine():
             # end if
 
         # end if
+
         self.data=data
 
         return 
@@ -397,10 +401,13 @@ class Engine():
                 if len (event.xpath("links/link")) > 0:
                     links = []
                     for link in event.xpath("links/link"):
-                        links.append({"name": link.get("name"),
+                        link_dict = {"name": link.get("name"),
                                       "link": link.text,
-                                      "link_mode": link.get("link_mode"),
-                                      "back_ref": link.get("back_ref")})
+                                      "link_mode": link.get("link_mode")}
+                        if "back_ref" in link.keys():
+                            link_dict["back_ref"] = link.get("back_ref")
+                        # end if
+                        links.append(link_dict)
                     # end for
                     event_info["links"] = links
                 # end if
@@ -467,6 +474,29 @@ class Engine():
     #####################
     # INSERTION METHODS #
     #####################
+    def validate_data(self, data, source):
+        """
+        Method to validate the data structure
+        :param data: structure of data to validate
+        :type data: dict 
+        :param source: name of the source of the data
+        :type source: str
+       """
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary as e:
+            self._insert_source_without_dim_signature(source)
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            self.source.parse_error = str(e)
+            self.session.commit()
+            self.session.close()
+            # Log the error
+            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(source))
+            return self.exit_codes["FILE_NOT_VALID"]["status"]
+        # end try
+
+        return
 
     def treat_data(self, data = None):
         """
@@ -476,7 +506,6 @@ class Engine():
             self.data = data
         # end if
 
-        # Pass schema
         for self.operation in self.data.get("operations") or []:
             if self.operation.get("mode") == "insert":
                 returned_value = self._insert_data()
@@ -1357,9 +1386,7 @@ class Engine():
                                      "links": []}
         list_event_uuids_aliases = {}
         list_events_to_be_removed = []
-        print(self.erase_and_replace_gauges)
         for gauge_id in self.erase_and_replace_gauges:
-            print(gauge_id)
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
             lock = "erase_and_replace" + str(gauge_id)

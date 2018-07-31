@@ -36,13 +36,11 @@
                 "key": "test_key1",
                 "links": [
                     {
-                        "back_ref": null,
                         "link": "event_link_id1",
                         "link_mode": "by_ref",
                         "name": "test_link_name1"
                     },
                     {
-                        "back_ref": null,
                         "link": "event_link_id2",
                         "link_mode": "by_ref",
                         "name": "test_link_name2"
@@ -136,13 +134,11 @@
                 "key": "test_key2",
                 "links": [
                     {
-                        "back_ref": null,
                         "link": "event_link_id1",
                         "link_mode": "by_ref",
                         "name": "test_link_name2"
                     },
                     {
-                        "back_ref": null,
                         "link": "event_link_id2",
                         "link_mode": "by_ref",
                         "name": "test_link_name3"

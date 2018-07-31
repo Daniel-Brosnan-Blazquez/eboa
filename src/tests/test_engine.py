@@ -1,5 +1,5 @@
 """
-Automated tests for the datamodel submodule
+Automated tests for the engine submodule
 
 Written by DEIMOS Space S.L. (dibb)
 
@@ -2806,6 +2806,15 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
 
+    def test_wrong_json_validating_its_data(self):
+
+        filename = "test_wrong_structure.json"
+        self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename, check_schema = False)
+
+        returned_value = self.engine_gsdm.validate_data(self.engine_gsdm.data, filename)
+
+        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+
     def test_not_json(self):
 
         filename = "test_not_json.json"
@@ -2835,6 +2844,15 @@ class TestEngine(unittest.TestCase):
         os.environ["GSDM_RESOURCES_PATH"] = gsdm_resources_path
 
     def test_change_logging_level(self):
+        previous_logging_level = None
+        if "GSDM_LOG_LEVEL" in os.environ:
+            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
+        # end if
+
+        previous_stream_log = None
+        if "GSDM_STREAM_LOG" in os.environ:
+            previous_stream_log = os.environ["GSDM_STREAM_LOG"]
+        # end if
 
         os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
         os.environ["GSDM_STREAM_LOG"] = "YES"
@@ -2842,8 +2860,25 @@ class TestEngine(unittest.TestCase):
         gsdm.engine.engine.define_logging_configuration()
 
         assert gsdm.engine.engine.logging_level == logging.DEBUG
+
+        if previous_logging_level:
+            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
+        else:
+            del os.environ["GSDM_LOG_LEVEL"]
+        # end if
+        if previous_stream_log:
+            os.environ["GSDM_STREAM_LOG"] = previous_stream_log
+        else:
+            del os.environ["GSDM_STREAM_LOG"]
+        # end if
+        gsdm.engine.engine.define_logging_configuration()
         
     def test_insert_event_simple_update_debug(self):
+        previous_logging_level = None
+        if "GSDM_LOG_LEVEL" in os.environ:
+            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
+        # end if
+
         os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
 
         gsdm.engine.engine.define_logging_configuration()
@@ -2886,3 +2921,10 @@ class TestEngine(unittest.TestCase):
                                                       Event.visible == True).all()
 
         assert len(event_ddbb) == 1
+
+        if previous_logging_level:
+            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
+        else:
+            del os.environ["GSDM_LOG_LEVEL"]
+        # end if
+        gsdm.engine.engine.define_logging_configuration()
