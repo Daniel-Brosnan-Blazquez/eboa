@@ -32,7 +32,8 @@ for table in reversed(Base.metadata.sorted_tables):
 # DIM Signatures
 ################
 # Create dim_signature
-dimSignature1 = DimSignature ('TEST', 'TEST')
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+dimSignature1 = DimSignature (id, 'TEST', 'TEST')
 
 # Insert dim_signature into database
 session.add (dimSignature1)
@@ -61,7 +62,8 @@ if len (session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all())
 ################
 # Create explicit reference
 explicitRefTime = datetime.datetime.now()
-explicitRef1 = ExplicitRef (explicitRefTime, 'TEST')
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+explicitRef1 = ExplicitRef (id, explicitRefTime, 'TEST')
 
 # Insert explicit reference into database
 session.add (explicitRef1)
@@ -71,8 +73,10 @@ if len (session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == 'TEST').al
     raise Exception("The Explicit Reference was not committed")
 
 # Create explicit reference with group configuration
-explicitRefGroup = ExplicitRefGrp('TEST')
-explicitRef2 = ExplicitRef (explicitRefTime, 'TEST2', explicitRefGroup)
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+explicitRefGroup = ExplicitRefGrp(id, 'TEST')
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+explicitRef2 = ExplicitRef (id, explicitRefTime, 'TEST2', explicitRefGroup)
 
 # Insert explicit reference into database
 session.add (explicitRef2)
@@ -98,7 +102,8 @@ if len (session.query(ExplicitRefLink).filter(ExplicitRefLink.name == 'TEST').al
 # Events
 ################
 # Create gauge
-gauge1 = Gauge ('TEST', dimSignature1, 'TEST')
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+gauge1 = Gauge (id, 'TEST', dimSignature1, 'TEST')
 
 # Insert gauge into database
 session.add (gauge1)
@@ -190,7 +195,8 @@ if len (session.query(EventGeometry).filter(EventGeometry.event_uuid == event1Uu
 # Annotations
 ################
 # Create annotation configuration
-annotationCnf1 = AnnotationCnf ('TEST', dimSignature1)
+id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+annotationCnf1 = AnnotationCnf (id, 'TEST', dimSignature1)
 
 # Insert annotationcnf configuration into database
 session.add (annotationCnf1)

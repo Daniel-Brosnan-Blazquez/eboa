@@ -92,7 +92,7 @@ class Analysis():
         
         # Get data
         dim_signatures = self.query_gsdm.get_dim_signatures()
-        data = [[i.dim_signature_id,i.dim_signature,i.dim_exec_name] for i in dim_signatures]
+        data = [[str(i.dim_signature_id),i.dim_signature,i.dim_exec_name] for i in dim_signatures]
         
         # Insert headings into the worksheet
         ws.append(["dim_signature_id", "dim_signature", "dim_exec_name"])
@@ -118,7 +118,7 @@ class Analysis():
         
         # Get data
         sources = self.query_gsdm.get_sources()
-        data = [[str(i.processing_uuid),i.name,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,i.dim_signature_id] for i in sources]
+        data = [[str(i.processing_uuid),i.name,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,str(i.dim_signature_id)] for i in sources]
         
         # Insert headings into the worksheet
         ws.append(["processing_uuid", "name", "validity_start", "validity_stop", "generation_time", "ingestion_time", "ingestion_duration", "dim_exec_version", "dim_signature_id"])
@@ -183,7 +183,7 @@ class Analysis():
         
         # Get data
         events = self.query_gsdm.get_events()
-        data = [[str(i.event_uuid),i.start,i.stop,i.ingestion_time,i.visible, i.gauge_id,i.explicit_ref_id,str(i.processing_uuid)] for i in events]
+        data = [[str(i.event_uuid),i.start,i.stop,i.ingestion_time,i.visible, str(i.gauge_id),str(i.explicit_ref_id),str(i.processing_uuid)] for i in events]
         
         # Insert headings into the worksheet
         ws.append(["event_uuid", "start", "stop", "ingestion_time", "visible", "gauge_id", "explicit_ref_id", "processing_uuid"])
@@ -222,7 +222,7 @@ class Analysis():
         
         # Get data
         gauges = self.query_gsdm.get_gauges()
-        data = [[i.gauge_id,i.system,i.name,i.dim_signature_id] for i in gauges]
+        data = [[str(i.gauge_id),i.system,i.name,str(i.dim_signature_id)] for i in gauges]
         
         # Insert headings into the worksheet
         ws.append(["gauge_id", "system", "name", "dim_signature_id"])
@@ -248,7 +248,7 @@ class Analysis():
         
         # Get data
         event_keys = self.query_gsdm.get_event_keys()
-        data = [[i.event_key,i.visible,str(i.event_uuid),i.dim_signature_id] for i in event_keys]
+        data = [[i.event_key,i.visible,str(i.event_uuid),str(i.dim_signature_id)] for i in event_keys]
         
         # Insert headings into the worksheet
         ws.append(["event_key", "visible", "event_uuid", "dim_signature_id"])
@@ -300,7 +300,7 @@ class Analysis():
         
         # Get data
         annotations = self.query_gsdm.get_annotations()
-        data = [[str(i.annotation_uuid),i.ingestion_time,i.visible,i.explicit_ref_id,str(i.processing_uuid),i.annotation_cnf_id] for i in annotations]
+        data = [[str(i.annotation_uuid),i.ingestion_time,i.visible,str(i.explicit_ref_id),str(i.processing_uuid),str(i.annotation_cnf_id)] for i in annotations]
         
         # Insert headings into the worksheet
         ws.append(["annotation_uuid", "ingestion_time", "visible", "explicit_ref_id", "processing_uuid", "annotation_cnf_id"])
@@ -326,7 +326,7 @@ class Analysis():
         
         # Get data
         annotations = self.query_gsdm.get_annotations_configurations()
-        data = [[i.annotation_cnf_id,i.system,i.name,i.dim_signature_id] for i in annotations]
+        data = [[str(i.annotation_cnf_id),i.system,i.name,str(i.dim_signature_id)] for i in annotations]
         
         # Insert headings into the worksheet
         ws.append(["annotation_cnf_id", "system", "name", "dim_signature_id"])
@@ -353,7 +353,7 @@ class Analysis():
         
         # Get data
         explicit_refs = self.query_gsdm.get_explicit_references()
-        data = [[i.explicit_ref_id,i.ingestion_time,i.explicit_ref,i.expl_ref_cnf_id] for i in explicit_refs]
+        data = [[str(i.explicit_ref_id),i.ingestion_time,i.explicit_ref,str(i.expl_ref_cnf_id)] for i in explicit_refs]
         
         # Insert headings into the worksheet
         ws.append(["explicit_ref_id", "ingestion_time", "explicit_ref", "expl_ref_cnf_id"])
@@ -379,7 +379,7 @@ class Analysis():
         
         # Get data
         explicit_refs_links = self.query_gsdm.get_explicit_references_links()
-        data = [[i.explicit_ref_id_link,i.name,i.explicit_ref_id] for i in explicit_refs_links]
+        data = [[str(i.explicit_ref_id_link),i.name,str(i.explicit_ref_id)] for i in explicit_refs_links]
         
         # Insert headings into the worksheet
         ws.append(["explicit_ref_id_link", "name", "explicit_ref_id"])
@@ -405,7 +405,7 @@ class Analysis():
         
         # Get data
         explicit_refs_groups = self.query_gsdm.get_explicit_references_groups()
-        data = [[i.expl_ref_cnf_id,i.name] for i in explicit_refs_groups]
+        data = [[str(i.expl_ref_cnf_id),i.name] for i in explicit_refs_groups]
         
         # Insert headings into the worksheet
         ws.append(["expl_ref_cnf_id", "name"])

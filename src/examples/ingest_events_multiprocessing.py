@@ -30,7 +30,7 @@ def createEvents (nEvents, explicitRef, gauge, dimProcessing):
         # Create event
         eventTime = datetime.datetime.now()
         eventUuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event = Event (eventUuid, eventTime, eventTime, eventTime,gauge, explicitRef, dimProcessing)
+        event = Event (eventUuid, eventTime, eventTime, eventTime,gauge, dimProcessing, explicit_ref = explicitRef)
 
         # Insert the event into the database
         session.add (event)
@@ -49,7 +49,8 @@ if __name__ == '__main__':
     # DIM Signature
     ################
     # Create dim_signature
-    dimSignature1 = DimSignature ('TEST', 'TEST')
+    dim_signature_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    dimSignature1 = DimSignature (dim_signature_uuid, 'TEST', 'TEST')
 
     # Insert dim_signature into database
     session.add (dimSignature1)
@@ -69,19 +70,24 @@ if __name__ == '__main__':
     # Insert dim_processing into database
     session.add (dimProcessing1)
     session.commit()
+    
+    if len (session.query(DimProcessing).filter(DimProcessing.name == 'TEST').all()) != 1:
+        raise Exception("The DIM processing was not committed")
 
     ################
     # Explicit reference
     ################
     # Create explicit reference
     explicitRefTime = datetime.datetime.now()
-    explicitRef1 = ExplicitRef (explicitRefTime, 'TEST')
+    explicit_ref1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    explicitRef1 = ExplicitRef (explicit_ref1_uuid, explicitRefTime, 'TEST')
     
     # Insert explicit reference into database
     session.add (explicitRef1)
     session.commit()
     
-    if len (session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == 'TEST').all()) != 1:
+    explicitRefs = session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == 'TEST').all()
+    if len (explicitRefs) != 1:
         raise Exception("The Explicit Reference was not committed")
 
     ################
@@ -89,13 +95,15 @@ if __name__ == '__main__':
     ################
 
     # Create gauge
-    gauge1 = Gauge ('TEST', dimSignature1, 'TEST')
+    gauge1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    gauge1 = Gauge (gauge1_uuid, 'TEST', dimSignature1, 'TEST')
     
     # Insert gauge into database
     session.add (gauge1)
     session.commit()
 
-    if len (session.query(Gauge).filter(Gauge.name == 'TEST').all()) != 1:
+    gauges = session.query(Gauge).filter(Gauge.name == 'TEST').all()
+    if len (gauges) != 1:
         raise Exception("The Gauge was not committed")
 
     session.close()

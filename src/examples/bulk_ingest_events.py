@@ -48,7 +48,8 @@ if __name__ == '__main__':
     # DIM Signature
     ################
     # Create dim_signature
-    dimSignature1 = DimSignature ('TEST', 'TEST')
+    dim_signature_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    dimSignature1 = DimSignature (dim_signature_uuid, 'TEST', 'TEST')
 
     # Insert dim_signature into database
     session.add (dimSignature1)
@@ -77,7 +78,8 @@ if __name__ == '__main__':
     ################
     # Create explicit reference
     explicitRefTime = datetime.datetime.now()
-    explicitRef1 = ExplicitRef (explicitRefTime, 'TEST')
+    explicit_ref1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    explicitRef1 = ExplicitRef (explicit_ref1_uuid, explicitRefTime, 'TEST')
     
     # Insert explicit reference into database
     session.add (explicitRef1)
@@ -92,7 +94,8 @@ if __name__ == '__main__':
     ################
 
     # Create gauge
-    gauge1 = Gauge ('TEST', dimSignature1, 'TEST')
+    gauge1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    gauge1 = Gauge (gauge1_uuid, 'TEST', dimSignature1, 'TEST')
     
     # Insert gauge into database
     session.add (gauge1)
