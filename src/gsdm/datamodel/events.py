@@ -21,8 +21,8 @@ class Event(Base):
     stop = Column(DateTime)
     ingestion_time = Column(DateTime)
     visible = Column(Boolean)
-    gauge_id = Column(Integer, ForeignKey('gauge_cnf_tb.gauge_id'))
-    explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
+    gauge_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('gauge_cnf_tb.gauge_id'))
+    explicit_ref_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('explicit_ref_tb.explicit_ref_id'))
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
     gauge = relationship("Gauge", backref="events")
     explicitRef = relationship("ExplicitRef", backref="events")
@@ -60,7 +60,7 @@ class EventKey(Base):
     visible = Column(Boolean)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
     event = relationship("Event", backref="eventKeys")
-    dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
+    dim_signature_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signature_tb.dim_signature_id'))
     dim_signature = relationship("DimSignature", backref="eventKeys")
     __mapper_args__ = {
         'primary_key':[event_uuid]

@@ -19,8 +19,8 @@ class Annotation(Base):
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     ingestion_time = Column(DateTime)
     visible = Column(Boolean)
-    annotation_cnf_id = Column(Integer, ForeignKey('annotation_cnf_tb.annotation_cnf_id'))
-    explicit_ref_id = Column(Integer, ForeignKey('explicit_ref_tb.explicit_ref_id'))
+    annotation_cnf_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotation_cnf_tb.annotation_cnf_id'))
+    explicit_ref_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('explicit_ref_tb.explicit_ref_id'))
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
     annotationCnf = relationship("AnnotationCnf", backref="annotations")
     explicitRef = relationship("ExplicitRef", backref="annotations")
@@ -37,13 +37,14 @@ class Annotation(Base):
 class AnnotationCnf(Base):
     __tablename__ = 'annotation_cnf_tb'
 
-    annotation_cnf_id = Column(Integer, primary_key=True)
+    annotation_cnf_id = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     name = Column(Text)
     system = Column(Text)
-    dim_signature_id = Column(Integer, ForeignKey('dim_signature_tb.dim_signature_id'))
+    dim_signature_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signature_tb.dim_signature_id'))
     dim_signature = relationship("DimSignature", backref="annotationCnfs")
     
-    def __init__(self, name, dim_signature, system = None):
+    def __init__(self, annotation_cnf_id, name, dim_signature, system = None):
+        self.annotation_cnf_id = annotation_cnf_id
         self.name = name
         self.system = system
         self.dim_signature = dim_signature

@@ -700,7 +700,8 @@ class Engine():
         exec_name = dim_signature.get("exec")
         self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
         if not self.dim_signature:
-            self.dim_signature = DimSignature(dim_name, exec_name)
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            self.dim_signature = DimSignature(id, dim_name, exec_name)
             self.session.add(self.dim_signature)
             try:
                 race_condition()
@@ -822,7 +823,8 @@ class Engine():
             self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == self.dim_signature.dim_signature_id).first()
             if not self.gauges[(name,system)]:
                 self.session.begin_nested()
-                self.gauges[(name,system)] = Gauge(name, self.dim_signature, system)
+                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                self.gauges[(name,system)] = Gauge(id, name, self.dim_signature, system)
                 self.session.add(self.gauges[(name,system)])
                 try:
                     race_condition()
@@ -852,7 +854,8 @@ class Engine():
             self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == self.dim_signature.dim_signature_id).first()
             if not self.annotation_cnfs[(name,system)]:
                 self.session.begin_nested()
-                self.annotation_cnfs[(name,system)] = AnnotationCnf(name, self.dim_signature, system)
+                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                self.annotation_cnfs[(name,system)] = AnnotationCnf(id, name, self.dim_signature, system)
                 self.session.add(self.annotation_cnfs[(name,system)])
                 try:
                     race_condition()
@@ -878,7 +881,8 @@ class Engine():
         for explicit_ref in self.operation.get("explicit_references") or []:
             if "group" in explicit_ref:
                 self.session.begin_nested()
-                expl_group_ddbb = ExplicitRefGrp(explicit_ref.get("group"))
+                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                expl_group_ddbb = ExplicitRefGrp(id, explicit_ref.get("group"))
                 self.session.add(expl_group_ddbb)
                 try:
                     race_condition()
@@ -917,7 +921,8 @@ class Engine():
                 if declared_explicit_reference:
                     explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
                 # end if
-                self.explicit_refs[explicit_ref] = ExplicitRef(datetime.datetime.now(), explicit_ref, explicit_ref_grp)
+                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                self.explicit_refs[explicit_ref] = ExplicitRef(id, datetime.datetime.now(), explicit_ref, explicit_ref_grp)
                 self.session.add(self.explicit_refs[explicit_ref])
                 try:
                     race_condition()

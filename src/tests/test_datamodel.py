@@ -42,7 +42,8 @@ class TestDatamodel(unittest.TestCase):
 
     def test_insert_data(self):
         """ Verify the insertion of data using the classes defined in the datamodel. """
-        dim_signature = DimSignature("DIM_SIGNATURE_NAME", "DIM_EXEC_NAME")
+        dim_signature_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        dim_signature = DimSignature(dim_signature_uuid, "DIM_SIGNATURE_NAME", "DIM_EXEC_NAME")
         
         # Insert dim_signature into database
         self.session.add(dim_signature)
@@ -67,22 +68,25 @@ class TestDatamodel(unittest.TestCase):
         assert len(self.session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == processing_uuid, DimProcessingStatus.proc_status == 0).all()) == 1
 
         # Insert explicit reference group
-        explicit_ref_grp = ExplicitRefGrp("EXPLICIT_REF_GRP_NAME")
+        explicit_ref_grp_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        explicit_ref_grp = ExplicitRefGrp(explicit_ref_grp_uuid, "EXPLICIT_REF_GRP_NAME")
         self.session.add (explicit_ref_grp)
         self.session.commit()
 
         assert len (self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == "EXPLICIT_REF_GRP_NAME").all()) == 1        
 
         # Insert explicit references
+        explicit_ref1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         explicit_ref_time = datetime.datetime.now()
-        explicit_ref1 = ExplicitRef (explicit_ref_time, "EXPLICIT_REFERENCE_NAME1")
+        explicit_ref1 = ExplicitRef (explicit_ref1_uuid, explicit_ref_time, "EXPLICIT_REFERENCE_NAME1")
 
         self.session.add (explicit_ref1)
         self.session.commit()
 
         assert len (self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == "EXPLICIT_REFERENCE_NAME1").all()) == 1
 
-        explicit_ref2 = ExplicitRef (explicit_ref_time, "EXPLICIT_REFERENCE_NAME2")
+        explicit_ref2_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        explicit_ref2 = ExplicitRef (explicit_ref2_uuid, explicit_ref_time, "EXPLICIT_REFERENCE_NAME2")
 
         self.session.add (explicit_ref2)
         self.session.commit()
@@ -96,7 +100,8 @@ class TestDatamodel(unittest.TestCase):
         assert len (self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_id_link == explicit_ref1.explicit_ref_id, ExplicitRefLink.name == "EXPLICIT_REF_LINK_NAME", ExplicitRefLink.explicit_ref_id == explicit_ref2.explicit_ref_id).all()) == 1
         
         # Insert gauge
-        gauge = Gauge ("GAUGE_NAME", dim_signature)
+        gauge_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        gauge = Gauge (gauge_uuid, "GAUGE_NAME", dim_signature)
 
         self.session.add (gauge)
         self.session.commit()
@@ -170,7 +175,8 @@ class TestDatamodel(unittest.TestCase):
         assert len (self.session.query(EventGeometry).filter(EventGeometry.event_uuid == event1_uuid, EventGeometry.name == "GEOMETRY_NAME", func.ST_AsText(EventGeometry.value) == polygon, EventGeometry.level_position == 5, EventGeometry.parent_level == 0, EventGeometry.parent_position == 0).all()) == 1
 
         # Insert annotation configuration
-        annotation_cnf = AnnotationCnf ("ANNOTATION_CNF_NAME", dim_signature)
+        annotation_cnf_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        annotation_cnf = AnnotationCnf (annotation_cnf_uuid, "ANNOTATION_CNF_NAME", dim_signature)
 
         self.session.add (annotation_cnf)
         self.session.commit()

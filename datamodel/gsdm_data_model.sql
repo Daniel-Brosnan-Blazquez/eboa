@@ -39,8 +39,8 @@ CREATE TABLE gsdm.event_tb(
 	stop timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
-	gauge_id integer NOT NULL,
-	explicit_ref_id integer,
+	gauge_id uuid NOT NULL,
+	explicit_ref_id uuid,
 	processing_uuid uuid NOT NULL,
 	CONSTRAINT event_tb_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
@@ -53,10 +53,10 @@ ALTER TABLE gsdm.event_tb OWNER TO gsdm;
 -- object: gsdm.gauge_cnf_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.gauge_cnf_tb CASCADE;
 CREATE TABLE gsdm.gauge_cnf_tb(
-	gauge_id serial NOT NULL,
+	gauge_id uuid NOT NULL,
 	system text,
 	name text NOT NULL,
-	dim_signature_id integer NOT NULL,
+	dim_signature_id uuid NOT NULL,
 	CONSTRAINT gauge_cnf_tb_pk PRIMARY KEY (gauge_id),
 	CONSTRAINT unique_gauge_cnf UNIQUE (system,name)
 
@@ -77,9 +77,9 @@ CREATE TABLE gsdm.dim_processing_tb(
 	ingestion_duration interval,
 	dim_exec_version text,
 	content_json json,
+	dim_signature_id uuid,
 	content_text text,
 	parse_error text,
-	dim_signature_id integer,
 	CONSTRAINT dim_processing_tb_pk PRIMARY KEY (processing_uuid)
 
 );
@@ -90,7 +90,7 @@ ALTER TABLE gsdm.dim_processing_tb OWNER TO gsdm;
 -- object: gsdm.dim_signature_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.dim_signature_tb CASCADE;
 CREATE TABLE gsdm.dim_signature_tb(
-	dim_signature_id serial NOT NULL,
+	dim_signature_id uuid NOT NULL,
 	dim_signature text NOT NULL,
 	dim_exec_name text NOT NULL,
 	CONSTRAINT dim_signature_tb_pk PRIMARY KEY (dim_signature_id),
@@ -104,10 +104,10 @@ ALTER TABLE gsdm.dim_signature_tb OWNER TO gsdm;
 -- object: gsdm.explicit_ref_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.explicit_ref_tb CASCADE;
 CREATE TABLE gsdm.explicit_ref_tb(
-	explicit_ref_id serial NOT NULL,
+	explicit_ref_id uuid NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	explicit_ref text NOT NULL,
-	expl_ref_cnf_id integer,
+	expl_ref_cnf_id uuid,
 	CONSTRAINT explicit_ref_tb_pk PRIMARY KEY (explicit_ref_id),
 	CONSTRAINT unique_explicit_ref UNIQUE (explicit_ref)
 
@@ -177,9 +177,9 @@ CREATE TABLE gsdm.annotation_tb(
 	annotation_uuid uuid NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
-	explicit_ref_id integer NOT NULL,
+	explicit_ref_id uuid NOT NULL,
 	processing_uuid uuid NOT NULL,
-	annotation_cnf_id integer NOT NULL,
+	annotation_cnf_id uuid NOT NULL,
 	CONSTRAINT annotation_tb_pk PRIMARY KEY (annotation_uuid),
 	CONSTRAINT unique_annotation UNIQUE (annotation_uuid)
 
@@ -246,10 +246,10 @@ ALTER TABLE gsdm.annotation_geometry_tb OWNER TO gsdm;
 -- object: gsdm.annotation_cnf_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.annotation_cnf_tb CASCADE;
 CREATE TABLE gsdm.annotation_cnf_tb(
-	annotation_cnf_id serial NOT NULL,
+	annotation_cnf_id uuid NOT NULL,
 	name text NOT NULL,
 	system text,
-	dim_signature_id integer NOT NULL,
+	dim_signature_id uuid NOT NULL,
 	CONSTRAINT annotation_cnf_tb_pk PRIMARY KEY (annotation_cnf_id),
 	CONSTRAINT unique_annotation_cnf UNIQUE (name,system)
 
@@ -272,7 +272,7 @@ ALTER TABLE gsdm.event_link_tb OWNER TO gsdm;
 -- object: gsdm.explicit_ref_cnf_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.explicit_ref_cnf_tb CASCADE;
 CREATE TABLE gsdm.explicit_ref_cnf_tb(
-	expl_ref_cnf_id serial NOT NULL,
+	expl_ref_cnf_id uuid NOT NULL,
 	name text NOT NULL,
 	CONSTRAINT explicit_ref_cnf_tb_pk PRIMARY KEY (expl_ref_cnf_id),
 	CONSTRAINT unique_explicit_ref_group UNIQUE (name)
@@ -285,9 +285,9 @@ ALTER TABLE gsdm.explicit_ref_cnf_tb OWNER TO gsdm;
 -- object: gsdm.explicit_ref_link_tb | type: TABLE --
 -- DROP TABLE IF EXISTS gsdm.explicit_ref_link_tb CASCADE;
 CREATE TABLE gsdm.explicit_ref_link_tb(
-	explicit_ref_id_link integer NOT NULL,
+	explicit_ref_id_link uuid NOT NULL,
 	name text NOT NULL,
-	explicit_ref_id integer NOT NULL,
+	explicit_ref_id uuid NOT NULL,
 	CONSTRAINT explicit_ref_links_tb_pk PRIMARY KEY (explicit_ref_id_link)
 
 );
@@ -403,7 +403,7 @@ CREATE TABLE gsdm.event_key_tb(
 	event_key text NOT NULL,
 	visible boolean NOT NULL,
 	event_uuid uuid NOT NULL,
-	dim_signature_id integer NOT NULL
+	dim_signature_id uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE gsdm.event_key_tb OWNER TO gsdm;

@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,506" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,650" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="gsdm"
       inherit="true"
@@ -64,7 +64,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1040" y="860"/>
 	<column name="gauge_id" not-null="true">
-		<type name="serial" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="system">
 		<type name="text" length="1"/>
@@ -143,7 +143,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1420" y="880"/>
 	<column name="dim_signature_id" not-null="true">
-		<type name="serial" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="dim_signature" not-null="true">
 		<type name="text" length="1"/>
@@ -164,7 +164,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1420" y="1280"/>
 	<column name="explicit_ref_id" not-null="true">
-		<type name="serial" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="1"/>
@@ -452,7 +452,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1420" y="960"/>
 	<column name="annotation_cnf_id" not-null="true">
-		<type name="serial" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -501,7 +501,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1440" y="1380"/>
 	<column name="expl_ref_cnf_id" not-null="true">
-		<type name="serial" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -519,7 +519,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="gsdm"/>
 	<position x="1420" y="1200"/>
 	<column name="explicit_ref_id_link" not-null="true">
-		<type name="integer" length="1"/>
+		<type name="uuid" length="1"/>
 	</column>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
