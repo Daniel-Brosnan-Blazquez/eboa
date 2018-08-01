@@ -25,6 +25,14 @@ setup(name="gsdm",
           "shapely",
           "matplotlib",
           "oslo.concurrency",
-          "Pillow"
+          "Pillow",
+          "xmlschema",
+          "jsonschema"
       ],
-      zip_safe=False)
+      tests_require=[
+          "nose",
+          "before_after",
+          "coverage",
+          "termcolor"
+      ],
+      test_suite='nose.collector')
