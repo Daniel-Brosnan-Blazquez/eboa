@@ -86,6 +86,7 @@
     <xs:attribute name="stop" type="xs:dateTime" use="required"/>
     <xs:attribute name="key" type="xs:string"/>
     <xs:attribute name="explicit_reference" type="xs:string"/>
+    <xs:attribute name="link_ref" type="xs:string"/>
   </xs:complexType>
 
   <!-- Define the event_link_type type -->

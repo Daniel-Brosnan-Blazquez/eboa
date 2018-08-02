@@ -241,7 +241,7 @@ def _validate_events(data):
             raise ErrorParsingDictionary("The event inside the events structure have to be of type dict")
         # end if
 
-        check_items = [item in ["explicit_reference", "gauge", "start", "stop", "key", "links", "values"] for item in event.keys()]
+        check_items = [item in ["explicit_reference", "gauge", "start", "stop", "key", "links", "values", "link_ref"] for item in event.keys()]
         if False in check_items:
             raise ErrorParsingDictionary("The allowed tags inside events structure are: explicit_reference, gauge, start, stop, key, links and values")
         # end if

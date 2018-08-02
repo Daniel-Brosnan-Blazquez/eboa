@@ -28,7 +28,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from .errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
+from .errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
 
 # Import datamodel
 from gsdm.datamodel.base import Session, engine, Base
@@ -125,6 +125,7 @@ def debug(method):
     """
     @wraps(method)
     def _wrapper(*args, **kwargs):
+        logger.debug("Method {} is going to be executed.".format(method.__name__))
         if logging_level == logging.DEBUG:
             start = datetime.datetime.now()
         # end if
@@ -175,9 +176,9 @@ class Engine():
             "status": 5,
             "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
         },
-        "INCOMPLETE_EVENT_LINKS": {
+        "UNDEFINED_EVENT_LINK_REF": {
             "status": 6,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the link id {} to other events that are not specified"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which links to an undefined reference identifier {}"
         },
         "WRONG_VALUE": {
             "status": 7,
@@ -194,6 +195,14 @@ class Engine():
         "WRONG_GEOMETRY": {
             "status": 10,
             "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines a wrong geometry. The exception raised has been the following: {}"
+        },
+        "DUPLICATED_EVENT_LINK_REF": {
+            "status": 11,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains more than one event which defines the same link reference identifier {}"
+        },
+        "LINKS_INCONSISTENCY": {
+            "status": 12,
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
         }
     }
 
@@ -393,6 +402,9 @@ class Engine():
                 if event.get("explicit_reference"):
                     event_info["explicit_reference"] = event.get("explicit_reference")
                 # end if
+                if event.get("link_ref"):
+                    event_info["link_ref"] = event.get("link_ref")
+                # end if
                 event_info["gauge"] = {"name": event.xpath("gauge")[0].get("name"),
                                        "system": event.xpath("gauge")[0].get("system"),
                                        "insertion_type": event.xpath("gauge")[0].get("insertion_type")}
@@ -589,16 +601,36 @@ class Engine():
         # Insert events
         try:
             self._insert_events()
-        except WrongEventLink as e:
+        except DuplicatedEventLinkRef as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"])
+            self._insert_proc_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"])
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             self.session.close()
             # Log the error
             logger.error(e)
-            return self.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]
+            return self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
+        except LinksInconsistency as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            self.session.close()
+            # Log the error
+            logger.error(e)
+            return self.exit_codes["LINKS_INCONSISTENCY"]["status"]
+        except UndefinedEventLink as e:
+            self.session.rollback()
+            self._insert_proc_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"])
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            self.session.close()
+            # Log the error
+            logger.error(e)
+            return self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
@@ -1046,6 +1078,7 @@ class Engine():
         list_events = []
         list_keys = []
         list_event_links_by_ref = {}
+        list_event_link_refs = {}
         list_event_links_by_uuid_ddbb = []
         list_values = {}
         for event in self.operation.get("events") or []:
@@ -1091,18 +1124,37 @@ class Engine():
             # Build links by reference for later ingestion
             if "links" in event:
                 for link in event["links"]:
+                    back_ref = False
+                    if "back_ref" in link:
+                        back_ref = True
+                    # end if
+                    
                     if link["link_mode"] == "by_ref":
                         if not link["link"] in list_event_links_by_ref:
                             list_event_links_by_ref[link["link"]] = []
                         # end if
                         list_event_links_by_ref[link["link"]].append({"name": link["name"],
-                                                                      "event_uuid": id})
+                                                                      "event_uuid": id,
+                                                                      "back_ref": back_ref})
                     else:
                         list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = id,
                                                                   name = link["name"],
                                                                   event_uuid = link["link"]))
+                        if back_ref:
+                            list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = link["link"],
+                                                                      name = link["name"],
+                                                                      event_uuid = id))
+                        # end if
                     # end if
                 # end for
+            # end if
+            if "link_ref" in event:
+                if event["link_ref"] in list_event_link_refs:
+                    # The same link identifier has been specified in more than one event
+                    self.session.rollback()
+                    raise DuplicatedEventLinkRef(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, event["link_ref"]))
+                # end if
+                list_event_link_refs[event["link_ref"]] = id
             # end if
         # end for
         # Bulk insert events
@@ -1136,21 +1188,35 @@ class Engine():
 
         # Insert links by reference
         list_event_links_by_ref_ddbb = []
-        for link in list_event_links_by_ref:
-            event_uuids = set([i.get("event_uuid") for i in list_event_links_by_ref[link]])
-            if len(event_uuids) == 1:
+        for link_ref in list_event_links_by_ref:
+            if not link_ref in list_event_link_refs:
+                # There has not been defined this link reference in any event
                 self.session.rollback()
-                raise WrongEventLink(self.exit_codes["INCOMPLETE_EVENT_LINKS"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link))
+                raise UndefinedEventLink(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link_ref))
             # end if
-            list_event_links_by_ref_ddbb = list_event_links_by_ref_ddbb + [dict(event_uuid_link = x["event_uuid"],
-                                          name = x["name"],
-                                          event_uuid = y["event_uuid"])
-                                     for x in list_event_links_by_ref[link] for y in list_event_links_by_ref[link] if x != y]
+            event_uuid = list_event_link_refs[link_ref]
+            
+            for link in list_event_links_by_ref[link_ref]:
+                list_event_links_by_ref_ddbb.append(dict(event_uuid_link = link["event_uuid"],
+                                                         name = link["name"],
+                                                         event_uuid = event_uuid))
+                if link["back_ref"]:
+                    list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
+                                                             name = link["name"],
+                                                             event_uuid = link["event_uuid"]))
+                # end if
+            # end for
         # end for
         
         # Bulk insert links
         list_event_links_ddbb = list_event_links_by_ref_ddbb + list_event_links_by_uuid_ddbb
-        self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
+        try:
+            self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
+        except IntegrityError as e:
+            self.session.rollback()
+            raise LinksInconsistency(self.exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, e))
+        # end if
+
 
         # Commit data
         self.session.commit()
@@ -1413,7 +1479,6 @@ class Engine():
                 # Iterate through the periods
                 next_timestamp = 1
                 for timestamp in filtered_timeline_points:
-                    
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
                         for event_uuid in list_split_events:

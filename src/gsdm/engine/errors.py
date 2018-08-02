@@ -29,8 +29,8 @@ class WrongPeriod(Error):
     def __init__(self, message):
         self.message = message
 
-class WrongEventLink(Error):
-    """Exception raised when a link has been defined for an event but the reference is not found on any other event to link with.
+class UndefinedEventLink(Error):
+    """Exception raised when a link has been defined for an event which does not exist with the corresponding link reference.
 
     Attributes:
         message -- explanation of the error
@@ -81,6 +81,26 @@ class WrongGeometry(Error):
 
 class ErrorParsingDictionary(Error):
     """Exception raised when the parsing has found a non supported structure
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class DuplicatedEventLinkRef(Error):
+    """Exception raised when there is more than one event with the same link reference identifier.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class LinksInconsistency(Error):
+    """Exception raised when there are clashes on the defined links for the events.
 
     Attributes:
         message -- explanation of the error

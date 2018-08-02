@@ -27,6 +27,7 @@
         ],
         "events": [
             {
+                "link_ref": "event_link_id1",
                 "explicit_reference": "test_explicit_ref1",
                 "gauge": {
                     "insertion_type": "SIMPLE_UPDATE",
@@ -35,11 +36,6 @@
                 },
                 "key": "test_key1",
                 "links": [
-                    {
-                        "link": "event_link_id1",
-                        "link_mode": "by_ref",
-                        "name": "test_link_name1"
-                    },
                     {
                         "link": "event_link_id2",
                         "link_mode": "by_ref",
@@ -125,6 +121,7 @@
                 ]
             },
             {
+                "link_ref": "event_link_id2",
                 "explicit_reference": "test_explicit_ref2",
                 "gauge": {
                     "insertion_type": "SIMPLE_UPDATE",
@@ -137,11 +134,6 @@
                         "link": "event_link_id1",
                         "link_mode": "by_ref",
                         "name": "test_link_name2"
-                    },
-                    {
-                        "link": "event_link_id2",
-                        "link_mode": "by_ref",
-                        "name": "test_link_name3"
                     }
                 ],
                 "start": "2018-06-05T02:07:03",

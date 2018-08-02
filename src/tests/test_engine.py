@@ -20,7 +20,7 @@ import gsdm.engine.engine
 from gsdm.engine.engine import Engine
 from gsdm.engine.query import Query
 from gsdm.datamodel.base import Session, engine, Base
-from gsdm.engine.errors import WrongEventLink, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
+from gsdm.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
 from gsdm.engine.query import Query
 
 # Import datamodel
@@ -1113,25 +1113,27 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"},
                 "events": [{
+                    "link_ref": "EVENT_LINK1",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
                               "insertion_type": "SIMPLE_UPDATE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "links": [{
-                        "link": "EVENT_LINK",
+                        "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME"
                     }]
                 },
                 {
+                    "link_ref": "EVENT_LINK2",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
                               "insertion_type": "SIMPLE_UPDATE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "links": [{
-                        "link": "EVENT_LINK",
+                        "link": "EVENT_LINK1",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME"
                     }]
@@ -1165,7 +1167,8 @@ class TestEngine(unittest.TestCase):
                     "links": [{
                         "link": events_ddbb[0].event_uuid,
                         "link_mode": "by_uuid",
-                        "name": "EVENT_LINK_NAME"
+                        "name": "EVENT_LINK_NAME",
+                        "back_ref": "true"
                     }]
                 }]
             }
@@ -1193,7 +1196,114 @@ class TestEngine(unittest.TestCase):
 
         assert len(link_ddbb_3) == 1
 
-    def test_insert_event_incomplete_links(self):
+        link_ddbb_3 = self.session.query(EventLink).filter(EventLink.event_uuid_link == events_ddbb[0].event_uuid, EventLink.event_uuid == event_ddbb[0].event_uuid).all()
+
+        assert len(link_ddbb_3) == 1
+
+
+    def test_event_links_inconsistency(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK2",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME",
+                        "back_ref": "true"
+                    }]
+                },
+                {
+                    "link_ref": "EVENT_LINK2",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME"
+                    }]
+                }]
+            }]
+            }
+        self.engine_gsdm.data = data
+        returned_value = self.engine_gsdm.treat_data()
+
+        assert returned_value == self.engine_gsdm.exit_codes["LINKS_INCONSISTENCY"]["status"]
+
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["LINKS_INCONSISTENCY"]["status"],
+                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+
+        assert len(sources_status) == 1
+
+    def test_duplicated_event_links(self):
+
+        self.engine_gsdm._initialize_context_insert_data()
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME",
+                        "back_ref": "true"
+                    }]
+                },
+                {
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME2"
+                    }]
+                }]
+            }]
+            }
+        self.engine_gsdm.data = data
+        returned_value = self.engine_gsdm.treat_data()
+
+        assert returned_value == self.engine_gsdm.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
+
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
+                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+
+        assert len(sources_status) == 1
+
+    def test_insert_event_undefined_link(self):
 
         self.engine_gsdm._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
@@ -1226,7 +1336,7 @@ class TestEngine(unittest.TestCase):
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
             self.engine_gsdm._insert_events()
-        except WrongEventLink:
+        except UndefinedEventLink:
             self.session.rollback()
             pass
         event_ddbb = self.session.query(Event).all()
@@ -1689,16 +1799,18 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-04T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"},
                 "events": [{
+                    "link_ref": "EVENT_LINK1",
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
                               "insertion_type": "SIMPLE_UPDATE"},
-                    "start": "2018-06-04T02:07:03",
+                    "start": "2018-06-04T02:07:04",
                     "stop": "2018-06-05T08:07:36",
                     "links": [{
-                        "link": "EVENT_LINK",
+                        "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
-                        "name": "EVENT_LINK_NAME"
+                        "name": "EVENT_LINK_NAME1",
+                        "back_ref": "true"
                     }],
                     "key": "EVENT_KEY",
                     "values": [{"name": "VALUES",
@@ -1728,6 +1840,7 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 },
                            {
+                               "link_ref": "EVENT_LINK2",
                                "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
                                "gauge": {"name": "GAUGE_NAME",
                                          "system": "GAUGE_SYSTEM",
@@ -1735,9 +1848,10 @@ class TestEngine(unittest.TestCase):
                                "start": "2018-06-04T02:07:03",
                                "stop": "2018-06-05T08:07:36",
                                "links": [{
-                                   "link": "EVENT_LINK",
+                                   "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
-                                   "name": "EVENT_LINK_NAME"
+                                   "name": "EVENT_LINK_NAME2",
+                                   "back_ref": "true"
                                }]},
                            {
                                "explicit_reference": "EXPLICIT_REFERENCE_EVENT3",
@@ -1747,9 +1861,10 @@ class TestEngine(unittest.TestCase):
                                "start": "2018-06-04T02:07:03",
                                "stop": "2018-06-04T04:07:36",
                                "links": [{
-                                   "link": "EVENT_LINK",
+                                   "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
-                                   "name": "EVENT_LINK_NAME"
+                                   "name": "EVENT_LINK_NAME3",
+                                   "back_ref": "true"
                                }]}]
             }
         self.engine_gsdm.operation = data1
@@ -1834,12 +1949,28 @@ class TestEngine(unittest.TestCase):
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][0]["start"],
-                                                      Event.stop == data2["events"][0]["start"],
+                                                      Event.stop == data2["source"]["validity_start"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
                                                       Event.processing_uuid == source_ddbb.processing_uuid,
                                                       Event.visible == True).all()
 
-        assert len(filtered_events_ddbb) == 2
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][1]["start"],
+                                                      Event.stop == data2["source"]["validity_start"],
+                                                      Event.gauge_id == gauge_ddbb.gauge_id,
+                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][2]["start"],
+                                                      Event.stop == data1["events"][2]["stop"],
+                                                      Event.gauge_id == gauge_ddbb.gauge_id,
+                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
 
         events_ddbb = self.session.query(Event).all()
 
@@ -1853,13 +1984,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(links_ddbb) == 6
 
-        events_with_links = self.session.query(Event).join(DimProcessing).filter(DimProcessing.name == "source.xml").all()
+        events_with_links = self.session.query(Event).join(DimProcessing).filter(DimProcessing.name == "source.xml").order_by(Event.start).all()
         
         rest_of_event_uuids = [events_with_links[1].event_uuid, events_with_links[2].event_uuid]
         
         event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[0].event_uuid])
 
-        assert len(event_links_ddbb) == 2
+        assert len(event_links_ddbb) == 1
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[2].event_uuid]
         
@@ -1871,7 +2002,7 @@ class TestEngine(unittest.TestCase):
         
         event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[2].event_uuid])
 
-        assert len(event_links_ddbb) == 2
+        assert len(event_links_ddbb) == 3
 
     def test_remove_deprecated_event_erase_and_replace_one_starts_after(self):
 
@@ -2536,7 +2667,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources_status) == 1
 
-    def test_treat_data_wrong_event_link(self):
+    def test_treat_data_undefined_event_link(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -2564,9 +2695,9 @@ class TestEngine(unittest.TestCase):
         self.engine_gsdm.data = data
         returned_value = self.engine_gsdm.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]
+        assert returned_value == self.engine_gsdm.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
