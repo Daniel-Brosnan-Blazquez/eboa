@@ -341,8 +341,6 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
     satellite = source["name"][0:3]
 
     # Playback operations
-    playback_mean_and_type_operations = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_EVRQs/EVRQ[RQ/RQ_Name='MPXBSBOP' or RQ/RQ_Name='MPG1STRT' or RQ/RQ_Name='MPG2STRT' or RQ/RQ_Name='MPG3STRT' or RQ/RQ_Name='MPMMPNOM' or RQ/RQ_Name='MPMMPREG' or RQ/RQ_Name='MPMMPBRT' or RQ/RQ_Name='MPMMPBHK' or RQ/RQ_Name='MPMMPBSA' or RQ/RQ_Name='MPMMPBHS' or RQ/RQ_Name='MPMMPNRT']")
-
     playback_operations = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_EVRQs/EVRQ[RQ/RQ_Name='MPXBSBOP' or RQ/RQ_Name='MPG1STRT' or RQ/RQ_Name='MPG2STRT' or RQ/RQ_Name='MPG3STRT']")
 
     for playback_operation in playback_operations:
@@ -404,15 +402,16 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
         }
 
         # Associate the playback types to the playback means
-        following_playback_type_start_operations = playback_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMPNOM' or RQ/RQ_Name='MPMMPREG' or RQ/RQ_Name='MPMMPBRT' or RQ/RQ_Name='MPMMPBHK' or RQ/RQ_Name='MPMMPBSA' or RQ/RQ_Name='MPMMPBHS' or RQ/RQ_Name='MPMMPNRT' or RQ/RQ_Name='MPXBOPSB']")
+        following_playback_type_start_operations = playback_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMPNOM' or RQ/RQ_Name='MPMMPREG' or RQ/RQ_Name='MPMMPBRT' or RQ/RQ_Name='MPMMPBHK' or RQ/RQ_Name='MPMMPBSA' or RQ/RQ_Name='MPMMPBHS' or RQ/RQ_Name='MPMMPNRT']")
 
-        playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Name")[0].text in ["MPMMPNOM", "MPMMPREG", "MPMMPBRT", "MPMMPBHK", "MPMMPBSA", "MPMMPBHS", "MPMMPNRT"] and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop  and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] > playback_start]
+        playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop]
         if playback_mean == "OCP":
-            playback_xband_still_on_going = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Name")[0].text == "MPXBOPSB" and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop  and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] > playback_start]
+            following_xband_stop = playback_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPXBOPSB'][1]")
+            playback_xband_still_on_going = [playback for playback in following_xband_stop if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop]
             if len(playback_xband_still_on_going) > 0:
                 # As the xband link can still be used after the OCP activation, the playbacks between the OCP activation and the xband off shall be discarded
                 xband_off = playback_xband_still_on_going[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-                playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Name")[0].text in ["MPMMPNOM", "MPMMPREG", "MPMMPBRT", "MPMMPBHK", "MPMMPBSA", "MPMMPBHS", "MPMMPNRT"] and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop  and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] > xband_off]
+                playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop  and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] > xband_off]
             # end if
         # end if        
 
@@ -505,6 +504,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
 
     # end for
 
+    return
 
 def process_file(file_path):
     """Function to process the file and insert its relevant information
