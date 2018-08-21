@@ -300,6 +300,7 @@ ALTER TABLE gsdm.explicit_ref_link_tb OWNER TO gsdm;
 CREATE TABLE gsdm.dim_processing_status_tb(
 	time_stamp timestamp NOT NULL,
 	proc_status integer NOT NULL,
+	log text,
 	processing_uuid uuid NOT NULL
 );
 -- ddl-end --

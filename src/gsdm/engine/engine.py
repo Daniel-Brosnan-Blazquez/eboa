@@ -243,8 +243,9 @@ class Engine():
                 data = json.load(input_file)
 
         except ValueError:
+            error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
             self._insert_source_without_dim_signature(json_name)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
             self.source.parse_error = "The json file cannot be loaded as it has a wrong structure"
             # Insert the content of the file into the DDBB
             with open(json_path) as input_file:
@@ -252,7 +253,7 @@ class Engine():
             self.session.commit()
             self.session.close()
             # Log the error
-            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
+            logger.error(error_message)
             return self.exit_codes["FILE_NOT_VALID"]["status"]
         # end try
 
@@ -261,7 +262,7 @@ class Engine():
                 parsing.validate_data_dictionary(data)
             except ErrorParsingDictionary as e:
                 self._insert_source_without_dim_signature(json_name)
-                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 # Insert the content of the file into the DDBB
                 with open(json_path) as input_file:
@@ -295,7 +296,7 @@ class Engine():
             parsed_xml = etree.parse(xml_path)
         except etree.XMLSyntaxError as e:
             self._insert_source_without_dim_signature(xml_name)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
@@ -317,8 +318,9 @@ class Engine():
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
             if not valid:
+                error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
                 self._insert_source_without_dim_signature(xml_name)
-                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
                 # Insert the parse error into the DDBB
                 self.source.parse_error = str(schema.error_log.last_error)
                 # Insert the content of the file into the DDBB
@@ -327,7 +329,7 @@ class Engine():
                 self.session.commit()
                 self.session.close()
                 # Log the error
-                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
+                logger.error(error_message)
                 return self.exit_codes["FILE_NOT_VALID"]["status"]
             # end if
         # end if
@@ -499,7 +501,7 @@ class Engine():
             parsing.validate_data_dictionary(data)
         except ErrorParsingDictionary as e:
             self._insert_source_without_dim_signature(source)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"])
+            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
             self.source.parse_error = str(e)
             self.session.commit()
             self.session.close()
@@ -564,7 +566,7 @@ class Engine():
                 self.operation["dim_signature"]["version"]))
         except SourceAlreadyIngested as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"])
+            self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
             # Log that the source file has been already been processed
             logger.error(e)
             self.session.commit()
@@ -572,7 +574,7 @@ class Engine():
             return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"])
+            self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
             # Log that the source file has a wrong specified period as the stop is lower than the start
             logger.error(e)
             # Insert content in the DDBB
@@ -603,7 +605,7 @@ class Engine():
             self._insert_events()
         except DuplicatedEventLinkRef as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"])
+            self._insert_proc_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -613,7 +615,7 @@ class Engine():
             return self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
         except LinksInconsistency as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"])
+            self._insert_proc_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -623,7 +625,7 @@ class Engine():
             return self.exit_codes["LINKS_INCONSISTENCY"]["status"]
         except UndefinedEventLink as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"])
+            self._insert_proc_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -633,7 +635,7 @@ class Engine():
             return self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"])
+            self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -643,7 +645,7 @@ class Engine():
             return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
         except WrongValue as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -653,7 +655,7 @@ class Engine():
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -668,7 +670,7 @@ class Engine():
             self._insert_annotations()
         except WrongValue as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"])
+            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -678,7 +680,7 @@ class Engine():
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"])
+            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -1409,17 +1411,25 @@ class Engine():
         return
 
     @debug
-    def _insert_proc_status(self, status, final = False):
+    def _insert_proc_status(self, status, final = False, error_message = None):
         """
         Method to insert the DIM processing status
 
         :param status: code indicating the status of the processing of the file
         :type status: int
+        :param error_message: error message generated when the ingestion does not finish correctly
+        :type error_message: str
         :param final: boolean indicated whether it is a final status or not. This is to insert the ingestion duration in case of final = True
         :type final: bool
         """
         # Insert processing status
-        self.session.add(DimProcessingStatus(datetime.datetime.now(),status,self.source))
+        status = DimProcessingStatus(datetime.datetime.now(),status,self.source)
+        self.session.add(status)
+
+        if error_message:
+            # Insert the error message
+            status.log = error_message
+        # end if
 
         if final:
             # Insert processing duration

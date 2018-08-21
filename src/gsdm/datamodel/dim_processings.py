@@ -44,13 +44,15 @@ class DimProcessingStatus(Base):
 
     time_stamp = Column(DateTime)
     proc_status = Column(Integer)
+    log = Column(Text)
     processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
     source = relationship("DimProcessing", backref="statuses")
     __mapper_args__ = {
         'primary_key':[proc_status, processing_uuid]
     }
 
-    def __init__(self, time_stamp, status, dim_processing):
+    def __init__(self, time_stamp, status, dim_processing, log = None):
         self.time_stamp = time_stamp
         self.proc_status = status
+        self.log = log
         self.source = dim_processing
