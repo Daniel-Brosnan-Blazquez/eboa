@@ -79,7 +79,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         record_start_scn_dup = record_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_DUP']/RQ_Parameter_Value")
 
         # Record stop information
-        record_operation_stop = record_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMRSTP' or RQ/RQ_Name='MPMMRNRT'][1]")[0]
+        record_operation_stop = record_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMRSTP' or RQ/RQ_Name='MPMMRNRT' or RQ/RQ_Name='MPMMRNOM'][1]")[0]
         record_stop_orbit = record_operation_stop.xpath("RQ/RQ_Absolute_orbit")[0].text
         record_stop_angle = record_operation_stop.xpath("RQ/RQ_Deg_from_ANX")[0].text
         record_stop = record_operation_stop.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
@@ -90,29 +90,31 @@ def _generate_record_events(xpath_xml, source, list_of_events):
 
         following_imaging_operation = record_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS' or RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP'][1]")[0]
         if following_imaging_operation.xpath("RQ[RQ_Name='MPMSIMID' or RQ_Name='MPMSIDSB' or RQ_Name='MPMMRSTP']"):
-            imaging_start_operation = record_operation.xpath("preceding-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS'][1]")[0]
-            imaging_stop_operation = following_imaging_operation
+            cut_imaging_start_operation = record_operation
+            cut_imaging_stop_operation = following_imaging_operation
+            imaging_start = record_operation.xpath("preceding-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS'][1]")[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         else:
-            imaging_start_operation = following_imaging_operation
-            imaging_stop_operation = record_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
+            cut_imaging_start_operation = following_imaging_operation
+            cut_imaging_stop_operation = record_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
+            imaging_start = following_imaging_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         # end if
 
         # Imaging start information
-        imaging_start = imaging_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-        imaging_start_orbit = imaging_start_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
-        imaging_start_angle = imaging_start_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
-        imaging_start_request = imaging_start_operation.xpath("RQ/RQ_Name")[0].text
+        cut_imaging_start = cut_imaging_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        cut_imaging_start_orbit = cut_imaging_start_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        cut_imaging_start_angle = cut_imaging_start_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        cut_imaging_start_request = cut_imaging_start_operation.xpath("RQ/RQ_Name")[0].text
 
-        imaging_mode = imaging_modes[imaging_start_request]
+        cut_imaging_mode = imaging_modes[cut_imaging_start_request]
 
         # Imaging stop information
-        imaging_stop = imaging_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-        if imaging_mode == "SUN_CAL":
-            imaging_stop = (parser.parse(imaging_start) + datetime.timedelta(seconds=50)).isoformat()
+        cut_imaging_stop = cut_imaging_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        if cut_imaging_mode == "SUN_CAL":
+            cut_imaging_stop = (parser.parse(cut_imaging_start) + datetime.timedelta(seconds=50)).isoformat()
         # end if
-        imaging_stop_orbit = imaging_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
-        imaging_stop_angle = imaging_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
-        imaging_stop_request = imaging_stop_operation.xpath("RQ/RQ_Name")[0].text
+        cut_imaging_stop_orbit = cut_imaging_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        cut_imaging_stop_angle = cut_imaging_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        cut_imaging_stop_request = cut_imaging_stop_operation.xpath("RQ/RQ_Name")[0].text
 
         record_link_id = "record_" + record_start
 
@@ -172,6 +174,95 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         # Insert record_event
         ingestion.insert_event_for_ingestion(record_event, source, list_of_events)
 
+        cut_imaging_link_id = "cut_imaging_" + cut_imaging_start
+        imaging_link_id = "imaging_" + imaging_start
+
+        # Imaging event
+        cut_imaging_event = {
+            "link_ref": cut_imaging_link_id,
+            "gauge": {
+                "insertion_type": "ERASE_and_REPLACE",
+                "name": "CUT_IMAGING_" + cut_imaging_mode,
+                "system": satellite
+            },
+            "start": cut_imaging_start,
+            "stop": cut_imaging_stop,
+            "links": [
+                {
+                    "link": record_link_id,
+                    "link_mode": "by_ref",
+                    "name": "RECORD_OPERATION"
+                },
+                {
+                    "link": imaging_link_id,
+                    "link_mode": "by_ref",
+                    "name": "COMPLETE_IMAGING_OPERATION",
+                    "back_ref": "true"
+                }
+            ],
+            "values": [{
+                "name": "imaging_values",
+                "type": "object",
+                "values": [
+                    {"name": "imaging_start_request",
+                     "type": "text",
+                     "value": cut_imaging_start_request},
+                    {"name": "imaging_stop_request",
+                     "type": "text",
+                     "value": cut_imaging_stop_request},
+                    {"name": "imaging_start_orbit",
+                     "type": "double",
+                     "value": cut_imaging_start_orbit},
+                    {"name": "imaging_start_angle",
+                     "type": "double",
+                     "value": cut_imaging_start_angle},
+                    {"name": "imaging_stop_orbit",
+                     "type": "double",
+                     "value": cut_imaging_stop_orbit},
+                    {"name": "imaging_stop_angle",
+                     "type": "double",
+                     "value": cut_imaging_stop_angle}
+                ]
+            }]
+        }
+
+        if not "links" in record_event:
+            record_event["links"] = []
+        # end if
+
+        record_event["links"].append({
+            "link": cut_imaging_link_id,
+            "link_mode": "by_ref",
+            "name": "IMAGING_OPERATION"
+        })
+
+        # Insert imaging_event
+        ingestion.insert_event_for_ingestion(cut_imaging_event, source, list_of_events)
+
+    # end for
+
+    # Imaging operations
+    imaging_operations = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_EVRQs/EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS']")
+
+    for imaging_operation in imaging_operations:
+        # Imaging start information
+        imaging_start = imaging_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        imaging_start_orbit = imaging_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        imaging_start_angle = imaging_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        imaging_start_request = imaging_operation.xpath("RQ/RQ_Name")[0].text
+
+        imaging_mode = imaging_modes[imaging_start_request]
+
+        # Imaging stop information
+        imaging_stop_operation = imaging_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
+        imaging_stop = imaging_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        if imaging_mode == "SUN_CAL":
+            imaging_stop = (parser.parse(imaging_start) + datetime.timedelta(seconds=50)).isoformat()
+        # end if
+        imaging_stop_orbit = imaging_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        imaging_stop_angle = imaging_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        imaging_stop_request = imaging_stop_operation.xpath("RQ/RQ_Name")[0].text
+
         imaging_link_id = "imaging_" + imaging_start
 
         # Imaging event
@@ -184,13 +275,6 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             },
             "start": imaging_start,
             "stop": imaging_stop,
-            "links": [
-                {
-                    "link": record_link_id,
-                    "link_mode": "by_ref",
-                    "name": "RECORD_OPERATION"
-                }
-            ],
             "values": [{
                 "name": "imaging_values",
                 "type": "object",
@@ -216,16 +300,6 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                 ]
             }]
         }
-
-        if not "links" in record_event:
-            record_event["links"] = []
-        # end if
-
-        record_event["links"].append({
-            "link": imaging_link_id,
-            "link_mode": "by_ref",
-            "name": "IMAGING_OPERATION"
-        })
 
         # Insert imaging_event
         ingestion.insert_event_for_ingestion(imaging_event, source, list_of_events)
