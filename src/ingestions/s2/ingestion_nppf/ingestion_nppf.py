@@ -127,7 +127,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         # Imaging stop information
         cut_imaging_stop = cut_imaging_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         if cut_imaging_mode == "SUN_CAL":
-            cut_imaging_stop = (parser.parse(cut_imaging_start) + datetime.timedelta(seconds=50)).isoformat()
+            cut_imaging_stop = cut_imaging_start
         # end if
         cut_imaging_stop_orbit = cut_imaging_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
         cut_imaging_stop_angle = cut_imaging_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
@@ -398,7 +398,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
         idle_event = {
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "idle",
+                "name": "IDLE",
                 "system": satellite
             },
             "start": idle_start,
