@@ -64,6 +64,23 @@ def _generate_record_events(xpath_xml, source, list_of_events):
     :type xpath_xml: dict
     :param list_of_events: list to store the events to be inserted into the gsdm
     :type list_of_events: list
+    
+    Conceptual design of what is expected given the following inputs
+    RECORD                  |--NRT--|
+    RECORD          |--NOM--|       |--NOM--|
+    IMAGING          |-------IMAGING-------|
+    
+    RESULT:
+    RECORD EVENT 1  |--NOM--|
+    RECORD EVENT 2          |--NRT--|
+    RECORD EVENT 3                  |--NOM--|
+    CUT_IMG EV 1     |------|
+    CUT_IMG EV 2            |-------|
+    CUT_IMG EV 3                    |------|
+    IMAGING EVENT 1  |-------IMAGING-------|
+
+    RECORD events and CUT_IMAGING events are linked by RECORD_OPERATION and IMAGING_OPERATION links
+    IMAGING events and CUT_IMAGING events are linked by COMPLETE_IMAGING_OPERATION link (with back_ref)
     """
 
     satellite = source["name"][0:3]
@@ -257,7 +274,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         imaging_stop_operation = imaging_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
         imaging_stop = imaging_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         if imaging_mode == "SUN_CAL":
-            imaging_stop = (parser.parse(imaging_start) + datetime.timedelta(seconds=50)).isoformat()
+            imaging_stop = imaging_start
         # end if
         imaging_stop_orbit = imaging_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
         imaging_stop_angle = imaging_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
@@ -410,6 +427,19 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
     :type xpath_xml: dict
     :param list_of_events: list to store the events to be inserted into the gsdm
     :type list_of_events: list
+
+    Conceptual design of what is expected given the following inputs
+    PLAYBACK MEAN      |------------XBAND------------|
+    PLAYBACK MEAN                           |------------OCP-----------|
+    PLAYBACK TYPES      |--NOM--||SAD|   |NOM||SAD|     |--NOM--||SAD|
+    
+    RESULT:
+    PB MEAN EVENT 1    |------------XBAND------------|
+    PB TY EVS LINKED    |--NOM--||SAD|   |NOM||SAD|
+    PB MEAN EVENT 2                         |------------OCP----------
+    PB TY EVS LINKED                                    |--NOM--||SAD|
+
+    PB MEAN events and PB TY events are linked by PLAYBACK_OPERATION link (with back_ref)
     """
 
     satellite = source["name"][0:3]
@@ -437,7 +467,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
         playback_stop = playback_operation_stop.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         playback_stop_request = playback_operation_stop.xpath("RQ/RQ_Name")[0].text
 
-        playback_mean_link_id = "playback_mean_" + playback_start
+        playback_mean_link_id = "playback_mean_" + playback_stop
 
         # Playback event
         playback_event = {
@@ -475,106 +505,85 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
             }]
         }
 
-        # Associate the playback types to the playback means
-        following_playback_type_start_operations = playback_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMPNOM' or RQ/RQ_Name='MPMMPREG' or RQ/RQ_Name='MPMMPBRT' or RQ/RQ_Name='MPMMPBHK' or RQ/RQ_Name='MPMMPBSA' or RQ/RQ_Name='MPMMPBHS' or RQ/RQ_Name='MPMMPNRT']")
-
-        playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop]
-        if playback_mean == "OCP":
-            following_xband_stop = playback_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPXBOPSB'][1]")
-            playback_xband_still_on_going = [playback for playback in following_xband_stop if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop]
-            if len(playback_xband_still_on_going) > 0:
-                # As the xband link can still be used after the OCP activation, the playbacks between the OCP activation and the xband off shall be discarded
-                xband_off = playback_xband_still_on_going[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-                playback_type_start_operations = [playback for playback in following_playback_type_start_operations if playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] < playback_stop  and playback.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1] > xband_off]
-            # end if
-        # end if        
-
-        for playback_type_start_operation in playback_type_start_operations:
-
-            # Playback_Type start information
-            playback_type_start = playback_type_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-            playback_type_start_orbit = playback_type_start_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
-            playback_type_start_angle = playback_type_start_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
-            playback_type_start_request = playback_type_start_operation.xpath("RQ/RQ_Name")[0].text
-
-            playback_type = playback_types[playback_type_start_request]
-
-            if playback_type in ["HKTM", "SAD", "HKTM_SAD"]:
-                playback_type_stop_operation = playback_type_start_operation
-            else:
-                playback_type_stop_operation = playback_type_start_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMPSTP'][1]")[0]
-            # end if
-
-            # Playback_Type stop information
-            playback_type_stop = playback_type_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
-            playback_type_stop_orbit = playback_type_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
-            playback_type_stop_angle = playback_type_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
-            playback_type_stop_request = playback_type_stop_operation.xpath("RQ/RQ_Name")[0].text
-
-            event_link_id = "playback_" + playback_start
-
-            playback_type_link_id = "playback_type_" + playback_type_start
-
-            # Playback_Type event
-            playback_type_event = {
-                "link_ref": playback_type_link_id,
-                "gauge": {
-                    "insertion_type": "ERASE_and_REPLACE",
-                    "name": "PLAYBACK_TYPE_" + playback_type,
-                    "system": satellite
-                },
-                "start": playback_type_start,
-                "stop": playback_type_stop,
-                "links": [
-                    {
-                        "link": playback_mean_link_id,
-                        "link_mode": "by_ref",
-                        "name": "PLAYBACK_OPERATION"
-                    }
-                ],
-                "values": [{
-                    "name": "playback_type_values",
-                    "type": "object",
-                    "values": [
-                        {"name": "playback_type_start_request",
-                         "type": "text",
-                         "value": playback_type_start_request},
-                        {"name": "playback_type_stop_request",
-                         "type": "text",
-                         "value": playback_type_stop_request},
-                        {"name": "playback_type_start_orbit",
-                         "type": "double",
-                         "value": playback_type_start_orbit},
-                        {"name": "playback_type_start_angle",
-                         "type": "double",
-                         "value": playback_type_start_angle},
-                        {"name": "playback_type_stop_orbit",
-                         "type": "double",
-                         "value": playback_type_stop_orbit},
-                        {"name": "playback_type_stop_angle",
-                         "type": "double",
-                         "value": playback_type_stop_angle}
-                    ]
-                }]
-            }
-
-            if not "links" in playback_event:
-                playback_event["links"] = []
-            # end if
-                
-            playback_event["links"].append({
-                "link": playback_type_link_id,
-                "link_mode": "by_ref",
-                "name": "PLAYBACK_TYPE"
-            })
-
-            # Insert playback_type_event
-            ingestion.insert_event_for_ingestion(playback_type_event, source, list_of_events)
-
-        # end for
-
         # Insert playback_event
         ingestion.insert_event_for_ingestion(playback_event, source, list_of_events)
+
+    # end for
+
+
+    # Associate the playback types to the playback means
+    playback_type_start_operations = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_EVRQs/EVRQ[RQ/RQ_Name='MPMMPNOM' or RQ/RQ_Name='MPMMPREG' or RQ/RQ_Name='MPMMPBRT' or RQ/RQ_Name='MPMMPBHK' or RQ/RQ_Name='MPMMPBSA' or RQ/RQ_Name='MPMMPBHS' or RQ/RQ_Name='MPMMPNRT']")
+
+    for playback_type_start_operation in playback_type_start_operations:
+
+        # Playback_Type start information
+        playback_type_start = playback_type_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        playback_type_start_orbit = playback_type_start_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        playback_type_start_angle = playback_type_start_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        playback_type_start_request = playback_type_start_operation.xpath("RQ/RQ_Name")[0].text
+
+        playback_type = playback_types[playback_type_start_request]
+
+        if playback_type in ["HKTM", "SAD", "HKTM_SAD"]:
+            playback_type_stop_operation = playback_type_start_operation
+        else:
+            playback_type_stop_operation = playback_type_start_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMMPSTP'][1]")[0]
+        # end if
+
+        # Playback_Type stop information
+        playback_type_stop = playback_type_stop_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        playback_type_stop_orbit = playback_type_stop_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
+        playback_type_stop_angle = playback_type_stop_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
+        playback_type_stop_request = playback_type_stop_operation.xpath("RQ/RQ_Name")[0].text
+
+        playback_mean_stop = playback_type_start_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPXBOPSB' or RQ/RQ_Name='MPOCPRY2'][1]")[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+        playback_mean_link_id = "playback_mean_" + playback_mean_stop
+
+        # Playback_Type event
+        playback_type_event = {
+            "gauge": {
+                "insertion_type": "ERASE_and_REPLACE",
+                "name": "PLAYBACK_TYPE_" + playback_type,
+                "system": satellite
+            },
+            "start": playback_type_start,
+            "stop": playback_type_stop,
+            "links": [
+                {
+                    "link": playback_mean_link_id,
+                    "link_mode": "by_ref",
+                    "name": "PLAYBACK_OPERATION",
+                    "back_ref": "true"
+                }
+            ],
+            "values": [{
+                "name": "playback_type_values",
+                "type": "object",
+                "values": [
+                    {"name": "playback_type_start_request",
+                     "type": "text",
+                     "value": playback_type_start_request},
+                    {"name": "playback_type_stop_request",
+                     "type": "text",
+                     "value": playback_type_stop_request},
+                    {"name": "playback_type_start_orbit",
+                     "type": "double",
+                     "value": playback_type_start_orbit},
+                    {"name": "playback_type_start_angle",
+                     "type": "double",
+                     "value": playback_type_start_angle},
+                    {"name": "playback_type_stop_orbit",
+                     "type": "double",
+                     "value": playback_type_stop_orbit},
+                    {"name": "playback_type_stop_angle",
+                     "type": "double",
+                     "value": playback_type_stop_angle}
+                ]
+            }]
+        }
+
+        # Insert playback_type_event
+        ingestion.insert_event_for_ingestion(playback_type_event, source, list_of_events)
 
     # end for
 
