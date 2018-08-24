@@ -229,17 +229,3 @@ class TestDatamodel(unittest.TestCase):
         self.session.commit()
         
         assert len (self.session.query(AnnotationGeometry).filter(AnnotationGeometry.annotation_uuid == annotation1_uuid, AnnotationGeometry.name == "GEOMETRY_NAME", func.ST_AsText(AnnotationGeometry.value) == polygon, AnnotationGeometry.level_position == 5, AnnotationGeometry.parent_level == 0, AnnotationGeometry.parent_position == 0).all()) == 1
-
-    def test_no_gsdm_resources_path(self):
-
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-        del os.environ["GSDM_RESOURCES_PATH"]
-
-        try:
-            gsdm.datamodel.base.read_configuration()
-        except GsdmResourcesPathNotAvailable:
-            assert True == True
-        except:
-            assert False == True
-
-        os.environ["GSDM_RESOURCES_PATH"] = gsdm_resources_path

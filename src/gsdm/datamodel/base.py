@@ -13,23 +13,10 @@ from sqlalchemy.orm import sessionmaker
 # Import exceptions
 from .errors import GsdmResourcesPathNotAvailable
 
-# Import python utilities
-import os
-import json
+# Import auxiliary functions
+from gsdm.datamodel.functions import *
 
-def read_configuration():
-    global gsdm_resources_path
-    global config
-    if "GSDM_RESOURCES_PATH" in os.environ:
-        # Get the path to the resources of the gsdm
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-        # Get configuration
-        with open(gsdm_resources_path + "/" + "config/datamodel.json") as json_data_file:
-            config = json.load(json_data_file)
-    else:
-        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
-    # end if
-read_configuration()
+config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 

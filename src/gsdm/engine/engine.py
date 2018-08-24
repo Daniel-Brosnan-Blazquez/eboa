@@ -14,10 +14,7 @@ from dateutil import parser
 from itertools import chain
 from oslo_concurrency import lockutils
 import json
-import logging
-from logging.handlers import RotatingFileHandler
 import jsonschema
-from functools import wraps
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -48,99 +45,20 @@ from lxml import etree
 # Import parsing module
 import gsdm.engine.parsing as parsing
 
-def read_configuration():
-    global gsdm_resources_path
-    global config
-    if "GSDM_RESOURCES_PATH" in os.environ:
-        # Get the path to the resources of the gsdm
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-        # Get configuration
-        with open(gsdm_resources_path + "/" + "config/engine.json") as json_data_file:
-            config = json.load(json_data_file)
-    else:
-        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
-    # end if
+# Import logging
+from gsdm.engine.logging import *
 
-read_configuration()
+# Import debugging
+from gsdm.engine.debugging import *
 
-stream_handler = None
-def define_logging_configuration():
-    global logger
-    global logging_level
-    global stream_handler
+# Import auxiliary functions
+from gsdm.engine.functions import *
 
-    # Define logging configuration
-    logger = logging.getLogger(__name__)
-    if "GSDM_LOG_LEVEL" in os.environ:
-        logging_level = eval("logging." + os.environ["GSDM_LOG_LEVEL"])
-    else:
-        logging_level = eval("logging." + config["LOG"]["LEVEL"])
-    # end if
-    # Set logging level
-    logger.setLevel(logging_level)
-    # Set the path to the log file
-    file_handler = RotatingFileHandler(gsdm_resources_path + "/" + config["LOG"]["PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
-    # Add format to the logs
-    formatter = logging.Formatter("%(levelname)s\t; (%(asctime)s.%(msecs)03d) ; %(name)s(%(lineno)d) [%(process)d] -> %(message)s", datefmt="%Y-%m-%dT%H:%M:%S")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+config = read_configuration()
+gsdm_resources_path = get_resources_path()
 
-    if "GSDM_STREAM_LOG" in os.environ:
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-    elif stream_handler:
-        logger.removeHandler(stream_handler)
-    # end if
-
-define_logging_configuration()
-
-# Auxiliary functions
-def is_datetime(date):
-    """
-    Function for the parsing of dates inside json files
-    
-    :param date: date to be parsed
-    :type date: str
-
-    :return: True if date is a correct date, False otherwise
-    :rtype: bool
-    """
-    try:
-        parser.parse(date)
-    except:
-        return False
-    else:
-        return True
-
-def debug(method):
-    """
-    Function for profiling methods when logging_level is DEBUG
-    
-    :param method: method to be profiled
-    :type method: function
-
-    :return: returned value of the method
-    :rtype: int
-    """
-    @wraps(method)
-    def _wrapper(*args, **kwargs):
-        logger.debug("Method {} is going to be executed.".format(method.__name__))
-        if logging_level == logging.DEBUG:
-            start = datetime.datetime.now()
-        # end if
-        exit_value = method(*args, **kwargs)
-        if logging_level == logging.DEBUG:
-            stop = datetime.datetime.now()
-            logger.debug("Method {} lasted {} seconds.".format(method.__name__, (stop - start).total_seconds()))
-        # end if
-        return exit_value
-
-    return _wrapper
-
-def race_condition():
-    """ Commit function for race conditions checks """
-    return
+logging = Log()
+logger = logging.logger
 
 class Engine():
     """Class for communicating with the engine of the gsdm module

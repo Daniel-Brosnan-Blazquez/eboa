@@ -13,7 +13,6 @@ import datetime
 import uuid
 import random
 import before_after
-import logging
 
 # Import engine of the DDBB
 import gsdm.engine.engine
@@ -1796,7 +1795,7 @@ class TestEngine(unittest.TestCase):
                                   "version": "1.0"},
                 "source": {"name": "source.xml",
                            "generation_time": "2018-07-05T02:07:03",
-                           "validity_start": "2018-06-04T02:07:03",
+                           "validity_start": "2018-06-04T02:07:00",
                            "validity_stop": "2018-06-05T08:07:36"},
                 "events": [{
                     "link_ref": "EVENT_LINK1",
@@ -1804,7 +1803,7 @@ class TestEngine(unittest.TestCase):
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
                               "insertion_type": "SIMPLE_UPDATE"},
-                    "start": "2018-06-04T02:07:04",
+                    "start": "2018-06-04T02:07:00",
                     "stop": "2018-06-05T08:07:36",
                     "links": [{
                         "link": "EVENT_LINK2",
@@ -1845,7 +1844,7 @@ class TestEngine(unittest.TestCase):
                                "gauge": {"name": "GAUGE_NAME",
                                          "system": "GAUGE_SYSTEM",
                                          "insertion_type": "SIMPLE_UPDATE"},
-                               "start": "2018-06-04T02:07:03",
+                               "start": "2018-06-04T02:07:02",
                                "stop": "2018-06-05T08:07:36",
                                "links": [{
                                    "link": "EVENT_LINK1",
@@ -1990,7 +1989,7 @@ class TestEngine(unittest.TestCase):
         
         event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[0].event_uuid])
 
-        assert len(event_links_ddbb) == 1
+        assert len(event_links_ddbb) == 3
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[2].event_uuid]
         
@@ -2002,7 +2001,7 @@ class TestEngine(unittest.TestCase):
         
         event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[2].event_uuid])
 
-        assert len(event_links_ddbb) == 3
+        assert len(event_links_ddbb) == 1
 
     def test_remove_deprecated_event_erase_and_replace_one_starts_after(self):
 
@@ -2957,109 +2956,4 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
 
-    def test_is_datetime(self):
 
-        result = gsdm.engine.engine.is_datetime("2018-06-05T02:07:03")
-        assert result == True
-        result = gsdm.engine.engine.is_datetime("NOT_A_DATE")
-        assert result == False
-
-    def test_no_gsdm_resources_path(self):
-
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
-        del os.environ["GSDM_RESOURCES_PATH"]
-
-        try:
-            gsdm.engine.engine.read_configuration()
-        except GsdmResourcesPathNotAvailable:
-            assert True == True
-        except:
-            assert False == True
-
-        os.environ["GSDM_RESOURCES_PATH"] = gsdm_resources_path
-
-    def test_change_logging_level(self):
-        previous_logging_level = None
-        if "GSDM_LOG_LEVEL" in os.environ:
-            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
-        # end if
-
-        previous_stream_log = None
-        if "GSDM_STREAM_LOG" in os.environ:
-            previous_stream_log = os.environ["GSDM_STREAM_LOG"]
-        # end if
-
-        os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
-        os.environ["GSDM_STREAM_LOG"] = "YES"
-
-        gsdm.engine.engine.define_logging_configuration()
-
-        assert gsdm.engine.engine.logging_level == logging.DEBUG
-
-        if previous_logging_level:
-            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
-        else:
-            del os.environ["GSDM_LOG_LEVEL"]
-        # end if
-        if previous_stream_log:
-            os.environ["GSDM_STREAM_LOG"] = previous_stream_log
-        else:
-            del os.environ["GSDM_STREAM_LOG"]
-        # end if
-        gsdm.engine.engine.define_logging_configuration()
-        
-    def test_insert_event_simple_update_debug(self):
-        previous_logging_level = None
-        if "GSDM_LOG_LEVEL" in os.environ:
-            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
-        # end if
-
-        os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
-
-        gsdm.engine.engine.define_logging_configuration()
-
-        self.engine_gsdm._initialize_context_insert_data()
-        data = {"dim_signature": {"name": "dim_signature",
-                                  "exec": "exec",
-                                  "version": "1.0"},
-                "source": {"name": "source.xml",
-                           "generation_time": "2018-07-05T02:07:03",
-                           "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"},
-                "events": [{
-                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
-                    "gauge": {"name": "GAUGE_NAME",
-                              "system": "GAUGE_SYSTEM",
-                              "insertion_type": "SIMPLE_UPDATE"},
-                    "start": "2018-06-05T02:07:03",
-                    "stop": "2018-06-05T08:07:36"
-                }]
-            }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
-        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
-                                                      Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
-                                                      Event.visible == True).all()
-
-        assert len(event_ddbb) == 1
-
-        if previous_logging_level:
-            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
-        else:
-            del os.environ["GSDM_LOG_LEVEL"]
-        # end if
-        gsdm.engine.engine.define_logging_configuration()
