@@ -1,9 +1,9 @@
 """
-Automated tests for the engine submodule
+Automated tests for the ingestion of the NPPF files
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module ingestions
 """
 # Import python utilities
 import os
@@ -53,6 +53,11 @@ class TestEngine(unittest.TestCase):
         events_before_validity_period = self.session.query(Event).filter(Event.stop < "2018-07-20T13:40:00.000").all()
 
         assert len(events_before_validity_period) == 0
+
+        # Check number of events generated
+        events = self.session.query(Event).all()
+
+        assert len(events) == 38
 
         # Check that the validity period of the input has taken into consideration the deletion queue
         source = self.session.query(DimProcessing).filter(DimProcessing.validity_start == "2018-07-20T13:40:00.000",
@@ -373,3 +378,21 @@ class TestEngine(unittest.TestCase):
 
         assert len(idle_operations) == 8
 
+    def test_datatake_cut_by_records(self):
+        filename = "NPPF_DATATAKE_CUT_BY_RECORDS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        # Check number of events generated
+        events = self.session.query(Event).all()
+
+        assert len(events) == 8
+
+    def test_file_not_valid(self):
+
+        data = {"not_valid_data": "true"}
+
+        returned_value = ingestion.validate_generated_data(data, "NOT_VALID_FILE.EOF", self.engine_gsdm)
+
+        assert returned_value == False

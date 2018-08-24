@@ -21,6 +21,15 @@ from gsdm.engine.engine import Engine
 import gsdm.engine.ingestion as ingestion
 import gsdm.engine.engine as gsdm_engine
 
+# Import debugging
+from gsdm.engine.debugging import *
+
+# Import logging
+from gsdm.engine.logging import *
+
+logging_module = Log()
+logger = logging_module.logger
+
 version = "1.0"
 imaging_modes={
     "MPMSSCAL": "SUN_CAL",
@@ -54,7 +63,7 @@ playback_means={
     "MPG3STRT": "OCP"
 }
 
-@gsdm_engine.debug
+@debug
 def _generate_record_events(xpath_xml, source, list_of_events):
     """
     Method to generate the events for the MSI operations
@@ -109,9 +118,12 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         if following_imaging_operation.xpath("RQ[RQ_Name='MPMSIMID' or RQ_Name='MPMSIDSB' or RQ_Name='MPMMRSTP']"):
             cut_imaging_start_operation = record_operation
             cut_imaging_stop_operation = following_imaging_operation
-            imaging_start = record_operation.xpath("preceding-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS'][1]")[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+            imaging_start_operation = record_operation.xpath("preceding-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS'][1]")[0]
+            imaging_start = imaging_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
+            cut_imaging_start_request = imaging_start_operation.xpath("RQ/RQ_Name")[0].text
         else:
             cut_imaging_start_operation = following_imaging_operation
+            cut_imaging_start_request = cut_imaging_start_operation.xpath("RQ/RQ_Name")[0].text
             cut_imaging_stop_operation = record_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
             imaging_start = following_imaging_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         # end if
@@ -120,7 +132,6 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         cut_imaging_start = cut_imaging_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         cut_imaging_start_orbit = cut_imaging_start_operation.xpath("RQ/RQ_Absolute_orbit")[0].text
         cut_imaging_start_angle = cut_imaging_start_operation.xpath("RQ/RQ_Deg_from_ANX")[0].text
-        cut_imaging_start_request = cut_imaging_start_operation.xpath("RQ/RQ_Name")[0].text
 
         cut_imaging_mode = imaging_modes[cut_imaging_start_request]
 
@@ -325,7 +336,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
 
     return
 
-@gsdm_engine.debug
+@debug
 def _generate_idle_events(xpath_xml, source, list_of_events):
     """
     Method to generate the events for the idle operation of the satellite
@@ -417,7 +428,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
 
     return
 
-@gsdm_engine.debug
+@debug
 def _generate_playback_events(xpath_xml, source, list_of_events):
     """
     Method to generate the events for the idle operation of the satellite
@@ -640,6 +651,16 @@ def process_file(file_path):
 
     return data
 
+def validate_generated_data(data, filename, engine):
+
+    returned_value = engine.validate_data(data, filename)
+
+    if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
+        gsdm_engine.logger.error("The file {} could not be validated".format(filename))
+        return False
+    
+    return True
+
 def command_process_file(file_path):
     # Process file
     data = process_file(file_path)
@@ -647,11 +668,9 @@ def command_process_file(file_path):
     engine = Engine()
     # Validate data
     filename = os.path.basename(file_path)
-    returned_value = engine.validate_data(data, filename)
+    is_valid = validate_generated_data(data, filename, engine)
 
-    if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
-        print("The file could not be validated")
-    else:
+    if is_valid == True:
         # Treat data
         returned_value = engine.treat_data(data)
     # end if
