@@ -8,13 +8,13 @@ module gsdm
 # Import python utilities
 import logging
 from functools import wraps
+import datetime
 
 # Import logging
 from gsdm.engine.logging import *
 
 logging_module = Log()
 logger = logging_module.logger
-logging_level = logging_module.logging_level
 
 def debug(method):
     """
@@ -28,6 +28,7 @@ def debug(method):
     """
     @wraps(method)
     def _wrapper(*args, **kwargs):
+        logging_level = logging_module.logging_level
         logger.debug("Method {} is going to be executed.".format(method.__name__))
         if logging_level == logging.DEBUG:
             start = datetime.datetime.now()
