@@ -20,6 +20,7 @@ gsdm_resources_path = get_resources_path()
 class Log():
 
     def __init__(self):
+        self.stream_handler = None
         self.define_logging_configuration()
 
     def define_logging_configuration(self):
