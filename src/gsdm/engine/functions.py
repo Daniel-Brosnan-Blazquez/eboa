@@ -8,6 +8,7 @@ module gsdm
 # Import python utilities
 import os
 import json
+from dateutil import parser
 
 # Auxiliary functions
 def is_datetime(date):

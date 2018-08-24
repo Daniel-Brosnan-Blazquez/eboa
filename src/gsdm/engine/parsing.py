@@ -9,23 +9,8 @@ module gsdm
 from .errors import ErrorParsingDictionary
 from dateutil import parser
 
-# Auxiliary functions
-def is_datetime(date):
-    """
-    Function for the parsing of dates inside json files
-    
-    :param date: date to be parsed
-    :type date: str
-
-    :return: True if date is a correct date, False otherwise
-    :rtype: bool
-    """
-    try:
-        parser.parse(date)
-    except:
-        return False
-    else:
-        return True
+# Import auxiliary functions
+from gsdm.engine.functions import *
 
 def validate_data_dictionary(data):
     """
