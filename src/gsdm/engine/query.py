@@ -8,9 +8,7 @@ module gsdm
 # Import python utilities
 import datetime
 from lxml import etree
-
-# Import the engine for logging
-from gsdm import engine
+import operator
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -24,9 +22,25 @@ from gsdm.datamodel.gauges import Gauge
 from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from sqlalchemy.dialects import postgresql
 
+# Import logging
+from gsdm.engine.logging import *
+
+logging = Log()
+logger = logging.logger
+
+# Import auxiliary functions
+from gsdm.engine.functions import *
 
 class Query():
+
+    operators = {
+        ">": operator.gt,
+        ">=": operator.ge,
+        "<": operator.lt,
+        "<=": operator.le,
+    }
 
     def __init__(self, session = None):
         """
@@ -85,7 +99,7 @@ class Query():
                       }
 
         # Get the events from the DDBB
-        events = self.get_events([dim_processing[0].processing_uuid])
+        events = self.get_events(processing_uuids = [dim_processing[0].processing_uuid])
 
         if len(events) > 0:
             data["events"] = []
@@ -288,17 +302,151 @@ class Query():
         # end if
         return source_statuses
 
-    def get_events(self, processing_uuids = None):
+    def get_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start = None, start_operator = None, stop = None, stop_operator = None):
         """
         """
+        params = []
+        # Allow only obtain visible events
+        params.append(Event.visible == True)
+
+        # processing_uuids
         if processing_uuids:
             if type(processing_uuids) != list:
                 raise
             # end if
-            events = self.session.query(Event).filter(Event.processing_uuid.in_(processing_uuids)).all()
-        else:
-            events = self.session.query(Event).all()
+            params.append(Event.processing_uuid.in_(processing_uuids))
         # end if
+
+        # explicit_ref_ids
+        if explicit_ref_ids:
+            if type(explicit_ref_ids) != list:
+                raise
+            # end if
+            params.append(Event.explicit_ref_id.in_(explicit_ref_ids))
+        # end if
+
+        # start
+        if (start != None and start_operator == None):
+            logger.error("The start_operator has to be specified when the start value is specified")
+            raise
+        # end if
+        if not start_operator in self.operators:
+            logger.error("The start_operator is not a valid operator")
+            raise
+        # end if
+        if start != None:
+            if not is_datetime(start):
+                raise
+            # end if
+            op = self.operators[start_operator]
+            params.append(op(Event.start, start))
+        # end if
+
+        # stop
+        if (stop != None and stop_operator == None):
+            logger.error("The stop_operator has to be specified when the stop value is specified")
+            raise
+        # end if
+        if not stop_operator in self.operators:
+            logger.error("The stop_operator is not a valid operator")
+            raise
+        # end if
+        if stop != None:
+            if not is_datetime(stop):
+                raise
+            # end if
+            op = self.operators[stop_operator]
+            params.append(op(Event.stop, stop))
+        # end if
+
+        events = self.session.query(Event).filter(*params).all()
+        return events
+
+    def get_events_join(self, filename = None, explicit_ref = None, gauge_name = None, gauge_system = None, start_cmp = None, start_operator = None, stop_cmp = None, stop_operator = None, event_uuids = None):
+        """
+        """
+        params = []
+        # Allow only obtain visible events
+        params.append(Event.visible == True)
+
+        tables = [Event]
+
+        # Add mandatory joined tables
+        tables.append(DimProcessing)
+        tables.append(Gauge)
+
+        # Add filters
+        # Event uuids
+        if event_uuids != None:
+            params.append(Event.event_uuid.in_(event_uuids))
+        # end if
+
+        # Source
+        if filename != None:
+            params.append(DimProcessing.name == filename)
+        # end if
+
+        # Explicit reference
+        if explicit_ref != None:
+            tables.append(ExplicitRef)
+            params.append(ExplicitRef.name.like(explicit_ref))
+        # end if
+
+        # Gauge name
+        if gauge_name != None:
+            params.append(Gauge.name.like(gauge_name))
+        # end if
+
+        # Gauge system
+        if gauge_system != None:
+            params.append(Gauge.system.like(gauge_system))
+        # end if
+
+        # start
+        if (start_cmp != None and start_operator == None):
+            logger.error("The start_operator has to be specified when the start_cmp value is specified")
+            raise
+        # end if
+        if start_cmp != None and not start_operator in self.operators:
+            logger.error("The start_operator is not a valid operator")
+            raise
+        # end if
+        if start_cmp != None:
+            if not is_datetime(start_cmp):
+                raise
+            # end if
+            op = self.operators[start_operator]
+            params.append(op(Event.start, start_cmp))
+        # end if
+
+        # stop
+        if (stop_cmp != None and stop_operator == None):
+            logger.error("The stop_operator has to be specified when the stop_cmp value is specified")
+            raise
+        # end if
+        if stop_cmp != None and not stop_operator in self.operators:
+            logger.error("The stop_operator is not a valid operator")
+            raise
+        # end if
+        if stop_cmp != None:
+            if not is_datetime(stop_cmp):
+                raise
+            # end if
+            op = self.operators[stop_operator]
+            params.append(op(Event.stop, stop_cmp))
+        # end if
+
+        query = self.session.query(Event)
+        for table in tables:
+            if table != Event:
+                query = query.join(table)
+            # end if
+        # end for
+
+        events = query.filter(*params).all()
+        
+        # logger.debug("The following query is going to be executed: {}".format(str(query.filter(*params).statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))))
+
         return events
 
     def get_gauges(self):
@@ -321,20 +469,6 @@ class Query():
 
         return keys
 
-    def get_event_links(self, event_uuids = None):
-        """
-        """
-        if event_uuids:
-            if type(event_uuids) != list:
-                raise
-            # end if
-            links = self.session.query(EventLink).filter(EventLink.event_uuid.in_(event_uuids)).all()
-        else:
-            links = self.session.query(EventLink).all()
-        # end if
-
-        return links
-
     def get_event_links_pointing_to_events(self, event_uuids, event_uuid_links):
         """
         """
@@ -346,19 +480,50 @@ class Query():
 
         return links
 
-    def get_links_to_events(self, event_uuid_links = None):
+    def get_event_links(self, event_uuid_links = None, event_uuids = None, link_names = None):
         """
         """
+        params = []
         if event_uuid_links:
-            if type(event_uuid_links) != list:
-                raise
-            # end if
-            links = self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuid_links)).all()
-        else:
-            links = self.session.query(EventLink).all()
+            params.append(EventLink.event_uuid_link.in_(event_uuid_links))
         # end if
 
+        if event_uuids:
+            params.append(EventLink.event_uuid.in_(event_uuids))
+        # end if
+
+        if link_names:
+            params.append(EventLink.name.in_(link_names))
+        # end if
+
+        query = self.session.query(EventLink)
+        links = query.filter(*params).all()
+
+        # logger.debug("The following query is going to be executed: {}".format(str(query.filter(*params).statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))))
+
         return links
+
+    def get_linked_events_join(self, filename = None, explicit_ref = None, gauge_name = None, gauge_system = None, start_cmp = None, start_operator = None, stop_cmp = None, stop_operator = None, link_names = None):
+        
+        # Obtain prime events 
+        prime_events = self.get_events_join(filename = filename, explicit_ref = explicit_ref, gauge_name = gauge_name, gauge_system = gauge_system, start_cmp = start_cmp, start_operator = start_operator, stop_cmp = stop_cmp, stop_operator = stop_operator)
+
+        prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
+
+        # Obtain the links from the prime events to other events
+        links = []
+        if len(prime_event_uuids) > 0:
+            links = self.get_event_links(event_uuid_links = prime_event_uuids, link_names = link_names)
+        # end if
+
+        # Obtain the events linked by the prime events
+        linked_event_uuids = [str(link.event_uuid) for link in links]
+        linked_events = []
+        if len(linked_event_uuids) > 0:
+            linked_events = self.get_events_join(event_uuids = linked_event_uuids)
+        # end if
+
+        return prime_events + linked_events
 
     def get_annotations(self, processing_uuids = None):
         """
