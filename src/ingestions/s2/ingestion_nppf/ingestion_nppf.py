@@ -19,7 +19,6 @@ from gsdm.engine.engine import Engine
 
 # Import ingestion helpers
 import gsdm.engine.ingestion as ingestion
-import gsdm.engine.engine as gsdm_engine
 
 # Import debugging
 from gsdm.engine.debugging import *
@@ -656,7 +655,7 @@ def validate_generated_data(data, filename, engine):
     returned_value = engine.validate_data(data, filename)
 
     if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
-        gsdm_engine.logger.error("The file {} could not be validated".format(filename))
+        logger.error("The file {} could not be validated".format(filename))
         return False
     
     return True
@@ -692,4 +691,4 @@ if __name__ == "__main__":
 
     returned_value = command_process_file(file_path)
     
-    print(returned_value)
+    logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
