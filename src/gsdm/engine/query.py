@@ -25,7 +25,7 @@ from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 from sqlalchemy.dialects import postgresql
 
 # Import logging
-from gsdm.engine.logging import Log
+from gsdm.logging import Log
 
 logging = Log()
 logger = logging.logger

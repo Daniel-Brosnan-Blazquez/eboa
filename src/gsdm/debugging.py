@@ -11,7 +11,7 @@ from functools import wraps
 import datetime
 
 # Import logging
-from gsdm.engine.logging import Log
+from gsdm.logging import Log
 
 logging_module = Log()
 logger = logging_module.logger

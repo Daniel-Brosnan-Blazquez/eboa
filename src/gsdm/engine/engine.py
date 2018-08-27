@@ -46,10 +46,10 @@ from lxml import etree
 import gsdm.engine.parsing as parsing
 
 # Import logging
-from gsdm.engine.logging import Log
+from gsdm.logging import Log
 
 # Import debugging
-from gsdm.engine.debugging import debug, race_condition
+from gsdm.debugging import debug, race_condition
 
 # Import auxiliary functions
 from gsdm.engine.functions import get_resources_path, read_configuration
