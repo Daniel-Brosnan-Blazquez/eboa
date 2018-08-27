@@ -1606,7 +1606,7 @@ class Engine():
         """
         for event_uuid in list_event_uuids_aliases:
             # Get links that point to it
-            links = self.query.get_event_links([event_uuid])
+            links = self.query.get_event_links(event_uuids = [event_uuid])
             for link in links:
                 for alias in list_event_uuids_aliases[event_uuid]:
                     if link.event_uuid_link in list_event_uuids_aliases:
