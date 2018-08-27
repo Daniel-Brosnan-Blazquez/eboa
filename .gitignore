@@ -4,3 +4,5 @@ __pycache__
 .vagrant
 .coverage
 *egg*
+tmp
+log
