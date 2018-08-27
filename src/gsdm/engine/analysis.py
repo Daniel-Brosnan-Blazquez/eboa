@@ -75,7 +75,7 @@ class Analysis():
 
         return
 
-    def _adjust_column_width(self, ws):
+    def adjust_column_width(self, ws):
         """
         """
         for column in ws.columns:
@@ -106,7 +106,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
         
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return        
 
@@ -140,7 +140,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         filename = generate_gantt(y_labels_gantt, data_gantt)
         self.files_to_remove.append(filename)
@@ -171,7 +171,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -205,7 +205,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         filename = generate_gantt(y_labels_gantt, data_gantt)
         self.files_to_remove.append(filename)
@@ -236,7 +236,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -262,7 +262,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -288,7 +288,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -314,7 +314,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -340,7 +340,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -367,7 +367,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -393,7 +393,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -419,7 +419,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -445,7 +445,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -471,7 +471,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -497,7 +497,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -523,7 +523,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -549,7 +549,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -575,7 +575,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -601,7 +601,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -627,7 +627,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -653,7 +653,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -679,7 +679,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -705,7 +705,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 
@@ -731,7 +731,7 @@ class Analysis():
         row = ws.row_dimensions[1]
         row.font = Font(name="mono",bold="True")
 
-        self._adjust_column_width(ws)
+        self.adjust_column_width(ws)
 
         return
 

@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from .errors import GsdmResourcesPathNotAvailable
 
 # Import auxiliary functions
-from gsdm.datamodel.functions import *
+from gsdm.datamodel.functions import read_configuration
 
 config = read_configuration()
 

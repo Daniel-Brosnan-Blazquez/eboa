@@ -21,10 +21,10 @@ from gsdm.engine.engine import Engine
 import gsdm.engine.ingestion as ingestion
 
 # Import debugging
-from gsdm.engine.debugging import *
+from gsdm.engine.debugging import debug
 
 # Import logging
-from gsdm.engine.logging import *
+from gsdm.engine.logging import Log
 
 logging_module = Log()
 logger = logging_module.logger

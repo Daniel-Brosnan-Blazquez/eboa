@@ -25,13 +25,13 @@ from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 from sqlalchemy.dialects import postgresql
 
 # Import logging
-from gsdm.engine.logging import *
+from gsdm.engine.logging import Log
 
 logging = Log()
 logger = logging.logger
 
 # Import auxiliary functions
-from gsdm.engine.functions import *
+from gsdm.engine.functions import is_datetime
 
 class Query():
 

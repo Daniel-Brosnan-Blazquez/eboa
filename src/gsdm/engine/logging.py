@@ -12,7 +12,7 @@ import os
 import json
 
 # Import auxiliary functions
-from gsdm.engine.functions import *
+from gsdm.engine.functions import get_resources_path, read_configuration
 
 config = read_configuration()
 gsdm_resources_path = get_resources_path()

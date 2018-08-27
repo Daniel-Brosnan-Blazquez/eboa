@@ -10,7 +10,7 @@ from .errors import ErrorParsingDictionary
 from dateutil import parser
 
 # Import auxiliary functions
-from gsdm.engine.functions import *
+from gsdm.engine.functions import is_datetime
 
 def validate_data_dictionary(data):
     """
