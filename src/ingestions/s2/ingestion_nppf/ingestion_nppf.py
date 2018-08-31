@@ -650,15 +650,14 @@ def process_file(file_path):
 
     return data
 
-def validate_generated_data(data, filename, engine):
-
-    returned_value = engine.validate_data(data, filename)
-
+def insert_data_into_DDBB(data, filename, engine):
+    # Treat data
+    returned_value = engine.treat_data(data, filename)
     if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
         logger.error("The file {} could not be validated".format(filename))
-        return False
-    
-    return True
+    # end if
+
+    return returned_value
 
 def command_process_file(file_path):
     # Process file
@@ -667,12 +666,9 @@ def command_process_file(file_path):
     engine = Engine()
     # Validate data
     filename = os.path.basename(file_path)
-    is_valid = validate_generated_data(data, filename, engine)
 
-    if is_valid == True:
-        # Treat data
-        returned_value = engine.treat_data(data)
-    # end if
+    # Treat data
+    returned_value = insert_data_into_DDBB(data, filename, engine)
     
     return returned_value
 

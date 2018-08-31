@@ -20,7 +20,6 @@ from gsdm.engine.engine import Engine
 from gsdm.engine.query import Query
 from gsdm.datamodel.base import Session, engine, Base
 from gsdm.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
-from gsdm.engine.query import Query
 
 # Import datamodel
 from gsdm.datamodel.dim_signatures import DimSignature
@@ -36,6 +35,9 @@ from geoalchemy2.shape import to_shape
 
 # Import SQLalchemy entities
 from sqlalchemy import func
+
+# Import logging
+from gsdm.logging import Log
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
@@ -1987,19 +1989,19 @@ class TestEngine(unittest.TestCase):
         
         rest_of_event_uuids = [events_with_links[1].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[0].event_uuid])
+        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[0].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 3
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[1].event_uuid])
+        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[1].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 2
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[1].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links_pointing_to_events(rest_of_event_uuids, [events_with_links[2].event_uuid])
+        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[2].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 1
 
@@ -2585,10 +2587,6 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        returned_value = self.engine_gsdm.validate_data(data, "source.xml")
-
-        assert returned_value == None
-        
         returned_value = self.engine_gsdm.treat_data(data)
 
         assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
@@ -2916,7 +2914,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_simple_update.json"
         self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        returned_value = self.engine_gsdm.treat_data()
+        returned_value = self.engine_gsdm.treat_data(source = filename)
 
         assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
 
@@ -2945,7 +2943,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_wrong_structure.json"
         self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename, check_schema = False)
 
-        returned_value = self.engine_gsdm.validate_data(self.engine_gsdm.data, filename)
+        returned_value = self.engine_gsdm.treat_data(self.engine_gsdm.data, filename)
 
         assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
 
@@ -2956,4 +2954,61 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
 
+    def test_insert_event_simple_update_debug(self):
 
+        logging_module = Log()
+
+        previous_logging_level = None
+        if "GSDM_LOG_LEVEL" in os.environ:
+            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
+        # end if
+
+        os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
+
+        logging_module.define_logging_configuration()
+
+        self.engine_gsdm._initialize_context_insert_data()
+        data = {"dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            }
+        self.engine_gsdm.operation = data
+        self.engine_gsdm._insert_dim_signature()
+        self.engine_gsdm._insert_source()
+        self.engine_gsdm._insert_gauges()
+        self.engine_gsdm.session.commit()
+        self.engine_gsdm._insert_explicit_refs()
+        self.engine_gsdm.session.commit()
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
+        self.engine_gsdm._insert_events()
+        self.engine_gsdm.session.commit()
+        event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
+                                                      Event.stop == data["events"][0]["stop"],
+                                                      Event.gauge_id == gauge_ddbb.gauge_id,
+                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.visible == True).all()
+
+        assert len(event_ddbb) == 1
+
+        if previous_logging_level:
+            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
+        else:
+            del os.environ["GSDM_LOG_LEVEL"]
+        # end if
+        logging_module.define_logging_configuration()

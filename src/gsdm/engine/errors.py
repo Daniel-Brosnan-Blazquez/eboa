@@ -108,3 +108,13 @@ class LinksInconsistency(Error):
 
     def __init__(self, message):
         self.message = message
+
+class InputError(Error):
+    """Exception raised when the specified inputs have a wrong type.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

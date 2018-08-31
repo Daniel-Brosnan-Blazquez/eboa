@@ -100,11 +100,11 @@ class Engine():
         },
         "WRONG_VALUE": {
             "status": 7,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the value {} that cannot be converted to the specified type {}"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the value {} that cannot be converted to the specified type {}"
         },
         "ODD_NUMBER_OF_COORDINATES": {
             "status": 8,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines the geometry value {} with an odd number of coordinates"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the geometry value {} with an odd number of coordinates"
         },
         "FILE_NOT_VALID": {
             "status": 9,
@@ -112,7 +112,7 @@ class Engine():
         },
         "WRONG_GEOMETRY": {
             "status": 10,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which defines a wrong geometry. The exception raised has been the following: {}"
+            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines a wrong geometry. The exception raised has been the following: {}"
         },
         "DUPLICATED_EVENT_LINK_REF": {
             "status": 11,
@@ -188,6 +188,7 @@ class Engine():
                 self.session.commit()
                 self.session.close()
                 # Log the error
+                logger.error(str(e))
                 logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
                 return self.exit_codes["FILE_NOT_VALID"]["status"]
             # end if
@@ -406,7 +407,7 @@ class Engine():
     #####################
     # INSERTION METHODS #
     #####################
-    def validate_data(self, data, source):
+    def _validate_data(self, data, source = None):
         """
         Method to validate the data structure
         :param data: structure of data to validate
@@ -418,24 +419,34 @@ class Engine():
         try:
             parsing.validate_data_dictionary(data)
         except ErrorParsingDictionary as e:
-            self._insert_source_without_dim_signature(source)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
-            self.source.parse_error = str(e)
-            self.session.commit()
-            self.session.close()
-            # Log the error
-            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(source))
-            return self.exit_codes["FILE_NOT_VALID"]["status"]
+            if source != None:
+                self._insert_source_without_dim_signature(source)
+                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self.source.parse_error = str(e)
+                self.session.commit()
+                self.session.close()
+            # end if
+            logger.error(str(e))
+            return False
         # end try
 
-        return
+        return True
 
-    def treat_data(self, data = None):
+    def treat_data(self, data = None, source = None, validate = True):
         """
         Method to treat the data stored in self.data
         """
-        if data:
+        if data != None:
             self.data = data
+        # end if
+
+        if validate:
+            is_valid = self._validate_data(self.data, source = source)
+            if not is_valid:
+                # Log the error
+                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(source))
+                return self.exit_codes["FILE_NOT_VALID"]["status"]
+            # end if
         # end if
 
         for self.operation in self.data.get("operations") or []:
@@ -632,7 +643,6 @@ class Engine():
             self.source.dim_exec_version,
             n_events,
             n_annotations))
-        self.source.ingestion_time = datetime.datetime.now()
 
         # Remove if the content was inserted due to errors processing the input
         self.source.content_json = None
@@ -1352,6 +1362,7 @@ class Engine():
         if final:
             # Insert processing duration
             self.source.ingestion_duration = datetime.datetime.now() - self.ingestion_start
+            self.source.ingestion_time = datetime.datetime.now()
         # end if
 
         self.session.commit()
@@ -1606,7 +1617,7 @@ class Engine():
         """
         for event_uuid in list_event_uuids_aliases:
             # Get links that point to it
-            links = self.query.get_event_links(event_uuids = [event_uuid])
+            links = self.query.get_event_links(event_uuids = {"list": [event_uuid], "op": "in"})
             for link in links:
                 for alias in list_event_uuids_aliases[event_uuid]:
                     if link.event_uuid_link in list_event_uuids_aliases:
@@ -1649,7 +1660,7 @@ class Engine():
         :param list_keys_to_be_created: list of keys to be stored later inside the DDBB
         :type list_keys_to_be_created: list
         """
-        keys = self.query.get_event_keys([from_event_uuid])
+        keys = self.query.get_event_keys({"list": [from_event_uuid], "op": "in"})
         for key in keys:
             list_keys_to_be_created.append(dict(event_key = key.event_key,
                                                 event_uuid = to_event_uuid,

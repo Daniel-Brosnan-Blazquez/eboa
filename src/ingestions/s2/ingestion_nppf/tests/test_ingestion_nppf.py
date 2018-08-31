@@ -393,6 +393,6 @@ class TestEngine(unittest.TestCase):
 
         data = {"not_valid_data": "true"}
 
-        returned_value = ingestion.validate_generated_data(data, "NOT_VALID_FILE.EOF", self.engine_gsdm)
+        returned_value = ingestion.insert_data_into_DDBB(data, "NOT_VALID_FILE.EOF", self.engine_gsdm)
 
-        assert returned_value == False
+        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]

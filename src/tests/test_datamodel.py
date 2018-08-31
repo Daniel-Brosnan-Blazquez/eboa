@@ -22,7 +22,6 @@ from gsdm.datamodel.gauges import Gauge
 from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
 from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
-from gsdm.datamodel.errors import GsdmResourcesPathNotAvailable
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
