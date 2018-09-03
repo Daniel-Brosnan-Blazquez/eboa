@@ -13,16 +13,17 @@ from sqlalchemy.engine.default import DefaultDialect
 from sqlalchemy.sql.sqltypes import String, DateTime, NullType
 from sqlalchemy.dialects import postgresql
 
-class NonTextEncoder(json.JSONEncoder):
-    """
-    """
-    def default(self,obj):
-        try:
-            encoded_obj = json.JSONEncoder.default(self, obj)
-        except:
-            encoded_obj = str(obj)
+# Class for helping printing json
+# class NonTextEncoder(json.JSONEncoder):
+#     """
+#     """
+#     def default(self,obj):
+#         try:
+#             encoded_obj = json.JSONEncoder.default(self, obj)
+#         except:
+#             encoded_obj = str(obj)
 
-        return encoded_obj
+#         return encoded_obj
 
 class StringLiteral(String):
     """
