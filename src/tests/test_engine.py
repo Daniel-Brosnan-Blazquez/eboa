@@ -417,7 +417,8 @@ class TestEngine(unittest.TestCase):
         self.engine_gsdm._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
-            "links": [{"link": "EXPLICIT_REFERENCE_LINK"}]
+            "links": [{"name": "LINK_NAME",
+                       "link": "EXPLICIT_REFERENCE_LINK"}]
         }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
