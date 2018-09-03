@@ -7,7 +7,6 @@ module gsdm
 """
 # Import exceptions
 from .errors import ErrorParsingDictionary
-from dateutil import parser
 
 # Import auxiliary functions
 from gsdm.engine.functions import is_datetime
@@ -131,7 +130,6 @@ def _validate_source(data):
     if not type(data["name"]) == str:
         raise ErrorParsingDictionary("The tag name inside source structure has to be of type string")
     # end if
-    parser.parse(data["generation_time"])
     if not is_datetime(data["generation_time"]):
         raise ErrorParsingDictionary("The tag generation_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
     # end if
@@ -169,8 +167,8 @@ def _validate_explicit_references(data):
         # end if
 
         # Optional tags
-        if "group" in explicit_reference and not type(explicit_reference["name"]) == str:
-            raise ErrorParsingDictionary("The tag name inside explicit_references structure has to be of type string")
+        if "group" in explicit_reference and not type(explicit_reference["group"]) == str:
+            raise ErrorParsingDictionary("The tag group inside explicit_references structure has to be of type string")
         # end if
         if "links" in explicit_reference:
             _validate_explicit_reference_links(explicit_reference["links"])
@@ -411,6 +409,9 @@ def _validate_values(data):
     # end if
 
     for value in data:
+        if type(value) != dict:
+            raise ErrorParsingDictionary("The values have to be of type dict")
+        # end if
 
         check_items = [item in ["name", "type", "value", "values"] for item in value.keys()]
         if False in check_items:

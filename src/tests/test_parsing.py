@@ -459,3 +459,1803 @@ class TestParsing(unittest.TestCase):
             assert True == True
         except:
             assert False == True
+
+    def test_parse_insert_operation_source_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "validity_start": "2018-06-05T02:07:03",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_no_generation_time(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "name": "test_simple_update.json",
+                 "validity_start": "2018-06-05T02:07:03",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_no_validity_start(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "name": "test_simple_update.json",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_no_validity_stop(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "name": "test_simple_update.json",
+                 "validity_start": "2018-06-05T02:07:03",
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "name": ["not_a_string"],
+                 "validity_start": "2018-06-05T02:07:03",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_generation_time_no_date(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "not_a_date",
+                 "name": "test_simple_update.json",
+                 "validity_start": "2018-06-05T02:07:03",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_validity_start_no_date(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "name": "test_simple_update.json",
+                 "validity_start": "not_a_date",
+                 "validity_stop": "2018-06-05T02:07:36"
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_validity_stop_no_date(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "generation_time": "2018-06-06T13:33:29",
+                 "name": "test_simple_update.json",
+                 "validity_start": "2018-06-05T02:07:03",
+                 "validity_stop": "not_a_date"
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_source_no_allowed_items(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {
+                 "no_allowed_item": ""
+             }
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_not_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": "not_a_list"
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_list_not_containing_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": ["not_a_dict"]
+
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_dict_not_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{"not_a_valid_item": ""}]
+
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "links": [{"link": "EXPLICIT_REFERENCE_LINK"}]
+             }]
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": ["no_str"]
+             }]         
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_group_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "group": ["not_a_str"]
+             }]
+         }
+        ]}
+
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_links_no_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": "not_a_list"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_not_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{"not_valid_item": ""}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_no_link_inside(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_no_name_inside(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{"link": "EXPLICIT_REFERENCE_LINK"}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{"link": "EXPLICIT_REFERENCE_LINK",
+                            "name": ["no_str"]}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_link_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{"link": ["no_str"],
+                            "name": "LINK_NAME"}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_explicit_references_link_back_ref_no_valid(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "explicit_references": [{
+                 "name": "EXPLICIT_REFERENCE",
+                 "links": [{"link": "EXPLICIT_REFERENCE_LINK",
+                            "name": "LINK_NAME",
+                            "back_ref": "not_valid_value"}]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_no_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": "not_a_list"
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_list_no_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": ["not_a_dict"]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{"not_a_valid_item": ""}]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_no_gauge(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{}]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_no_start(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_no_stop(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_start_no_date(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "not_a_date",
+                 "stop": "2018-06-05T02:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_events_stop_no_date(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "no_date"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+
+    def test_parse_insert_operation_event_explicit_reference_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": ["no_str"],
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_key_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "key": ["no_str"],
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_no_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": "no_dict",
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"no_valid_item": ""},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_no_insertion_type(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"name": ["no_str"],
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_no_valid_insertion_type(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "NOT_VALID"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_gauge_system_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "explicit_reference": "EXPLICIT_REFERENCE",
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": ["no_str"],
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_no_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": "not_a_list"
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "not_valid_item": ""
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_no_link(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{"link_mode": "by_ref",
+                    "name": "EVENT_LINK_NAME"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": "EVENT_LINK",
+                    "link_mode": "by_ref"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_no_link_mode(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": "EVENT_LINK",
+                    "name": "EVENT_LINK_NAME"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": "EVENT_LINK",
+                    "link_mode": "by_ref",
+                    "name": ["no_str"]
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_link_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": ["no_str"],
+                    "link_mode": "by_ref",
+                    "name": "EVENT_LINK_NAME"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_link_mode_not_valid(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": "EVENT_LINK",
+                    "link_mode": "not_valid",
+                    "name": "EVENT_LINK_NAME"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_event_links_back_ref_not_valid(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "events": [{
+                 "gauge": {"name": "GAUGE_NAME",
+                           "system": "GAUGE_SYSTEM",
+                           "insertion_type": "SIMPLE_UPDATE"},
+                 "start": "2018-06-05T02:07:03",
+                 "stop": "2018-06-05T08:07:03",
+                "links": [{
+                    "link": "EVENT_LINK",
+                    "link_mode": "by_ref",
+                    "name": "EVENT_LINK_NAME",
+                    "back_ref": "not_valid"
+                }]
+             }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_no_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": "not_list"
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_contains_no_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+             "annotations": ["not_a_dict"]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{"not_valid_item": ""}]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_no_annotation_cnf(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE"
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_no_explicit_reference(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotations_explicit_reference_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": ["not_str"],
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotation_cnf_no_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"not_a_dict"}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotation_cnf_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"no_valid_item": ""}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotation_cnf_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"system": "GAUGE_SYSTEM"}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotation_cnf_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": ["no_str"],
+                                   "system": "GAUGE_SYSTEM"}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_annotation_cnf_system_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": ["no_str"]}
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_no_list(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": "no_list"
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_no_dict(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": ["no_dict"]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_no_valid_item(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"no_valid_item": "VALUES"}]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_no_name(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{}]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_no_type(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"name": "VALUES"}]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_name_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"type": "double",
+                            "name": ["no_str"]}]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_type_no_valid(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"name": "VALUES",
+                            "type": "not_valid_type"}]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_values_and_value(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "double",
+                                 "name": "NOT_A_DOUBLE",
+                                 "value": "NOT_A_DOUBLE"}],
+                            "value": ""
+                        }]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True
+
+    def test_parse_insert_operation_value_no_str(self):
+        data = {"operations": [
+            {"mode": "insert",
+             "dim_signature": {
+                 "exec": "test_exec1",
+                 "name": "test_dim_signature1",
+                 "version": "1.0"
+             },
+             "source": {"name": "source.xml",
+                        "generation_time": "2018-07-05T02:07:03",
+                        "validity_start": "2018-06-05T02:07:03",
+                        "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "NOT_A_STR",
+                                 "value": ["NOT_A_STR"]}]
+                        }]
+            }]
+         }
+        ]}
+        try:
+            parsing.validate_data_dictionary(data)
+        except ErrorParsingDictionary:
+            assert True == True
+        except:
+            assert False == True

@@ -16,6 +16,16 @@ from gsdm.engine.engine import Engine
 from gsdm.engine.query import Query
 from gsdm.datamodel.base import Session, engine, Base
 
+# Import datamodel
+from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.dim_signatures import DimSignature
+from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from gsdm.datamodel.gauges import Gauge
+from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from sqlalchemy.dialects import postgresql
+
 # Import exceptions
 from gsdm.engine.errors import InputError
 
@@ -1028,7 +1038,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(event) == 1
 
-        explicit_ref1 = self.query.get_explicit_references()
+        explicit_ref1 = self.query.get_explicit_refs()
 
         event = self.query.get_events(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
 
@@ -1832,7 +1842,7 @@ class TestQuery(unittest.TestCase):
         assert len(linked_events) == 4
 
         source1 = self.query.get_sources()
-        explicit_ref1 = self.query.get_explicit_references()
+        explicit_ref1 = self.query.get_explicit_refs()
         gauge1 = self.query.get_gauges()
         event1 = self.query.get_events(start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
         event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
@@ -1903,16 +1913,15 @@ class TestQuery(unittest.TestCase):
             }]}
         self.engine_gsdm.treat_data(data)
 
-        linked_events = self.query.get_linked_events()
+        linked_events = self.query.get_linked_events_join()
 
         assert len(linked_events) == 4
 
         source1 = self.query.get_sources()
-        explicit_ref1 = self.query.get_explicit_references()
+        explicit_ref1 = self.query.get_explicit_refs()
         gauge1 = self.query.get_gauges()
         event1 = self.query.get_events(start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
         event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
-
 
         linked_events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
                                                      source_like = {"str": "%", "op": "like"},
@@ -1925,7 +1934,6 @@ class TestQuery(unittest.TestCase):
                                                      stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                                      link_names = {"list": ["EVENT_LINK1"], "op": "in"},
                                                      link_name_like = {"str": "EVENT_LINK%", "op": "like"})
-
         assert len(linked_events) == 2
 
         linked_events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
@@ -2106,7 +2114,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation) == 1
 
-        explicit_ref1 = self.query.get_explicit_references()
+        explicit_ref1 = self.query.get_explicit_refs()
 
         annotation = self.query.get_annotations(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
 
@@ -2240,3 +2248,452 @@ class TestQuery(unittest.TestCase):
                                            values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}])
 
         assert len(annotation) == 1
+
+    def test_query_explicit_ref(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP",
+                "links": [{"name": "LINK_NAME",
+                    "link": "EXPLICIT_REFERENCE_LINK"}]
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                    
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        expl_group1 = self.query.get_explicit_refs_groups()
+
+        explicit_ref1 = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"})
+
+        assert len(explicit_ref1) == 1
+
+        explicit_refs = self.query.get_explicit_refs()
+
+        assert len(explicit_refs) == 2
+
+        explicit_reference = self.query.get_explicit_refs(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
+
+        assert len(explicit_reference) == 1
+
+        explicit_reference = self.query.get_explicit_refs(explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"})
+
+        assert len(explicit_reference) == 1
+
+        explicit_reference = self.query.get_explicit_refs(explicit_ref_like = {"str": "EXPLICIT_REFERENCE_L%", "op": "notlike"})
+
+        assert len(explicit_reference) == 1
+
+
+        explicit_reference = self.query.get_explicit_refs(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
+
+        assert len(explicit_reference) == 2
+
+        explicit_reference = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"},
+                                      explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+                                      explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"},
+                                      explicit_ref_like = {"str": "EXPLICIT%", "op": "like"},
+                                      ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
+
+        assert len(explicit_reference) == 1
+
+    def test_query_explicit_ref_join(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP"
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }],
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "annotation_cnf": {"name": "NAME",
+                                       "system": "SYSTEM"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        explicit_references = self.query.get_explicit_refs_join(explicit_refs = {"list": [data["operations"][0]["annotations"][0]["explicit_reference"]], "op": "in"},
+                                                                      explicit_ref_like = {"str": "EXPL%", "op": "like"},
+                                                                      gauge_names = {"list": [data["operations"][0]["events"][0]["gauge"]["name"]], "op": "in"},
+                                                                      gauge_name_like = {"str": "GAUGE%", "op": "like"},
+                                                                      gauge_systems = {"list": [data["operations"][0]["events"][0]["gauge"]["system"]], "op": "in"},
+                                                                      gauge_system_like = {"str": "GAUGE%", "op": "like"},
+                                                                      start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                                                                      stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                                                      annotation_cnf_names = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["name"]], "op": "in"},
+                                                                      annotation_cnf_name_like = {"str": "NAM%", "op": "like"},
+                                                                      annotation_cnf_systems = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"},
+                                                                      annotation_cnf_system_like = {"str": "SYS%", "op": "like"},
+                                                                      explicit_ref_ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
+                                                                      event_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
+                                                                      event_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
+                                                                      event_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      annotation_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
+                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
+                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      expl_groups = {"list": ["EXPL_GROUP"], "op": "in"},
+                                                                      expl_group_like = {"str": "EXPL_%", "op": "like"})
+
+        assert len(explicit_references) == 1
+
+    def test_query_explicit_ref_link(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "links": [{"name": "LINK_NAME",
+                           "link": "EXPLICIT_REFERENCE_EVENT",
+                           "back_ref": "true"}]
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        explicit_ref1 = self.query.get_explicit_refs(explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"})
+
+        explicit_ref2 = self.query.get_explicit_refs(explicit_refs = {"list": ["EXPLICIT_REFERENCE_EVENT"], "op": "in"})
+
+        explicit_ref_links = self.query.get_explicit_ref_links(link_name_like = {"str": "LINK_N%", "op": "like"})
+
+        assert len(explicit_ref_links) == 2
+
+        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+                                                explicit_ref_id_links = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
+                                                link_names = {"list": ["LINK_NAME"], "op": "in"},
+                                                link_name_like = {"str": "LINK_N%", "op": "like"})
+
+        assert len(explicit_ref_link) == 1
+
+        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_ids = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
+                                                explicit_ref_id_links = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+                                                link_names = {"list": ["LINK_NAME"], "op": "in"},
+                                                link_name_like = {"str": "LINK_N%", "op": "like"})
+
+        assert len(explicit_ref_link) == 1
+
+    def test_query_linked_explicit_ref(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "group": "EXPL_GROUP",
+                "name": "EXPLICIT_REFERENCE",
+                "links": [{"name": "LINK_NAME",
+                           "link": "EXPLICIT_REFERENCE_EVENT",
+                           "back_ref": "true"}]
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        linked_explicit_refs = self.query.get_linked_explicit_refs()
+
+        assert len(linked_explicit_refs) == 4
+
+        expl_group1 = self.query.get_explicit_refs_groups()
+
+        explicit_ref1 = self.query.get_explicit_refs(explicit_ref_like = {"str": "EXPLICIT_REFERENCE", "op": "like"})
+        explicit_ref2 = self.query.get_explicit_refs(explicit_ref_like = {"str": "EXPLICIT_REFERENCE", "op": "notlike"})
+
+        linked_explicit_refs = self.query.get_linked_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"},
+                                                            explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+                                                            explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"},
+                                                            explicit_ref_like = {"str": "EXPLICIT_REF%", "op": "like"},
+                                                            ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
+                                                            link_names = {"list": ["LINK_NAME"], "op": "in"},
+                                                            link_name_like = {"str": "LINK_NAM%", "op": "like"})
+
+        assert len(linked_explicit_refs) == 2 
+
+        linked_explicit_refs = self.query.get_linked_explicit_refs(explicit_ref_ids = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
+                                                            explicit_refs = {"list": ["EXPLICIT_REFERENCE_EVENT"], "op": "in"},
+                                                            explicit_ref_like = {"str": "EXPLICIT_REF%", "op": "like"},
+                                                            ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
+                                                            link_names = {"list": ["LINK_NAME"], "op": "in"},
+                                                            link_name_like = {"str": "LINK_NAM%", "op": "like"})
+
+        assert len(linked_explicit_refs) == 2
+
+    def test_query_linked_explicit_ref_join(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "group": "EXPL_GROUP",
+                "name": "EXPLICIT_REFERENCE",
+                "links": [{"name": "LINK_NAME",
+                           "link": "EXPLICIT_REFERENCE_EVENT",
+                           "back_ref": "true"}]
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }],
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "annotation_cnf": {"name": "NAME",
+                                       "system": "SYSTEM"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        linked_explicit_refs = self.query.get_linked_explicit_refs_join(explicit_refs = {"list": [data["operations"][0]["annotations"][0]["explicit_reference"]], "op": "in"},
+                                                                      explicit_ref_like = {"str": "EXPL%", "op": "like"},
+                                                                      annotation_cnf_names = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["name"]], "op": "in"},
+                                                                      annotation_cnf_name_like = {"str": "NAM%", "op": "like"},
+                                                                      annotation_cnf_systems = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"},
+                                                                      annotation_cnf_system_like = {"str": "SYS%", "op": "like"},
+                                                                      explicit_ref_ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
+                                                                      annotation_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
+                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
+                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      expl_groups = {"list": ["EXPL_GROUP"], "op": "in"},
+                                                                      expl_group_like = {"str": "EXPL_%", "op": "like"})
+
+        assert len(linked_explicit_refs) == 2
+
+    def test_query_explicit_ref_group(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP",
+            }]
+        }]}
+        self.engine_gsdm.treat_data(data)
+
+        group1 = self.query.get_explicit_refs_groups()
+
+        assert len(group1) == 1
+
+
+        group = self.query.get_explicit_refs_groups(group_ids = {"list": [group1[0].expl_ref_cnf_id],
+                                                                 "op": "in"},
+                                                    names = {"list": ["EXPL_GROUP"], "op": "in"},
+                                                    name_like = {"str": "EXPL_G%", "op": "like"})
+
+        assert len(group) == 1
+
+    def test_query_event_values(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"}]}]
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        event = self.query.get_events()
+
+        values = self.query.get_event_values()
+
+        assert len(values) == 3
+
+        values = self.query.get_event_values(event_uuids = [event[0].event_uuid])
+
+        assert len(values) == 3
+
+    def test_wrong_query_event_values(self):
+
+        result = False
+        try:
+            self.query.get_event_values(event_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
+        result = False
+        try:
+            self.query.get_event_values_type(EventText, event_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
+    def test_query_annotation_values(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
+                    "annotation_cnf": {"name": "NAME",
+                                       "system": "SYSTEM"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
+            }]}
+        self.engine_gsdm.treat_data(data)
+
+        annotation = self.query.get_annotations()
+
+        values = self.query.get_annotation_values()
+
+        assert len(values) == 3
+
+        values = self.query.get_annotation_values(annotation_uuids = [annotation[0].annotation_uuid])
+
+        assert len(values) == 3
+
+    def test_wrong_query_annotation_values(self):
+
+        result = False
+        try:
+            self.query.get_annotation_values(annotation_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
+        result = False
+        try:
+            self.query.get_annotation_values_type(AnnotationText, annotation_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
