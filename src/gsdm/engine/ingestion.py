@@ -26,11 +26,9 @@ def insert_event_for_ingestion(event, source, list_of_events):
         event["start"] = source["validity_start"]
     elif parser.parse(event["stop"]) > parser.parse(source["validity_stop"]) and parser.parse(event["start"]) < parser.parse(source["validity_stop"]) and parser.parse(event["start"]) >= parser.parse(source["validity_start"]):
         event["stop"] = source["validity_stop"]
-    elif parser.parse(event["start"]) < parser.parse(source["validity_start"]) or parser.parse(event["stop"]) > parser.parse(source["validity_stop"]):
-        event_before_validity = copy.deepcopy(event)
-        event_before_validity["stop"] = validity_start
-        event["start"] = validity_stop
-        list_of_events.append(event_before_validity)
+    elif parser.parse(event["start"]) < parser.parse(source["validity_start"]) and parser.parse(event["stop"]) > parser.parse(source["validity_stop"]):
+        event["start"] = source["validity_start"]
+        event["stop"] = source["validity_stop"]
     # end if
     list_of_events.append(event)
     return
