@@ -70,10 +70,10 @@ def is_valid_date_filters(date_filters, operators):
             raise InputError("The parameter date_filters must contain dictionaries.")
         # end if
         if len(date_filter.keys()) != 2 or not "date" in date_filter.keys() or not "op" in date_filter.keys():
-            raise InputError("Every date_filter should be a dictionary with keys date and operator.")
+            raise InputError("Every date_filter should be a dictionary with keys date and op.")
         # end if
         if not date_filter["op"] in operators:
-            raise InputError("The specified operator is not a valid operator.")
+            raise InputError("The specified op is not a valid operator.")
         # end if
         if not is_datetime(date_filter["date"]):
             raise InputError("The specified date is not a valid date.")
@@ -92,10 +92,10 @@ def is_valid_float_filters(float_filters, operators):
             raise InputError("The parameter float_filters must contain dictionaries.")
         # end if
         if len(float_filter.keys()) != 2 or not "float" in float_filter.keys() or not "op" in float_filter.keys():
-            raise InputError("Every float_filter should be a dictionary with keys float and operator.")
+            raise InputError("Every float_filter should be a dictionary with keys float and op.")
         # end if
         if not float_filter["op"] in operators:
-            raise InputError("The specified operator is not a valid operator.")
+            raise InputError("The specified op is not a valid operator.")
         # end if
         try:
             float(float_filter["float"])
@@ -116,10 +116,10 @@ def is_valid_string_filters(string_filters, operators):
             raise InputError("The parameter string_filters must contain dictionaries.")
         # end if
         if len(string_filter.keys()) != 2 or not "str" in string_filter.keys() or not "op" in string_filter.keys():
-            raise InputError("Every string_filter should be a dictionary with keys string and operator.")
+            raise InputError("Every string_filter should be a dictionary with keys string and op.")
         # end if
         if not string_filter["op"] in operators:
-            raise InputError("The specified operator is not a valid operator.")
+            raise InputError("The specified op is not a valid operator.")
         # end if
         if type(string_filter["str"]) != str:
             raise InputError("The specified str must be a string.")
@@ -138,10 +138,10 @@ def is_valid_value_filters(value_filters, operators):
             raise InputError("The parameter value_filters must contain dictionaries.")
         # end if
         if len(value_filter.keys()) != 3 or not "value" in value_filter.keys() or not "op" in value_filter.keys() or not "type" in value_filter.keys():
-            raise InputError("Every value_filter should be a dictionary with keys value, type and operator.")
+            raise InputError("Every value_filter should be a dictionary with keys value, type and op.")
         # end if
         if not value_filter["op"] in operators:
-            raise InputError("The specified operator is not a valid operator.")
+            raise InputError("The specified op is not a valid operator.")
         # end if
         if type(value_filter["value"]) != str:
             raise InputError("The specified value must be a string.")
@@ -210,10 +210,10 @@ def is_valid_operator_list(operator_list):
         raise InputError("The parameter operator_list must be a dictionary.")
     # end if
     if len(operator_list.keys()) != 2 or not "op" in operator_list.keys() or not "list" in operator_list.keys():
-        raise InputError("The parameter operator_list should be a dictionary with keys operator and list.")
+        raise InputError("The parameter operator_list should be a dictionary with keys op and list.")
     # end if
     if type(operator_list["op"]) != str or not operator_list["op"] in ["in", "notin"]:
-        raise InputError("The specified operator must be a string equal to 'in' or 'notin'.")
+        raise InputError("The specified op must be a string equal to 'in' or 'notin'.")
     # end if
     if type(operator_list["list"]) != list:
         raise InputError("The specified list must be a list of strings.")
@@ -232,10 +232,10 @@ def is_valid_operator_like(operator_like):
         raise InputError("The parameter operator_like must be a dictionary.")
     # end if
     if len(operator_like.keys()) != 2 or not "op" in operator_like.keys() or not "str" in operator_like.keys():
-        raise InputError("The parameter operator_like should be a dictionary with keys operator and string.")
+        raise InputError("The parameter operator_like should be a dictionary with keys op and string.")
     # end if
     if type(operator_like["op"]) != str or not operator_like["op"] in ["like", "notlike"]:
-        raise InputError("The specified operator must be a string equal to 'like' or 'notlike'.")
+        raise InputError("The specified op must be a string equal to 'like' or 'notlike'.")
     # end if
     if type(operator_like["str"]) != str:
         raise InputError("The specified str must be a string.")
