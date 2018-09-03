@@ -37,7 +37,7 @@ missions = ["S2A", "S2B"]
 
 def generate_imaging_analysis(workbook, query):
 
-    imaging_events_and_linked = query.get_linked_events_join(gauge_name = "CUT_IMAGING%", start_cmp = end, start_operator = "<", stop_cmp = begin, stop_operator = ">", link_names = ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"])
+    imaging_events_and_linked = query.get_linked_events_join(gauge_name_like = {"str": "CUT_IMAGING%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"], "op": "in"})
 
     imaging_events_and_linked.sort(key=lambda k: k.__dict__["start"])
 
