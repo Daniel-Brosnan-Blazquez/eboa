@@ -1,0 +1,118 @@
+\chapter{\acrshort{gsdm} testing environment}\label{c:install_gsdm}
+
+Inside the repository of the \acrshort{gsdm} component there is a Vagrant configuration file so that the environment for testing can be created automatically.
+
+For doing so, follow the next steps:
+
+\begin{enumerate}
+
+\item Clone the repository
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ git clone https://bitbucket.org/dbrosnan/gsdm.git
+
+\end{lstlisting}
+
+\item Enter into the repository folder
+
+\begin{lstlisting}[breaklines=true, style=c]
+
+$ cd (PATH_TO_GSDM)/gsdm
+
+\end{lstlisting}
+
+\item Run vagrant (see installation instructions in the referenced link)
+
+\begin{lstlisting}[breaklines=true, style=c]
+
+vagrant up
+
+\end{lstlisting}
+
+\end{enumerate}
+
+This will create a virtual machine with all you need to test the GSDM component.
+
+In order to check that the component has been correctly installed, run the following commands to execute the automated tests:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ vagrant/vagrant ssh
+$ cd /vagrant/src/
+$ GSDM_RESOURCES_PATH="/vagrant/src/" py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=gsdm tests
+
+\end{lstlisting}
+
+In order to check the coverage report, check Annex 1 and install firefox and open the code coverage analysis report:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ sudo yum install firefox
+$ firefox tests/tmp/code_coverage_analysis/index.html
+
+\end{lstlisting}
+
+\section {Connecting to vagrant with X11 forwarding}
+
+Read these links for detailed information:
+
+\begin{itemize}
+
+\item \href{https://coderwall.com/p/ozhfva/run-graphical-programs-within-vagrantboxes}{Run graphical programs within Vagrantboxes} \\
+
+\end{itemize}
+\begin{itemize}
+
+\item \href{https://www.cyberciti.biz/faq/how-to-fix-x11-forwarding-request-failed-on-channel-0/}{Install X authority file utility} \\
+
+\end{itemize}
+
+Allow X-Forwarding in your Vagrantfile:
+
+To use X-Forwarding, you first need to allow it from within your Vagrantfile, like this:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+Vagrant.configure(2) do |config|
+  ...
+  config.ssh.forward_x11 = true
+end
+
+\end{lstlisting}
+
+To be able to execute GUIs in the ssh session, you have to install xauth inside the virtual machine created:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+sudo yum install xauth
+
+\end{lstlisting}
+
+Now on your host run this:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ vagrant ssh-config
+Host some_site
+  HostName 127.0.0.1
+  User vagrant
+  Port 2222
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile vagrant.d/insecure_private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+  ForwardX11 yes
+
+\end{lstlisting}
+
+Now you can ssh with X11 forwarding:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+ssh -X -p 2222 vagrant@localhost -i vagrant.d/insecure_private_key
+
+\end{lstlisting}
+

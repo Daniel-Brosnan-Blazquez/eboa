@@ -1,0 +1,125 @@
+\chapter{Create ingestion processor}\label{c:intro}
+
+In the following chapter, the process of creating a processor for ingesting data to the gsdm module is explained.
+
+The explanation is based on an example for ingesting S2 data from the planning system (data received on NPPF files, xml formatted).
+
+The example will use the python interface of the component, as the target version of the gsdm used in this explanation is the 0.1.0 and it is the only interface available.
+
+\section{Installing \acrshort{gsdm} on vagrant}
+
+See the details in section \ref{c:install_gsdm}.
+
+\section{Structure of the folders and location of ingestion processors inside the project}
+
+The ingestion processors are being located for the moment in the folder:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+src/ingestions
+
+\end{lstlisting}
+
+Inside this folder there is the folder s2 where the example explained here can be located:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+src/ingestions/s2/ingestion_nppf
+
+\end{lstlisting}
+
+There, the code of the processor, a folder for automated tests and a folder for input examples can be found:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+ingestion_nppf.py
+input_files
+tests
+
+\end{lstlisting}
+
+\section{Processor code}
+
+The processor code has a main method:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+def process_file(file_path):
+    """Function to process the file and insert its relevant information
+    into the DDBB of the gsdm
+
+    :param file_path: path to the file to be processed
+    :type file_path: str
+    """
+
+\end{lstlisting}
+
+Which should be provided as interface of the processor as in future versions it will be the main entry point to the processor.
+
+This method shall extract from the file passed by parameter all the interesting information to the system.
+
+The data extracted has the structure of a python dictionary which can be validated against a schema implemented in the engine side of the gsdm (method gsdm.engine.engine.validate\_data).
+
+An example of the data structure, that has to follow the data to be inserted into the gsdm, can be seen in this file.
+
+For the version of this example of an ingestion processor, this method is called from the same phyton file from another method that is called from the main entry point to the file:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+def command_process_file(file_path):
+    # Process file
+    data = process_file(file_path)
+
+
+if __name__ == "__main__":
+...
+
+    returned_value = command_process_file(file_path)
+
+\end{lstlisting}
+
+Once the data has been extracted the method command\_process\_file(file\_path) will interface with the Engine of the gsdm to insert the data:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+    # Process file
+    data = process_file(file_path)
+
+    engine = Engine()
+    # Validate data
+    filename = os.path.basename(file_path)
+
+    # Treat data
+    returned_value = insert_data_into_DDBB(data, filename, engine)
+
+\end{lstlisting}
+
+\section{Manual execution of the processor}
+
+The processor can be manually executed passing the file path to be processed as follows:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ cd /vagrant/src/ingestions/s2/ingestion_nppf
+$ GSDM_RESOURCES_PATH="/vagrant/src/" python3 ingestion_nppf.py -f input_files/S2B_OPER_MPL__NPPF__20180727T110000_20180813T140000_0001.EOF
+
+\end{lstlisting}
+
+\section{Automated tests}
+
+Inside the folder tests, there should be a python file which would cover the unit testing of the processor. For the example explained in this page, to execute the tests, run the following command:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ cd /vagrant/src/ingestions/s2/ingestion_nppf
+$ GSDM_RESOURCES_PATH="/vagrant/src/" py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=ingestions tests/
+
+\end{lstlisting}
+
+Then, the code coverage analysis may be checked (following these instructions for X activation through vagrant) with the following command:
+
+\begin{lstlisting}[breaklines=true, style=c]]
+
+$ firefox tests/tmp/code_coverage_analysis/index.html
+
+\end{lstlisting}

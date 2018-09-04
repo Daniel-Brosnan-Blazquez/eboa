@@ -1,0 +1,128 @@
+\documentclass[twoside,a4paper,12pt]{book}
+\usepackage[twoside,a4paper,top=3.5cm, left=4cm, width=15cm, height=22.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{appendix}
+\usepackage{fancyhdr}
+% package for providing the size of columns on tables
+\usepackage{array}
+\usepackage{color}
+% Package for avoiding the issue with the option hidelinks of the package hyperref
+\usepackage[colorlinks=true,
+            linkcolor=black,
+            urlcolor=blue,
+            citecolor=black,
+            hyperfootnotes=true]{hyperref}
+\usepackage{caption}
+\usepackage{eurosym}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage[nohyperlinks,smaller,withpage]{acronym} 
+\usepackage{enumitem}
+\usepackage[acronym]{glossaries}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+\newcommand{\ada}[1]{\lstinline[style=ada,
+keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]&#1&}
+\newcommand{\asm}[1]{\lstinline[style=sparc,
+keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
+\newcommand{\prog}[1]{\asm{#1}}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.8,0.8,0.8}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% json style
+\lstset{
+    string=[s]{"}{"},
+    stringstyle=\color{blue},
+    comment=[l]{:},
+    commentstyle=\color{black},
+}
+
+\lstdefinestyle{c}{
+       language=c,
+        basicstyle=\footnotesize\ttfamily,
+        aboveskip= \bigskipamount,
+        belowskip= \bigskipamount,
+        abovecaptionskip= \medskipamount,
+        belowcaptionskip=\bigskipamount,
+        xleftmargin=\parindent,
+        columns=flexible
+}
+
+\lstdefinestyle{xml}{
+       language=xml,
+        basicstyle=\sffamily,
+        aboveskip= \bigskipamount,
+        belowskip= \bigskipamount,
+        abovecaptionskip= \medskipamount,
+        belowcaptionskip=\bigskipamount,
+        xleftmargin=\parindent,
+        columns=flexible
+}
+
+\makeglossaries
+
+
+\begin{document}
+
+\input{acronyms}
+
+\input{glossary}
+
+\pagestyle{empty}
+\input{front.tex}
+\cleardoublepage
+
+\setcounter{page}{1}
+\pagenumbering{roman}
+
+\frontmatter % Introduction, indexes ...
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[RE]{\slshape \rightmark} 
+\fancyhead[LO]{\slshape \leftmark}  
+\fancyfoot{}
+\fancyfoot[C]{\lowercase{\thepage}}
+
+% Introduction
+\input{introduction.tex}
+
+% Purpose and scope
+\input{purpose_scope.tex}
+
+% Data model
+\input{data_model.tex}
+
+% Testing environment
+\input{create_testing_environment.tex}
+
+% Create ingestion processor
+\input{create_ingestion_processor.tex}
+
+\begin{appendices}
+
+\input{why_uuids.tex}
+
+\end{appendices}
+
+\backmatter 
+
+\clearpage
+
+\printglossary[type=\acronymtype]
+
+\printglossary
+
+\clearpage
+
+\end{document}
