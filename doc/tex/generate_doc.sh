@@ -6,8 +6,8 @@
 #
 # module gsdm
 #################################################################
-USAGE="Usage: `basename $0` -f pdf_file [-k]
-Optional parameters:
+USAGE="Usage: `basename $0` -f pdf_file [-k]\n
+Optional parameters:\n
 -k: is set it indicates the script to keep the build directory
 "
 PDF_FILE=""
@@ -27,8 +27,8 @@ done
 # Check that option -f has been specified
 if [ "$PDF_FILE" == "" ];
 then
-    echo "ERROR: The option -f has to be provided"
-    echo $USAGE
+    echo -e "ERROR: The option -f has to be provided"
+    echo -e $USAGE
     exit -1
 fi
 
@@ -49,7 +49,12 @@ makeglossaries -s build/doc.ist build/doc &> /dev/null
 pdflatex -output-directory build -halt-on-error -interaction=nonstopmode doc.tex |grep -i "warning\|error"
 
 # Move generated pdf to its 
-mv build/doc.pdf $PDF_FILE
+if [ -f build/doc.pdf ];
+then
+    mv build/doc.pdf $PDF_FILE
+else
+    echo -e "ERROR: There was an error on the generation of the PDF.\nIs pdflatex installed?"
+fi
 
 if [ "$KEEP_BUILD" != "YES" ];
 then
