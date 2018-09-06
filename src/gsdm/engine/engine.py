@@ -435,6 +435,12 @@ class Engine():
     def treat_data(self, data = None, source = None, validate = True):
         """
         Method to treat the data stored in self.data
+        :param data: structure of data to treat
+        :type data: dict 
+        :param source: name of the source of the data
+        :type source: str
+        :param validate: flag to indicate if the schema check has to be performed
+        :type validate: bool
         """
         if data != None:
             self.data = data
@@ -1028,7 +1034,7 @@ class Engine():
             elif gauge_info["insertion_type"] == "ERASE_and_REPLACE":
                 self.erase_and_replace_gauges[gauge.gauge_id] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
-                self.keys_events[key] = None
+                self.keys_events[(key, str(self.dim_signature.dim_signature_id))] = None
             # end if
             explicit_ref_id = None
             if explicit_ref != None:
@@ -1473,8 +1479,9 @@ class Engine():
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
                             del list_split_events[event.event_uuid]
+                        else:
+                            event.visible = True
                         # end if
-                        event.visible = True
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
@@ -1516,6 +1523,7 @@ class Engine():
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             # end if
                             if event.stop > validity_stop:
+                                event.visible = False
                                 list_split_events[event.event_uuid] = event
                             else:
                                 list_events_to_be_removed.append(event.event_uuid)
@@ -1675,16 +1683,21 @@ class Engine():
         """
         Method to remove events that were overwritten by other events due to EVENT_KEYS insertion mode
         """
-        for key in self.keys_events:
-            max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key)
+        for key_pair in self.keys_events:
+            key = key_pair[0]
+            dim_signature_id = key_pair[1]
+
+            max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key, DimProcessing.dim_signature_id == dim_signature_id)
 
             event_max_generation_time = self.session.query(Event).join(DimProcessing).join(EventKey).filter(DimProcessing.generation_time == max_generation_time,
-                                                                                                            EventKey.event_key == key).first()
+                                                                                                            EventKey.event_key == key,
+                                                                                                            DimProcessing.dim_signature_id == dim_signature_id).first()
 
             # Delete deprecated events
             events_uuids_to_delete = self.session.query(Event.event_uuid).join(DimProcessing).join(EventKey).filter(Event.processing_uuid != event_max_generation_time.processing_uuid,
                                                                                                                     DimProcessing.generation_time <= max_generation_time,
-                                                                                                                    EventKey.event_key == key)
+                                                                                                                    EventKey.event_key == key,
+                                                                                                                    DimProcessing.dim_signature_id == dim_signature_id)
             self.session.query(Event).filter(Event.event_uuid == events_uuids_to_delete).delete(synchronize_session=False)
 
             # Make events visible

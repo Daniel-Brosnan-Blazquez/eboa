@@ -794,6 +794,95 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_keys) == 1
 
+    def test_insert_event_event_keys_with_diferent_dim_signature(self):
+
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_gsdm.treat_data(data)
+
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"], DimSignature.dim_exec_name == data["operations"][0]["dim_signature"]["exec"]).first()
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["operations"][0]["events"][0]["explicit_reference"]).first()
+        event_ddbb = self.session.query(Event).filter(Event.start == data["operations"][0]["events"][0]["start"],
+                                                      Event.stop == data["operations"][0]["events"][0]["stop"],
+                                                      Event.gauge_id == gauge_ddbb.gauge_id,
+                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.visible == True).all()
+
+        event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["operations"][0]["events"][0]["key"],
+                                                         EventKey.event_uuid == event_ddbb[0].event_uuid,
+                                                         EventKey.visible == True).all()
+
+        assert len(event_keys) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature2",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME2",
+                              "system": "GAUGE_SYSTEM2",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_gsdm.treat_data(data)
+
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
+        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"], DimSignature.dim_exec_name == data["operations"][0]["dim_signature"]["exec"]).first()
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["operations"][0]["events"][0]["explicit_reference"]).first()
+        event_ddbb = self.session.query(Event).filter(Event.start == data["operations"][0]["events"][0]["start"],
+                                                      Event.stop == data["operations"][0]["events"][0]["stop"],
+                                                      Event.gauge_id == gauge_ddbb.gauge_id,
+                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.visible == True).all()
+
+        event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["operations"][0]["events"][0]["key"],
+                                                         EventKey.event_uuid == event_ddbb[0].event_uuid,
+                                                         EventKey.visible == True).all()
+
+        assert len(event_keys) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 2
+
     def test_insert_event_simple_update_values(self):
 
         self.engine_gsdm._initialize_context_insert_data()
