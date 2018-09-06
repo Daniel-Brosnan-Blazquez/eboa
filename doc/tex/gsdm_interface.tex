@@ -27,6 +27,8 @@ The entry point for inserting data using the Python interface is the following m
         """  
 \end{lstlisting}
 
+So, for example for inserting data using the python interface the following code could be executed:
+
 \begin{lstlisting}[style=python]
 from gsdm.engine.engine import Engine
 
@@ -59,6 +61,18 @@ data = {"operations": [{
 returned_value = engine.treat_data(data)
 \end{lstlisting}
 
+And the result would be the insertion of:
+\begin{itemize}
+\item One entry into the table dim\_signature\_tb
+\item One entry into the table dim\_processing\_tb
+\item One entry into the table dim\_processing\_status\_tb
+\item One entry into the table event\_tb
+\item One entry into the table explicit\_reference\_tb
+\item One entry into the table gauge\_cnf\_tb
+\item One entry into the table annotation\_tb
+\item One entry into the table annotation\_cnf\_tb
+\end{itemize}
+
 \section{Events ingestion}
 
 Events can be inserted following 3 different methods associated to their gauges:
@@ -71,7 +85,9 @@ Events can be inserted following 3 different methods associated to their gauges:
 
 \subsection {ERASE\_and\_REPLACE method}
 
-An example is shown in figure \ref{fg:erase_and_replace_algorithm} and the behaviour in table \ref{tb:erase_and_replace_algorithm}. The bubbles in the figure represent events and the line beneath them the validity period of their corresponding source of information. All the events have the same gauge configuration. The steps of the algorithm are as follows:
+In this section, an example of the behaviour is shown in figure \ref{fg:erase_and_replace_algorithm} and described in table \ref{tb:erase_and_replace_algorithm}. The bubbles in the figure represent events and the line beneath them the validity period of their corresponding source of information. All the events have the same gauge configuration.
+The events are firstly inserted flagged as not visible. Then, the method, after applying the algorithm described bellow, is in charge of deleting the events or making them visible.
+The steps of the algorithm are as follows:
 
 \begin{enumerate}
 
@@ -119,3 +135,38 @@ Period & List to be created  & List to be created not ending on the current peri
 \caption{Table showing the steps done by the erase and replace algorithm}
 \label{tb:erase_and_replace_algorithm}
 \end{table}
+
+
+\subsection {EVENT\_KEYS method}
+
+The algorithm used to insert events using the method EVENT\_KEYS is a lot less complex than the algorithm used to insert events using the method ERASE\_and\_REPLACE.
+The events and the associated keys are firstly inserted flagged as not visible. The method after applying the algorithm described bellow is in charge of deleting the events or making them visible, as well as making the event keys visible.
+This method considers the generation time of the source associated to the events just inserted and its DIM signature assciated joint with every event key.
+The steps are as follows:
+
+\begin{enumerate}
+
+\item The algorithm iterates over the pairs (event key, DIM signature UUID)
+\item \label{for_each_pair} For each pair associated to events inserted with mode EVENT\_KEYS, the algorithm gets the first event associated to the event key and the DIM signature UUID which source has the maximum generation time
+\item The algorithm deletes the rest of events associated to the event key and the DIM signature UUID and which source is different than the source of the previous event
+\item The algorithm makes visible the events and the event keys associated
+\item The algorithm goes to step \ref{for_each_pair}
+\end{enumerate}
+
+\section{Annotations ingestion}
+
+Annotations are inserted associated to their explicit references and their annotation configuration.
+The method followed for inserting annotations is similar to the method used for inserting events using the method EVENT\_KEYS.
+The annotations are firstly inserted flagged as not visible. The method after applying the algorithm described bellow is in charge of deleting the annotations or making them visible.
+The steps are as follows:
+
+\begin{enumerate}
+
+\item The algorithm iterates over the tubles (annotation configuration name, annotation configuration system, explicit reference)
+\item \label{for_each_tuple} For each tuple associated to an inserted annotation inserted, the algorithm gets the first annotation associated to the annotation configuration and the explicit reference which source has the maximum generation time
+\item The algorithm deletes the rest of annotations associated to the annotation configuration and the explicit reference and which source is different than the source of the previous annotation
+\item The algorithm makes visible the annotations
+\item The algorithm goes to step \ref{for_each_tuple}
+\end{enumerate}
+
+
