@@ -1,5 +1,5 @@
 \documentclass[twoside,a4paper,12pt]{book}
-\usepackage[twoside,a4paper,top=3.5cm, left=4cm, width=15cm, height=22.5cm]{geometry}
+\usepackage[twoside,a4paper,top=2.5cm, left=2cm, width=17cm, height=22.5cm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{float}
@@ -7,6 +7,7 @@
 \usepackage{fancyhdr}
 % package for providing the size of columns on tables
 \usepackage{array}
+\usepackage{xcolor}
 \usepackage{color}
 % Package for avoiding the issue with the option hidelinks of the package hyperref
 \usepackage[colorlinks=true,
@@ -17,11 +18,14 @@
 \usepackage{caption}
 \usepackage{eurosym}
 \usepackage{multirow}
+% Package for providing highlights on code
 \usepackage{listings}
 \usepackage[nohyperlinks,smaller,withpage]{acronym} 
 \usepackage{enumitem}
 \usepackage[acronym]{glossaries}
 \usepackage{mathtools}
+% Package for version history
+\usepackage{vhistory}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \newcommand{\ada}[1]{\lstinline[style=ada,
@@ -33,6 +37,11 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.8,0.8,0.8}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{purple2}{RGB}{153,0,153} % there's actually no standard purple
+\definecolor{green2}{RGB}{0,153,0} % a darker green
+
+% Define column type for vertical and horizontal alignment
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
 
 % json style
 \lstset{
@@ -42,27 +51,49 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
     commentstyle=\color{black},
 }
 
-\lstdefinestyle{c}{
-       language=c,
-        basicstyle=\footnotesize\ttfamily,
-        aboveskip= \bigskipamount,
-        belowskip= \bigskipamount,
-        abovecaptionskip= \medskipamount,
-        belowcaptionskip=\bigskipamount,
-        xleftmargin=\parindent,
-        columns=flexible
-}
-
 \lstdefinestyle{xml}{
        language=xml,
-        basicstyle=\sffamily,
+        basicstyle=\ttfamily,
         aboveskip= \bigskipamount,
         belowskip= \bigskipamount,
         abovecaptionskip= \medskipamount,
         belowcaptionskip=\bigskipamount,
         xleftmargin=\parindent,
-        columns=flexible
+        columns=flexible,
+        numbers=left,
+        breaklines=true,
+        showstringspaces=false
 }
+
+
+\lstdefinestyle{bash}{
+       language=bash,
+        basicstyle=\ttfamily,
+        aboveskip= \bigskipamount,
+        belowskip= \bigskipamount,
+        abovecaptionskip= \medskipamount,
+        belowcaptionskip=\bigskipamount,
+        xleftmargin=\parindent,
+        columns=flexible,
+        showstringspaces=false,
+        breaklines=true,
+        showstringspaces=false
+}
+
+\lstdefinestyle{python}{%
+  language=Python,                   % the language
+  basicstyle=\ttfamily,   % size of the fonts for the code
+  % Color settings to match IDLE style
+  keywordstyle=\color{orange},       % core keywords
+  keywordstyle={[2]\color{purple2}}, % built-ins
+  stringstyle=\color{green2},
+  commentstyle=\color{red},
+  upquote=true,                      % requires textcomp,
+  numbers=left,
+  breaklines=true,
+  showstringspaces=false
+}
+
 
 \makeglossaries
 
@@ -82,6 +113,9 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 
 \frontmatter % Introduction, indexes ...
 
+% Introduction
+\input{history.tex}
+
 \tableofcontents
 \listoffigures
 \listoftables
@@ -93,6 +127,7 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 \fancyhead[LO]{\slshape \leftmark}  
 \fancyfoot{}
 \fancyfoot[C]{\lowercase{\thepage}}
+\setlength{\headheight}{15pt}
 
 % Introduction
 \input{introduction.tex}
@@ -103,6 +138,9 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 % Data model
 \input{data_model.tex}
 
+% GSDM interface
+\input{gsdm_interface.tex}
+
 % Testing environment
 \input{create_testing_environment.tex}
 
@@ -111,6 +149,13 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 
 \begin{appendices}
 
+% XML schema
+\input{xml_schema.tex}
+
+% JSON and Python schema
+\input{json_schema.tex}
+
+% Why using UUIDs
 \input{why_uuids.tex}
 
 \end{appendices}
@@ -121,7 +166,7 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
 
 \printglossary[type=\acronymtype]
 
-\printglossary
+% \printglossary
 
 \clearpage
 

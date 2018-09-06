@@ -8,7 +8,7 @@ A solution implemented in the data model of the \acrshort{gsdm} is using \acrsho
 
 The version 1 of the UUID (according to RFC 4122) is composed by the following fields: 
 
-\begin{lstlisting}[breaklines=true, style=c, caption={XML input example for showing the values structure management.}]
+\begin{lstlisting}[style=bash, caption={XML input example for showing the values structure management.}]
 
         time_low                the first 32 bits of the UUID
         time_mid                the next 16 bits of the UUID
@@ -24,7 +24,7 @@ The version 1 of the UUID (according to RFC 4122) is composed by the following f
 
 Where the implementation of Python of this version according to the RFC is thread safe due to the following code:
 
-\begin{lstlisting}[breaklines=true, style=c, caption={Python code showing how the algorithm provides a mechanism for using UUIDs in a thread safe manner.}]
+\begin{lstlisting}[style=python, caption={Python code showing how the algorithm provides a mechanism for using UUIDs in a thread safe manner.}]
 
     global _last_timestamp
     import time
