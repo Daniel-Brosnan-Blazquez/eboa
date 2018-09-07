@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from .base import Base
+from gsdm.datamodel.base import Base
 
 class Event(Base):
     __tablename__ = 'event_tb'

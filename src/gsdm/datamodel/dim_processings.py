@@ -10,7 +10,7 @@ from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from gsdm.datamodel.base import Base
 
 class DimProcessing(Base):
     __tablename__ = 'dim_processing_tb'

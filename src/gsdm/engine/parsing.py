@@ -6,7 +6,7 @@ Written by DEIMOS Space S.L. (dibb)
 module gsdm
 """
 # Import exceptions
-from .errors import ErrorParsingDictionary
+from gsdm.engine.errors import ErrorParsingDictionary
 
 # Import auxiliary functions
 from gsdm.engine.functions import is_datetime

@@ -10,7 +10,7 @@ from sqlalchemy import Column, Table, ForeignKey, Text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from gsdm.datamodel.base import Base
 
 class Gauge(Base):
     __tablename__ = 'gauge_cnf_tb'

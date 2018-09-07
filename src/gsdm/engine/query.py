@@ -26,7 +26,7 @@ from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 from sqlalchemy.dialects import postgresql
 
 # Import exceptions
-from .errors import InputError
+from gsdm.engine.errors import InputError
 
 # Import auxiliary functions
 from gsdm.engine.functions import is_datetime, is_valid_date_filters, is_valid_float_filters, is_valid_string_filters, is_valid_value_filters, is_valid_values_names_type, is_valid_values_name_type_like, is_valid_operator_list, is_valid_operator_like

@@ -10,7 +10,7 @@ import os
 import json
 
 # Import exceptions
-from .errors import GsdmResourcesPathNotAvailable
+from gsdm.datamodel.errors import GsdmResourcesPathNotAvailable
 
 # Auxiliary functions
 def get_resources_path():

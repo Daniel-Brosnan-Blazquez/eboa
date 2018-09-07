@@ -10,7 +10,7 @@ from sqlalchemy import Column, Table, ForeignKey, Text, DateTime
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from .base import Base
+from gsdm.datamodel.base import Base
 
 class ExplicitRef(Base):
     __tablename__ = 'explicit_ref_tb'

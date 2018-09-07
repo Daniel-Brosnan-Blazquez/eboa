@@ -11,7 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Import exceptions
-from .errors import GsdmResourcesPathNotAvailable
+from gsdm.datamodel.errors import GsdmResourcesPathNotAvailable
 
 # Import auxiliary functions
 from gsdm.datamodel.functions import read_configuration

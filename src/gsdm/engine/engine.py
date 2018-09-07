@@ -25,7 +25,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from .errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
+from gsdm.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
 
 # Import datamodel
 from gsdm.datamodel.base import Session, engine, Base
@@ -410,6 +410,7 @@ class Engine():
     def _validate_data(self, data, source = None):
         """
         Method to validate the data structure
+
         :param data: structure of data to validate
         :type data: dict 
         :param source: name of the source of the data
@@ -435,6 +436,7 @@ class Engine():
     def treat_data(self, data = None, source = None, validate = True):
         """
         Method to treat the data stored in self.data
+
         :param data: structure of data to treat
         :type data: dict 
         :param source: name of the source of the data

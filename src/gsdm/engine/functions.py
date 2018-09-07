@@ -11,7 +11,7 @@ import json
 from dateutil import parser
 
 # Import exceptions
-from .errors import InputError, GsdmResourcesPathNotAvailable
+from gsdm.engine.errors import InputError, GsdmResourcesPathNotAvailable
 
 # Import SQLAlchemy utilities
 import uuid
