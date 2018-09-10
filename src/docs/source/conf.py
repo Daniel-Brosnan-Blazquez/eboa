@@ -133,7 +133,7 @@ latex_documents = [
     (master_doc, 'GSDM.tex', 'GSDM Documentation',
      'Daniel Brosnan Blázquez', 'manual'),
     ("gsdm", 'GSDM_module.tex', 'GSDM Module',
-     'Daniel Brosnan Blázquez', 'manual'),
+     'Daniel Brosnan Blázquez', 'howto'),
 ]
 
 

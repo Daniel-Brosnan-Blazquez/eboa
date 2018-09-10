@@ -1,0 +1,1988 @@
+\chapter{GSDM code documentation}
+\section{Subpackages}
+\label{\detokenize{gsdm:subpackages}}
+
+\subsection{gsdm.datamodel package}
+\label{\detokenize{gsdm.datamodel:gsdm-datamodel-package}}\label{\detokenize{gsdm.datamodel::doc}}
+
+\subsubsection{Submodules}
+\label{\detokenize{gsdm.datamodel:submodules}}
+
+\subsubsection{gsdm.datamodel.annotations module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.annotations}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-annotations-module}}\index{gsdm.datamodel.annotations (module)}
+Annotations data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Annotation (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{Annotation}}}{\emph{annotation\_uuid}, \emph{ingestion\_time}, \emph{annotation\_cnf}, \emph{explicit\_ref}, \emph{dim\_processing}, \emph{visible=False}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotationCnf (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.annotationCnf}}\pysigline{\sphinxbfcode{\sphinxupquote{annotationCnf}}}
+\end{fulllineitems}
+
+\index{annotation\_cnf\_id (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.annotation_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_id}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{explicitRef (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_id (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+\index{processing\_uuid (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\end{fulllineitems}
+
+\index{source (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{visible (gsdm.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.Annotation.visible}}\pysigline{\sphinxbfcode{\sphinxupquote{visible}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationBoolean (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationBoolean}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.annotations.AnnotationBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationBoolean.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationCnf (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationCnf}}}{\emph{annotation\_cnf\_id}, \emph{name}, \emph{dim\_signature}, \emph{system=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation\_cnf\_id (gsdm.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf.annotation_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_id}}}
+\end{fulllineitems}
+
+\index{dim\_signature (gsdm.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
+\end{fulllineitems}
+
+\index{dim\_signature\_id (gsdm.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{system (gsdm.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationCnf.system}}\pysigline{\sphinxbfcode{\sphinxupquote{system}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationDouble (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationDouble}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.annotations.AnnotationDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationDouble.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationGeometry (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationGeometry}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.annotations.AnnotationGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationGeometry.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationObject (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationObject}}}{\emph{name}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationObject.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationText (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationText}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.annotations.AnnotationText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationText.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{AnnotationTimestamp (class in gsdm.datamodel.annotations)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationTimestamp}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{annotation}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{annotation (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.annotation}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation}}}
+\end{fulllineitems}
+
+\index{annotation\_uuid (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.annotations.AnnotationTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.annotations.AnnotationTimestamp.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.base module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.base}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-base-module}}\index{gsdm.datamodel.base (module)}
+Connection configuration for the gsdm component
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+
+
+\subsubsection{gsdm.datamodel.dim\_processings module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.dim_processings}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-dim-processings-module}}\index{gsdm.datamodel.dim\_processings (module)}
+DIM processing data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{DimProcessing (class in gsdm.datamodel.dim\_processings)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.dim\_processings.}}\sphinxbfcode{\sphinxupquote{DimProcessing}}}{\emph{processing\_uuid}, \emph{name}, \emph{generation\_time=None}, \emph{exec\_version=None}, \emph{dim\_signature=None}, \emph{validity\_start=None}, \emph{validity\_stop=None}, \emph{ingestion\_time=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{content\_json (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.content_json}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_json}}}
+\end{fulllineitems}
+
+\index{content\_text (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.content_text}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_text}}}
+\end{fulllineitems}
+
+\index{dimSignature (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.dimSignature}}\pysigline{\sphinxbfcode{\sphinxupquote{dimSignature}}}
+\end{fulllineitems}
+
+\index{dim\_exec\_version (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.dim_exec_version}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_exec\_version}}}
+\end{fulllineitems}
+
+\index{dim\_signature\_id (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\end{fulllineitems}
+
+\index{generation\_time (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.generation_time}}\pysigline{\sphinxbfcode{\sphinxupquote{generation\_time}}}
+\end{fulllineitems}
+
+\index{ingestion\_duration (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.ingestion_duration}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_duration}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parse\_error (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.parse_error}}\pysigline{\sphinxbfcode{\sphinxupquote{parse\_error}}}
+\end{fulllineitems}
+
+\index{processing\_uuid (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\end{fulllineitems}
+
+\index{validity\_start (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.validity_start}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_start}}}
+\end{fulllineitems}
+
+\index{validity\_stop (gsdm.datamodel.dim\_processings.DimProcessing attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessing.validity_stop}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_stop}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{DimProcessingStatus (class in gsdm.datamodel.dim\_processings)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.dim\_processings.}}\sphinxbfcode{\sphinxupquote{DimProcessingStatus}}}{\emph{time\_stamp}, \emph{status}, \emph{dim\_processing}, \emph{log=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{log (gsdm.datamodel.dim\_processings.DimProcessingStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus.log}}\pysigline{\sphinxbfcode{\sphinxupquote{log}}}
+\end{fulllineitems}
+
+\index{proc\_status (gsdm.datamodel.dim\_processings.DimProcessingStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus.proc_status}}\pysigline{\sphinxbfcode{\sphinxupquote{proc\_status}}}
+\end{fulllineitems}
+
+\index{processing\_uuid (gsdm.datamodel.dim\_processings.DimProcessingStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\end{fulllineitems}
+
+\index{source (gsdm.datamodel.dim\_processings.DimProcessingStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{time\_stamp (gsdm.datamodel.dim\_processings.DimProcessingStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_processings.DimProcessingStatus.time_stamp}}\pysigline{\sphinxbfcode{\sphinxupquote{time\_stamp}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.dim\_signatures module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.dim_signatures}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-dim-signatures-module}}\index{gsdm.datamodel.dim\_signatures (module)}
+DIM Signatures data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{DimSignature (class in gsdm.datamodel.dim\_signatures)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_signatures.DimSignature}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.dim\_signatures.}}\sphinxbfcode{\sphinxupquote{DimSignature}}}{\emph{dim\_signature\_id}, \emph{dim\_signature}, \emph{dim\_exec\_name}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{dim\_exec\_name (gsdm.datamodel.dim\_signatures.DimSignature attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_signatures.DimSignature.dim_exec_name}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_exec\_name}}}
+\end{fulllineitems}
+
+\index{dim\_signature (gsdm.datamodel.dim\_signatures.DimSignature attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_signatures.DimSignature.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
+\end{fulllineitems}
+
+\index{dim\_signature\_id (gsdm.datamodel.dim\_signatures.DimSignature attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.dim_signatures.DimSignature.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.errors module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.errors}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-errors-module}}\index{gsdm.datamodel.errors (module)}
+Errors definition for the datamodel module
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Error}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.errors.Error}}\pysigline{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.datamodel.errors.}}\sphinxbfcode{\sphinxupquote{Error}}}
+Bases: \sphinxcode{\sphinxupquote{Exception}}
+
+Base class for exceptions in this module.
+
+\end{fulllineitems}
+
+\index{GsdmResourcesPathNotAvailable}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.errors.GsdmResourcesPathNotAvailable}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.datamodel.errors.}}\sphinxbfcode{\sphinxupquote{GsdmResourcesPathNotAvailable}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.datamodel:gsdm.datamodel.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.datamodel.errors.Error}}}}}
+
+Exception raised when the environment variable GSDM\_RESOURCES\_PATH has not been defined.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.events module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.events}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-events-module}}\index{gsdm.datamodel.events (module)}
+Events data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Event (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{Event}}}{\emph{event\_uuid}, \emph{start}, \emph{stop}, \emph{ingestion\_time}, \emph{gauge}, \emph{dim\_processing}, \emph{explicit\_ref=None}, \emph{visible=True}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event\_uuid (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{explicitRef (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_id (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\end{fulllineitems}
+
+\index{gauge (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.gauge}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge}}}
+\end{fulllineitems}
+
+\index{gauge\_id (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.gauge_id}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_id}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+\index{processing\_uuid (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\end{fulllineitems}
+
+\index{source (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{start (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.start}}\pysigline{\sphinxbfcode{\sphinxupquote{start}}}
+\end{fulllineitems}
+
+\index{stop (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.stop}}\pysigline{\sphinxbfcode{\sphinxupquote{stop}}}
+\end{fulllineitems}
+
+\index{visible (gsdm.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.Event.visible}}\pysigline{\sphinxbfcode{\sphinxupquote{visible}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventBoolean (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventBoolean}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.events.EventBoolean attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventBoolean.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventDouble (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventDouble}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.events.EventDouble attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventDouble.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventGeometry (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventGeometry}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.events.EventGeometry attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventGeometry.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventKey (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventKey}}}{\emph{key}, \emph{event}, \emph{dim\_signature}, \emph{visible=False}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{dim\_signature (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
+\end{fulllineitems}
+
+\index{dim\_signature\_id (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\end{fulllineitems}
+
+\index{event (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_key (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.event_key}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_key}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{visible (gsdm.datamodel.events.EventKey attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventKey.visible}}\pysigline{\sphinxbfcode{\sphinxupquote{visible}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventLink (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventLink}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventLink}}}{\emph{link}, \emph{name}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventLink.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventLink.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{event\_uuid\_link (gsdm.datamodel.events.EventLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventLink.event_uuid_link}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid\_link}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventLink.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventObject (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventObject}}}{\emph{name}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventObject attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventObject.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventText (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventText}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.events.EventText attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventText.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{EventTimestamp (class in gsdm.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventTimestamp}}}{\emph{name}, \emph{value}, \emph{level\_position}, \emph{parent\_level}, \emph{parent\_position}, \emph{event}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{event (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{level\_position (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.level_position}}\pysigline{\sphinxbfcode{\sphinxupquote{level\_position}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{parent\_level (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.parent_level}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_level}}}
+\end{fulllineitems}
+
+\index{parent\_position (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.parent_position}}\pysigline{\sphinxbfcode{\sphinxupquote{parent\_position}}}
+\end{fulllineitems}
+
+\index{value (gsdm.datamodel.events.EventTimestamp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.events.EventTimestamp.value}}\pysigline{\sphinxbfcode{\sphinxupquote{value}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.explicit\_refs module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.explicit_refs}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-explicit-refs-module}}\index{gsdm.datamodel.explicit\_refs (module)}
+Explicit references data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{ExplicitRef (class in gsdm.datamodel.explicit\_refs)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRef}}}{\emph{explicit\_ref\_id}, \emph{ingestionTime}, \emph{explicitRef}, \emph{group=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{expl\_ref\_cnf\_id (gsdm.datamodel.explicit\_refs.ExplicitRef attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef.expl_ref_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_id}}}
+\end{fulllineitems}
+
+\index{explicit\_ref (gsdm.datamodel.explicit\_refs.ExplicitRef attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef.explicit_ref}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_id (gsdm.datamodel.explicit\_refs.ExplicitRef attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\end{fulllineitems}
+
+\index{group (gsdm.datamodel.explicit\_refs.ExplicitRef attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef.group}}\pysigline{\sphinxbfcode{\sphinxupquote{group}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (gsdm.datamodel.explicit\_refs.ExplicitRef attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRef.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{ExplicitRefGrp (class in gsdm.datamodel.explicit\_refs)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefGrp}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRefGrp}}}{\emph{expl\_ref\_cnf\_id}, \emph{name}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{expl\_ref\_cnf\_id (gsdm.datamodel.explicit\_refs.ExplicitRefGrp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefGrp.expl_ref_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_id}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.explicit\_refs.ExplicitRefGrp attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefGrp.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{ExplicitRefLink (class in gsdm.datamodel.explicit\_refs)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefLink}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRefLink}}}{\emph{link}, \emph{name}, \emph{explicitRef}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{explicitRef (gsdm.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefLink.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_id (gsdm.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_id\_link (gsdm.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_id_link}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id\_link}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.explicit_refs.ExplicitRefLink.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.functions module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.functions}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-functions-module}}\index{gsdm.datamodel.functions (module)}
+Functions definition for the datamodel component
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{get\_resources\_path() (in module gsdm.datamodel.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.functions.get_resources_path}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.datamodel.functions.}}\sphinxbfcode{\sphinxupquote{get\_resources\_path}}}{}{}
+\end{fulllineitems}
+
+\index{read\_configuration() (in module gsdm.datamodel.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.functions.read_configuration}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.datamodel.functions.}}\sphinxbfcode{\sphinxupquote{read\_configuration}}}{}{}
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.datamodel.gauges module}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel.gauges}}\label{\detokenize{gsdm.datamodel:gsdm-datamodel-gauges-module}}\index{gsdm.datamodel.gauges (module)}
+Gauges data model definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Gauge (class in gsdm.datamodel.gauges)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.datamodel.gauges.}}\sphinxbfcode{\sphinxupquote{Gauge}}}{\emph{gauge\_id}, \emph{name}, \emph{dim\_signature}, \emph{system=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{dim\_signature (gsdm.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
+\end{fulllineitems}
+
+\index{dim\_signature\_id (gsdm.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\end{fulllineitems}
+
+\index{gauge\_id (gsdm.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge.gauge_id}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_id}}}
+\end{fulllineitems}
+
+\index{name (gsdm.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\end{fulllineitems}
+
+\index{system (gsdm.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.datamodel:gsdm.datamodel.gauges.Gauge.system}}\pysigline{\sphinxbfcode{\sphinxupquote{system}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{Module contents}
+\label{\detokenize{gsdm.datamodel:module-gsdm.datamodel}}\label{\detokenize{gsdm.datamodel:module-contents}}\index{gsdm.datamodel (module)}
+
+\subsection{gsdm.engine package}
+\label{\detokenize{gsdm.engine:gsdm-engine-package}}\label{\detokenize{gsdm.engine::doc}}
+
+\subsubsection{Submodules}
+\label{\detokenize{gsdm.engine:submodules}}
+
+\subsubsection{gsdm.engine.engine module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.engine}}\label{\detokenize{gsdm.engine:gsdm-engine-engine-module}}\index{gsdm.engine.engine (module)}
+Engine definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Engine (class in gsdm.engine.engine)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.engine.engine.}}\sphinxbfcode{\sphinxupquote{Engine}}}{\emph{data=None}}{}
+Bases: \sphinxcode{\sphinxupquote{object}}
+
+Class for communicating with the engine of the gsdm module
+
+Provides access to the logic for inserting, deleting and updating
+the information stored into the DDBB
+\index{exit\_codes (gsdm.engine.engine.Engine attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine.exit_codes}}\pysigline{\sphinxbfcode{\sphinxupquote{exit\_codes}}\sphinxbfcode{\sphinxupquote{ = \{'DUPLICATED\_EVENT\_LINK\_REF': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains more than one event which defines the same link reference identifier \{\}', 'status': 11\}, 'EVENT\_PERIOD\_NOT\_IN\_SOURCE\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event with a period (\{\}\_\{\}) outside the period of the source (\{\}\_\{\})', 'status': 5\}, 'FILE\_NOT\_VALID': \{'message': 'The source file with name \{\} does not pass the schema verification', 'status': 9\}, 'INGESTION\_STARTED': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} is going to be ingested', 'status': 1\}, 'LINKS\_INCONSISTENCY': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: \{\}', 'status': 12\}, 'ODD\_NUMBER\_OF\_COORDINATES': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines the geometry value \{\} with an odd number of coordinates', 'status': 8\}, 'OK': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has ingested correctly \{\} event/s and \{\} annotation/s', 'status': 0\}, 'SOURCE\_ALREADY\_INGESTED': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has been already ingested', 'status': 2\}, 'UNDEFINED\_EVENT\_LINK\_REF': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event which links to an undefined reference identifier \{\}', 'status': 6\}, 'WRONG\_EVENT\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event with a stop value \{\} lower than its start value \{\}', 'status': 4\}, 'WRONG\_GEOMETRY': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines a wrong geometry. The exception raised has been the following: \{\}', 'status': 10\}, 'WRONG\_SOURCE\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has a validity period which its stop (\{\}) is lower than its start (\{\})', 'status': 3\}, 'WRONG\_VALUE': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines the value \{\} that cannot be converted to the specified type \{\}', 'status': 7\}\}}}}
+\end{fulllineitems}
+
+\index{parse\_data\_from\_json() (gsdm.engine.engine.Engine method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine.parse_data_from_json}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{parse\_data\_from\_json}}}{\emph{json\_path}, \emph{check\_schema=True}}{}
+Method to parse a json file for later treatment of its content
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{json\_path}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} path to the json file to be parsed
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{check\_schema}} (\sphinxstyleliteralemphasis{\sphinxupquote{bool}}) \textendash{} indicates whether to pass a schema over the json file or not
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{parse\_data\_from\_xml() (gsdm.engine.engine.Engine method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine.parse_data_from_xml}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{parse\_data\_from\_xml}}}{\emph{xml\_path}, \emph{check\_schema=True}}{}
+Method to parse an xml file for later treatment of its content
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{xml\_path}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} path to the xml file to be parsed
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{check\_schema}} (\sphinxstyleliteralemphasis{\sphinxupquote{bool}}) \textendash{} indicates whether to pass a schema over the xml file or not
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{synchronized (gsdm.engine.engine.Engine attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine.synchronized}}\pysigline{\sphinxbfcode{\sphinxupquote{synchronized}}\sphinxbfcode{\sphinxupquote{ = functools.partial(\textless{}function synchronized\textgreater{}, lock\_file\_prefix='gsdm-')}}}
+\end{fulllineitems}
+
+\index{treat\_data() (gsdm.engine.engine.Engine method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.engine.Engine.treat_data}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{treat\_data}}}{\emph{data=None}, \emph{source=None}, \emph{validate=True}}{}
+Method to treat the data stored in self.data
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{data}} (\sphinxstyleliteralemphasis{\sphinxupquote{dict}}) \textendash{} structure of data to treat
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{source}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} name of the source of the data
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validate}} (\sphinxstyleliteralemphasis{\sphinxupquote{bool}}) \textendash{} flag to indicate if the schema check has to be performed
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.errors module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.errors}}\label{\detokenize{gsdm.engine:gsdm-engine-errors-module}}\index{gsdm.engine.errors (module)}
+Errors definition for the engine module
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{DuplicatedEventLinkRef}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.DuplicatedEventLinkRef}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{DuplicatedEventLinkRef}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when there is more than one event with the same link reference identifier.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{Error}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.Error}}\pysigline{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{Error}}}
+Bases: \sphinxcode{\sphinxupquote{Exception}}
+
+Base class for exceptions in this module.
+
+\end{fulllineitems}
+
+\index{ErrorParsingDictionary}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.ErrorParsingDictionary}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{ErrorParsingDictionary}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when the parsing has found a non supported structure
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{GsdmResourcesPathNotAvailable}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.GsdmResourcesPathNotAvailable}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{GsdmResourcesPathNotAvailable}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when the environment variable GSDM\_RESOURCES\_PATH has not been defined.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{InputError}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.InputError}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{InputError}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when the specified inputs have a wrong type.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{LinksInconsistency}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.LinksInconsistency}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{LinksInconsistency}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when there are clashes on the defined links for the events.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{OddNumberOfCoordinates}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.OddNumberOfCoordinates}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{OddNumberOfCoordinates}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when a provided geometry has an odd number of coordinates.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{SourceAlreadyIngested}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.SourceAlreadyIngested}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{SourceAlreadyIngested}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when a file is received more than once.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{UndefinedEventLink}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.UndefinedEventLink}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{UndefinedEventLink}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when a link has been defined for an event which does not exist with the corresponding link reference.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{WrongGeometry}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.WrongGeometry}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{WrongGeometry}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when the geometry value is not accepted by the engine
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{WrongPeriod}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.WrongPeriod}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{WrongPeriod}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when a period is defined with a stop date lower than the start date.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{WrongValue}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.errors.WrongValue}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{gsdm.engine.errors.}}\sphinxbfcode{\sphinxupquote{WrongValue}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{gsdm.engine:gsdm.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{gsdm.engine.errors.Error}}}}}
+
+Exception raised when a provided value cannot be converted to its specified type.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.export module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.export}}\label{\detokenize{gsdm.engine:gsdm-engine-export-module}}\index{gsdm.engine.export (module)}
+Export definition for providing formatted extracted data
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+
+
+\subsubsection{gsdm.engine.functions module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.functions}}\label{\detokenize{gsdm.engine:gsdm-engine-functions-module}}\index{gsdm.engine.functions (module)}
+Functions definition for the engine component
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{get\_resources\_path() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.get_resources_path}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{get\_resources\_path}}}{}{}
+Method to obtain the path to the resources of the gsdm
+
+\end{fulllineitems}
+
+\index{is\_datetime() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_datetime}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_datetime}}}{\emph{date}}{}
+Function for the parsing of dates inside json files
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{date}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} date to be parsed
+
+\item[{Returns}] \leavevmode
+True if date is a correct date, False otherwise
+
+\item[{Return type}] \leavevmode
+bool
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{is\_valid\_date\_filters() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_date_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_date\_filters}}}{\emph{date\_filters}, \emph{operators}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_float\_filters() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_float_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_float\_filters}}}{\emph{float\_filters}, \emph{operators}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_operator\_like() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_operator_like}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_operator\_like}}}{\emph{operator\_like}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_operator\_list() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_operator_list}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_operator\_list}}}{\emph{operator\_list}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_string\_filters() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_string_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_string\_filters}}}{\emph{string\_filters}, \emph{operators}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_value\_filters() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_value_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_value\_filters}}}{\emph{value\_filters}, \emph{operators}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_values\_name\_type\_like() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_values_name_type_like}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_values\_name\_type\_like}}}{\emph{values\_name\_type\_like}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_values\_names\_type() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.is_valid_values_names_type}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_values\_names\_type}}}{\emph{values\_names\_type}}{}
+\end{fulllineitems}
+
+\index{read\_configuration() (in module gsdm.engine.functions)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.functions.read_configuration}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.functions.}}\sphinxbfcode{\sphinxupquote{read\_configuration}}}{}{}
+Method to read the configuration of engine submodule of the gsdm
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.ingestion module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.ingestion}}\label{\detokenize{gsdm.engine:gsdm-engine-ingestion-module}}\index{gsdm.engine.ingestion (module)}
+Ingestion helpers definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{insert\_event\_for\_ingestion() (in module gsdm.engine.ingestion)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.ingestion.insert_event_for_ingestion}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.ingestion.}}\sphinxbfcode{\sphinxupquote{insert\_event\_for\_ingestion}}}{\emph{event}, \emph{source}, \emph{list\_of\_events}}{}
+Method to insert an event into a list for ingestion so that some checks are performed before
+:param event: dictionary with the structure of the event to insert
+:type event: dict
+:param source: dictionary with the structure of the source to insert
+:type source: dict
+:param list\_of\_events: list of events
+:type parent: list
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.parsing module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.parsing}}\label{\detokenize{gsdm.engine:gsdm-engine-parsing-module}}\index{gsdm.engine.parsing (module)}
+Parsing definition for the engine module
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{validate\_data\_dictionary() (in module gsdm.engine.parsing)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.parsing.validate_data_dictionary}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.parsing.}}\sphinxbfcode{\sphinxupquote{validate\_data\_dictionary}}}{\emph{data}}{}
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.printing module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.printing}}\label{\detokenize{gsdm.engine:gsdm-engine-printing-module}}\index{gsdm.engine.printing (module)}
+Engine printing definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{LiteralDialect (class in gsdm.engine.printing)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.LiteralDialect}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.engine.printing.}}\sphinxbfcode{\sphinxupquote{LiteralDialect}}}{\emph{convert\_unicode=False}, \emph{encoding='utf-8'}, \emph{paramstyle=None}, \emph{dbapi=None}, \emph{implicit\_returning=None}, \emph{supports\_right\_nested\_joins=None}, \emph{case\_sensitive=True}, \emph{supports\_native\_boolean=None}, \emph{empty\_in\_strategy='static'}, \emph{label\_length=None}, \emph{**kwargs}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.engine.default.DefaultDialect}}
+
+Class to implement the dialect needed for every column type
+\index{colspecs (gsdm.engine.printing.LiteralDialect attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}\}}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{StringLiteral (class in gsdm.engine.printing)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.StringLiteral}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.engine.printing.}}\sphinxbfcode{\sphinxupquote{StringLiteral}}}{\emph{length=None}, \emph{collation=None}, \emph{convert\_unicode=False}, \emph{unicode\_error=None}, \emph{\_warn\_on\_bytestring=False}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.sql.sqltypes.String}}
+
+Class to teach SQLAlchemy how to literalize various things.
+\index{literal\_processor() (gsdm.engine.printing.StringLiteral method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.StringLiteral.literal_processor}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{literal\_processor}}}{\emph{dialect}}{}
+Return a conversion function for processing literal values that are
+to be rendered directly without using binds.
+
+This function is used when the compiler makes use of the
+“literal\_binds” flag, typically used in DDL generation as well
+as in certain scenarios where backends don’t accept bound parameters.
+
+\DUrole{versionmodified}{New in version 0.9.0.}
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{literal\_query() (in module gsdm.engine.printing)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.literal_query}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.printing.}}\sphinxbfcode{\sphinxupquote{literal\_query}}}{\emph{statement}}{}
+Method to print raw SQL statements from the SQLAlchemy statements
+:param statement: SQLAlchemy statement
+:type statement: sqlalchemy.sql.annotation
+
+Method used for debugging purpuses (not open to external usage)
+
+\end{fulllineitems}
+
+
+
+\subsubsection{gsdm.engine.query module}
+\label{\detokenize{gsdm.engine:module-gsdm.engine.query}}\label{\detokenize{gsdm.engine:gsdm-engine-query-module}}\index{gsdm.engine.query (module)}
+Engine definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Query (class in gsdm.engine.query)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.engine.query.}}\sphinxbfcode{\sphinxupquote{Query}}}{\emph{session=None}}{}
+Bases: \sphinxcode{\sphinxupquote{object}}
+\index{annotation\_value\_entities (gsdm.engine.query.Query attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.annotation_value_entities}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_value\_entities}}\sphinxbfcode{\sphinxupquote{ = \{'boolean': \textless{}class 'gsdm.datamodel.annotations.AnnotationBoolean'\textgreater{}, 'double': \textless{}class 'gsdm.datamodel.annotations.AnnotationDouble'\textgreater{}, 'geometry': \textless{}class 'gsdm.datamodel.annotations.AnnotationGeometry'\textgreater{}, 'object': \textless{}class 'gsdm.datamodel.annotations.AnnotationObject'\textgreater{}, 'text': \textless{}class 'gsdm.datamodel.annotations.AnnotationText'\textgreater{}, 'timestamp': \textless{}class 'gsdm.datamodel.annotations.AnnotationTimestamp'\textgreater{}\}}}}
+\end{fulllineitems}
+
+\index{event\_value\_entities (gsdm.engine.query.Query attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.event_value_entities}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_value\_entities}}\sphinxbfcode{\sphinxupquote{ = \{'boolean': \textless{}class 'gsdm.datamodel.events.EventBoolean'\textgreater{}, 'double': \textless{}class 'gsdm.datamodel.events.EventDouble'\textgreater{}, 'geometry': \textless{}class 'gsdm.datamodel.events.EventGeometry'\textgreater{}, 'object': \textless{}class 'gsdm.datamodel.events.EventObject'\textgreater{}, 'text': \textless{}class 'gsdm.datamodel.events.EventText'\textgreater{}, 'timestamp': \textless{}class 'gsdm.datamodel.events.EventTimestamp'\textgreater{}\}}}}
+\end{fulllineitems}
+
+\index{get\_annotation\_cnfs() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotation_cnfs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs}}}{\emph{dim\_signature\_ids=None}, \emph{annotation\_cnf\_ids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotation\_cnfs\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotation_cnfs_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotation\_values() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotation_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_values}}}{\emph{annotation\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotation\_values\_type() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotation_values_type}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_values\_type}}}{\emph{value\_class}, \emph{annotation\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotations() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotations}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{annotation\_cnf\_ids=None}, \emph{ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotations\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_annotations_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_name\_like=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_system\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_dim\_signatures() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_ids=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_event\_keys() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_event_keys}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_keys}}}{\emph{event\_uuids=None}, \emph{dim\_signature\_ids=None}, \emph{keys=None}, \emph{key\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_event\_links() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_event_links}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_links}}}{\emph{event\_uuid\_links=None}, \emph{event\_uuids=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_event\_values() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_event_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_values}}}{\emph{event\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_event\_values\_type() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_event_values_type}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_values\_type}}}{\emph{value\_class}, \emph{event\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_events() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{event\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_events\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_explicit\_ref\_links() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_explicit_ref_links}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_ref\_links}}}{\emph{explicit\_ref\_id\_links=None}, \emph{explicit\_ref\_ids=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_explicit\_refs() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_ids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}}{}
+\end{fulllineitems}
+
+\index{get\_explicit\_refs\_groups() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_explicit_refs_groups}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs\_groups}}}{\emph{group\_ids=None}, \emph{names=None}, \emph{name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_explicit\_refs\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_explicit_refs_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs\_join}}}{\emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{sources=None}, \emph{source\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{explicit\_ref\_ingestion\_time\_filters=None}, \emph{event\_value\_filters=None}, \emph{event\_values\_names\_type=None}, \emph{event\_values\_name\_type\_like=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_name\_like=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_system\_like=None}, \emph{annotation\_value\_filters=None}, \emph{annotation\_values\_names\_type=None}, \emph{annotation\_values\_name\_type\_like=None}, \emph{expl\_groups=None}, \emph{expl\_group\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_gauges() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_gauges}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges}}}{\emph{dim\_signature\_ids=None}, \emph{gauge\_ids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_gauges\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_gauges_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_linked\_events() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{event\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_linked\_events\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_linked_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_linked\_explicit\_refs() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_linked_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_ids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_linked\_explicit\_refs\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_linked_explicit_refs_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_explicit\_refs\_join}}}{\emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{sources=None}, \emph{source\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{explicit\_ref\_ingestion\_time\_filters=None}, \emph{event\_value\_filters=None}, \emph{event\_values\_names\_type=None}, \emph{event\_values\_name\_type\_like=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_name\_like=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_system\_like=None}, \emph{annotation\_value\_filters=None}, \emph{annotation\_values\_names\_type=None}, \emph{annotation\_values\_name\_type\_like=None}, \emph{expl\_groups=None}, \emph{expl\_group\_like=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\end{fulllineitems}
+
+\index{get\_sources() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{dim\_exec\_version\_filters=None}, \emph{dim\_signature\_ids=None}, \emph{processing\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_sources\_join() (gsdm.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_sources_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources\_join}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{dim\_exec\_version\_filters=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{status\_filters=None}}{}
+\end{fulllineitems}
+
+\index{operators (gsdm.engine.query.Query attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.operators}}\pysigline{\sphinxbfcode{\sphinxupquote{operators}}\sphinxbfcode{\sphinxupquote{ = \{'!=': \textless{}built-in function ne\textgreater{}, '\textless{}': \textless{}built-in function lt\textgreater{}, '\textless{}=': \textless{}built-in function le\textgreater{}, '==': \textless{}built-in function eq\textgreater{}, '\textgreater{}': \textless{}built-in function gt\textgreater{}, '\textgreater{}=': \textless{}built-in function ge\textgreater{}\}}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{log\_query() (in module gsdm.engine.query)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.log_query}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.engine.query.}}\sphinxbfcode{\sphinxupquote{log\_query}}}{\emph{query}}{}
+\end{fulllineitems}
+
+
+
+\subsubsection{Module contents}
+\label{\detokenize{gsdm.engine:module-gsdm.engine}}\label{\detokenize{gsdm.engine:module-contents}}\index{gsdm.engine (module)}
+
+\section{Submodules}
+\label{\detokenize{gsdm:submodules}}
+
+\section{gsdm.debugging module}
+\label{\detokenize{gsdm:module-gsdm.debugging}}\label{\detokenize{gsdm:gsdm-debugging-module}}\index{gsdm.debugging (module)}
+Debugging definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{debug() (in module gsdm.debugging)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm:gsdm.debugging.debug}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.debugging.}}\sphinxbfcode{\sphinxupquote{debug}}}{\emph{method}}{}
+Function for profiling methods when logging level is DEBUG
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{method}} (\sphinxstyleliteralemphasis{\sphinxupquote{function}}) \textendash{} method to be profiled
+
+\item[{Returns}] \leavevmode
+returned value of the method
+
+\item[{Return type}] \leavevmode
+int
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{race\_condition() (in module gsdm.debugging)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm:gsdm.debugging.race_condition}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{gsdm.debugging.}}\sphinxbfcode{\sphinxupquote{race\_condition}}}{}{}
+Commit function for race conditions checks
+
+\end{fulllineitems}
+
+
+
+\section{gsdm.logging module}
+\label{\detokenize{gsdm:module-gsdm.logging}}\label{\detokenize{gsdm:gsdm-logging-module}}\index{gsdm.logging (module)}
+Logging definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module gsdm
+\index{Log (class in gsdm.logging)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm:gsdm.logging.Log}}\pysigline{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{gsdm.logging.}}\sphinxbfcode{\sphinxupquote{Log}}}
+Bases: \sphinxcode{\sphinxupquote{object}}
+\index{define\_logging\_configuration() (gsdm.logging.Log method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{gsdm:gsdm.logging.Log.define_logging_configuration}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{define\_logging\_configuration}}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+
+
