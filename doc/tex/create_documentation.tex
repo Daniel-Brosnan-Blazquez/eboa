@@ -1,0 +1,75 @@
+\chapter{Generate this documentation}
+
+In the following chapter, the process of generating this documentation is explained
+
+The documentation has been created using latex for automation on adding content from the source code and auto-generated documentation.
+
+For having all the needed packages, the documentation has to be generated in a ubuntu virtual machine created by vagrant.
+
+Follow the next steps for generating the documentaion:
+
+\begin{enumerate}
+
+\item Create the ubuntu virtual machine
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ vagrant up ubuntu
+
+\end{lstlisting}
+
+\item Enter into the machine
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ vagrant ssh ubuntu
+
+\end{lstlisting}
+
+\item Go to the proper folder and generate the documentation
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ cd /vagrant/doc/tex
+$ ./generate_doc.sh -f [GSDM]_[0.1.0].pdf -k
+
+\end{lstlisting}
+
+\end{enumerate}
+
+Note: if there is any error shown by the command generate\_doc.sh, check the log inside build/doc.log.
+
+Follow the next steps for accessing the documentation for inspection:
+
+\begin{enumerate}
+
+\item Check the ssh configuration for the ubuntu virtual machine:
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ vagrant ssh-config ubuntu
+
+\end{lstlisting}
+
+\item Copy the documentation to your local environment (tested on Ubuntu, use your file transfer for better convinience):
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ vagrant ssh-config ubuntu
+Host ubuntu
+  HostName 127.0.0.1
+  User vagrant
+  Port 2200
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile PATH_TO_PRIVATE_KEY/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+  ForwardX11 yes
+
+$ scp -i PATH_TO_PRIVATE_KEY/private_key -P 2200 vagrant@127.0.0.1:/vagrant/doc/tex/*pdf /tmp/
+
+\end{lstlisting}
+
+\end{enumerate}

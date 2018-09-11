@@ -38,6 +38,8 @@ tests
 
 \end{lstlisting}
 
+It is recommended to read the code inside the file ingestion\_nppf.py.
+
 \section{Processor code}
 
 The processor code has a main method:
@@ -56,9 +58,9 @@ Which should be provided as interface of the processor as in future versions it 
 
 This method shall extract from the file passed by parameter all the interesting information to the system.
 
-The data extracted has the structure of a python dictionary which can be validated against a schema implemented in the engine side of the gsdm (method gsdm.engine.engine.validate\_data).
+The data extracted has to be formatted with the structure of a python dictionary which can be validated against a schema implemented in the engine side of the gsdm (method gsdm.engine.engine.validate\_data). This data will be validated before treatement by the engine.
 
-An example of the data structure, that has to follow the data to be inserted into the gsdm, can be seen in this file.
+An example of the data structure, that has to follow the data to be inserted into the gsdm, can be seen in appendix \ref{ap:example_data_structure}.
 
 For the version of this example of an ingestion processor, this method is called from the same phyton file from another method that is called from the main entry point to the file:
 
@@ -66,9 +68,10 @@ For the version of this example of an ingestion processor, this method is called
 def command_process_file(file_path):
     # Process file
     data = process_file(file_path)
+    ...
 
 if __name__ == "__main__":
-...
+    ...
 
     returned_value = command_process_file(file_path)
 \end{lstlisting}
@@ -87,6 +90,36 @@ Once the data has been extracted the method command\_process\_file(file\_path) w
     returned_value = insert_data_into_DDBB(data, filename, engine)
 \end{lstlisting}
 
+\section{Extraction of data}
+
+\subsection{Extraction from an XML file}
+
+The example provided performs the extraction of data from an XML file. To do so, the module uses the library \href{https://pypi.org/project/lxml/}{lxml}.
+
+The following list includes a brief description of main operations available using this library:
+
+\begin{itemize}
+\item Importing the module:
+\begin{lstlisting}[breaklines=true, style=python]]
+# Import xml parser
+from lxml import etree
+\end{lstlisting}
+\item Obtain Xpath object for reading the XML using XML paths:
+\begin{lstlisting}[breaklines=true, style=python]]
+    file_name = os.path.basename(file_path)
+    parsed_xml = etree.parse(file_path)
+    xpath_xml = etree.XPathEvaluator(parsed_xml)
+\end{lstlisting}
+\item Get nodes of an XML:
+\begin{lstlisting}[breaklines=true, style=python]]
+    record_operations = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_EVRQs/EVRQ[RQ/RQ_Name='MPMMRNOM' or RQ/RQ_Name='MPMMRNRT']")
+\end{lstlisting}
+\item Perform operations with one node:
+\begin{lstlisting}[breaklines=true, style=python]]
+    generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
+\end{lstlisting}
+\end{itemize}
+
 \section{Manual execution of the processor}
 
 The processor can be manually executed passing the file path to be processed as follows:
@@ -94,7 +127,7 @@ The processor can be manually executed passing the file path to be processed as 
 \begin{lstlisting}[breaklines=true, style=bash]]
 
 $ cd /vagrant/src/ingestions/s2/ingestion_nppf
-$ GSDM_RESOURCES_PATH="/vagrant/src/" python3 ingestion_nppf.py -f input_files/S2B_OPER_MPL__NPPF__20180727T110000_20180813T140000_0001.EOF
+$ python3 ingestion_nppf.py -f input_files/S2B_OPER_MPL__NPPF__20180727T110000_20180813T140000_0001.EOF
 
 \end{lstlisting}
 
@@ -105,7 +138,7 @@ Inside the folder tests, there should be a python file which would cover the uni
 \begin{lstlisting}[breaklines=true, style=bash]]
 
 $ cd /vagrant/src/ingestions/s2/ingestion_nppf
-$ GSDM_RESOURCES_PATH="/vagrant/src/" py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=ingestions tests/
+$ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=ingestions tests/
 
 \end{lstlisting}
 
@@ -116,3 +149,49 @@ Then, the code coverage analysis may be checked (following these instructions fo
 $ firefox tests/tmp/code_coverage_analysis/index.html
 
 \end{lstlisting}
+
+\subsection{Creating the tests}
+
+For validating the correct behaviour of the ingestion processor, automated tests should be provided which would cover completely the code of the ingestion processor.
+
+For doing this, the provided solution makes use of the library unittest. With this library the utility py.test can detect all the tests inside a project, execute them and provide analysis on the failures.
+
+The following list includes a brief description of main operations available using this library:
+
+\begin{itemize}
+\item Import the module:
+\begin{lstlisting}[breaklines=true, style=python]]
+import unittest
+\end{lstlisting}
+\item Define class for testing:
+\begin{lstlisting}[breaklines=true, style=python]]
+class TestEngine(unittest.TestCase):
+\end{lstlisting}
+\item Define the main method which will be executed every time before a unit test is executed:
+\begin{lstlisting}[breaklines=true, style=python]]
+    def setUp(self):
+        # Create the engine to manage the data
+        self.engine_gsdm = Engine()
+        self.query_gsdm = Query()
+
+        # Create session to connectx to the database
+        self.session = Session()
+
+        # Clear all tables before executing the test
+        for table in reversed(Base.metadata.sorted_tables):
+            engine.execute(table.delete())
+\end{lstlisting}
+\item Define unit tests:
+\begin{lstlisting}[breaklines=true, style=python]]
+    def test_insert_insert_nppf(self):
+        filename = "NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        # Check that events before the queue deletion are not inserted
+        events_before_validity_period = self.session.query(Event).filter(Event.stop < "2018-07-20T13:40:00.000").all()
+
+        assert len(events_before_validity_period) == 0
+\end{lstlisting}
+\end{itemize}

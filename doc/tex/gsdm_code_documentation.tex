@@ -1685,7 +1685,7 @@ Class to implement the dialect needed for every column type
 \index{colspecs (gsdm.engine.printing.LiteralDialect attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}\}}}}
+\phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'gsdm.engine.printing.StringLiteral'\textgreater{}\}}}}
 \end{fulllineitems}
 
 
@@ -1794,6 +1794,34 @@ Bases: \sphinxcode{\sphinxupquote{object}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_ids=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}}{}
+Method to obtain the DIM signature entities filtered by the received parameters
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_ids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signatures}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature names
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_names}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM execution names
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_name\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
+
+\end{itemize}
+
+\item[{Returns}] \leavevmode
+found DIM signatures
+
+\item[{Return type}] \leavevmode
+list
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 \index{get\_event\_keys() (gsdm.engine.query.Query method)}
@@ -1896,6 +1924,49 @@ Bases: \sphinxcode{\sphinxupquote{object}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{gsdm.engine:gsdm.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{dim\_exec\_version\_filters=None}, \emph{dim\_signature\_ids=None}, \emph{processing\_uuids=None}}{}
+Method to obtain the sources entities filtered by the received parameters
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{names}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of source names
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{name\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validity\_start\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of start filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validity\_stop\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of stop filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generation\_time\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of generation time filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{ingestion\_time\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of ingestion time filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{ingestion\_duration\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filters}}) \textendash{} list of ingestion duration filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{string\_filter}}) \textendash{} list of version filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_ids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{processing\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM processing identifiers
+
+\end{itemize}
+
+\item[{Returns}] \leavevmode
+found sources
+
+\item[{Return type}] \leavevmode
+list
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 \index{get\_sources\_join() (gsdm.engine.query.Query method)}

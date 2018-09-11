@@ -26,7 +26,7 @@ $ cd (PATH_TO_GSDM)/gsdm
 
 \begin{lstlisting}[breaklines=true, style=bash]
 
-vagrant up
+$ vagrant up centos
 
 \end{lstlisting}
 
@@ -38,9 +38,9 @@ In order to check that the component has been correctly installed, run the follo
 
 \begin{lstlisting}[breaklines=true, style=bash]]
 
-$ vagrant/vagrant ssh
+$ vagrant ssh centos
 $ cd /vagrant/src/
-$ GSDM_RESOURCES_PATH="/vagrant/src/" py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=gsdm tests
+$ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=gsdm tests
 
 \end{lstlisting}
 
