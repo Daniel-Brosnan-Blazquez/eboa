@@ -28,7 +28,7 @@ from geoalchemy2.shape import to_shape
 from gsdm.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
 
 # Import datamodel
-from gsdm.datamodel.base import Session, engine, Base
+from gsdm.datamodel.base import Session
 from gsdm.datamodel.dim_signatures import DimSignature
 from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from gsdm.datamodel.gauges import Gauge
