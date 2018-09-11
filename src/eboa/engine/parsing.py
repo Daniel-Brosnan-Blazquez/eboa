@@ -3,13 +3,13 @@ Parsing definition for the engine module
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import exceptions
-from gsdm.engine.errors import ErrorParsingDictionary
+from eboa.engine.errors import ErrorParsingDictionary
 
 # Import auxiliary functions
-from gsdm.engine.functions import is_datetime
+from eboa.engine.functions import is_datetime
 
 def validate_data_dictionary(data):
     """

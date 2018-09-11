@@ -2,7 +2,7 @@
     "RELATIVE_XML_SCHEMA_PATH": "schemas/gsd_schema.xsd",
     "RELATIVE_JSON_SCHEMA_PATH": "schemas/gsd_schema.json",
     "LOG": {
-        "PATH": "log/gsdm_engine.log",
+        "PATH": "log/eboa_engine.log",
         "LEVEL": "INFO",
         "MAX_BYTES": 5000000,
         "MAX_BACKUP": 10

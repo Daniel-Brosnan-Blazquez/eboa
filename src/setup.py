@@ -1,19 +1,19 @@
 """
-Setup configuration for the gsdm application
+Setup configuration for the eboa application
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 from setuptools import setup, find_packages
 
-setup(name="gsdm",
+setup(name="eboa",
       version="0.1.0",
-      description="Ground Segment Data Management",
-      url="https://bitbucket.org/dbrosnan/gsdm/",
+      description="Engine for Business Operation Analysis",
+      url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",
       author_email="daniel.brosnan@deimos-space.com",
-      packages=["gsdm.datamodel","gsdm.engine"],
+      packages=["eboa.datamodel","eboa.engine"],
       python_requires='>=3',
       install_requires=[
           "sqlalchemy",

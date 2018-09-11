@@ -3,7 +3,7 @@ Test: initial test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 import os
 import sys

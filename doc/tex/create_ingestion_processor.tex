@@ -1,14 +1,14 @@
 \chapter{Create ingestion processor}
 
-In the following chapter, the process of creating a processor for ingesting data to the gsdm module is explained.
+In the following chapter, the process of creating a processor for ingesting data to the eboa module is explained.
 
 The explanation is based on an example for ingesting S2 data from the planning system (data received on NPPF files, xml formatted).
 
-The example will use the python interface of the component, as the target version of the gsdm used in this explanation is the 0.1.0 and it is the only interface available.
+The example will use the python interface of the component, as the target version of the eboa used in this explanation is the 0.1.0 and it is the only interface available.
 
-\section{Installing GSDM on vagrant}
+\section{Installing EBOA on vagrant}
 
-See the details in section \ref{c:install_gsdm}.
+See the details in section \ref{c:install_eboa}.
 
 \section{Structure of the folders and location of ingestion processors inside the project}
 
@@ -47,7 +47,7 @@ The processor code has a main method:
 \begin{lstlisting}[breaklines=true, style=python]]
 def process_file(file_path):
     """Function to process the file and insert its relevant information
-    into the DDBB of the gsdm
+    into the DDBB of the eboa
 
     :param file_path: path to the file to be processed
     :type file_path: str
@@ -58,9 +58,9 @@ Which should be provided as interface of the processor as in future versions it 
 
 This method shall extract from the file passed by parameter all the interesting information to the system.
 
-The data extracted has to be formatted with the structure of a python dictionary which can be validated against a schema implemented in the engine side of the gsdm (method gsdm.engine.engine.validate\_data). This data will be validated before treatement by the engine.
+The data extracted has to be formatted with the structure of a python dictionary which can be validated against a schema implemented in the engine side of the eboa (method eboa.engine.engine.validate\_data). This data will be validated before treatement by the engine.
 
-An example of the data structure, that has to follow the data to be inserted into the gsdm, can be seen in appendix \ref{ap:example_data_structure}.
+An example of the data structure, that has to follow the data to be inserted into the eboa, can be seen in appendix \ref{ap:example_data_structure}.
 
 For the version of this example of an ingestion processor, this method is called from the same phyton file from another method that is called from the main entry point to the file:
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     returned_value = command_process_file(file_path)
 \end{lstlisting}
 
-Once the data has been extracted the method command\_process\_file(file\_path) will interface with the Engine of the gsdm to insert the data:
+Once the data has been extracted the method command\_process\_file(file\_path) will interface with the Engine of the eboa to insert the data:
 
 \begin{lstlisting}[breaklines=true, style=python]]
     # Process file
@@ -171,8 +171,8 @@ class TestEngine(unittest.TestCase):
 \begin{lstlisting}[breaklines=true, style=python]]
     def setUp(self):
         # Create the engine to manage the data
-        self.engine_gsdm = Engine()
-        self.query_gsdm = Query()
+        self.engine_eboa = Engine()
+        self.query_eboa = Query()
 
         # Create session to connectx to the database
         self.session = Session()

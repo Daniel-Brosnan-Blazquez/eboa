@@ -3,7 +3,7 @@ Functions definition for the analysis component
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Auxiliary functions
 def adjust_column_width(ws):

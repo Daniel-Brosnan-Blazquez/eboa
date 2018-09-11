@@ -3,7 +3,7 @@ Functions definition for the engine component
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import os
@@ -11,7 +11,7 @@ import json
 from dateutil import parser
 
 # Import exceptions
-from gsdm.engine.errors import InputError, GsdmResourcesPathNotAvailable
+from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
 
 # Import SQLAlchemy utilities
 import uuid
@@ -36,26 +36,26 @@ def is_datetime(date):
 
 def get_resources_path():
     """
-    Method to obtain the path to the resources of the gsdm
+    Method to obtain the path to the resources of the eboa
     """
-    gsdm_resources_path = None
-    if "GSDM_RESOURCES_PATH" in os.environ:
-        # Get the path to the resources of the gsdm
-        gsdm_resources_path = os.environ["GSDM_RESOURCES_PATH"]
+    eboa_resources_path = None
+    if "EBOA_RESOURCES_PATH" in os.environ:
+        # Get the path to the resources of the eboa
+        eboa_resources_path = os.environ["EBOA_RESOURCES_PATH"]
 
     else:
-        raise GsdmResourcesPathNotAvailable("The environment variable GSDM_RESOURCES_PATH is not defined")
+        raise EboaResourcesPathNotAvailable("The environment variable EBOA_RESOURCES_PATH is not defined")
     # end if
 
-    return gsdm_resources_path
+    return eboa_resources_path
 
 def read_configuration():
     """
-    Method to read the configuration of engine submodule of the gsdm
+    Method to read the configuration of engine submodule of the eboa
     """
-    gsdm_resources_path = get_resources_path()
+    eboa_resources_path = get_resources_path()
     # Get configuration
-    with open(gsdm_resources_path + "/" + "config/engine.json") as json_data_file:
+    with open(eboa_resources_path + "/" + "config/engine.json") as json_data_file:
         config = json.load(json_data_file)
 
     return config

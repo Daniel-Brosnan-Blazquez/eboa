@@ -1,12 +1,12 @@
-\chapter{GSDM interface}
+\chapter{EBOA interface}
 
-\acrshort{gsdm} offers interfaces for 3 general operations with data: insert, update and query.
+\acrshort{eboa} offers interfaces for 3 general operations with data: insert, update and query.
 
 This data can be provided in three formats: XML, JSON and Python dictionary. This data is verified against a schema so that the data is checked before processing it. The XML schema can be seen in appendix \ref{ap:xml_schema} and the JSON and python schema can be seen in appendix \ref{ap:json_schema}
 
 \section{Insert interface}
 
-\acrshort{gsdm} offers an interface for inserting data filling the tables shown in the data model included in figure \ref{fg:gsdmdb}.
+\acrshort{eboa} offers an interface for inserting data filling the tables shown in the data model included in figure \ref{fg:eboadb}.
 
 \section{Python insert interface}
 
@@ -30,7 +30,7 @@ The entry point for inserting data using the Python interface is the following m
 So, for example for inserting data using the python interface the following code could be executed:
 
 \begin{lstlisting}[style=python]
-from gsdm.engine.engine import Engine
+from eboa.engine.engine import Engine
 
 engine = Engine()
 
@@ -79,8 +79,8 @@ Events can be inserted following 3 different methods associated to their gauges:
 
 \begin{itemize}
 \item SIMPLE\_UPDATE: all events are inserted
-\item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{gsdm} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case a event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
-\item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{gsdm} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
+\item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case a event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
+\item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
 \end{itemize}
 
 \subsection {ERASE\_and\_REPLACE method}

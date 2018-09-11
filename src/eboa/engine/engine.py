@@ -3,7 +3,7 @@ Engine definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import datetime
@@ -25,49 +25,49 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from gsdm.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
 
 # Import datamodel
-from gsdm.datamodel.base import Session
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from eboa.datamodel.base import Session
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import query interface
-from gsdm.engine.query import Query
+from eboa.engine.query import Query
 
 # Import xml parser
 from lxml import etree
 
 # Import parsing module
-import gsdm.engine.parsing as parsing
+import eboa.engine.parsing as parsing
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 # Import debugging
-from gsdm.debugging import debug, race_condition
+from eboa.debugging import debug, race_condition
 
 # Import auxiliary functions
-from gsdm.engine.functions import get_resources_path, read_configuration
+from eboa.engine.functions import get_resources_path, read_configuration
 
 config = read_configuration()
-gsdm_resources_path = get_resources_path()
+eboa_resources_path = get_resources_path()
 
 logging = Log()
 logger = logging.logger
 
 class Engine():
-    """Class for communicating with the engine of the gsdm module
+    """Class for communicating with the engine of the eboa module
 
     Provides access to the logic for inserting, deleting and updating
     the information stored into the DDBB
     """
     # Set the synchronized module
-    synchronized = lockutils.synchronized_with_prefix('gsdm-')
+    synchronized = lockutils.synchronized_with_prefix('eboa-')
 
     exit_codes = {
         "OK": {
@@ -232,7 +232,7 @@ class Engine():
 
         # Pass schema
         if check_schema:
-            schema_path = gsdm_resources_path + "/" + config["RELATIVE_XML_SCHEMA_PATH"]
+            schema_path = eboa_resources_path + "/" + config["RELATIVE_XML_SCHEMA_PATH"]
             parsed_schema = etree.parse(schema_path)
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
@@ -770,7 +770,7 @@ class Engine():
         if not self.source:
             self.source = DimProcessing(id, name)
             self.session.add(self.source)
-            # If there is a race condition here the gsdm will insert a
+            # If there is a race condition here the eboa will insert a
             # new row with the same name as the unique constraint is
             # not violated with NULL values in the associated columns
             # (not really important as this is a function for

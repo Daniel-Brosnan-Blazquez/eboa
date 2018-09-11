@@ -4,7 +4,7 @@ Designs of relational databases must have a secure out of conflicts way of ident
 
 Using the auto-increment functions, though, implies a huge problem: the information has to be inserted in a sequential way so that the foreign keys are built by the database manager (PostgreSQL in this case).
 
-A solution implemented in the data model of the \acrshort{gsdm} is using \acrshort{uuid}s (version 1).
+A solution implemented in the data model of the \acrshort{eboa} is using \acrshort{uuid}s (version 1).
 
 The version 1 of the UUID (according to RFC 4122) is composed by the following fields: 
 
@@ -42,4 +42,4 @@ As \_last\_timestamp is global, this is visible to all the threads of the same p
 
 But, this is still not multiprocessing safe. For making the UUIDs creation multiprocessing safe, the UUID has been enforced with the \acrshort{pid} of the process as the "node" field and a random number as the "clock\_seq".
 
-So, this characteristic joint with the addition of the PID warranties the uniqueness of the UUIDs generated inside the GSDM.
+So, this characteristic joint with the addition of the PID warranties the uniqueness of the UUIDs generated inside the EBOA.

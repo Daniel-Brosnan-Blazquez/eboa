@@ -1,7 +1,7 @@
-gsdm
+eboa
 ====
 
 .. toctree::
    :maxdepth: 4
 
-   gsdm
+   eboa

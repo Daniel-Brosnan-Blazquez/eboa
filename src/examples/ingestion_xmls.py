@@ -3,26 +3,26 @@ Test: ingest xml test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 import os
 import sys
 
 # Import engine of the DDBB
-from gsdm.engine.engine import Engine
-from gsdm.engine.query import Query
-from gsdm.datamodel.base import Session, engine, Base
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+from eboa.datamodel.base import Session, engine, Base
 
 # Import analysis module
-from gsdm.engine.analysis import Analysis
+from eboa.engine.analysis import Analysis
 
 # Import datamodel
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 
 # Import python utilities
 from termcolor import colored
@@ -42,13 +42,13 @@ for table in reversed(Base.metadata.sorted_tables):
     engine.execute(table.delete())
 # end for
 
-engine_gsdm = Engine()
-query_gsdm = Query()
+engine_eboa = Engine()
+query_eboa = Query()
 
 # insert data from xml
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_simple_update.xml")
 
-engine_gsdm.treat_data()
+engine_eboa.treat_data()
 
 # Checks
 ## DIM Signature ingestion
@@ -316,7 +316,7 @@ for event in events:
     print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in event:
-        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_eboa.get_event_values([event_ddbb.event_uuid])
         for value in event["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -391,7 +391,7 @@ for annotation in annotations:
     print(colored("Check", on_color="on_blue") + "_{}: Annotation has been associated to the annotation configuration correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in annotation:
-        values_ddbb = query_gsdm.get_annotation_values([annotation_ddbb.annotation_uuid])
+        values_ddbb = query_eboa.get_annotation_values([annotation_ddbb.annotation_uuid])
         for value in annotation["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -452,8 +452,8 @@ if len (list_event_links) != 2:
 print(colored("Check", on_color="on_blue") + "_{}: Event links have been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the same source is not ingested more than once
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == engine_gsdm.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]).first()
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == dim_processing_ddbb.processing_uuid, DimProcessingStatus.proc_status == engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -461,9 +461,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected duplication on the ingestion of the same source --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the validity period of the source has to be correctly specified (start lower than the stop)
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_validity_period_source.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_validity_period_source.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_SOURCE_PERIOD"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_validity_period_source.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_validity_period_source.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -471,9 +471,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specified on the source --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the validity period of the events has to be correctly specified (start lower than the stop)
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_period_events.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_period_events.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_EVENT_PERIOD"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_period_events.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_period_events.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -481,9 +481,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong period specified on the events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the specified incomplete link between an event and another that does not exist is detected
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_incomplete_event_links.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_incomplete_event_links.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_incomplete_event_links.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_incomplete_event_links.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["INCOMPLETE_EVENT_LINKS"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -491,9 +491,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected incomplete specified links between events --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the boolean value for an event has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_event.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_boolean_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_event.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_boolean_event.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -501,9 +501,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong boolean value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the double value for an event has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_event.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_double_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_event.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_double_event.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -511,9 +511,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong double value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the timestamp value for an event has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_event.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_timestamp_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_event.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_timestamp_event.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -521,9 +521,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong timestamp value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the geometry value for an event has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_event.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_geometry_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_event.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_geometry_event.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -531,9 +531,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong geometry value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the geometry value for an event has a pair number of coordinates
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_event.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_odd_coordinates_geometry_event.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_event.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_odd_coordinates_geometry_event.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -541,9 +541,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected odd number of coordinates in the geometry value specified for an event --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the boolean value for an annotation has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_annotation.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_boolean_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_boolean_annotation.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_boolean_annotation.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -551,9 +551,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong boolean value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the double value for an annotation has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_annotation.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_double_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_double_annotation.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_double_annotation.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -561,9 +561,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong double value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the timestamp value for an annotation has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_annotation.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_timestamp_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_timestamp_annotation.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_timestamp_annotation.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -571,9 +571,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong timestamp value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the geometry value for an annotation has to be correctly specified
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_annotation.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["WRONG_VALUE"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_geometry_annotation.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["WRONG_VALUE"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -581,9 +581,9 @@ if dim_processing_status == None:
 print(colored("Check", on_color="on_blue") + "_{}: Detected wrong geometry value specified for an annotation --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
 ## Check that the geometry value for an annotation has a pair number of coordinates
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_annotation.xml")
-engine_gsdm.treat_data()
-dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_odd_coordinates_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_wrong_odd_coordinates_geometry_annotation.xml")
+engine_eboa.treat_data()
+dim_processing_status = session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessing.name == "test_wrong_odd_coordinates_geometry_annotation.xml", DimProcessingStatus.proc_status == engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]).first()
 result = {"message":"OK","color":"green"}
 if dim_processing_status == None:
     result = {"message":"NOK","color":"red"}
@@ -599,13 +599,13 @@ print("***Data present into DDBB exported into the excel file " + output_file)
 
 # Generate the xml file containing the inserted data into the DDBB
 output_xml_file = os.path.dirname(os.path.abspath(__file__)) + "/tmp/test_simple_update_query.xml"
-query_gsdm.get_source_xml("test_simple_update.xml", output_xml_file)
+query_eboa.get_source_xml("test_simple_update.xml", output_xml_file)
 
 print("***Data present into DDBB exported into the xml file " + output_xml_file)
 
 ## Check multiple insertion operations
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_multiple_operations.xml")
-engine_gsdm.treat_data()
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_multiple_operations.xml")
+engine_eboa.treat_data()
 
 events = [{"start": "2018-06-05T03:07:03",
            "stop": "2018-06-05T03:07:36",
@@ -952,7 +952,7 @@ for event in events:
     print(colored("Check", on_color="on_blue") + "_{}: Event key has been inserted correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in event:
-        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_eboa.get_event_values([event_ddbb.event_uuid])
         for value in event["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}
@@ -974,12 +974,12 @@ analysis.generate_workbook_from_ddbb(output_file)
 print("***Data present into DDBB exported into the excel file " + output_file)
 
 ## Check ERASE and REPLACE and EVENT KEYS insertion types
-engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
-#print(json.dumps(engine_gsdm.data, indent=4))
+engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/test_erase_and_replace_and_keys.xml")
+#print(json.dumps(engine_eboa.data, indent=4))
 
 ### PENDING checks on the parser
 
-engine_gsdm.treat_data()
+engine_eboa.treat_data()
 
 events = [{"start": "2018-06-05T01:07:03",
            "stop": "2018-06-05T02:07:15",
@@ -1530,7 +1530,7 @@ for info in events_ddbb:
 
     if len(event) == 1 and "values" in event[0]:
         number_values += len(event[0]["values"])
-        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_eboa.get_event_values([event_ddbb.event_uuid])
         result = {"message":"OK","color":"green"}
         if len(values_ddbb) != len(event[0]["values"]):
             result = {"message":"NOK","color":"red"}
@@ -1550,7 +1550,7 @@ for info in events_ddbb:
 # end for
 
 result = {"message":"OK","color":"green"}
-values_ddbb = query_gsdm.get_event_values()
+values_ddbb = query_eboa.get_event_values()
 if number_values != len(values_ddbb):
     result = {"message":"NOK","color":"red"}
 # end if

@@ -14,13 +14,13 @@
 #
 # import os
 # import sys
-# sys.path.append(os.path.abspath('../../gsdm'))
+# sys.path.append(os.path.abspath('../../eboa'))
 
 # print(sys.path)
 
 # -- Project information -----------------------------------------------------
 
-project = 'GSDM'
+project = 'EBOA'
 copyright = '2018, Daniel Brosnan Blázquez'
 author = 'Daniel Brosnan Blázquez'
 
@@ -103,7 +103,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'GSDMdoc'
+htmlhelp_basename = 'EBOAdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -130,9 +130,9 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GSDM.tex', 'GSDM Documentation',
+    (master_doc, 'EBOA.tex', 'EBOA Documentation',
      'Daniel Brosnan Blázquez', 'manual'),
-    ("gsdm", 'GSDM_module.tex', 'GSDM Module',
+    ("eboa", 'EBOA_module.tex', 'EBOA Module',
      'Daniel Brosnan Blázquez', 'howto'),
 ]
 
@@ -142,7 +142,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'gsdm', 'GSDM Documentation',
+    (master_doc, 'eboa', 'EBOA Documentation',
      [author], 1)
 ]
 
@@ -153,8 +153,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'GSDM', 'GSDM Documentation',
-     author, 'GSDM', 'One line description of project.',
+    (master_doc, 'EBOA', 'EBOA Documentation',
+     author, 'EBOA', 'One line description of project.',
      'Miscellaneous'),
 ]
 

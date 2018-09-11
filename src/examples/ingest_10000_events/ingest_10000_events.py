@@ -3,26 +3,26 @@ Test: ingest xml test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 import os
 import sys
 
 # Import engine of the DDBB
-from gsdm.engine.engine import Engine
-from gsdm.engine.query import Query
-from gsdm.datamodel.base import Session, engine, Base
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+from eboa.datamodel.base import Session, engine, Base
 
 # Import analysis module
-from gsdm.engine.analysis import Analysis
+from eboa.engine.analysis import Analysis
 
 # Import datamodel
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry
 
 # Import python utilities
 from termcolor import colored
@@ -37,8 +37,8 @@ import sqltap
 profiler = sqltap.start()
 session = Session()
 
-engine_gsdm = Engine()
-query_gsdm = Query()
+engine_eboa = Engine()
+query_eboa = Query()
 
 usage="Usage: " + sys.argv[0] + " input_file"
 
@@ -56,14 +56,14 @@ if not os.path.isfile(file_path):
 # end if
 
 if file_path.split(".")[1] == "json":
-    engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
+    engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
 else:
-    engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
+    engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/" + file_path, check_schema = False)
 # end if
 
-engine_gsdm.treat_data()
+engine_eboa.treat_data()
 
-#engine_gsdm.generate_json("test_ingestion_10000_events.json")
+#engine_eboa.generate_json("test_ingestion_10000_events.json")
 
 # Checks
 ## DIM Signature ingestion
@@ -170,7 +170,7 @@ for event in events:
     print(colored("Check", on_color="on_blue") + "_{}: Event has been associated to the gauge correcly --> ".format(getframeinfo(currentframe()).lineno) + colored(result["message"], result["color"], attrs=['bold']))
 
     if "values" in event:
-        values_ddbb = query_gsdm.get_event_values([event_ddbb.event_uuid])
+        values_ddbb = query_eboa.get_event_values([event_ddbb.event_uuid])
         for value in event["values"]:
             value_ddbb = [value_ddbb for value_ddbb in values_ddbb if value_ddbb.level_position == value["level_position"] and value_ddbb.parent_level == value["parent_level"] and value_ddbb.parent_position == value["parent_position"] and value_ddbb.name == value["name"]]
             result = {"message":"OK","color":"green"}

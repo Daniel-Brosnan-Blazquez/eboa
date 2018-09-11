@@ -3,14 +3,14 @@ Explicit references data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Table, ForeignKey, Text, DateTime
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from gsdm.datamodel.base import Base
+from eboa.datamodel.base import Base
 
 class ExplicitRef(Base):
     __tablename__ = 'explicit_ref_tb'

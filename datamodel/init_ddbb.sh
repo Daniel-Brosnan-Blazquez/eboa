@@ -1,10 +1,10 @@
 #################################################################
 #
-# Init DDBB of the gsdm
+# Init DDBB of the eboa
 #
 # Written by DEIMOS Space S.L. (dibb)
 #
-# module gsdm
+# module eboa
 #################################################################
 USAGE="Usage: `basename $0` -f datamodel_file"
 DATAMODEL_FILE=""
@@ -41,10 +41,10 @@ then
 fi
 
 # Check that there are no connections to the DDBB if exists
-DATABASE=`psql -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='gsdmdb'";`
+DATABASE=`psql -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='eboadb'";`
 if [ $DATABASE -eq 1 ];
 then
-    CONNECTIONS=`psql -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'gsdmdb';"`
+    CONNECTIONS=`psql -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'eboadb';"`
     if [ $CONNECTIONS -ne 0 ];
     then
         echo "ERROR: There are $((CONNECTIONS + 0)) active connections to the DDBB"
@@ -56,20 +56,20 @@ fi
 if [ $DATABASE -eq 1 ];
 then
     # Drop the DDBB
-    psql -U postgres -c "DROP DATABASE gsdmdb;"
+    psql -U postgres -c "DROP DATABASE eboadb;"
 
-    # Drop the gsdm role
-    psql -U postgres -c "DROP ROLE gsdm;"
+    # Drop the eboa role
+    psql -U postgres -c "DROP ROLE eboa;"
 fi
 
 # Create DDBB
-psql -U postgres -c "CREATE DATABASE gsdmdb;"
+psql -U postgres -c "CREATE DATABASE eboadb;"
 
 # Add extenstion for postgis
-psql -U postgres -d gsdmdb -c "CREATE EXTENSION postgis;"
+psql -U postgres -d eboadb -c "CREATE EXTENSION postgis;"
 
 # Fill DDBB
-psql -U postgres -d gsdmdb -f $DATAMODEL_FILE
+psql -U postgres -d eboadb -f $DATAMODEL_FILE
 status=$?
 
 if [ $status -ne 0 ];

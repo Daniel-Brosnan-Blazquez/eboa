@@ -1,77 +1,77 @@
-gsdm.datamodel package
+eboa.datamodel package
 ======================
 
 Submodules
 ----------
 
-gsdm.datamodel.annotations module
+eboa.datamodel.annotations module
 ---------------------------------
 
-.. automodule:: gsdm.datamodel.annotations
+.. automodule:: eboa.datamodel.annotations
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.base module
+eboa.datamodel.base module
 --------------------------
 
-.. automodule:: gsdm.datamodel.base
+.. automodule:: eboa.datamodel.base
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.dim\_processings module
+eboa.datamodel.dim\_processings module
 --------------------------------------
 
-.. automodule:: gsdm.datamodel.dim_processings
+.. automodule:: eboa.datamodel.dim_processings
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.dim\_signatures module
+eboa.datamodel.dim\_signatures module
 -------------------------------------
 
-.. automodule:: gsdm.datamodel.dim_signatures
+.. automodule:: eboa.datamodel.dim_signatures
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.errors module
+eboa.datamodel.errors module
 ----------------------------
 
-.. automodule:: gsdm.datamodel.errors
+.. automodule:: eboa.datamodel.errors
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.events module
+eboa.datamodel.events module
 ----------------------------
 
-.. automodule:: gsdm.datamodel.events
+.. automodule:: eboa.datamodel.events
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.explicit\_refs module
+eboa.datamodel.explicit\_refs module
 ------------------------------------
 
-.. automodule:: gsdm.datamodel.explicit_refs
+.. automodule:: eboa.datamodel.explicit_refs
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.functions module
+eboa.datamodel.functions module
 -------------------------------
 
-.. automodule:: gsdm.datamodel.functions
+.. automodule:: eboa.datamodel.functions
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.datamodel.gauges module
+eboa.datamodel.gauges module
 ----------------------------
 
-.. automodule:: gsdm.datamodel.gauges
+.. automodule:: eboa.datamodel.gauges
     :members:
     :undoc-members:
     :show-inheritance:
@@ -80,7 +80,7 @@ gsdm.datamodel.gauges module
 Module contents
 ---------------
 
-.. automodule:: gsdm.datamodel
+.. automodule:: eboa.datamodel
     :members:
     :undoc-members:
     :show-inheritance:

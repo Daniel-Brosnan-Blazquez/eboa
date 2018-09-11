@@ -1,5 +1,5 @@
 <!-- gsd stands for ground segment data.
-     Schema will be provided by GSDM but the application wll be able to choose which to use -->
+     Schema will be provided by EBOA but the application wll be able to choose which to use -->
 <gsd>
   <insert>
     <!-- Dates are specified following ISO 8601 (all considered following UTC)

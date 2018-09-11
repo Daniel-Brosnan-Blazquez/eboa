@@ -1,9 +1,9 @@
 \chapter{JSON and Python data schemas}\label{ap:json_schema}
 
-The \acrshort{gsdm} offers schema validation for the inputs. 
+The \acrshort{eboa} offers schema validation for the inputs. 
 
 The JSON schema is shown here:
 
 \lstinputlisting[style=python]{../../src/schemas/gsd_schema.json}
 
-Due to bad performances using the JSON schema, the \acrshort{gsdm} implements a parsing method using Python, that is quicker. The performance is better even than the XSD for XML input data. For more details check the file \href{https://bitbucket.org/dbrosnan/gsdm/src/master/src/gsdm/engine/parsing.py}{src/gsdm/engine/parsing.py}.
+Due to bad performances using the JSON schema, the \acrshort{eboa} implements a parsing method using Python, that is quicker. The performance is better even than the XSD for XML input data. For more details check the file \href{https://bitbucket.org/dbrosnan/eboa/src/master/src/eboa/engine/parsing.py}{src/eboa/engine/parsing.py}.

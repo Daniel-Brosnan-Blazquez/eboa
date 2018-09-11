@@ -1,9 +1,9 @@
 {
     "DDBB_CONFIGURATION" : {
-        "user": "gsdm",
+        "user": "eboa",
         "host": "localhost",
         "port": 5432,
-        "database": "gsdmdb",
+        "database": "eboadb",
         "db_api": "postgres",
         "pool_size": 1000,
         "max_overflow": 1000

@@ -1,4 +1,4 @@
-gsdm package
+eboa package
 ============
 
 Subpackages
@@ -6,24 +6,24 @@ Subpackages
 
 .. toctree::
 
-    gsdm.datamodel
-    gsdm.engine
+    eboa.datamodel
+    eboa.engine
 
 Submodules
 ----------
 
-gsdm.debugging module
+eboa.debugging module
 ---------------------
 
-.. automodule:: gsdm.debugging
+.. automodule:: eboa.debugging
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.logging module
+eboa.logging module
 -------------------
 
-.. automodule:: gsdm.logging
+.. automodule:: eboa.logging
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ gsdm.logging module
 Module contents
 ---------------
 
-.. automodule:: gsdm
+.. automodule:: eboa
     :members:
     :undoc-members:
     :show-inheritance:

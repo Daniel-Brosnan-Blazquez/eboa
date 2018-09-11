@@ -3,16 +3,16 @@ Automated tests for the parsing submodule
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import unittest
 
 # Import parsing
-import gsdm.engine.parsing as parsing
+import eboa.engine.parsing as parsing
 
 # Import exceptions
-from gsdm.engine.errors import ErrorParsingDictionary
+from eboa.engine.errors import ErrorParsingDictionary
 
 class TestParsing(unittest.TestCase):
 

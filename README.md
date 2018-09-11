@@ -1,6 +1,6 @@
-##GSDM: Ground Segment Data Management##
+##EBOA: Engine for Business Operation Analysis##
 
-This component is the data storage management tool for ground segment data.
+This component is the data storage management tool for business-related data.
 The data management will make use of a data model containing the following main entities:
 
 1. Events
@@ -13,7 +13,7 @@ The data management will make use of a data model containing the following main 
 
 ** Purpose **
 
-This component will manage the storage of the ground segment data following the next requirements:
+This component will manage the storage of business-related data following the next requirements:
 
 1. Traceability of all the data to the source of information (even information created within the infrastructure)
 

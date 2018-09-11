@@ -3,7 +3,7 @@ Automated tests for the engine submodule
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import os
@@ -15,19 +15,19 @@ import random
 import before_after
 
 # Import engine of the DDBB
-import gsdm.engine.engine
-from gsdm.engine.engine import Engine
-from gsdm.engine.query import Query
-from gsdm.datamodel.base import Session, engine, Base
-from gsdm.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry
+import eboa.engine.engine
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+from eboa.datamodel.base import Session, engine, Base
+from eboa.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry
 
 # Import datamodel
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -37,14 +37,14 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy import func
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
         # Create the engine to manage the data
-        self.engine_gsdm = Engine()
-        self.engine_gsdm_race_conditions = Engine()
-        self.query_gsdm = Query()
+        self.engine_eboa = Engine()
+        self.engine_eboa_race_conditions = Engine()
+        self.query_eboa = Query()
 
         # Create session to connect to the database
         self.session = Session()
@@ -58,8 +58,8 @@ class TestEngine(unittest.TestCase):
                                   "exec": "exec",
                                   "version": "1.0"}
                                   }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
 
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).all()
 
@@ -83,10 +83,10 @@ class TestEngine(unittest.TestCase):
                                   "exec": "exec",
                                   "version": "1.0"}
         }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
-        with before_after.before("gsdm.engine.engine.race_condition", self.engine_gsdm_race_conditions._insert_dim_signature):
-            self.engine_gsdm._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
+        with before_after.before("eboa.engine.engine.race_condition", self.engine_eboa_race_conditions._insert_dim_signature):
+            self.engine_eboa._insert_dim_signature()
 
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).all()
 
@@ -102,9 +102,9 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
 
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
 
@@ -112,10 +112,10 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_source_again(self):
         self.test_insert_source()
-        data = self.engine_gsdm.operation
+        data = self.engine_eboa.operation
 
-        self.engine_gsdm.ingestion_start = datetime.datetime.now()
-        self.engine_gsdm._insert_proc_status(0, final = True)
+        self.engine_eboa.ingestion_start = datetime.datetime.now()
+        self.engine_eboa._insert_proc_status(0, final = True)
         
         try:
             self.test_insert_source()
@@ -128,7 +128,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_source_again_no_previous_ingestion_finished(self):
         self.test_insert_source()
-        data = self.engine_gsdm.operation
+        data = self.engine_eboa.operation
 
         returned_value = self.test_insert_source()
 
@@ -147,10 +147,10 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-05T10:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
         try:
-            self.engine_gsdm._insert_source()
+            self.engine_eboa._insert_source()
         except WrongPeriod:
             pass
 
@@ -171,23 +171,23 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-05T10:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm_race_conditions._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa_race_conditions._insert_dim_signature()
         def insert_source_race_condition():
             try:
-                self.engine_gsdm_race_conditions._insert_source()
+                self.engine_eboa_race_conditions._insert_source()
             except WrongPeriod:
                 pass
 
         def insert_source():
             try:
-                self.engine_gsdm._insert_source()
+                self.engine_eboa._insert_source()
             except WrongPeriod:
                 pass
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_source_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_source_race_condition):
             insert_source()
 
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
@@ -207,23 +207,23 @@ class TestEngine(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm_race_conditions._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa_race_conditions._insert_dim_signature()
         def insert_source_race_condition():
             try:
-                self.engine_gsdm_race_conditions._insert_source()
+                self.engine_eboa_race_conditions._insert_source()
             except SourceAlreadyIngested:
                 pass
 
         def insert_source():
             try:
-                self.engine_gsdm._insert_source()
+                self.engine_eboa._insert_source()
             except SourceAlreadyIngested:
                 pass
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_source_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_source_race_condition):
             insert_source()
 
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
@@ -232,7 +232,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_source_without_dim_signature(self):
         name = "source_withoud_dim_signature.xml"
-        self.engine_gsdm._insert_source_without_dim_signature(name)
+        self.engine_eboa._insert_source_without_dim_signature(name)
 
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == name).all()
 
@@ -244,17 +244,17 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_gauge(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         self.test_insert_source()
         data = {"gauge": {
             "name": "GAUGE",
             "system": "SYSTEM",
             "insertion_type": "SIMPLE_UPDATE"
         }}
-        self.engine_gsdm.operation["events"] = [data]
-        self.engine_gsdm._insert_gauges()
+        self.engine_eboa.operation["events"] = [data]
+        self.engine_eboa._insert_gauges()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["gauge"]["name"], Gauge.system == data["gauge"]["system"]).all()
 
@@ -262,8 +262,8 @@ class TestEngine(unittest.TestCase):
 
     def test_race_condition_insert_gauge(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -277,31 +277,31 @@ class TestEngine(unittest.TestCase):
                     "insertion_type": "SIMPLE_UPDATE"
                 }}]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm_race_conditions._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa_race_conditions._insert_dim_signature()
         try:
-            self.engine_gsdm_race_conditions._insert_source()
+            self.engine_eboa_race_conditions._insert_source()
         except SourceAlreadyIngested:
             pass
 
         def insert_gauges():
-            self.engine_gsdm._insert_gauges()
-            self.engine_gsdm.session.commit()
-            self.engine_gsdm.session.close()
+            self.engine_eboa._insert_gauges()
+            self.engine_eboa.session.commit()
+            self.engine_eboa.session.close()
 
         def insert_gauges_race_condition():
-            self.engine_gsdm_race_conditions._insert_gauges()
-            self.engine_gsdm_race_conditions.session.commit()
-            self.engine_gsdm_race_conditions.session.close()
+            self.engine_eboa_race_conditions._insert_gauges()
+            self.engine_eboa_race_conditions.session.commit()
+            self.engine_eboa_race_conditions.session.close()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_gauges_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_gauges_race_condition):
             insert_gauges()
 
         # Call commit as the method uses the nested operation
-        self.engine_gsdm_race_conditions.session.commit()
+        self.engine_eboa_race_conditions.session.commit()
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).all()
 
@@ -309,16 +309,16 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_annotation(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         self.test_insert_source()
         data = {"annotation_cnf": {
             "name": "ANNOTATION_CNF",
             "system": "SYSTEM"
         }}
-        self.engine_gsdm.operation["annotations"] = [data]
-        self.engine_gsdm._insert_annotation_cnfs()
+        self.engine_eboa.operation["annotations"] = [data]
+        self.engine_eboa._insert_annotation_cnfs()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotation_cnf"]["name"], AnnotationCnf.system == data["annotation_cnf"]["system"]).all()
 
@@ -326,8 +326,8 @@ class TestEngine(unittest.TestCase):
 
     def test_race_condition_insert_annotation(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -340,29 +340,29 @@ class TestEngine(unittest.TestCase):
                     "system": "SYSTEM"
                 }}]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm_race_conditions._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa_race_conditions._insert_dim_signature()
         try:
-            self.engine_gsdm_race_conditions._insert_source()
+            self.engine_eboa_race_conditions._insert_source()
         except SourceAlreadyIngested:
             pass
 
         def insert_annotations_cnf():
-            self.engine_gsdm._insert_annotation_cnfs()
-            self.engine_gsdm.session.commit()
+            self.engine_eboa._insert_annotation_cnfs()
+            self.engine_eboa.session.commit()
 
         def insert_annotations_cnf_race_condition():
-            self.engine_gsdm_race_conditions._insert_annotation_cnfs()
-            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_eboa_race_conditions._insert_annotation_cnfs()
+            self.engine_eboa_race_conditions.session.commit()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_annotations_cnf_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_annotations_cnf_race_condition):
             insert_annotations_cnf()
 
         # Call commit as the method uses the nested operation
-        self.engine_gsdm_race_conditions.session.commit()
+        self.engine_eboa_race_conditions.session.commit()
 
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).all()
 
@@ -370,14 +370,14 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_expl_group(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"explicit_references": [{
             "group": "EXPL_GROUP"
         }]}
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_expl_groups()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_expl_groups()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
         expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == data["explicit_references"][0]["group"]).all()
 
@@ -389,23 +389,23 @@ class TestEngine(unittest.TestCase):
         group for explicit references does not exist and it is going to be created by
         two instances
         """
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"explicit_references": [{
             "group": "EXPL_GROUP"
         }]}
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
 
         def insert_expl_group():
-            self.engine_gsdm._insert_expl_groups()
-            self.engine_gsdm.session.commit()
+            self.engine_eboa._insert_expl_groups()
+            self.engine_eboa.session.commit()
 
         def insert_expl_group_race_condition():
-            self.engine_gsdm_race_conditions._insert_expl_groups()
-            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_eboa_race_conditions._insert_expl_groups()
+            self.engine_eboa_race_conditions.session.commit()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_expl_group_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_expl_group_race_condition):
             insert_expl_group()
 
         expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == data["explicit_references"][0]["group"]).all()
@@ -414,7 +414,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_explicit_reference(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
@@ -427,10 +427,10 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_explicit_refs()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_explicit_refs()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).all()
 
@@ -450,23 +450,23 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_race_condition_explicit_reference(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE"}]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
 
         def insert_explicit_reference():
-            self.engine_gsdm._insert_explicit_refs()
-            self.engine_gsdm.session.commit()
+            self.engine_eboa._insert_explicit_refs()
+            self.engine_eboa.session.commit()
 
         def insert_explicit_reference_race_condition():
-            self.engine_gsdm_race_conditions._insert_explicit_refs()
-            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_eboa_race_conditions._insert_explicit_refs()
+            self.engine_eboa_race_conditions.session.commit()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_explicit_reference_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_explicit_reference_race_condition):
             insert_explicit_reference()
 
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).all()
@@ -474,7 +474,7 @@ class TestEngine(unittest.TestCase):
         assert len(explicit_reference_ddbb) == 1
 
     def test_insert_link_explicit_refs(self):
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
@@ -485,14 +485,14 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_explicit_refs()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_explicit_refs()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._insert_links_explicit_refs()
+        self.engine_eboa._insert_links_explicit_refs()
         # Call commit as the method uses the nested operation
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.session.commit()
 
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).first()
         explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
@@ -505,8 +505,8 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_race_condition_links_explicit_reference(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
@@ -516,22 +516,22 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm_race_conditions._insert_explicit_refs()
-        self.engine_gsdm_race_conditions.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa_race_conditions._insert_explicit_refs()
+        self.engine_eboa_race_conditions.session.commit()
 
         def insert_link_explicit_reference():
-            self.engine_gsdm._insert_links_explicit_refs()
-            self.engine_gsdm.session.commit()
+            self.engine_eboa._insert_links_explicit_refs()
+            self.engine_eboa.session.commit()
 
         def insert_link_explicit_reference_race_condition():
-            self.engine_gsdm_race_conditions._insert_links_explicit_refs()
-            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_eboa_race_conditions._insert_links_explicit_refs()
+            self.engine_eboa_race_conditions.session.commit()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_link_explicit_reference_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_link_explicit_reference_race_condition):
             insert_link_explicit_reference()
 
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).first()
@@ -545,8 +545,8 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_race_condition_back_ref_links_explicit_reference(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm_race_conditions._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa_race_conditions._initialize_context_insert_data()
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
@@ -556,16 +556,16 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm_race_conditions._insert_explicit_refs()
-        self.engine_gsdm_race_conditions.session.commit()
-        self.engine_gsdm._insert_links_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm_race_conditions._insert_links_explicit_refs()
-        self.engine_gsdm_race_conditions.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa_race_conditions._insert_explicit_refs()
+        self.engine_eboa_race_conditions.session.commit()
+        self.engine_eboa._insert_links_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa_race_conditions._insert_links_explicit_refs()
+        self.engine_eboa_race_conditions.session.commit()
 
         data = {"explicit_references": [{
             "name": "EXPLICIT_REFERENCE",
@@ -577,18 +577,18 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm_race_conditions.operation = data
+        self.engine_eboa.operation = data
+        self.engine_eboa_race_conditions.operation = data
 
         def insert_link_explicit_reference():
-            self.engine_gsdm._insert_links_explicit_refs()
-            self.engine_gsdm.session.commit()
+            self.engine_eboa._insert_links_explicit_refs()
+            self.engine_eboa.session.commit()
 
         def insert_link_explicit_reference_race_condition():
-            self.engine_gsdm_race_conditions._insert_links_explicit_refs()
-            self.engine_gsdm_race_conditions.session.commit()
+            self.engine_eboa_race_conditions._insert_links_explicit_refs()
+            self.engine_eboa_race_conditions.session.commit()
 
-        with before_after.before("gsdm.engine.engine.race_condition", insert_link_explicit_reference_race_condition):
+        with before_after.before("eboa.engine.engine.race_condition", insert_link_explicit_reference_race_condition):
             insert_link_explicit_reference()
 
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).first()
@@ -602,7 +602,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -619,19 +619,19 @@ class TestEngine(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
@@ -643,7 +643,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_start_gt_stop(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -659,13 +659,13 @@ class TestEngine(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongPeriod:
             pass
 
@@ -676,7 +676,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_period_out_of_validity(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -692,13 +692,13 @@ class TestEngine(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongPeriod:
             pass
 
@@ -708,7 +708,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_erase_and_replace(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -725,19 +725,19 @@ class TestEngine(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
@@ -750,7 +750,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_event_keys(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -768,19 +768,19 @@ class TestEngine(unittest.TestCase):
                     "key": "EVENT_KEY"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
@@ -817,7 +817,7 @@ class TestEngine(unittest.TestCase):
                 }]
         }]
         }
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
@@ -860,7 +860,7 @@ class TestEngine(unittest.TestCase):
                 }]
         }]
         }
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
@@ -885,7 +885,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_values(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -925,16 +925,16 @@ class TestEngine(unittest.TestCase):
                                         }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
@@ -943,13 +943,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 8
 
     def test_insert_event_simple_update_not_a_float_geometry(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -971,16 +971,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongValue:
             self.session.rollback()
             pass
@@ -990,7 +990,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_wrong_geometry(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1012,16 +1012,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongGeometry:
             self.session.rollback()
             pass
@@ -1031,7 +1031,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_odd_geometry(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1053,16 +1053,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except OddNumberOfCoordinates:
             self.session.rollback()
             pass
@@ -1072,7 +1072,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_wrong_boolean(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1094,16 +1094,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongValue:
             self.session.rollback()
             pass
@@ -1113,7 +1113,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_wrong_double(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1135,16 +1135,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongValue:
             self.session.rollback()
             pass
@@ -1154,7 +1154,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_wrong_timestamp(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1176,16 +1176,16 @@ class TestEngine(unittest.TestCase):
                                     }]
                         }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except WrongValue:
             self.session.rollback()
             pass
@@ -1195,7 +1195,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_links(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1230,18 +1230,18 @@ class TestEngine(unittest.TestCase):
                     }]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         events_ddbb = self.session.query(Event).all()
 
         assert len(events_ddbb) == 2
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1263,13 +1263,13 @@ class TestEngine(unittest.TestCase):
                     }]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"]).all()
 
@@ -1294,7 +1294,7 @@ class TestEngine(unittest.TestCase):
 
     def test_event_links_inconsistency(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"operations": [{
                 "mode": "insert",
                 "dim_signature": {"name": "dim_signature",
@@ -1333,19 +1333,19 @@ class TestEngine(unittest.TestCase):
                 }]
             }]
             }
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["LINKS_INCONSISTENCY"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["LINKS_INCONSISTENCY"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
     def test_duplicated_event_links(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"operations": [{
                 "mode": "insert",
                 "dim_signature": {"name": "dim_signature",
@@ -1384,19 +1384,19 @@ class TestEngine(unittest.TestCase):
                 }]
             }]
             }
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
     def test_insert_event_undefined_link(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1417,16 +1417,16 @@ class TestEngine(unittest.TestCase):
                     }]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         try:
-            self.engine_gsdm._insert_events()
+            self.engine_eboa._insert_events()
         except UndefinedEventLink:
             self.session.rollback()
             pass
@@ -1436,7 +1436,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_annotations(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1475,15 +1475,15 @@ class TestEngine(unittest.TestCase):
                                         }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotation_cnfs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotations()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotation_cnfs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotations()
+        self.engine_eboa.session.commit()
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
@@ -1494,13 +1494,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(annotation_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_annotation_values()
+        values_ddbb = self.query_eboa.get_annotation_values()
 
         assert len(values_ddbb) == 8
 
     def test_remove_deprecated_event_keys(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1543,16 +1543,16 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1595,17 +1595,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_event_keys()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_event_keys()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
@@ -1628,13 +1628,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 8
 
     def test_deprecated_annotations(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1673,16 +1673,16 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotation_cnfs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotations()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotation_cnfs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotations()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1721,17 +1721,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotation_cnfs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_annotations()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_annotations()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotation_cnfs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_annotations()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_annotations()
+        self.engine_eboa.session.commit()
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
@@ -1746,13 +1746,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(annotations_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_annotation_values()
+        values_ddbb = self.query_eboa.get_annotation_values()
 
         assert len(values_ddbb) == 8
 
     def test_remove_deprecated_event_erase_and_replace_same_period(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1794,17 +1794,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1846,17 +1846,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
@@ -1875,13 +1875,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 8
 
     def test_remove_deprecated_event_erase_and_replace_one_starts_before_links(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -1958,17 +1958,17 @@ class TestEngine(unittest.TestCase):
                                    "back_ref": "true"
                                }]}]
             }
-        self.engine_gsdm.operation = data1
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data1
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data2 = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -2010,17 +2010,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data2
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data2
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
@@ -2067,11 +2067,11 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 4
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 16
 
-        links_ddbb = self.query_gsdm.get_event_links()
+        links_ddbb = self.query_eboa.get_event_links()
 
         assert len(links_ddbb) == 6
 
@@ -2079,25 +2079,25 @@ class TestEngine(unittest.TestCase):
         
         rest_of_event_uuids = [events_with_links[1].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[0].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[0].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 3
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[1].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[1].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 2
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[1].event_uuid]
         
-        event_links_ddbb = self.query_gsdm.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[2].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[2].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 1
 
     def test_remove_deprecated_event_erase_and_replace_one_starts_after(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -2139,17 +2139,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data1
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data1
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data2 = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -2191,17 +2191,17 @@ class TestEngine(unittest.TestCase):
                                  }]}]
                 }]
             }
-        self.engine_gsdm.operation = data2
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data2
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
@@ -2234,14 +2234,14 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 2
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 16
 
 
     def test_remove_deprecated_event_erase_and_replace_events_not_overlapping(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
                                    "version": "1.0"},
@@ -2283,15 +2283,15 @@ class TestEngine(unittest.TestCase):
                                   }]}]
                 }]
             }
-        self.engine_gsdm.operation = data1
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data1
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
         data2 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
@@ -2334,18 +2334,18 @@ class TestEngine(unittest.TestCase):
                                   }]}]
                 }]
             }
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm.operation = data2
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa.operation = data2
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
@@ -2364,13 +2364,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 1
 
-        values_ddbb = self.query_gsdm.get_event_values()
+        values_ddbb = self.query_eboa.get_event_values()
 
         assert len(values_ddbb) == 8
 
     def test_remove_deprecated_event_erase_and_replace_split_events(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
                                    "version": "1.0"},
@@ -2387,17 +2387,17 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-05T04:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data1
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data1
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data2 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
                                    "version": "1.0"},
@@ -2414,15 +2414,15 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-05T15:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data2
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data2
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
         data3 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
@@ -2440,18 +2440,18 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-06T07:07:36"
                 }]
             }
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm.operation = data3
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa.operation = data3
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
@@ -2523,7 +2523,7 @@ class TestEngine(unittest.TestCase):
 
     def test_remove_deprecated_event_erase_and_replace_split_events_not_created(self):
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
                                    "version": "1.0"},
@@ -2540,17 +2540,17 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-05T04:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data1
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data1
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data2 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
                                    "version": "1.0"},
@@ -2567,15 +2567,15 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-05T15:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data2
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data2
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
 
         data3 = {"dim_signature": {"name": "dim_signature",
                                    "exec": "exec",
@@ -2593,18 +2593,18 @@ class TestEngine(unittest.TestCase):
                      "stop": "2018-06-05T09:07:36"
                 }]
             }
-        self.engine_gsdm._initialize_context_insert_data()
-        self.engine_gsdm.operation = data3
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._remove_deprecated_events_by_erase_and_replace()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._initialize_context_insert_data()
+        self.engine_eboa.operation = data3
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
@@ -2677,9 +2677,9 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        returned_value = self.engine_gsdm.treat_data(data)
+        returned_value = self.engine_eboa.treat_data(data)
 
-        assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
         events_ddbb = self.session.query(Event).all()
 
@@ -2702,8 +2702,8 @@ class TestEngine(unittest.TestCase):
                        "validity_stop": "2018-06-05T08:07:36"}
         }]}
 
-        self.engine_gsdm.data = data
-        self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        self.engine_eboa.treat_data()
 
         data = {"operations": [{
             "mode": "insert",
@@ -2716,17 +2716,17 @@ class TestEngine(unittest.TestCase):
                        "validity_stop": "2018-06-05T08:07:36"}
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["OK"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2744,12 +2744,12 @@ class TestEngine(unittest.TestCase):
                        "validity_stop": "2018-06-05T08:07:36"}
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2779,12 +2779,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2809,12 +2809,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["WRONG_EVENT_PERIOD"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["WRONG_EVENT_PERIOD"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2846,12 +2846,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["WRONG_VALUE"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["WRONG_VALUE"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2883,12 +2883,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2918,12 +2918,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["WRONG_VALUE"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["WRONG_VALUE"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2953,12 +2953,12 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        self.engine_gsdm.data = data
-        returned_value = self.engine_gsdm.treat_data()
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
                                                                            DimProcessing.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2966,13 +2966,13 @@ class TestEngine(unittest.TestCase):
     def test_insert_xml(self):
 
         filename = "test_simple_update.xml"
-        self.engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
+        self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        returned_value = self.engine_gsdm.treat_data()
+        returned_value = self.engine_eboa.treat_data()
 
-        assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["OK"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
                                                                                             DimProcessing.name == filename).all()
 
         assert len(sources_status) == 1
@@ -2988,27 +2988,27 @@ class TestEngine(unittest.TestCase):
     def test_wrong_xml(self):
 
         filename = "test_wrong_structure.xml"
-        returned_value = self.engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
+        returned_value = self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_not_xml(self):
 
         filename = "test_not_xml.xml"
-        returned_value = self.engine_gsdm.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
+        returned_value = self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_insert_json(self):
 
         filename = "test_simple_update.json"
-        self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
+        self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        returned_value = self.engine_gsdm.treat_data(source = filename)
+        returned_value = self.engine_eboa.treat_data(source = filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["OK"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_gsdm.exit_codes["OK"]["status"],
+        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
                                                                                             DimProcessing.name == filename).all()
 
         assert len(sources_status) == 1
@@ -3024,40 +3024,40 @@ class TestEngine(unittest.TestCase):
     def test_wrong_json(self):
 
         filename = "test_wrong_structure.json"
-        returned_value = self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
+        returned_value = self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_wrong_json_validating_its_data(self):
 
         filename = "test_wrong_structure.json"
-        self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename, check_schema = False)
+        self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename, check_schema = False)
 
-        returned_value = self.engine_gsdm.treat_data(self.engine_gsdm.data, filename)
+        returned_value = self.engine_eboa.treat_data(self.engine_eboa.data, filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_not_json(self):
 
         filename = "test_not_json.json"
-        returned_value = self.engine_gsdm.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
+        returned_value = self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_insert_event_simple_update_debug(self):
 
         logging_module = Log()
 
         previous_logging_level = None
-        if "GSDM_LOG_LEVEL" in os.environ:
-            previous_logging_level = os.environ["GSDM_LOG_LEVEL"]
+        if "EBOA_LOG_LEVEL" in os.environ:
+            previous_logging_level = os.environ["EBOA_LOG_LEVEL"]
         # end if
 
-        os.environ["GSDM_LOG_LEVEL"] = "DEBUG"
+        os.environ["EBOA_LOG_LEVEL"] = "DEBUG"
 
         logging_module.define_logging_configuration()
 
-        self.engine_gsdm._initialize_context_insert_data()
+        self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -3074,19 +3074,19 @@ class TestEngine(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm._insert_gauges()
-        self.engine_gsdm.session.commit()
-        self.engine_gsdm._insert_explicit_refs()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa._insert_gauges()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_explicit_refs()
+        self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
         dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
-        self.engine_gsdm._insert_events()
-        self.engine_gsdm.session.commit()
+        self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_id == gauge_ddbb.gauge_id,
@@ -3097,8 +3097,8 @@ class TestEngine(unittest.TestCase):
         assert len(event_ddbb) == 1
 
         if previous_logging_level:
-            os.environ["GSDM_LOG_LEVEL"] = previous_logging_level
+            os.environ["EBOA_LOG_LEVEL"] = previous_logging_level
         else:
-            del os.environ["GSDM_LOG_LEVEL"]
+            del os.environ["EBOA_LOG_LEVEL"]
         # end if
         logging_module.define_logging_configuration()

@@ -1,69 +1,69 @@
-gsdm.engine package
+eboa.engine package
 ===================
 
 Submodules
 ----------
 
-gsdm.engine.engine module
+eboa.engine.engine module
 -------------------------
 
-.. automodule:: gsdm.engine.engine
+.. automodule:: eboa.engine.engine
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.errors module
+eboa.engine.errors module
 -------------------------
 
-.. automodule:: gsdm.engine.errors
+.. automodule:: eboa.engine.errors
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.export module
+eboa.engine.export module
 -------------------------
 
-.. automodule:: gsdm.engine.export
+.. automodule:: eboa.engine.export
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.functions module
+eboa.engine.functions module
 ----------------------------
 
-.. automodule:: gsdm.engine.functions
+.. automodule:: eboa.engine.functions
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.ingestion module
+eboa.engine.ingestion module
 ----------------------------
 
-.. automodule:: gsdm.engine.ingestion
+.. automodule:: eboa.engine.ingestion
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.parsing module
+eboa.engine.parsing module
 --------------------------
 
-.. automodule:: gsdm.engine.parsing
+.. automodule:: eboa.engine.parsing
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.printing module
+eboa.engine.printing module
 ---------------------------
 
-.. automodule:: gsdm.engine.printing
+.. automodule:: eboa.engine.printing
     :members:
     :undoc-members:
     :show-inheritance:
 
-gsdm.engine.query module
+eboa.engine.query module
 ------------------------
 
-.. automodule:: gsdm.engine.query
+.. automodule:: eboa.engine.query
     :members:
     :undoc-members:
     :show-inheritance:
@@ -72,7 +72,7 @@ gsdm.engine.query module
 Module contents
 ---------------
 
-.. automodule:: gsdm.engine
+.. automodule:: eboa.engine
     :members:
     :undoc-members:
     :show-inheritance:

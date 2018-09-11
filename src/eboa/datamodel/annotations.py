@@ -3,7 +3,7 @@ Annotations data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text, Float, Boolean
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from gsdm.datamodel.base import Base
+from eboa.datamodel.base import Base
 
 class Annotation(Base):
     __tablename__ = 'annotation_tb'

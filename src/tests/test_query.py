@@ -3,7 +3,7 @@ Automated tests for the query submodule
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import os
@@ -12,22 +12,22 @@ import unittest
 import datetime
 
 # Import engine of the DDBB
-from gsdm.engine.engine import Engine
-from gsdm.engine.query import Query
-from gsdm.datamodel.base import Session, engine, Base
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+from eboa.datamodel.base import Session, engine, Base
 
 # Import datamodel
-from gsdm.datamodel.base import Session, engine, Base
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from eboa.datamodel.base import Session, engine, Base
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from sqlalchemy.dialects import postgresql
 
 # Import exceptions
-from gsdm.engine.errors import InputError
+from eboa.engine.errors import InputError
 
 class TestQuery(unittest.TestCase):
     def setUp(self):
@@ -35,7 +35,7 @@ class TestQuery(unittest.TestCase):
         self.query = Query()
 
         # Create the engine to manage the data
-        self.engine_gsdm = Engine()
+        self.engine_eboa = Engine()
 
         # Clear all tables before executing the test
         for table in reversed(Base.metadata.sorted_tables):
@@ -46,8 +46,8 @@ class TestQuery(unittest.TestCase):
                                   "exec": "exec",
                                   "version": "1.0"}
                                   }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -239,11 +239,11 @@ class TestQuery(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
                                   }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm.ingestion_start = datetime.datetime.now()
-        self.engine_gsdm._insert_proc_status(0, final = True)
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa.ingestion_start = datetime.datetime.now()
+        self.engine_eboa._insert_proc_status(0, final = True)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -312,9 +312,9 @@ class TestQuery(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
                                   }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
 
         source = self.query.get_sources(validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
 
@@ -600,11 +600,11 @@ class TestQuery(unittest.TestCase):
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
                                   }
-        self.engine_gsdm.operation = data
-        self.engine_gsdm._insert_dim_signature()
-        self.engine_gsdm._insert_source()
-        self.engine_gsdm.ingestion_start = datetime.datetime.now()
-        self.engine_gsdm._insert_proc_status(0, final = True)
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_dim_signature()
+        self.engine_eboa._insert_source()
+        self.engine_eboa.ingestion_start = datetime.datetime.now()
+        self.engine_eboa._insert_proc_status(0, final = True)
 
         source = self.query.get_sources_join(dim_signatures = {"list": [data["dim_signature"]["name"]], "op": "in"})
 
@@ -761,7 +761,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -881,7 +881,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -1030,7 +1030,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         source1 = self.query.get_sources()
 
@@ -1176,7 +1176,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         event = self.query.get_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"})
 
@@ -1603,7 +1603,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -1712,7 +1712,7 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         event1 = self.query.get_events(start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
 
@@ -1835,7 +1835,7 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         linked_events = self.query.get_linked_events()
 
@@ -1911,7 +1911,7 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         linked_events = self.query.get_linked_events_join()
 
@@ -1966,7 +1966,7 @@ class TestQuery(unittest.TestCase):
                                    "system": "ANNOTATION_CNF_SYSTEM"},
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -2025,7 +2025,7 @@ class TestQuery(unittest.TestCase):
                                    "system": "ANNOTATION_CNF_SYSTEM"},
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
@@ -2106,7 +2106,7 @@ class TestQuery(unittest.TestCase):
                                     }]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         source1 = self.query.get_sources()
 
@@ -2172,7 +2172,7 @@ class TestQuery(unittest.TestCase):
                                     }]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         annotation = self.query.get_annotations_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"})
 
@@ -2277,7 +2277,7 @@ class TestQuery(unittest.TestCase):
                     
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         expl_group1 = self.query.get_explicit_refs_groups()
 
@@ -2355,7 +2355,7 @@ class TestQuery(unittest.TestCase):
                                     }]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         explicit_references = self.query.get_explicit_refs_join(explicit_refs = {"list": [data["operations"][0]["annotations"][0]["explicit_reference"]], "op": "in"},
                                                                       explicit_ref_like = {"str": "EXPL%", "op": "like"},
@@ -2408,7 +2408,7 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         explicit_ref1 = self.query.get_explicit_refs(explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"})
 
@@ -2460,7 +2460,7 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         linked_explicit_refs = self.query.get_linked_explicit_refs()
 
@@ -2533,7 +2533,7 @@ class TestQuery(unittest.TestCase):
                                     }]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         linked_explicit_refs = self.query.get_linked_explicit_refs_join(explicit_refs = {"list": [data["operations"][0]["annotations"][0]["explicit_reference"]], "op": "in"},
                                                                       explicit_ref_like = {"str": "EXPL%", "op": "like"},
@@ -2565,7 +2565,7 @@ class TestQuery(unittest.TestCase):
                 "group": "EXPL_GROUP",
             }]
         }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         group1 = self.query.get_explicit_refs_groups()
 
@@ -2608,7 +2608,7 @@ class TestQuery(unittest.TestCase):
                                      "value": "true"}]}]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         event = self.query.get_events()
 
@@ -2666,7 +2666,7 @@ class TestQuery(unittest.TestCase):
                                     }]
                 }]
             }]}
-        self.engine_gsdm.treat_data(data)
+        self.engine_eboa.treat_data(data)
 
         annotation = self.query.get_annotations()
 

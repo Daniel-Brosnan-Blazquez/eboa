@@ -3,12 +3,12 @@ Test: ingest xml test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 import os
 import sys
 
-from gsdm.engine.analysis import Analysis
+from eboa.engine.analysis import Analysis
 
 def extract_data_to_xls():
     analysis = Analysis()

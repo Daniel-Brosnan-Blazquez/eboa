@@ -1,10 +1,10 @@
 -- Database for testing the uuids
 -- Written by DEIMOS Space S.L. (dibb)
--- modeule gsdm
+-- modeule eboa
 
 ---------------------- 
 -- Execute this as postgres user with the following command:
--- psql gsdmdb -f $path_to_gsdm/gsdm/src/tests/test_uuid/uuid_db.sql
+-- psql eboadb -f $path_to_eboa/eboa/src/tests/test_uuid/uuid_db.sql
 ---------------------- 
 
 -- Define table

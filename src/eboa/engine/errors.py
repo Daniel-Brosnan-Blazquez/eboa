@@ -3,7 +3,7 @@ Errors definition for the engine module
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -59,8 +59,8 @@ class OddNumberOfCoordinates(Error):
     def __init__(self, message):
         self.message = message
 
-class GsdmResourcesPathNotAvailable(Error):
-    """Exception raised when the environment variable GSDM_RESOURCES_PATH has not been defined.
+class EboaResourcesPathNotAvailable(Error):
+    """Exception raised when the environment variable EBOA_RESOURCES_PATH has not been defined.
 
     Attributes:
         message -- explanation of the error

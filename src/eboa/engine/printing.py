@@ -3,7 +3,7 @@ Engine printing definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import json

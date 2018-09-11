@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
         sudo sed -i 's/ident/trust/' /var/lib/pgsql/data/pg_hba.conf
         sudo service postgresql restart
         # Init database
-        sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/gsdm_data_model.sql
+        sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/eboa_data_model.sql
         # Install python terminal color features
         sudo pip3 install termcolor
         # Install python module coverage for making coverage analysis of code
@@ -51,12 +51,12 @@ Vagrant.configure("2") do |config|
         sudo pip3 install before_after
         # Install Sphinx for the automatic generation of the code documentation
         sudo pip3 install Sphinx
-        # Install gsdm
+        # Install eboa
         cd /vagrant/
         sudo pip3 install -e src
         # Inserting environment variables
-        echo "# GSDM resources path" >> ~/.bashrc
-        echo export GSDM_RESOURCES_PATH="/vagrant/src" >> ~/.bashrc
+        echo "# EBOA resources path" >> ~/.bashrc
+        echo export EBOA_RESOURCES_PATH="/vagrant/src" >> ~/.bashrc
         source ~/.bashrc
       SHELL
 
@@ -94,13 +94,13 @@ Vagrant.configure("2") do |config|
         # Install texlive
         sudo apt-get install -y texlive texlive-latex-extra
         # Init database
-        sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/gsdm_data_model.sql
-        # Install gsdm
+        sudo /vagrant/datamodel/init_ddbb.sh -f /vagrant/datamodel/eboa_data_model.sql
+        # Install eboa
         cd /vagrant/
         sudo pip3 install -e src
         # Inserting environment variables
-        echo "# GSDM resources path" >> ~/.bashrc
-        echo export GSDM_RESOURCES_PATH="/vagrant/src" >> ~/.bashrc
+        echo "# EBOA resources path" >> ~/.bashrc
+        echo export EBOA_RESOURCES_PATH="/vagrant/src" >> ~/.bashrc
         source ~/.bashrc
       SHELL
   end

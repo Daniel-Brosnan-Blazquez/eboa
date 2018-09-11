@@ -5,24 +5,24 @@ CAUTION: Do not modify this file unless you know what you are doing.
 -->
 <dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,650" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
-<role name="gsdm"
+<role name="eboa"
       inherit="true"
       login="true">
 </role>
 
-<database name="gsdmdb">
+<database name="eboadb">
 </database>
 
 <schema name="public" fill-color="#e1e1e1" sql-disabled="true">
 </schema>
 
-<schema name="gsdm" fill-color="#e1e1e1">
-	<role name="gsdm"/>
+<schema name="eboa" fill-color="#e1e1e1">
+	<role name="eboa"/>
 </schema>
 
 <table name="event_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1040" y="1040"/>
 	<column name="event_uuid" not-null="true">
 		<type name="uuid" length="1"/>
@@ -39,10 +39,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="visible" not-null="true">
 		<type name="boolean" length="0"/>
 	</column>
-	<constraint name="event_tb_pk" type="pk-constr" table="gsdm.event_tb">
+	<constraint name="event_tb_pk" type="pk-constr" table="eboa.event_tb">
 		<columns names="event_uuid" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_event" type="uq-constr" table="gsdm.event_tb">
+	<constraint name="unique_event" type="uq-constr" table="eboa.event_tb">
 		<columns names="event_uuid" ref-type="src-columns"/>
 	</constraint>
 
@@ -60,8 +60,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="gauge_cnf_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1040" y="860"/>
 	<column name="gauge_id" not-null="true">
 		<type name="uuid" length="1"/>
@@ -72,10 +72,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="gauge_cnf_tb_pk" type="pk-constr" table="gsdm.gauge_cnf_tb">
+	<constraint name="gauge_cnf_tb_pk" type="pk-constr" table="eboa.gauge_cnf_tb">
 		<columns names="gauge_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_gauge_cnf" type="uq-constr" table="gsdm.gauge_cnf_tb">
+	<constraint name="unique_gauge_cnf" type="uq-constr" table="eboa.gauge_cnf_tb">
 		<columns names="system,name" ref-type="src-columns"/>
 	</constraint>
 
@@ -89,8 +89,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="dim_processing_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1040" y="1200"/>
 	<column name="processing_uuid" not-null="true">
 		<type name="uuid" length="1"/>
@@ -125,7 +125,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parse_error">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="dim_processing_tb_pk" type="pk-constr" table="gsdm.dim_processing_tb">
+	<constraint name="dim_processing_tb_pk" type="pk-constr" table="eboa.dim_processing_tb">
 		<columns names="processing_uuid" ref-type="src-columns"/>
 	</constraint>
 
@@ -139,8 +139,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="dim_signature_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1420" y="880"/>
 	<column name="dim_signature_id" not-null="true">
 		<type name="uuid" length="1"/>
@@ -151,17 +151,17 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="dim_exec_name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="dim_signature_tb_pk" type="pk-constr" table="gsdm.dim_signature_tb">
+	<constraint name="dim_signature_tb_pk" type="pk-constr" table="eboa.dim_signature_tb">
 		<columns names="dim_signature_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_dim_signature" type="uq-constr" table="gsdm.dim_signature_tb">
+	<constraint name="unique_dim_signature" type="uq-constr" table="eboa.dim_signature_tb">
 		<columns names="dim_signature,dim_exec_name" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="explicit_ref_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1420" y="1280"/>
 	<column name="explicit_ref_id" not-null="true">
 		<type name="uuid" length="1"/>
@@ -172,10 +172,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="explicit_ref" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_tb_pk" type="pk-constr" table="gsdm.explicit_ref_tb">
+	<constraint name="explicit_ref_tb_pk" type="pk-constr" table="eboa.explicit_ref_tb">
 		<columns names="explicit_ref_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_explicit_ref" type="uq-constr" table="gsdm.explicit_ref_tb">
+	<constraint name="unique_explicit_ref" type="uq-constr" table="eboa.explicit_ref_tb">
 		<columns names="explicit_ref" ref-type="src-columns"/>
 	</constraint>
 
@@ -189,8 +189,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_text_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="700" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -218,8 +218,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_double_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="660" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -247,8 +247,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_object_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="660" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -273,8 +273,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_geometry_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="660" y="1400"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -302,8 +302,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1420" y="1060"/>
 	<column name="annotation_uuid" not-null="true">
 		<type name="uuid" length="1"/>
@@ -314,10 +314,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="visible" not-null="true">
 		<type name="boolean" length="0"/>
 	</column>
-	<constraint name="annotation_tb_pk" type="pk-constr" table="gsdm.annotation_tb">
+	<constraint name="annotation_tb_pk" type="pk-constr" table="eboa.annotation_tb">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_annotation" type="uq-constr" table="gsdm.annotation_tb">
+	<constraint name="unique_annotation" type="uq-constr" table="eboa.annotation_tb">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
 
@@ -335,8 +335,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_text_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -364,8 +364,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_double_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -393,8 +393,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_object_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -419,8 +419,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_geometry_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="1400"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -448,8 +448,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_cnf_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1420" y="960"/>
 	<column name="annotation_cnf_id" not-null="true">
 		<type name="uuid" length="1"/>
@@ -460,10 +460,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="system">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="annotation_cnf_tb_pk" type="pk-constr" table="gsdm.annotation_cnf_tb">
+	<constraint name="annotation_cnf_tb_pk" type="pk-constr" table="eboa.annotation_cnf_tb">
 		<columns names="annotation_cnf_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_annotation_cnf" type="uq-constr" table="gsdm.annotation_cnf_tb">
+	<constraint name="unique_annotation_cnf" type="uq-constr" table="eboa.annotation_cnf_tb">
 		<columns names="name,system" ref-type="src-columns"/>
 	</constraint>
 
@@ -477,8 +477,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_link_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1040" y="960"/>
 	<column name="event_uuid_link" not-null="true">
 		<type name="uuid" length="1"/>
@@ -497,8 +497,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="explicit_ref_cnf_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1440" y="1380"/>
 	<column name="expl_ref_cnf_id" not-null="true">
 		<type name="uuid" length="1"/>
@@ -506,17 +506,17 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_cnf_tb_pk" type="pk-constr" table="gsdm.explicit_ref_cnf_tb">
+	<constraint name="explicit_ref_cnf_tb_pk" type="pk-constr" table="eboa.explicit_ref_cnf_tb">
 		<columns names="expl_ref_cnf_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_explicit_ref_group" type="uq-constr" table="gsdm.explicit_ref_cnf_tb">
+	<constraint name="unique_explicit_ref_group" type="uq-constr" table="eboa.explicit_ref_cnf_tb">
 		<columns names="name" ref-type="src-columns"/>
 	</constraint>
 </table>
 
 <table name="explicit_ref_link_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1420" y="1200"/>
 	<column name="explicit_ref_id_link" not-null="true">
 		<type name="uuid" length="1"/>
@@ -524,7 +524,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_links_tb_pk" type="pk-constr" table="gsdm.explicit_ref_link_tb">
+	<constraint name="explicit_ref_links_tb_pk" type="pk-constr" table="eboa.explicit_ref_link_tb">
 		<columns names="explicit_ref_id_link" ref-type="src-columns"/>
 	</constraint>
 
@@ -538,8 +538,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="dim_processing_status_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1060" y="1420"/>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
@@ -558,8 +558,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_boolean_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="700" y="700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -591,14 +591,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#a26a06"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_boolean_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_boolean_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
 <table name="annotation_boolean_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -626,8 +626,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="annotation_timestamp_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1780" y="1120"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -659,8 +659,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#b6e88e"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_timestamp_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_timestamp_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -669,8 +669,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#08b8c3"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_boolean_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_boolean_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -679,8 +679,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#b10cb2"
-	 src-table="gsdm.dim_processing_tb"
-	 dst-table="gsdm.dim_processing_status_tb"
+	 src-table="eboa.dim_processing_tb"
+	 dst-table="eboa.dim_processing_status_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -689,8 +689,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#2cc8ae"
-	 src-table="gsdm.explicit_ref_tb"
-	 dst-table="gsdm.annotation_tb"
+	 src-table="eboa.explicit_ref_tb"
+	 dst-table="eboa.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -699,8 +699,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#6d0204"
-	 src-table="gsdm.gauge_cnf_tb"
-	 dst-table="gsdm.event_tb"
+	 src-table="eboa.gauge_cnf_tb"
+	 dst-table="eboa.event_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
@@ -713,8 +713,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#d4bcfa"
-	 src-table="gsdm.dim_processing_tb"
-	 dst-table="gsdm.event_tb"
+	 src-table="eboa.dim_processing_tb"
+	 dst-table="eboa.event_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
@@ -723,8 +723,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </relationship>
 
 <table name="event_key_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="1040" y="740"/>
 	<column name="event_key" not-null="true">
 		<type name="text" length="1"/>
@@ -745,8 +745,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </table>
 
 <table name="event_timestamp_tb">
-	<schema name="gsdm"/>
-	<role name="gsdm"/>
+	<schema name="eboa"/>
+	<role name="eboa"/>
 	<position x="660" y="1120"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
@@ -778,8 +778,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#802ea1"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_timestamp_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_timestamp_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -788,8 +788,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#0f0851"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_double_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_double_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -798,8 +798,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#58d249"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_text_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_text_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -808,8 +808,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#39b4fb"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_object_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_object_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="name-label">
@@ -822,8 +822,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#901502"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_geometry_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_geometry_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -832,8 +832,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#860d13"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_text_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_text_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -842,8 +842,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#a9c016"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_object_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_object_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -852,8 +852,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#9373f2"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_double_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_double_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="name-label">
@@ -866,8 +866,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#543aed"
-	 src-table="gsdm.annotation_tb"
-	 dst-table="gsdm.annotation_geometry_tb"
+	 src-table="eboa.annotation_tb"
+	 dst-table="eboa.annotation_geometry_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -876,8 +876,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#45ccec"
-	 src-table="gsdm.explicit_ref_tb"
-	 dst-table="gsdm.event_tb"
+	 src-table="eboa.explicit_ref_tb"
+	 dst-table="eboa.event_tb"
 	 src-required="false" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
@@ -890,8 +890,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#8086b1"
-	 src-table="gsdm.dim_processing_tb"
-	 dst-table="gsdm.annotation_tb"
+	 src-table="eboa.dim_processing_tb"
+	 dst-table="eboa.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
@@ -904,8 +904,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#85b7e8"
-	 src-table="gsdm.annotation_cnf_tb"
-	 dst-table="gsdm.annotation_tb"
+	 src-table="eboa.annotation_cnf_tb"
+	 dst-table="eboa.annotation_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -914,8 +914,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#7a8e98"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_link_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_link_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -924,8 +924,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#65f8ad"
-	 src-table="gsdm.explicit_ref_cnf_tb"
-	 dst-table="gsdm.explicit_ref_tb"
+	 src-table="eboa.explicit_ref_cnf_tb"
+	 dst-table="eboa.explicit_ref_tb"
 	 src-required="false" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -934,8 +934,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#e763e7"
-	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.dim_processing_tb"
+	 src-table="eboa.dim_signature_tb"
+	 dst-table="eboa.dim_processing_tb"
 	 src-required="false" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="dst-label">
@@ -948,8 +948,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#a32138"
-	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.annotation_cnf_tb"
+	 src-table="eboa.dim_signature_tb"
+	 dst-table="eboa.annotation_cnf_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -958,8 +958,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#b838a6"
-	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.gauge_cnf_tb"
+	 src-table="eboa.dim_signature_tb"
+	 dst-table="eboa.gauge_cnf_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -968,8 +968,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#7b71e0"
-	 src-table="gsdm.explicit_ref_tb"
-	 dst-table="gsdm.explicit_ref_link_tb"
+	 src-table="eboa.explicit_ref_tb"
+	 dst-table="eboa.explicit_ref_link_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
@@ -977,7 +977,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<index name="pk_events_tb" table="gsdm.event_tb"
+<index name="pk_events_tb" table="eboa.event_tb"
 	 concurrent="false" unique="true" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="true" nulls-first="false" asc-order="true">
@@ -985,7 +985,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_visible" table="gsdm.event_tb"
+<index name="idx_events_visible" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -993,7 +993,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_start" table="gsdm.event_tb"
+<index name="idx_events_start" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="true" nulls-first="false" asc-order="true">
@@ -1001,7 +1001,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_stop" table="gsdm.event_tb"
+<index name="idx_events_stop" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1009,7 +1009,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_gauge_id" table="gsdm.event_tb"
+<index name="idx_events_gauge_id" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1017,7 +1017,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_ingestion_time" table="gsdm.event_tb"
+<index name="idx_events_ingestion_time" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1025,7 +1025,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_explicit_ref_id" table="gsdm.event_tb"
+<index name="idx_events_explicit_ref_id" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1033,7 +1033,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_boolean_event_uuid" table="gsdm.event_boolean_tb"
+<index name="idx_event_boolean_event_uuid" table="eboa.event_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1041,7 +1041,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_boolean_value" table="gsdm.event_boolean_tb"
+<index name="idx_event_boolean_value" table="eboa.event_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1049,7 +1049,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_boolean_name" table="gsdm.event_boolean_tb"
+<index name="idx_event_boolean_name" table="eboa.event_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1057,7 +1057,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_text_event_uuid" table="gsdm.event_text_tb"
+<index name="idx_event_text_event_uuid" table="eboa.event_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1065,7 +1065,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_text_value" table="gsdm.event_text_tb"
+<index name="idx_event_text_value" table="eboa.event_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1073,7 +1073,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_text_name" table="gsdm.event_text_tb"
+<index name="idx_event_text_name" table="eboa.event_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1081,7 +1081,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_double_event_uuid" table="gsdm.event_double_tb"
+<index name="idx_event_double_event_uuid" table="eboa.event_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1089,7 +1089,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_double_value" table="gsdm.event_double_tb"
+<index name="idx_event_double_value" table="eboa.event_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1097,7 +1097,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_double_name" table="gsdm.event_double_tb"
+<index name="idx_event_double_name" table="eboa.event_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1105,7 +1105,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_timestamp_event_uuid" table="gsdm.event_timestamp_tb"
+<index name="idx_event_timestamp_event_uuid" table="eboa.event_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1113,7 +1113,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_timestamp_value" table="gsdm.event_timestamp_tb"
+<index name="idx_event_timestamp_value" table="eboa.event_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1121,7 +1121,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_timestamp_name" table="gsdm.event_timestamp_tb"
+<index name="idx_event_timestamp_name" table="eboa.event_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1129,7 +1129,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_object_event_uuid" table="gsdm.event_object_tb"
+<index name="idx_event_object_event_uuid" table="eboa.event_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1137,7 +1137,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_object_name" table="gsdm.event_object_tb"
+<index name="idx_event_object_name" table="eboa.event_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1145,7 +1145,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_event_uuid" table="gsdm.event_geometry_tb"
+<index name="idx_event_geometry_event_uuid" table="eboa.event_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1153,7 +1153,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_name" table="gsdm.event_geometry_tb"
+<index name="idx_event_geometry_name" table="eboa.event_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1161,7 +1161,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_value" table="gsdm.event_geometry_tb"
+<index name="idx_event_geometry_value" table="eboa.event_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="gist" factor="0">
 		<idxelement use-sorting="false">
@@ -1169,7 +1169,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_boolean_annotation_uuid" table="gsdm.annotation_boolean_tb"
+<index name="idx_annotation_boolean_annotation_uuid" table="eboa.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1177,7 +1177,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_boolean_value" table="gsdm.annotation_boolean_tb"
+<index name="idx_annotation_boolean_value" table="eboa.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1185,7 +1185,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_boolean_name" table="gsdm.annotation_boolean_tb"
+<index name="idx_annotation_boolean_name" table="eboa.annotation_boolean_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1193,7 +1193,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_timestamp_annotation_uuid" table="gsdm.annotation_timestamp_tb"
+<index name="idx_annotation_timestamp_annotation_uuid" table="eboa.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1201,7 +1201,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_timestamp_value" table="gsdm.annotation_timestamp_tb"
+<index name="idx_annotation_timestamp_value" table="eboa.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1209,7 +1209,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_timestamp_name" table="gsdm.annotation_timestamp_tb"
+<index name="idx_annotation_timestamp_name" table="eboa.annotation_timestamp_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1217,7 +1217,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_text_annotation_uuid" table="gsdm.annotation_text_tb"
+<index name="idx_annotation_text_annotation_uuid" table="eboa.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1225,7 +1225,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_text_value" table="gsdm.annotation_text_tb"
+<index name="idx_annotation_text_value" table="eboa.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1233,7 +1233,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_text_name" table="gsdm.annotation_text_tb"
+<index name="idx_annotation_text_name" table="eboa.annotation_text_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1241,7 +1241,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_double_annotation_uuid" table="gsdm.annotation_double_tb"
+<index name="idx_annotation_double_annotation_uuid" table="eboa.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1249,7 +1249,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_double_value" table="gsdm.annotation_double_tb"
+<index name="idx_annotation_double_value" table="eboa.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1257,7 +1257,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_double_name" table="gsdm.annotation_double_tb"
+<index name="idx_annotation_double_name" table="eboa.annotation_double_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1265,7 +1265,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_object_annotation_uuid" table="gsdm.annotation_object_tb"
+<index name="idx_annotation_object_annotation_uuid" table="eboa.annotation_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1273,7 +1273,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_object_name" table="gsdm.annotation_object_tb"
+<index name="idx_annotation_object_name" table="eboa.annotation_object_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1281,7 +1281,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_annotation_uuid" table="gsdm.annotation_geometry_tb"
+<index name="idx_annotation_geometry_annotation_uuid" table="eboa.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1289,7 +1289,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_name" table="gsdm.annotation_geometry_tb"
+<index name="idx_annotation_geometry_name" table="eboa.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1297,7 +1297,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_value" table="gsdm.annotation_geometry_tb"
+<index name="idx_annotation_geometry_value" table="eboa.annotation_geometry_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="gist" factor="0">
 		<idxelement use-sorting="false">
@@ -1305,7 +1305,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_gauge_cnf_system" table="gsdm.gauge_cnf_tb"
+<index name="idx_gauge_cnf_system" table="eboa.gauge_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1313,7 +1313,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_gauge_cnf_name" table="gsdm.gauge_cnf_tb"
+<index name="idx_gauge_cnf_name" table="eboa.gauge_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1321,7 +1321,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_gauge_cnf_dim_signature_id" table="gsdm.gauge_cnf_tb"
+<index name="idx_gauge_cnf_dim_signature_id" table="eboa.gauge_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1329,7 +1329,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_links_name" table="gsdm.event_link_tb"
+<index name="idx_event_links_name" table="eboa.event_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1337,7 +1337,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_links_event_uuid" table="gsdm.event_link_tb"
+<index name="idx_event_links_event_uuid" table="eboa.event_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1345,7 +1345,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_dim_signature_dim_signature" table="gsdm.dim_signature_tb"
+<index name="idx_dim_signature_dim_signature" table="eboa.dim_signature_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1353,7 +1353,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_dim_signature_dim_exec_name" table="gsdm.dim_signature_tb"
+<index name="idx_dim_signature_dim_exec_name" table="eboa.dim_signature_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1361,7 +1361,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_cnf_name" table="gsdm.annotation_cnf_tb"
+<index name="idx_annotation_cnf_name" table="eboa.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1369,7 +1369,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_cnf_system" table="gsdm.annotation_cnf_tb"
+<index name="idx_annotation_cnf_system" table="eboa.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1377,7 +1377,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_cnf_dim_signature_id" table="gsdm.annotation_cnf_tb"
+<index name="idx_annotation_cnf_dim_signature_id" table="eboa.annotation_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1385,7 +1385,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_ingestion_time" table="gsdm.annotation_tb"
+<index name="idx_annotation_ingestion_time" table="eboa.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1393,7 +1393,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_explicit_ref_id" table="gsdm.annotation_tb"
+<index name="idx_annotation_explicit_ref_id" table="eboa.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1401,7 +1401,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_visible" table="gsdm.annotation_tb"
+<index name="idx_annotation_visible" table="eboa.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1409,7 +1409,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_processing_uuid" table="gsdm.annotation_tb"
+<index name="idx_annotation_processing_uuid" table="eboa.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1417,7 +1417,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_links_name" table="gsdm.explicit_ref_link_tb"
+<index name="idx_explicit_ref_links_name" table="eboa.explicit_ref_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1425,7 +1425,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_links_explicit_ref_id" table="gsdm.explicit_ref_link_tb"
+<index name="idx_explicit_ref_links_explicit_ref_id" table="eboa.explicit_ref_link_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1433,7 +1433,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_ingestion_time" table="gsdm.explicit_ref_tb"
+<index name="idx_explicit_ref_ingestion_time" table="eboa.explicit_ref_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1441,7 +1441,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_explicit_ref" table="gsdm.explicit_ref_tb"
+<index name="idx_explicit_ref_explicit_ref" table="eboa.explicit_ref_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1449,7 +1449,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_expl_ref_cnf_id" table="gsdm.explicit_ref_tb"
+<index name="idx_explicit_ref_expl_ref_cnf_id" table="eboa.explicit_ref_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1457,7 +1457,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_explicit_ref_cnf_name" table="gsdm.explicit_ref_cnf_tb"
+<index name="idx_explicit_ref_cnf_name" table="eboa.explicit_ref_cnf_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1465,7 +1465,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_filename" table="gsdm.dim_processing_tb"
+<index name="idx_processing_filename" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1473,7 +1473,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_validity_start" table="gsdm.dim_processing_tb"
+<index name="idx_processing_validity_start" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1481,7 +1481,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_validity_stop" table="gsdm.dim_processing_tb"
+<index name="idx_processing_validity_stop" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1489,7 +1489,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_generation_time" table="gsdm.dim_processing_tb"
+<index name="idx_processing_generation_time" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1497,7 +1497,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_ingestion_time" table="gsdm.dim_processing_tb"
+<index name="idx_processing_ingestion_time" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1505,7 +1505,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_ingestion_duration" table="gsdm.dim_processing_tb"
+<index name="idx_processing_ingestion_duration" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1513,7 +1513,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_dim_exec_version" table="gsdm.dim_processing_tb"
+<index name="idx_processing_dim_exec_version" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1521,7 +1521,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_processing_dim_signature_id" table="gsdm.dim_processing_tb"
+<index name="idx_processing_dim_signature_id" table="eboa.dim_processing_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1529,7 +1529,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_dim_processing_status_time_stamp" table="gsdm.dim_processing_status_tb"
+<index name="idx_dim_processing_status_time_stamp" table="eboa.dim_processing_status_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1537,7 +1537,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_dim_processing_status_proc_status" table="gsdm.dim_processing_status_tb"
+<index name="idx_dim_processing_status_proc_status" table="eboa.dim_processing_status_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1545,7 +1545,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_dim_processing_status_processing_uuid" table="gsdm.dim_processing_status_tb"
+<index name="idx_dim_processing_status_processing_uuid" table="eboa.dim_processing_status_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1553,7 +1553,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_event_key" table="gsdm.event_key_tb"
+<index name="idx_event_keys_event_key" table="eboa.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1561,7 +1561,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<constraint name="unique_dim_processing" type="uq-constr" table="gsdm.dim_processing_tb">
+<constraint name="unique_dim_processing" type="uq-constr" table="eboa.dim_processing_tb">
 	<columns names="name,dim_signature_id,dim_exec_version" ref-type="src-columns"/>
 </constraint>
 
@@ -1570,12 +1570,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#435b67"
-	 src-table="gsdm.event_tb"
-	 dst-table="gsdm.event_key_tb"
+	 src-table="eboa.event_tb"
+	 dst-table="eboa.event_key_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<constraint name="unique_event_keys" type="uq-constr" table="gsdm.event_key_tb">
+<constraint name="unique_event_keys" type="uq-constr" table="eboa.event_key_tb">
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
 </constraint>
 
@@ -1584,12 +1584,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#bc867e"
-	 src-table="gsdm.dim_signature_tb"
-	 dst-table="gsdm.event_key_tb"
+	 src-table="eboa.dim_signature_tb"
+	 dst-table="eboa.event_key_tb"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<index name="idx_event_keys_visible" table="gsdm.event_key_tb"
+<index name="idx_event_keys_visible" table="eboa.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1597,7 +1597,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_event_uuid" table="gsdm.event_key_tb"
+<index name="idx_event_keys_event_uuid" table="eboa.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1605,7 +1605,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_keys_dim_signature_id" table="gsdm.event_key_tb"
+<index name="idx_event_keys_dim_signature_id" table="eboa.event_key_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1613,7 +1613,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_events_processing_uuid" table="gsdm.event_tb"
+<index name="idx_events_processing_uuid" table="eboa.event_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1621,7 +1621,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_annotation_cnf_id" table="gsdm.annotation_tb"
+<index name="idx_annotation_annotation_cnf_id" table="eboa.annotation_tb"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1629,11 +1629,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<constraint name="unique_event_links" type="uq-constr" table="gsdm.event_link_tb">
+<constraint name="unique_event_links" type="uq-constr" table="eboa.event_link_tb">
 	<columns names="event_uuid_link,name,event_uuid" ref-type="src-columns"/>
 </constraint>
 
-<constraint name="unique_explicit_ref_links" type="uq-constr" table="gsdm.explicit_ref_link_tb">
+<constraint name="unique_explicit_ref_links" type="uq-constr" table="eboa.explicit_ref_link_tb">
 	<columns names="explicit_ref_id_link,name,explicit_ref_id" ref-type="src-columns"/>
 </constraint>
 

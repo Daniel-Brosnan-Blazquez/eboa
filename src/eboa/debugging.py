@@ -3,7 +3,7 @@ Debugging definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import logging
@@ -11,7 +11,7 @@ from functools import wraps
 import datetime
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 logging_module = Log()
 logger = logging_module.logger

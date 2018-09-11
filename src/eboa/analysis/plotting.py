@@ -3,7 +3,7 @@ Data analysis using openpyxl for generating excel 2010 workbenches
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import matplotlib
 import matplotlib as mpl

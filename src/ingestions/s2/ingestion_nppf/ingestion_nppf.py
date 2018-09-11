@@ -3,7 +3,7 @@ Ingestion module for the NPPF files of Sentinel-2
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import os
@@ -15,16 +15,16 @@ import datetime
 from lxml import etree
 
 # Import engine
-from gsdm.engine.engine import Engine
+from eboa.engine.engine import Engine
 
 # Import ingestion helpers
-import gsdm.engine.ingestion as ingestion
+import eboa.engine.ingestion as ingestion
 
 # Import debugging
-from gsdm.debugging import debug
+from eboa.debugging import debug
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 logging_module = Log()
 logger = logging_module.logger
@@ -70,7 +70,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
     :type xpath_xml: XPathEvaluator
     :param source: information of the source
     :type xpath_xml: dict
-    :param list_of_events: list to store the events to be inserted into the gsdm
+    :param list_of_events: list to store the events to be inserted into the eboa
     :type list_of_events: list
     
     Conceptual design of what is expected given the following inputs
@@ -343,7 +343,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
     :type xpath_xml: XPathEvaluator
     :param source: information of the source
     :type xpath_xml: dict
-    :param list_of_events: list to store the events to be inserted into the gsdm
+    :param list_of_events: list to store the events to be inserted into the eboa
     :type list_of_events: list
     """
 
@@ -435,7 +435,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
     :type xpath_xml: XPathEvaluator
     :param source: information of the source
     :type xpath_xml: dict
-    :param list_of_events: list to store the events to be inserted into the gsdm
+    :param list_of_events: list to store the events to be inserted into the eboa
     :type list_of_events: list
 
     Conceptual design of what is expected given the following inputs
@@ -601,7 +601,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
 
 def process_file(file_path):
     """Function to process the file and insert its relevant information
-    into the DDBB of the gsdm
+    into the DDBB of the eboa
     
     :param file_path: path to the file to be processed
     :type file_path: str

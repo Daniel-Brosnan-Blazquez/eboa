@@ -3,17 +3,17 @@ Test: ingest events test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 import os
 import sys
 
-from gsdm.datamodel.base import Session, engine, Base
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.explicit_refs import ExplicitRef
-from gsdm.datamodel.dim_processings import DimProcessing
+from eboa.datamodel.base import Session, engine, Base
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.explicit_refs import ExplicitRef
+from eboa.datamodel.dim_processings import DimProcessing
 import datetime
 import uuid
 import time

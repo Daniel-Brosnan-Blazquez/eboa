@@ -1,9 +1,9 @@
 """
-Connection configuration for the gsdm component
+Connection configuration for the eboa component
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import SQLalchemy entities
 from sqlalchemy import create_engine
@@ -11,10 +11,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Import exceptions
-from gsdm.datamodel.errors import GsdmResourcesPathNotAvailable
+from eboa.datamodel.errors import EboaResourcesPathNotAvailable
 
 # Import auxiliary functions
-from gsdm.datamodel.functions import read_configuration
+from eboa.datamodel.functions import read_configuration
 
 config = read_configuration()
 

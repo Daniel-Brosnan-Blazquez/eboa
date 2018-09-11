@@ -3,7 +3,7 @@ Ingestion helpers definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 from dateutil import parser

@@ -3,7 +3,7 @@ data model definition for testing uuids
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Integer, Table, ForeignKey, Text

@@ -3,7 +3,7 @@ Data analysis using openpyxl for generating excel 2010 workbenches
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import openpyxl functionalities
 import openpyxl
@@ -27,7 +27,7 @@ class Analysis():
     """
     def __init__(self):
         self.workbook = Workbook()
-        self.query_gsdm = Query()
+        self.query_eboa = Query()
 
     def generate_workbook_from_ddbb(self, name):
         """
@@ -91,7 +91,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_signature_tb")
         
         # Get data
-        dim_signatures = self.query_gsdm.get_dim_signatures()
+        dim_signatures = self.query_eboa.get_dim_signatures()
         data = [[str(i.dim_signature_id),i.dim_signature,i.dim_exec_name] for i in dim_signatures]
         
         # Insert headings into the worksheet
@@ -117,7 +117,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_processing_tb")
         
         # Get data
-        sources = self.query_gsdm.get_sources()
+        sources = self.query_eboa.get_sources()
         data = [[str(i.processing_uuid),i.name,i.validity_start,i.validity_stop,i.generation_time,i.ingestion_time,i.ingestion_duration,i.dim_exec_version,str(i.dim_signature_id)] for i in sources]
         
         # Insert headings into the worksheet
@@ -156,7 +156,7 @@ class Analysis():
         ws = self.workbook.create_sheet("dim_processing_status_tb")
         
         # Get data
-        sources_statuses = self.query_gsdm.get_sources_statuses()
+        sources_statuses = self.query_eboa.get_sources_statuses()
         data = [[i.time_stamp,i.proc_status,str(i.processing_uuid)] for i in sources_statuses]
         
         # Insert headings into the worksheet
@@ -182,7 +182,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_tb")
         
         # Get data
-        events = self.query_gsdm.get_events()
+        events = self.query_eboa.get_events()
         data = [[str(i.event_uuid),i.start,i.stop,i.ingestion_time,i.visible, str(i.gauge_id),str(i.explicit_ref_id),str(i.processing_uuid)] for i in events]
         
         # Insert headings into the worksheet
@@ -221,7 +221,7 @@ class Analysis():
         ws = self.workbook.create_sheet("gauge_cnf_tb")
         
         # Get data
-        gauges = self.query_gsdm.get_gauges()
+        gauges = self.query_eboa.get_gauges()
         data = [[str(i.gauge_id),i.system,i.name,str(i.dim_signature_id)] for i in gauges]
         
         # Insert headings into the worksheet
@@ -247,7 +247,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_keys_tb")
         
         # Get data
-        event_keys = self.query_gsdm.get_event_keys()
+        event_keys = self.query_eboa.get_event_keys()
         data = [[i.event_key,i.visible,str(i.event_uuid),str(i.dim_signature_id)] for i in event_keys]
         
         # Insert headings into the worksheet
@@ -273,7 +273,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_links_tb")
         
         # Get data
-        event_links = self.query_gsdm.get_event_links()
+        event_links = self.query_eboa.get_event_links()
         data = [[str(i.event_uuid_link),i.name,str(i.event_uuid)] for i in event_links]
         
         # Insert headings into the worksheet
@@ -299,7 +299,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annot_tb")
         
         # Get data
-        annotations = self.query_gsdm.get_annotations()
+        annotations = self.query_eboa.get_annotations()
         data = [[str(i.annotation_uuid),i.ingestion_time,i.visible,str(i.explicit_ref_id),str(i.processing_uuid),str(i.annotation_cnf_id)] for i in annotations]
         
         # Insert headings into the worksheet
@@ -325,7 +325,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annot_cnf_tb")
         
         # Get data
-        annotations = self.query_gsdm.get_annotations_configurations()
+        annotations = self.query_eboa.get_annotations_configurations()
         data = [[str(i.annotation_cnf_id),i.system,i.name,str(i.dim_signature_id)] for i in annotations]
         
         # Insert headings into the worksheet
@@ -352,7 +352,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_tb")
         
         # Get data
-        explicit_refs = self.query_gsdm.get_explicit_references()
+        explicit_refs = self.query_eboa.get_explicit_references()
         data = [[str(i.explicit_ref_id),i.ingestion_time,i.explicit_ref,str(i.expl_ref_cnf_id)] for i in explicit_refs]
         
         # Insert headings into the worksheet
@@ -378,7 +378,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_links_tb")
         
         # Get data
-        explicit_refs_links = self.query_gsdm.get_explicit_references_links()
+        explicit_refs_links = self.query_eboa.get_explicit_references_links()
         data = [[str(i.explicit_ref_id_link),i.name,str(i.explicit_ref_id)] for i in explicit_refs_links]
         
         # Insert headings into the worksheet
@@ -404,7 +404,7 @@ class Analysis():
         ws = self.workbook.create_sheet("explicit_ref_cnf_tb")
         
         # Get data
-        explicit_refs_groups = self.query_gsdm.get_explicit_references_groups()
+        explicit_refs_groups = self.query_eboa.get_explicit_references_groups()
         data = [[str(i.expl_ref_cnf_id),i.name] for i in explicit_refs_groups]
         
         # Insert headings into the worksheet
@@ -430,7 +430,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_boolean_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_booleans()
+        values = self.query_eboa.get_event_booleans()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -456,7 +456,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_text_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_texts()
+        values = self.query_eboa.get_event_texts()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -482,7 +482,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_double_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_doubles()
+        values = self.query_eboa.get_event_doubles()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -508,7 +508,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_timestamp_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_timestamps()
+        values = self.query_eboa.get_event_timestamps()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -534,7 +534,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_object_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_objects()
+        values = self.query_eboa.get_event_objects()
         data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -560,7 +560,7 @@ class Analysis():
         ws = self.workbook.create_sheet("event_geometry_tb")
         
         # Get data
-        values = self.query_gsdm.get_event_geometries()
+        values = self.query_eboa.get_event_geometries()
         data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.event_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -586,7 +586,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_boolean_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_booleans()
+        values = self.query_eboa.get_annotation_booleans()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -612,7 +612,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_text_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_texts()
+        values = self.query_eboa.get_annotation_texts()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -638,7 +638,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_double_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_doubles()
+        values = self.query_eboa.get_annotation_doubles()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -664,7 +664,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_timestamp_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_timestamps()
+        values = self.query_eboa.get_annotation_timestamps()
         data = [[i.name,i.value,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -690,7 +690,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_object_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_objects()
+        values = self.query_eboa.get_annotation_objects()
         data = [[i.name,i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet
@@ -716,7 +716,7 @@ class Analysis():
         ws = self.workbook.create_sheet("annotation_geometry_tb")
         
         # Get data
-        values = self.query_gsdm.get_annotation_geometries()
+        values = self.query_eboa.get_annotation_geometries()
         data = [[i.name,to_shape(i.value).to_wkt(),i.level_position,i.parent_level,i.parent_position,str(i.annotation_uuid)] for i in values]
         
         # Insert headings into the worksheet

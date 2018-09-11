@@ -3,7 +3,7 @@ Engine definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import datetime
@@ -16,26 +16,26 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import datamodel
-from gsdm.datamodel.base import Session, engine, Base
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from eboa.datamodel.base import Session, engine, Base
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from sqlalchemy.dialects import postgresql
 
 # Import exceptions
-from gsdm.engine.errors import InputError
+from eboa.engine.errors import InputError
 
 # Import auxiliary functions
-from gsdm.engine.functions import is_datetime, is_valid_date_filters, is_valid_float_filters, is_valid_string_filters, is_valid_value_filters, is_valid_values_names_type, is_valid_values_name_type_like, is_valid_operator_list, is_valid_operator_like
+from eboa.engine.functions import is_datetime, is_valid_date_filters, is_valid_float_filters, is_valid_string_filters, is_valid_value_filters, is_valid_values_names_type, is_valid_values_name_type_like, is_valid_operator_list, is_valid_operator_like
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 # Import query printing facilities
-from gsdm.engine.printing import literal_query
+from eboa.engine.printing import literal_query
 
 logging = Log()
 logger = logging.logger

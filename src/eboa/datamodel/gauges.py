@@ -3,14 +3,14 @@ Gauges data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Table, ForeignKey, Text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from gsdm.datamodel.base import Base
+from eboa.datamodel.base import Base
 
 class Gauge(Base):
     __tablename__ = 'gauge_cnf_tb'

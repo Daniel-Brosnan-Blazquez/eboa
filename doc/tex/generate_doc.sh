@@ -1,18 +1,18 @@
 #################################################################
 #
-# Generate  documentation for the gsdm compoenent
+# Generate  documentation for the eboa compoenent
 #
 # Written by DEIMOS Space S.L. (dibb)
 #
-# module gsdm
+# module eboa
 #################################################################
 USAGE="Usage: `basename $0` -f pdf_file [-k]\n
 Optional parameters:\n
 -k: is set it indicates the script to keep the build directory
 "
-if [ -z "$GSDM_RESOURCES_PATH" ];
+if [ -z "$EBOA_RESOURCES_PATH" ];
 then
-    echo -e "ERROR: The environment variable GSDM_RESOURCES_PATH has to be defined"
+    echo -e "ERROR: The environment variable EBOA_RESOURCES_PATH has to be defined"
     echo -e $USAGE
     exit -1
 fi
@@ -50,9 +50,9 @@ mkdir build
 # Generate the tex file
 sphinx-build -b latex ../../src/docs/source/ build
 # Add chapter part
-echo "\chapter{GSDM code documentation}" > gsdm_code_documentation.tex
+echo "\chapter{EBOA code documentation}" > eboa_code_documentation.tex
 # Extract the chapter describing the code
-sed -n '/\\section{Subpackages}/,/\\section{Module contents}/p' build/GSDM_module.tex |head -n -1 >> gsdm_code_documentation.tex
+sed -n '/\\section{Subpackages}/,/\\section{Module contents}/p' build/EBOA_module.tex |head -n -1 >> eboa_code_documentation.tex
 
 # Execute the first translation of the tex files into a PDF file
 pdflatex -output-directory build -halt-on-error -interaction=nonstopmode doc.tex &> /dev/null

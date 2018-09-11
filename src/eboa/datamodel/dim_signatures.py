@@ -3,14 +3,14 @@ DIM Signatures data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Table, ForeignKey, Text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from gsdm.datamodel.base import Base
+from eboa.datamodel.base import Base
 
 class DimSignature(Base):
     __tablename__ = 'dim_signature_tb'

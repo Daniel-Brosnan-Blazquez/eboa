@@ -12,20 +12,20 @@ import unittest
 import datetime
 
 # Import engine of the DDBB
-import gsdm.engine.engine
-from gsdm.engine.engine import Engine
-from gsdm.engine.query import Query
-from gsdm.datamodel.base import Session, engine, Base
-from gsdm.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, GsdmResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
-from gsdm.engine.query import Query
+import eboa.engine.engine
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+from eboa.datamodel.base import Session, engine, Base
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
+from eboa.engine.query import Query
 
 # Import datamodel
-from gsdm.datamodel.dim_signatures import DimSignature
-from gsdm.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
-from gsdm.datamodel.gauges import Gauge
-from gsdm.datamodel.dim_processings import DimProcessing, DimProcessingStatus
-from gsdm.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
-from gsdm.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
+from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
+from eboa.datamodel.gauges import Gauge
+from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
+from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import ingestion
 import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion
@@ -33,8 +33,8 @@ import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion
 class TestEngine(unittest.TestCase):
     def setUp(self):
         # Create the engine to manage the data
-        self.engine_gsdm = Engine()
-        self.query_gsdm = Query()
+        self.engine_eboa = Engine()
+        self.query_eboa = Query()
 
         # Create session to connectx to the database
         self.session = Session()
@@ -393,6 +393,6 @@ class TestEngine(unittest.TestCase):
 
         data = {"not_valid_data": "true"}
 
-        returned_value = ingestion.insert_data_into_DDBB(data, "NOT_VALID_FILE.EOF", self.engine_gsdm)
+        returned_value = ingestion.insert_data_into_DDBB(data, "NOT_VALID_FILE.EOF", self.engine_eboa)
 
-        assert returned_value == self.engine_gsdm.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]

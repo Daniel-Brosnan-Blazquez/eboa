@@ -3,14 +3,14 @@ DIM processing data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float, Interval, JSON
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from gsdm.datamodel.base import Base
+from eboa.datamodel.base import Base
 
 class DimProcessing(Base):
     __tablename__ = 'dim_processing_tb'

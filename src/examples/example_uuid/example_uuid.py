@@ -3,7 +3,7 @@ Test: concurrent creation of uuids and insertion into DDBB
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 
 # Adding path to the datamodel package
