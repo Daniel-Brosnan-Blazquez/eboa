@@ -20,12 +20,12 @@ fi
 PDF_FILE=""
 KEEP_BUILD="NO"
 
-while getopts rf: option
+while getopts kf: option
 do
     case "${option}"
         in
         f) PDF_FILE=${OPTARG};;
-        r) KEEP_BUILD="YES";;
+        k) KEEP_BUILD="YES";;
         ?) echo -e $USAGE
             exit -1
     esac
