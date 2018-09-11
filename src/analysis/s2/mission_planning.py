@@ -3,7 +3,7 @@ Test: ingest xml test
 
 Written by DEIMOS Space S.L. (dibb)
 
-module gsdm
+module eboa
 """
 # Import python utilities
 import os
@@ -11,31 +11,31 @@ import sys
 import argparse
 import re
 
-# Import gsdm components
-import gsdm.engine.engine as engine
-from gsdm.engine.query import Query
+# Import eboa components
+import eboa.engine.engine as engine
+from eboa.engine.query import Query
 
 # Import openpyxl functionalities
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side
-from gsdm.engine.query import Query
+from eboa.engine.query import Query
 
 # Import matplotlib
 from openpyxl.drawing.image import Image
 
 # Import auxiliary functions
-from gsdm.engine.functions import is_datetime
-from gsdm.analysis.functions import adjust_column_width
+from eboa.engine.functions import is_datetime
+from eboa.analysis.functions import adjust_column_width
 
 # Import logging
-from gsdm.logging import Log
+from eboa.logging import Log
 
 logging = Log()
 logger = logging.logger
 missions = ["S2A", "S2B"]
 
-def generate_imaging_analysis(workbook, query):
+def generate_imaging_analysis(workbook, query, begin, end):
 
     imaging_events_and_linked = query.get_linked_events_join(gauge_name_like = {"str": "CUT_IMAGING%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"], "op": "in"})
 
@@ -212,7 +212,7 @@ def generate_analysis(file_path, begin, end):
     workbook.remove(workbook.active)
 
     # Generate imaging analysis
-    generate_imaging_analysis(workbook, query)
+    generate_imaging_analysis(workbook, query, begin, end)
 
     # Save spreadsheet
     workbook.save(file_path)
