@@ -77,6 +77,10 @@ class Query():
 
     def __init__(self, session = None):
         """
+        Class for querying the information stored into DDBB
+
+        :param session: opened session
+        :type session: sqlalchemy.orm.sessionmaker
         """
         if session == None:
             self.session = Session()
@@ -88,6 +92,21 @@ class Query():
 
     def get_dim_signatures(self, dim_signature_ids = None, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None):
         """
+        Method to obtain the DIM signature entities filtered by the received parameters
+
+        :param dim_signature_ids: list of DIM signature identifiers
+        :type dim_signature_ids: operator_list
+        :param dim_signatures: list of DIM signature names
+        :type dim_signatures: operator_list
+        :param dim_signature_like: dictionary with a string and the associated operation to perform
+        :type dim_signature_like: operator_like
+        :param dim_exec_names: list of DIM execution names
+        :type dim_exec_names: operator_list
+        :param dim_exec_name_like: dictionary with a string and the associated operation to perform
+        :type dim_exec_name_like: operator_like
+
+        :return: found DIM signatures
+        :rtype: list
         """
         params = []
         
@@ -130,6 +149,31 @@ class Query():
 
     def get_sources(self, names = None, name_like = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, dim_exec_version_filters = None, dim_signature_ids = None, processing_uuids = None):
         """
+        Method to obtain the sources entities filtered by the received parameters
+
+        :param names: list of source names
+        :type names: operator_list
+        :param name_like: dictionary with a string and the associated operation to perform
+        :type name_like: operator_like
+        :param validity_start_filters: list of start filters
+        :type validity_start_filters: date_filters
+        :param validity_stop_filters: list of stop filters
+        :type validity_stop_filters: date_filters
+        :param generation_time_filters: list of generation time filters
+        :type generation_time_filters: date_filters
+        :param ingestion_time_filters: list of ingestion time filters
+        :type ingestion_time_filters: date_filters
+        :param ingestion_duration_filters: list of ingestion duration filters
+        :type ingestion_duration_filters: float_filters
+        :param dim_exec_version_filters: list of version filters
+        :type dim_exec_version_filters: string_filter
+        :param dim_signature_ids: list of DIM signature identifiers
+        :type dim_signature_ids: operator_list
+        :param processing_uuids: list of DIM processing identifiers
+        :type processing_uuids: operator_list
+
+        :return: found sources
+        :rtype: list
         """
         params = []
         # DIM signature UUIDs
