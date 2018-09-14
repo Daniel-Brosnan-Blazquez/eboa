@@ -19,7 +19,6 @@ from eboa.engine.query import Query
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side
-from eboa.engine.query import Query
 
 # Import matplotlib
 from openpyxl.drawing.image import Image
@@ -206,6 +205,17 @@ def generate_imaging_analysis(workbook, query, begin, end):
     return
 
 def generate_analysis(file_path, begin, end):
+    """
+    Method to generate the specific analysis into the file received as
+    argument and following the period between the begin and end dates
+    
+    :param file_path: path to the file where the analysis is going to be stored
+    :type file_path: str
+    :param begin: start date of the period
+    :type being: date
+    :param end: stop date of the period
+    :type end: date
+    """
     
     query = Query()
     workbook = Workbook()

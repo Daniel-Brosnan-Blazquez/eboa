@@ -1,6 +1,4 @@
-<!-- gsd stands for ground segment data.
-     Schema will be provided by EBOA but the application wll be able to choose which to use -->
-<gsd>
+<ops>
   <insert>
     <!-- Dates are specified following ISO 8601 (all considered following UTC)
          YYYY-MM-DDThh:mm:ss.s
@@ -109,4 +107,4 @@
       </annotation>
     </data>
   </insert>
-</gsd>
+</ops>

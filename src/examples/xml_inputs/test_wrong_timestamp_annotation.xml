@@ -1,4 +1,4 @@
-<gsd>
+<ops>
   <insert>
     <dim_signature
         name="test_dim_signature1"
@@ -31,4 +31,4 @@
       </annotation>
     </data>
   </insert>
-</gsd>
+</ops>

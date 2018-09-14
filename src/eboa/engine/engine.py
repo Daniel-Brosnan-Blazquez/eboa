@@ -253,7 +253,7 @@ class Engine():
             # end if
         # end if
         self.data["operations"] = []
-        for operation in xpath_xml("/gsd/child::*"):
+        for operation in xpath_xml("/ops/child::*"):
             if operation.tag == "insert":
                 self._parse_insert_operation_from_xml(operation)
             # end if

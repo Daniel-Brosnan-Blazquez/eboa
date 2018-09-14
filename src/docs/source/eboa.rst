@@ -8,9 +8,7 @@ Subpackages
 
     eboa.datamodel
     eboa.engine
-
-Submodules
-----------
+    eboa.analysis
 
 eboa.debugging module
 ---------------------

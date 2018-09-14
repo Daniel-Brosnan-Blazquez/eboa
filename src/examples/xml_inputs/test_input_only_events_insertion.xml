@@ -1,4 +1,4 @@
-<gsd>
+<ops>
   <dim_signature
      name="test_dim_signature1"
      version="1.0"
@@ -37,4 +37,4 @@
       </values>
     </event>
   </data>
-</gsd>
+</ops>

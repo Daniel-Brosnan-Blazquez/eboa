@@ -1,10 +1,10 @@
 \chapter{Create ingestion processor}
 
-In the following chapter, the process of creating a processor for ingesting data to the eboa module is explained.
+In the following chapter, the process of creating a processor for ingesting data to the \acrshort{eboa} module is explained.
 
-The explanation is based on an example for ingesting S2 data from the planning system (data received on NPPF files, xml formatted).
+The explanation is based on an example for ingesting Sentinel-2 data from the planning system (data received on NPPF files, xml formatted).
 
-The example will use the python interface of the component, as the target version of the eboa used in this explanation is the 0.1.0 and it is the only interface available.
+The example will use the python interface of the component, as the target version of the \acrshort{eboa} used in this explanation is the 0.1.0 and it is the only interface available.
 
 \section{Installing EBOA on vagrant}
 
@@ -42,6 +42,8 @@ It is recommended to read the code inside the file ingestion\_nppf.py.
 
 \section{Processor code}
 
+For creating ingestion processors the \acrshort{eboa} component offers some helpers through the submodule ingestion which can be seen in the section \ref{\detokenize{eboa.engine:eboa-engine-ingestion-module}}.
+
 The processor code has a main method:
 
 \begin{lstlisting}[breaklines=true, style=python]]
@@ -58,9 +60,9 @@ Which should be provided as interface of the processor as in future versions it 
 
 This method shall extract from the file passed by parameter all the interesting information to the system.
 
-The data extracted has to be formatted with the structure of a python dictionary which can be validated against a schema implemented in the engine side of the eboa (method eboa.engine.engine.validate\_data). This data will be validated before treatement by the engine.
+The data extracted has to be formatted with the structure of a python dictionary which can be validated against a schema implemented in the engine side of the \acrshort{eboa} (method eboa.engine.engine.validate\_data). This data will be validated before treatement by the engine.
 
-An example of the data structure, that has to follow the data to be inserted into the eboa, can be seen in appendix \ref{ap:example_data_structure}.
+An example of the data structure, that has to follow the data to be inserted into the \acrshort{eboa}, can be seen in appendix \ref{ap:example_data_structure}.
 
 For the version of this example of an ingestion processor, this method is called from the same phyton file from another method that is called from the main entry point to the file:
 
@@ -76,7 +78,7 @@ if __name__ == "__main__":
     returned_value = command_process_file(file_path)
 \end{lstlisting}
 
-Once the data has been extracted the method command\_process\_file(file\_path) will interface with the Engine of the eboa to insert the data:
+Once the data has been extracted the method command\_process\_file(file\_path) will interface with the Engine of the \acrshort{eboa} to insert the data:
 
 \begin{lstlisting}[breaklines=true, style=python]]
     # Process file
@@ -142,7 +144,7 @@ $ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=ingestions
 
 \end{lstlisting}
 
-Then, the code coverage analysis may be checked (following these instructions for X activation through vagrant) with the following command:
+Then, the code coverage analysis may be checked (following the instructions shown in the section \ref{x11_forwarding} and installing firefox) with the following command:
 
 \begin{lstlisting}[breaklines=true, style=bash]]
 

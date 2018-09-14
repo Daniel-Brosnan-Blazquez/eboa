@@ -1,6 +1,6 @@
 {
-    "RELATIVE_XML_SCHEMA_PATH": "schemas/gsd_schema.xsd",
-    "RELATIVE_JSON_SCHEMA_PATH": "schemas/gsd_schema.json",
+    "RELATIVE_XML_SCHEMA_PATH": "schemas/eboa_schema.xsd",
+    "RELATIVE_JSON_SCHEMA_PATH": "schemas/eboa_schema.json",
     "LOG": {
         "PATH": "log/eboa_engine.log",
         "LEVEL": "INFO",

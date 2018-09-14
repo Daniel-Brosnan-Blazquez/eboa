@@ -1,7 +1,7 @@
 FILE=test_ingestion_10000_events.xml
 
 cat > $FILE<<End-of-header
-<gsd>
+<ops>
   <insert>
     <dim_signature
         name="dim_signature"
@@ -31,5 +31,5 @@ done
 cat >> $FILE<<End-of-header
 </data>
 </insert>
-</gsd>
+</ops>
 End-of-header

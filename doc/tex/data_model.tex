@@ -10,6 +10,8 @@ The \acrshort{eboa} implements the data model shown in the figure \ref{fg:eboadb
   \end{center}
 \end{figure}
 
+This datamodel is based on the data model of the SDM component.
+
 As said in chapter \ref{c:intro}, there are 4 main entities in the data model: explicit references (explicit\_ref\_tb), events (event\_tb), annotations (annotation\_tb) and inputs (dim\_processing\_tb).
 
 The entities event and annotation may have an associated dynamic structure of values. These values indicate properties/information of the related entities interesting for the data model. These values are structured in the database following the schema of the figure \ref{fg:values_structure}.
@@ -51,7 +53,7 @@ To better understand how the structure of values is managed by the \acrshort{ebo
 
 Input:
 \begin{lstlisting}[style=xml, caption={XML input example for showing the values structure management.}]
-<gsd>
+<ops>
   <insert>
     <dim_signature
         name="test_dim_signature1"
@@ -89,7 +91,7 @@ Input:
       </event>
     </data>
   </insert>
-</gsd>
+</ops>
 \end{lstlisting}
 
 Output:

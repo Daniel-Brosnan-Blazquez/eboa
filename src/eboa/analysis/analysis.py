@@ -9,8 +9,8 @@ module eboa
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from .query import Query
-from .plotting import generate_gantt
+from eboa.engine.query import Query
+from eboa.analysis.plotting import generate_gantt
 
 # Import GEOalchemy entities
 from geoalchemy2.shape import to_shape

@@ -79,7 +79,7 @@ Events can be inserted following 3 different methods associated to their gauges:
 
 \begin{itemize}
 \item SIMPLE\_UPDATE: all events are inserted
-\item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case a event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
+\item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
 \item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
 \end{itemize}
 
@@ -147,9 +147,9 @@ The steps are as follows:
 \begin{enumerate}
 
 \item The algorithm iterates over the pairs (event key, DIM signature UUID)
-\item \label{for_each_pair} For each pair associated to events inserted with mode EVENT\_KEYS, the algorithm gets the first event associated to the event key and the DIM signature UUID which source has the maximum generation time
+\item \label{for_each_pair} For each pair associated to events inserted with mode EVENT\_KEYS, the algorithm gets the first event associated to the event key and the DIM signature UUID which source has the greatest generation time
 \item The algorithm deletes the rest of events associated to the event key and the DIM signature UUID and which source is different than the source of the previous event
-\item The algorithm makes visible the events and the event keys associated
+\item The algorithm makes visible the events and the event keys associated to the source of the event with the greatest generation time
 \item The algorithm goes to step \ref{for_each_pair}
 \end{enumerate}
 
@@ -162,10 +162,10 @@ The steps are as follows:
 
 \begin{enumerate}
 
-\item The algorithm iterates over the tubles (annotation configuration name, annotation configuration system, explicit reference)
-\item \label{for_each_tuple} For each tuple associated to an inserted annotation inserted, the algorithm gets the first annotation associated to the annotation configuration and the explicit reference which source has the maximum generation time
+\item The algorithm iterates over the tuples (annotation configuration name, annotation configuration system, explicit reference)
+\item \label{for_each_tuple} For each tuple associated to an inserted annotation inserted, the algorithm gets the first annotation associated to the annotation configuration and the explicit reference which source has the greatest generation time
 \item The algorithm deletes the rest of annotations associated to the annotation configuration and the explicit reference and which source is different than the source of the previous annotation
-\item The algorithm makes visible the annotations
+\item The algorithm makes visible the annotations associated to the source of the annotation with the greatest generation time
 \item The algorithm goes to step \ref{for_each_tuple}
 \end{enumerate}
 
