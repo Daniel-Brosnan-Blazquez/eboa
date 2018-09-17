@@ -7,21 +7,23 @@
 # module eboa
 #################################################################
 
-USAGE="Usage: `basename $0` -p path_to_eboa"
-PATH_TO_EBOA=""
+USAGE="Usage: `basename $0` -p path_to_eboa_src [-i path_to_eboa_image]"
+PATH_TO_EBOA_SRC=""
+PATH_TO_EBOA_IMAGE=""
 
-while getopts p: option
+while getopts p:i: option
 do
     case "${option}"
         in
-        p) PATH_TO_EBOA=${OPTARG};;
+        p) PATH_TO_EBOA_SRC=${OPTARG};;
+        i) PATH_TO_EBOA_IMAGE=${OPTARG};;
         ?) echo -e $USAGE
             exit -1
     esac
 done
 
 # Check that option -p has been specified
-if [ "$PATH_TO_EBOA" == "" ];
+if [ "$PATH_TO_EBOA_SRC" == "" ];
 then
     echo "ERROR: The option -p has to be provided"
     echo $USAGE
@@ -29,9 +31,16 @@ then
 fi
 
 # Check that the path to the eboa project exists
-if [ ! -d $PATH_TO_EBOA ];
+if [ ! -d $PATH_TO_EBOA_SRC ];
 then
-    echo "ERROR: The directory $PATH_TO_EBOA provided does not exist"
+    echo "ERROR: The directory $PATH_TO_EBOA_SRC provided does not exist"
+    exit -1
+fi
+
+# Check that the path to the eboa image exists
+if [ ! -f $PATH_TO_EBOA_IMAGE ];
+then
+    echo "ERROR: The file $PATH_TO_EBOA_IMAGE provided does not exist"
     exit -1
 fi
 
@@ -40,6 +49,7 @@ fi
 ######
 # Remove eboa database container if it already exists
 docker stop eboa-database-container
+docker rm eboa-database-container
 # Execute container
 docker run  --name eboa-database-container -d mdillon/postgis
 
@@ -49,18 +59,29 @@ docker run  --name eboa-database-container -d mdillon/postgis
 # Remove eboa image and container if it already exists
 docker stop eboa-container
 docker rm eboa-container
-docker rmi eboa
+docker rmi $(docker images eboa -q)
 find . -name *pyc -delete
-docker build -t eboa .
-# Initialize the Postgis database
-docker run -it --name eboa-container --link eboa-database-container:eboa -d -v $PATH_TO_EBOA:/eboa eboa
-docker exec -it eboa-container bash -c "pip3 install -e /eboa/src"
+if [ ! $PATH_TO_EBOA_IMAGE == "" ];
+then
+    docker load --input $PATH_TO_EBOA_IMAGE
+    docker run -it --name eboa-container --link eboa-database-container:eboa -d -v $PATH_TO_EBOA_SRC:/eboa $(docker images eboa -q)
+else
+    docker build -t eboa .
+    # Initialize the eboa database
+    docker run -it --name eboa-container --link eboa-database-container:eboa -d -v $PATH_TO_EBOA_SRC:/eboa eboa
+    # Generate the python archive
+    cd src
+    rm -r dist
+    python3 setup.py sdist
+    cd ..
+    docker exec -it eboa-container bash -c "pip3 install /eboa/src/dist/*"
+fi
 # Initialize the EBOA database inside the postgis-database container
 status=255
 while true
 do
     echo "Trying to initialize database..."
-    docker exec -it eboa-container bash -c '/eboa/datamodel/init_ddbb.sh -h $EBOA_PORT_5432_TCP_ADDR -p $EBOA_PORT_5432_TCP_PORT -f /eboa/datamodel/eboa_data_model.sql'
+    docker exec -it eboa-container bash -c '/eboa/datamodel/init_ddbb.sh -h $EBOA_PORT_5432_TCP_ADDR -p $EBOA_PORT_5432_TCP_PORT -f /eboa/datamodel/eboa_data_model.sql' > /dev/null
     status=$?
     if [ $status -ne 0 ]
     then

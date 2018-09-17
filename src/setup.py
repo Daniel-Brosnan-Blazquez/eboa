@@ -13,7 +13,7 @@ setup(name="eboa",
       url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",
       author_email="daniel.brosnan@deimos-space.com",
-      packages=["eboa.datamodel","eboa.engine"],
+      packages=["eboa","eboa.datamodel","eboa.engine"],
       python_requires='>=3',
       install_requires=[
           "sqlalchemy",
