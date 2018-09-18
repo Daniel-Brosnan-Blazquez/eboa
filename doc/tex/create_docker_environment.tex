@@ -1,0 +1,61 @@
+\chapter{Containerize EBOA}
+
+The \acrshort{eboa} component can be containerized using \href{https://www.docker.com/}{docker}.
+
+For doing so, follow the next steps:
+
+\begin{enumerate}
+
+\item Clone the repository
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ git clone https://bitbucket.org/dbrosnan/eboa.git
+
+\end{lstlisting}
+
+\item Enter into the repository folder
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ cd (PATH_TO_EBOA)/eboa
+
+\end{lstlisting}
+
+\item Run the script for initializing the docker infrastructure:
+
+\begin{lstlisting}[breaklines=true, style=bash]
+
+$ ./init_docker_environment.sh -p (PATH_TO_EBOA_SRC)
+
+\end{lstlisting}
+
+\end{enumerate}
+
+This will create two containers:
+
+\begin{itemize}
+
+\item eboa-database-container: containing the Postgres + Postgis installation
+\item eboa-container: containing the \acrshort{eboa} installation
+
+\end{itemize}
+
+In order to check that the component has been correctly installed, run the following commands to execute the automated tests:
+
+\begin{lstlisting}[breaklines=true, style=bash]]
+
+$ docker exec -it eboa-container /bin/bash
+$ cd /eboa/src/
+$ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=eboa tests
+
+\end{lstlisting}
+
+In order to check the coverage report, you can do it watching at the generated report directly on your local machine as the disk is in share mode:
+
+\begin{lstlisting}[breaklines=true, style=bash]]
+
+$ firefox (PATH_TO_EBOA_SRC)/src/tests/tmp/code_coverage_analysis/index.html
+
+\end{lstlisting}
+
