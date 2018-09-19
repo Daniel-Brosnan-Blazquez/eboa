@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
 from eboa.datamodel.base import Base
+import eboa.engine.export as export
 
 class Event(Base):
     __tablename__ = 'event_tb'
@@ -37,6 +38,23 @@ class Event(Base):
         self.gauge = gauge
         self.explicitRef = explicit_ref
         self.source = dim_processing
+
+    def get_values(self):
+        """
+        Method to obtain the structure of values in a python dictionary format
+        """
+
+        values = []
+        for values_relation in ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]:
+            values += eval("self." + values_relation)
+        # end for
+
+        json_values = []
+        if len(values) > 0:
+            export.build_values_structure(values, json_values)
+        # end if
+
+        return json_values
 
 class EventLink(Base):
     __tablename__ = 'event_link_tb'
@@ -189,7 +207,7 @@ class EventGeometry(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
-    event = relationship("Event", backref="eventGeometrys")
+    event = relationship("Event", backref="eventGeometries")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
     }

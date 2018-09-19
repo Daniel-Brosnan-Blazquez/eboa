@@ -8,6 +8,7 @@ module eboa
 # Import python utilities
 from dateutil import parser
 import copy
+from lxml import etree, objectify
 
 def insert_event_for_ingestion(event, source, list_of_events):
     """
@@ -32,4 +33,30 @@ def insert_event_for_ingestion(event, source, list_of_events):
         event["stop"] = source["validity_stop"]
     # end if
     list_of_events.append(event)
+    return
+
+def remove_namespaces(file_path, new_file_path):
+    """
+    Method to insert an event into a list for ingestion so that some checks are performed before
+
+    """
+    parser = etree.XMLParser(remove_blank_text=True)
+    tree = etree.parse(file_path, parser)
+    root = tree.getroot()
+    
+    for elem in root.getiterator():
+        if not hasattr(elem.tag, 'find'):
+            continue
+        # end if
+        i = elem.tag.find('}')
+        if i >= 0:
+            elem.tag = elem.tag[i+1:]
+        # end if
+    # end for
+
+    objectify.deannotate(root, cleanup_namespaces=True)
+
+    tree.write(new_file_path,
+               pretty_print=True, xml_declaration=True, encoding='UTF-8')
+
     return
