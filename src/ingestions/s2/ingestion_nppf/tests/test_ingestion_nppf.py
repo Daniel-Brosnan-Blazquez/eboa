@@ -396,3 +396,24 @@ class TestEngine(unittest.TestCase):
         returned_value = ingestion.insert_data_into_DDBB(data, "NOT_VALID_FILE.EOF", self.engine_eboa)
 
         assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+
+    def test_empty_nppf(self):
+        filename = "NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        # Check number of events generated
+        events = self.session.query(Event).all()
+
+        assert len(events) == 38
+
+        filename = "NPPF_SAME_PERIOD_BUT_NO_EVENTS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        # Check number of events generated
+        events = self.session.query(Event).all()
+
+        assert len(events) == 0

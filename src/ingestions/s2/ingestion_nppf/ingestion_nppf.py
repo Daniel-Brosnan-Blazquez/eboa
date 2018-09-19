@@ -156,25 +156,25 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             "start": record_start,
             "stop": record_stop,
             "values": [{
-                "name": "record_values",
+                "name": "values",
                 "type": "object",
                 "values": [
-                    {"name": "record_start_request",
+                    {"name": "start_request",
                      "type": "text",
                      "value": record_start_request},
-                    {"name": "record_stop_request",
+                    {"name": "stop_request",
                      "type": "text",
                      "value": record_stop_request},
-                    {"name": "record_start_orbit",
+                    {"name": "start_orbit",
                      "type": "double",
                      "value": record_start_orbit},
-                    {"name": "record_start_angle",
+                    {"name": "start_angle",
                      "type": "double",
                      "value": record_start_angle},
-                    {"name": "record_stop_orbit",
+                    {"name": "stop_orbit",
                      "type": "double",
                      "value": record_stop_orbit},
-                    {"name": "record_stop_angle",
+                    {"name": "stop_angle",
                      "type": "double",
                      "value": record_stop_angle}
                 ]
@@ -184,7 +184,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         # Include parameters
         if len(record_start_scn_dup) == 1:
             record_event["values"][0]["values"].append(
-                    {"name": "record_start_scn_dup",
+                    {"name": "start_scn_dup",
                      "type": "double",
                      "value": record_start_scn_dup[0].text},
             )
@@ -192,7 +192,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
 
         if len(record_stop_scn_dup) == 1:
             record_event["values"][0]["values"].append(
-                    {"name": "record_stop_scn_dup",
+                    {"name": "stop_scn_dup",
                      "type": "double",
                      "value": record_stop_scn_dup[0].text}
             )
@@ -228,25 +228,25 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                 }
             ],
             "values": [{
-                "name": "imaging_values",
+                "name": "values",
                 "type": "object",
                 "values": [
-                    {"name": "imaging_start_request",
+                    {"name": "start_request",
                      "type": "text",
                      "value": cut_imaging_start_request},
-                    {"name": "imaging_stop_request",
+                    {"name": "stop_request",
                      "type": "text",
                      "value": cut_imaging_stop_request},
-                    {"name": "imaging_start_orbit",
+                    {"name": "start_orbit",
                      "type": "double",
                      "value": cut_imaging_start_orbit},
-                    {"name": "imaging_start_angle",
+                    {"name": "start_angle",
                      "type": "double",
                      "value": cut_imaging_start_angle},
-                    {"name": "imaging_stop_orbit",
+                    {"name": "stop_orbit",
                      "type": "double",
                      "value": cut_imaging_stop_orbit},
-                    {"name": "imaging_stop_angle",
+                    {"name": "stop_angle",
                      "type": "double",
                      "value": cut_imaging_stop_angle}
                 ]
@@ -303,25 +303,25 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             "start": imaging_start,
             "stop": imaging_stop,
             "values": [{
-                "name": "imaging_values",
+                "name": "values",
                 "type": "object",
                 "values": [
-                    {"name": "imaging_start_request",
+                    {"name": "start_request",
                      "type": "text",
                      "value": imaging_start_request},
-                    {"name": "imaging_stop_request",
+                    {"name": "stop_request",
                      "type": "text",
                      "value": imaging_stop_request},
-                    {"name": "imaging_start_orbit",
+                    {"name": "start_orbit",
                      "type": "double",
                      "value": imaging_start_orbit},
-                    {"name": "imaging_start_angle",
+                    {"name": "start_angle",
                      "type": "double",
                      "value": imaging_start_angle},
-                    {"name": "imaging_stop_orbit",
+                    {"name": "stop_orbit",
                      "type": "double",
                      "value": imaging_stop_orbit},
-                    {"name": "imaging_stop_angle",
+                    {"name": "stop_angle",
                      "type": "double",
                      "value": imaging_stop_angle}
                 ]
@@ -367,22 +367,22 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
             idle_stop = idle_operation_stop[0].xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
             idle_stop_request = idle_operation_stop[0].xpath("RQ/RQ_Name")[0].text
             values = [
-                {"name": "idle_start_request",
+                {"name": "start_request",
                  "type": "text",
                  "value": idle_start_request},
-                {"name": "idle_stop_request",
+                {"name": "stop_request",
                  "type": "text",
                  "value": idle_stop_request},
-                {"name": "idle_start_orbit",
+                {"name": "start_orbit",
                  "type": "double",
                  "value": idle_start_orbit},
-                {"name": "idle_start_angle",
+                {"name": "start_angle",
                  "type": "double",
                  "value": idle_start_angle},
-                {"name": "idle_stop_orbit",
+                {"name": "stop_orbit",
                  "type": "double",
                  "value": idle_stop_orbit},
-                {"name": "idle_stop_angle",
+                {"name": "stop_angle",
                  "type": "double",
                  "value": idle_stop_angle}
             ]
@@ -392,13 +392,13 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
             idle_stop = source["validity_stop"]
             idle_stop_request = None
             values = [
-                {"name": "idle_start_request",
+                {"name": "start_request",
                  "type": "text",
                  "value": idle_start_request},
-                {"name": "idle_start_orbit",
+                {"name": "start_orbit",
                  "type": "double",
                  "value": idle_start_orbit},
-                {"name": "idle_start_angle",
+                {"name": "start_angle",
                  "type": "double",
                  "value": idle_start_angle}
             ]
@@ -414,7 +414,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
             "start": idle_start,
             "stop": idle_stop,
             "values": [{
-                "name": "idle_values",
+                "name": "values",
                 "type": "object",
                 "values": values
             }]
@@ -490,25 +490,25 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
             "start": playback_start,
             "stop": playback_stop,
             "values": [{
-                "name": "playback_values",
+                "name": "values",
                 "type": "object",
                 "values": [
-                    {"name": "playback_start_request",
+                    {"name": "start_request",
                      "type": "text",
                      "value": playback_start_request},
-                    {"name": "playback_stop_request",
+                    {"name": "stop_request",
                      "type": "text",
                      "value": playback_stop_request},
-                    {"name": "playback_start_orbit",
+                    {"name": "start_orbit",
                      "type": "double",
                      "value": playback_start_orbit},
-                    {"name": "playback_start_angle",
+                    {"name": "start_angle",
                      "type": "double",
                      "value": playback_start_angle},
-                    {"name": "playback_stop_orbit",
+                    {"name": "stop_orbit",
                      "type": "double",
                      "value": playback_stop_orbit},
-                    {"name": "playback_stop_angle",
+                    {"name": "stop_angle",
                      "type": "double",
                      "value": playback_stop_angle}
                 ]
@@ -567,25 +567,25 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                 }
             ],
             "values": [{
-                "name": "playback_type_values",
+                "name": "values",
                 "type": "object",
                 "values": [
-                    {"name": "playback_type_start_request",
+                    {"name": "start_request",
                      "type": "text",
                      "value": playback_type_start_request},
-                    {"name": "playback_type_stop_request",
+                    {"name": "stop_request",
                      "type": "text",
                      "value": playback_type_stop_request},
-                    {"name": "playback_type_start_orbit",
+                    {"name": "start_orbit",
                      "type": "double",
                      "value": playback_type_start_orbit},
-                    {"name": "playback_type_start_angle",
+                    {"name": "start_angle",
                      "type": "double",
                      "value": playback_type_start_angle},
-                    {"name": "playback_type_stop_orbit",
+                    {"name": "stop_orbit",
                      "type": "double",
                      "value": playback_type_stop_orbit},
-                    {"name": "playback_type_stop_angle",
+                    {"name": "stop_angle",
                      "type": "double",
                      "value": playback_type_stop_angle}
                 ]
@@ -638,7 +638,7 @@ def process_file(file_path):
 
     # Build the xml
     data = {"operations": [{
-        "mode": "insert",
+        "mode": "insert_and_erase",
         "dim_signature": {
             "name": "NPPF_" + satellite,
             "exec": os.path.basename(__file__),
