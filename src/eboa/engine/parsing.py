@@ -36,7 +36,7 @@ def validate_data_dictionary(data):
         # end if
 
         # Check that the mode contains a valid value
-        if not item["mode"] in ["insert", "update", "delete"]:
+        if not item["mode"] in ["insert", "insert_and_erase", "update", "delete"]:
             raise ErrorParsingDictionary("The mode does not correspond to an allowed value")
         # end if
 

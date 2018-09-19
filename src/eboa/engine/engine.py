@@ -254,7 +254,7 @@ class Engine():
         # end if
         self.data["operations"] = []
         for operation in xpath_xml("/ops/child::*"):
-            if operation.tag == "insert":
+            if operation.tag == "insert" or operation.tag == "insert_and_erase":
                 self._parse_insert_operation_from_xml(operation)
             # end if
         # end for
@@ -270,7 +270,11 @@ class Engine():
         :type operation: xml element
         """
         data = {}
-        data["mode"] = "insert"
+        if operation.tag == "insert":
+            data["mode"] = "insert"
+        else:
+            data["mode"] = "insert_and_erase"
+        # end if
         # Extract dim_signature
         data["dim_signature"] = {"name": operation.xpath("dim_signature")[0].get("name"),
                                  "version": operation.xpath("dim_signature")[0].get("version"),
@@ -458,7 +462,13 @@ class Engine():
         # end if
 
         for self.operation in self.data.get("operations") or []:
-            if self.operation.get("mode") == "insert":
+            returned_value = -1
+            self.all_gauges_for_erase_and_replace = False
+            if self.operation.get("mode") == "insert_and_erase":
+                self.all_gauges_for_erase_and_replace = True
+            # end if
+
+            if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
                 returned_value = self._insert_data()
             # end if
             if returned_value != self.exit_codes["OK"]["status"]:
@@ -686,6 +696,13 @@ class Engine():
                 pass
             # end try
         # end if
+
+        if hasattr(self, "all_gauges_for_erase_and_replace") and self.all_gauges_for_erase_and_replace:
+            for gauge in self.dim_signature.gauges:
+                self.erase_and_replace_gauges[gauge.gauge_id] = None
+            # end for
+        # end if
+
         return
 
     @debug
@@ -1411,10 +1428,10 @@ class Engine():
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
             def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_id, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
-                sources = self.session.query(DimProcessing).join(Event).filter(Event.gauge_id == gauge_id,
-                                                                               Event.start < self.source.validity_stop,
-                                                                               Event.stop > self.source.validity_start)
-                
+                dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_id == gauge_id).first()
+                sources = self.session.query(DimProcessing).join(DimSignature).filter(DimSignature.dim_signature_id == dim_signature.dim_signature_id,
+                                                                                      DimProcessing.validity_start < self.source.validity_stop,
+                                                                                      DimProcessing.validity_stop > self.source.validity_start).all()
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
@@ -1446,19 +1463,19 @@ class Engine():
                     validity_stop = filtered_timeline_points[next_timestamp]
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
-                    max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).filter(Event.gauge_id == gauge_id,
-                                                                                                                         Event.start < validity_stop,
-                                                                                                                         Event.stop > validity_start)
+                    max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_id == dim_signature.dim_signature_id,
+                                                                                                                                DimProcessing.validity_start < validity_stop,
+                                                                                                                                DimProcessing.validity_stop > validity_start)
                 
                     # The period does not contain events
                     if max_generation_time.first()[0] == None:
                         break
                     # end if
                     # Get the related source
-                    source_max_generation_time = self.session.query(DimProcessing).join(Event).filter(DimProcessing.generation_time == max_generation_time,
-                                                                                                     Event.gauge_id == gauge_id,
-                                                                                                     Event.start < validity_stop,
-                                                                                                     Event.stop > validity_start).first()
+                    source_max_generation_time = self.session.query(DimProcessing).join(DimSignature).filter(DimProcessing.generation_time == max_generation_time,
+                                                                                                             DimSignature.dim_signature_id == dim_signature.dim_signature_id,
+                                                                                                             DimProcessing.validity_start < validity_stop,
+                                                                                                             DimProcessing.validity_stop > validity_start).first()
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = self.session.query(Event).filter(Event.processing_uuid == source_max_generation_time.processing_uuid,
