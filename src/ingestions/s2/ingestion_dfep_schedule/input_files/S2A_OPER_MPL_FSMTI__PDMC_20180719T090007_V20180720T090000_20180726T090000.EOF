@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Earth_Explorer_File>
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S2A_OPER_MPL_FSMTI__PDMC_20180719T090007_V20180720T090000_20180726T090000</File_Name>
+      <File_Description>Schedule file</File_Description>
+      <Notes/>
+      <Mission>Sentinel-2A</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>MPL_FSMTI_</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2018-07-20T09:00:00</Validity_Start>
+        <Validity_Stop>UTC=2018-07-26T09:00:00</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>DFEP</System>
+        <Creator>MPL</Creator>
+        <Creator_Version>00.01</Creator_Version>
+        <Creation_Date>UTC=2018-07-19T09:00:07</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header/>
+  </Earth_Explorer_Header>
+  <Data_Block type="xml">
+    <sched>
+      <station name="MTI_">
+        <acq id="S2A_16063">
+          <action>DELETE_RANGE</action>
+          <satellite>S2A</satellite>
+          <start>2018-07-20T09:13:50.460</start>
+          <stop>2018-07-26T08:01:15.319</stop>
+        </acq>
+        <acq id="S2A_16063">
+          <action>ADD</action>
+          <downlink_orbit>16063</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-20T09:14:10.460</start>
+          <stop>2018-07-20T09:25:26.666</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16064">
+          <action>ADD</action>
+          <downlink_orbit>16064</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-20T10:55:18.638</start>
+          <stop>2018-07-20T11:03:52.014</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16069">
+          <action>ADD</action>
+          <downlink_orbit>16069</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-20T18:55:51.592</start>
+          <stop>2018-07-20T19:01:14.419</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16070">
+          <action>ADD</action>
+          <downlink_orbit>16070</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-20T20:30:53.740</start>
+          <stop>2018-07-20T20:43:03.834</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16077">
+          <action>ADD</action>
+          <downlink_orbit>16077</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-21T08:44:10.260</start>
+          <stop>2018-07-21T08:54:45.872</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16078">
+          <action>ADD</action>
+          <downlink_orbit>16078</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-21T10:24:58.937</start>
+          <stop>2018-07-21T10:34:55.609</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16084">
+          <action>ADD</action>
+          <downlink_orbit>16084</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-21T20:01:36.628</start>
+          <stop>2018-07-21T20:12:58.188</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16085">
+          <action>ADD</action>
+          <downlink_orbit>16085</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-21T21:41:09.804</start>
+          <stop>2018-07-21T21:52:19.577</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16091">
+          <action>ADD</action>
+          <downlink_orbit>16091</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-22T08:15:23.526</start>
+          <stop>2018-07-22T08:23:13.760</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16092">
+          <action>ADD</action>
+          <downlink_orbit>16092</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-22T09:54:33.198</start>
+          <stop>2018-07-22T10:05:28.391</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16093">
+          <action>ADD</action>
+          <downlink_orbit>16093</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-22T11:35:25.071</start>
+          <stop>2018-07-22T11:41:22.477</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16098">
+          <action>ADD</action>
+          <downlink_orbit>16098</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-22T19:32:51.929</start>
+          <stop>2018-07-22T19:42:36.142</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16099">
+          <action>ADD</action>
+          <downlink_orbit>16099</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-22T21:10:41.819</start>
+          <stop>2018-07-22T21:22:49.567</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16106">
+          <action>ADD</action>
+          <downlink_orbit>16106</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-23T09:24:14.784</start>
+          <stop>2018-07-23T09:35:32.120</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16107">
+          <action>ADD</action>
+          <downlink_orbit>16107</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-23T11:05:22.173</start>
+          <stop>2018-07-23T11:13:22.850</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16112">
+          <action>ADD</action>
+          <downlink_orbit>16112</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-23T19:04:52.899</start>
+          <stop>2018-07-23T19:11:45.451</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16113">
+          <action>ADD</action>
+          <downlink_orbit>16113</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-23T20:40:45.814</start>
+          <stop>2018-07-23T20:53:02.522</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16120">
+          <action>ADD</action>
+          <downlink_orbit>16120</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-24T08:53:56.966</start>
+          <stop>2018-07-24T09:05:03.787</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16121">
+          <action>ADD</action>
+          <downlink_orbit>16121</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-24T10:35:06.055</start>
+          <stop>2018-07-24T10:44:37.964</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16127">
+          <action>ADD</action>
+          <downlink_orbit>16127</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-24T20:11:18.874</start>
+          <stop>2018-07-24T20:23:01.532</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16128">
+          <action>ADD</action>
+          <downlink_orbit>16128</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-24T21:59:06.677</start>
+          <stop>2018-07-24T22:02:04.258</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16134">
+          <action>ADD</action>
+          <downlink_orbit>16134</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-25T08:24:52.782</start>
+          <stop>2018-07-25T08:33:52.325</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16135">
+          <action>ADD</action>
+          <downlink_orbit>16135</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-25T10:04:42.337</start>
+          <stop>2018-07-25T10:15:20.546</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16136">
+          <action>ADD</action>
+          <downlink_orbit>16136</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-25T11:45:24.975</start>
+          <stop>2018-07-25T11:46:55.442</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16141">
+          <action>ADD</action>
+          <downlink_orbit>16141</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-25T19:42:22.627</start>
+          <stop>2018-07-25T19:52:45.587</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16142">
+          <action>ADD</action>
+          <downlink_orbit>16142</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-25T21:20:47.157</start>
+          <stop>2018-07-25T21:32:41.623</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+        <acq id="S2A_16148">
+          <action>ADD</action>
+          <downlink_orbit>16148</downlink_orbit>
+          <satellite>S2A</satellite>
+          <start>2018-07-26T07:57:12.185</start>
+          <stop>2018-07-26T08:01:03.319</stop>
+          <configuration>SENTINEL2A.rb</configuration>
+        </acq>
+      </station>
+    </sched>
+  </Data_Block>
+</Earth_Explorer_File>

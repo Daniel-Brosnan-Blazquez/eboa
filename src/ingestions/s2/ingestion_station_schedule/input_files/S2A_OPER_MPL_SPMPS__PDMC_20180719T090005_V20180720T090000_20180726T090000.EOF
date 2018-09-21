@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Earth_Explorer_File xmlns="http://eop-cfi.esa.int/CFI">
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S2A_OPER_MPL_SPMPS__PDMC_20180719T090005_V20180720T090000_20180726T090000</File_Name>
+      <File_Description>Station Acquisition Plan File</File_Description>
+      <Notes/>
+      <Mission>Sentinel-2A</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>MPL_SPMPS_</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2018-07-20T09:00:00</Validity_Start>
+        <Validity_Stop>UTC=2018-07-26T09:00:00</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>PDMC</System>
+        <Creator>MPL</Creator>
+        <Creator_Version>00.01</Creator_Version>
+        <Creation_Date>UTC=2018-07-19T09:00:05</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header/>
+  </Earth_Explorer_Header>
+  <Data_Block type="xml">
+    <SCHEDULE>
+      <ACQ id="16064_01">
+        <Orbit_Number>16064</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-20T11:03:27.014</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-20T11:09:44.586</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-20T11:04:24.014</Data_Start>
+        <Data_Stop>UTC=2018-07-20T11:07:39.135</Data_Stop>
+      </ACQ>
+      <ACQ id="16065_01">
+        <Orbit_Number>16065</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-20T12:37:39.645</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-20T12:48:47.290</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-20T12:37:59.645</Data_Start>
+        <Data_Stop>UTC=2018-07-20T12:48:35.290</Data_Stop>
+      </ACQ>
+      <ACQ id="16071_01">
+        <Orbit_Number>16071</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-20T22:09:28.316</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-20T22:20:04.767</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-20T22:09:48.316</Data_Start>
+        <Data_Stop>UTC=2018-07-20T22:19:52.767</Data_Stop>
+      </ACQ>
+      <ACQ id="16072_01">
+        <Orbit_Number>16072</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-20T23:47:58.556</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-20T23:59:55.940</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-20T23:48:18.556</Data_Start>
+        <Data_Stop>UTC=2018-07-20T23:59:43.940</Data_Stop>
+      </ACQ>
+      <ACQ id="16078_01">
+        <Orbit_Number>16078</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-21T10:34:30.609</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-21T10:38:21.882</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-21T10:35:27.609</Data_Start>
+        <Data_Stop>UTC=2018-07-21T10:37:39.611</Data_Stop>
+      </ACQ>
+      <ACQ id="16079_01">
+        <Orbit_Number>16079</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-21T12:07:19.468</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-21T12:19:48.979</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-21T12:07:39.468</Data_Start>
+        <Data_Stop>UTC=2018-07-21T12:19:18.058</Data_Stop>
+      </ACQ>
+      <ACQ id="16086_01">
+        <Orbit_Number>16086</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-21T23:17:41.079</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-21T23:30:27.878</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-21T23:18:43.636</Data_Start>
+        <Data_Stop>UTC=2018-07-21T23:30:15.878</Data_Stop>
+      </ACQ>
+      <ACQ id="16093_01">
+        <Orbit_Number>16093</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-22T11:40:57.477</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-22T11:50:12.216</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-22T11:41:54.477</Data_Start>
+        <Data_Stop>UTC=2018-07-22T11:47:36.600</Data_Stop>
+      </ACQ>
+      <ACQ id="16094_01">
+        <Orbit_Number>16094</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-22T13:19:15.656</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-22T13:25:51.308</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-22T13:19:35.656</Data_Start>
+        <Data_Stop>UTC=2018-07-22T13:25:39.308</Data_Stop>
+      </ACQ>
+      <ACQ id="16100_01">
+        <Orbit_Number>16100</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-22T22:48:00.959</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-22T23:00:34.722</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-22T22:48:40.778</Data_Start>
+        <Data_Stop>UTC=2018-07-22T23:00:22.722</Data_Stop>
+      </ACQ>
+      <ACQ id="16101_01">
+        <Orbit_Number>16101</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-23T00:29:44.261</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-23T00:38:08.728</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-23T00:30:04.261</Data_Start>
+        <Data_Stop>UTC=2018-07-23T00:37:56.728</Data_Stop>
+      </ACQ>
+      <ACQ id="16107_01">
+        <Orbit_Number>16107</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-23T11:12:57.850</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-23T11:19:58.451</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-23T11:13:54.850</Data_Start>
+        <Data_Stop>UTC=2018-07-23T11:17:38.624</Data_Stop>
+      </ACQ>
+      <ACQ id="16108_01">
+        <Orbit_Number>16108</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-23T12:47:53.347</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-23T12:58:16.190</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-23T12:48:13.347</Data_Start>
+        <Data_Stop>UTC=2018-07-23T12:58:04.190</Data_Stop>
+      </ACQ>
+      <ACQ id="16114_01">
+        <Orbit_Number>16114</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-23T22:18:58.890</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-23T22:30:17.282</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-23T22:19:18.890</Data_Start>
+        <Data_Stop>UTC=2018-07-23T22:30:05.282</Data_Stop>
+      </ACQ>
+      <ACQ id="16115_01">
+        <Orbit_Number>16115</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-23T23:58:13.945</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-24T00:09:38.070</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-23T23:58:33.945</Data_Start>
+        <Data_Stop>UTC=2018-07-24T00:09:26.070</Data_Stop>
+      </ACQ>
+      <ACQ id="16121_01">
+        <Orbit_Number>16121</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-24T10:44:12.964</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-24T10:48:57.995</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-24T10:45:09.964</Data_Start>
+        <Data_Stop>UTC=2018-07-24T10:47:39.523</Data_Stop>
+      </ACQ>
+      <ACQ id="16122_01">
+        <Orbit_Number>16122</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-24T12:17:23.038</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-24T12:29:32.909</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-24T12:17:43.038</Data_Start>
+        <Data_Stop>UTC=2018-07-24T12:29:20.909</Data_Stop>
+      </ACQ>
+      <ACQ id="16128_01">
+        <Orbit_Number>16128</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-24T21:50:47.874</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-24T21:59:23.677</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-24T21:51:07.874</Data_Start>
+        <Data_Stop>UTC=2018-07-24T21:59:11.677</Data_Stop>
+      </ACQ>
+      <ACQ id="16129_01">
+        <Orbit_Number>16129</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-24T23:27:42.386</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-24T23:40:20.173</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-24T23:28:44.727</Data_Start>
+        <Data_Stop>UTC=2018-07-24T23:40:08.173</Data_Stop>
+      </ACQ>
+      <ACQ id="16136_01">
+        <Orbit_Number>16136</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-25T11:47:19.866</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-25T12:00:08.335</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-25T11:47:39.866</Data_Start>
+        <Data_Stop>UTC=2018-07-25T11:57:47.918</Data_Stop>
+      </ACQ>
+      <ACQ id="16137_01">
+        <Orbit_Number>16137</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-25T13:30:19.984</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-25T13:34:21.815</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-25T13:30:39.984</Data_Start>
+        <Data_Stop>UTC=2018-07-25T13:34:09.815</Data_Stop>
+      </ACQ>
+      <ACQ id="16143_01">
+        <Orbit_Number>16143</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-25T22:57:50.376</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-25T23:10:35.055</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-25T22:58:41.640</Data_Start>
+        <Data_Stop>UTC=2018-07-25T23:10:23.055</Data_Stop>
+      </ACQ>
+      <ACQ id="16144_01">
+        <Orbit_Number>16144</Orbit_Number>
+        <Station_Id>MPS_</Station_Id>
+        <Satellite_Id>S2A</Satellite_Id>
+        <Downlink_Channels>1+2</Downlink_Channels>
+        <Acquisition_Start>UTC=2018-07-26T00:40:40.584</Acquisition_Start>
+        <Acquisition_Stop>UTC=2018-07-26T00:47:15.402</Acquisition_Stop>
+        <Data_Start>UTC=2018-07-26T00:41:00.584</Data_Start>
+        <Data_Stop>UTC=2018-07-26T00:47:03.402</Data_Stop>
+      </ACQ>
+    </SCHEDULE>
+  </Data_Block>
+</Earth_Explorer_File>
