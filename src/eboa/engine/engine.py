@@ -1504,10 +1504,12 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    self.session.query(Event).filter(Event.processing_uuid != source_max_generation_time.processing_uuid,
+                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.processing_uuid != source_max_generation_time.processing_uuid,
                                                      Event.gauge_id == gauge_id,
                                                      Event.start >= validity_start,
-                                                     Event.stop <= validity_stop).delete(synchronize_session="fetch")
+                                                     Event.stop <= validity_stop)
+                    self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session="fetch")
+                    event_uuids_to_be_removed.delete(synchronize_session="fetch")
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_ending_on_period = self.session.query(Event).join(DimProcessing).filter(DimProcessing.generation_time <= max_generation_time,
