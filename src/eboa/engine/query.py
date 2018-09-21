@@ -769,7 +769,7 @@ class Query():
 
         return links
 
-    def get_linked_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None):
+    def get_linked_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None, return_prime_events = True):
         
         # Obtain prime events 
         prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters, event_uuids = event_uuids)
@@ -789,9 +789,15 @@ class Query():
             linked_events = self.get_events(event_uuids = {"list": linked_event_uuids, "op": "in"})
         # end if
 
-        return prime_events + linked_events
+        if return_prime_events:
+            events = prime_events + linked_events
+        else:
+            events = linked_events
+        # end if
 
-    def get_linked_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, value_filters = None, values_names_type = None, values_name_type_like = None):
+        return events
+
+    def get_linked_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, value_filters = None, values_names_type = None, values_name_type_like = None, return_prime_events = True):
         
         # Obtain prime events 
         prime_events = self.get_events_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, gauge_names = gauge_names, gauge_name_like = gauge_name_like, gauge_systems = gauge_systems, gauge_system_like = gauge_system_like, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters, values_names_type = values_names_type, values_name_type_like = values_name_type_like)
@@ -810,8 +816,13 @@ class Query():
         if len(linked_event_uuids) > 0:
             linked_events = self.get_events(event_uuids = {"list": linked_event_uuids, "op": "in"})
         # end if
-
-        return prime_events + linked_events
+        
+        if return_prime_events:
+            events = prime_events + linked_events
+        else:
+            events = linked_events
+        # end if
+        return events
 
     def get_annotation_cnfs(self, dim_signature_ids = None, annotation_cnf_ids = None, names = None, name_like = None, systems = None, system_like = None):
         """
