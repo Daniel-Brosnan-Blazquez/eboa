@@ -38,17 +38,19 @@ def generate_imaging_analysis(workbook, query, begin, end):
 
     imaging_events_and_linked = query.get_linked_events_join(gauge_name_like = {"str": "CUT_IMAGING%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"], "op": "in"})
 
+    corrected_imaging_events = query.get_linked_events(event_uuids = {"list": [event.event_uuid for event in imaging_events_and_linked], "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+
     imaging_events_and_linked.sort(key=lambda k: k.__dict__["start"])
 
     # Imaging plan
     ws = workbook.create_sheet("Imaging plan")
 
     # Insert headings into the worksheet
-    ws.append(["Satellite", "Gauge", "Start", "Stop", "Duration (m)", "Event uuid", "Ingestion time", "Parameters", "NPPF file", "DIM version"])
+    ws.append(["Satellite", "Orbit", "Gauge", "Start", "Stop", "Duration (m)", "Parameters", "Status", "Event uuid", "Ingestion time", "NPPF file", "DIM version"])
 
     # String patterns
-    record_pattern = re.compile("^RECORD.*")
     record_parameters_pattern = re.compile(".*scn_dup$")
+    record_pattern = re.compile("^RECORD.*")
     cut_imaging_pattern = re.compile("^CUT_IMAGING.*")
     imaging_pattern = re.compile("^IMAGING.*")
 
@@ -61,12 +63,25 @@ def generate_imaging_analysis(workbook, query, begin, end):
             for parameter in parameters:
                 parameters_text += parameter.name + ": " + str(int(parameter.value))
                 if i < len(parameters):
-                    parameters_text += parameters_text + ", "
+                    parameters_text += ", "
                 # end if
                 i += 1
             # end for
         # end if
-        ws.append([event.gauge.system, event.gauge.name, event.start, event.stop,  format((event.stop - event.start).total_seconds() / 60, ".3f"), str(event.event_uuid), event.ingestion_time, parameters_text, event.source.name, event.source.dim_exec_version])
+        corrected_event_uuid = [link.event_uuid_link for link in event.eventLinks if link.name == "TIME_CORRECTION"]
+        status = "TIME_CORRECTED"
+        if len(corrected_event_uuid) > 0:
+            corrected_event = [event for event in corrected_imaging_events if event.event_uuid == corrected_event_uuid[0]]
+            start = corrected_event[0].start
+            stop = corrected_event[0].stop
+            status = [obj.value for obj in corrected_event[0].eventTexts if obj.name == "status_correction"][0]
+        else:
+            status = "TIME_NOT_CORRECTED"
+            start = event.start
+            stop = event.stop
+        # end if
+        orbit = [obj.value for obj in event.eventDoubles if obj.name == "start_orbit"][0]
+        ws.append([event.gauge.system, str(int(orbit)), event.gauge.name, start, stop,  format((stop - start).total_seconds() / 60, ".3f"), parameters_text, status, str(event.event_uuid), event.ingestion_time, event.source.name, event.source.dim_exec_version])
     # end for
 
     # Applying styles
@@ -93,7 +108,7 @@ def generate_imaging_analysis(workbook, query, begin, end):
     row.font = Font(name="mono",bold="True")
 
     # Color record rows
-    record_rows = [row for row in ws.rows if record_pattern.match(row[1].value)]
+    record_rows = [row for row in ws.rows if record_pattern.match(row[2].value)]
     for row in record_rows:
         for cell in row:
             cell.fill = blue_fill
@@ -103,7 +118,7 @@ def generate_imaging_analysis(workbook, query, begin, end):
     # end for
 
     # Color cut imaging rows
-    cut_imaging_rows = [row for row in ws.rows if cut_imaging_pattern.match(row[1].value)]
+    cut_imaging_rows = [row for row in ws.rows if cut_imaging_pattern.match(row[2].value)]
     for row in cut_imaging_rows:
         for cell in row:
             cell.fill = green_fill
@@ -113,7 +128,7 @@ def generate_imaging_analysis(workbook, query, begin, end):
     # end for
 
     # Color cut imaging rows
-    imaging_rows = [row for row in ws.rows if imaging_pattern.match(row[1].value)]
+    imaging_rows = [row for row in ws.rows if imaging_pattern.match(row[2].value)]
     for row in imaging_rows:
         for cell in row:
             cell.fill = orange_fill
@@ -158,7 +173,7 @@ def generate_imaging_analysis(workbook, query, begin, end):
                 imaging_durations[event.gauge.name] += event_duration
                 mission_total_imaging_durations += event_duration
                 total_imaging_durations += event_duration
-                start_orbit = [record.value for record in event.eventDoubles if record.name == "imaging_start_orbit"][0]
+                start_orbit = [record.value for record in event.eventDoubles if record.name == "start_orbit"][0]
                 if not start_orbit in mission_orbits:
                     mission_orbits[start_orbit] = start_orbit
                     orbits.append(start_orbit)
@@ -198,6 +213,74 @@ def generate_imaging_analysis(workbook, query, begin, end):
         ws["E2"] = 0
     else:
         ws["E2"] = float(format(total_imaging_durations / len(orbits), ".3f"))
+    # end if
+    
+    # Playback information
+    ws = workbook.create_sheet("Downlink plan")
+    playback_events = query.get_events_join(gauge_name_like = {"str": "PLAYBACK_TYPE%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}])
+
+    playback_event_uuids = [event.event_uuid for event in playback_events]
+
+    corrected_playback_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+
+    playback_mean_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["PLAYBACK_MEAN"], "op": "in"}, return_prime_events = False)
+
+    dfep_schedule_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["DFEP_SCHEDULE"], "op": "in"}, return_prime_events = False)
+
+    station_schedule_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["STATION_SCHEDULE"], "op": "in"}, return_prime_events = False)
+
+    playback_events.sort(key=lambda k: k.__dict__["start"])
+
+    # Insert headings into the worksheet
+    ws.append(["Satellite", "Orbit", "Station", "Downlink Type", "Start", "Stop", "Duration (m)", "Parameters", "Status", "Event uuid", "Ingestion time", "NPPF file", "DIM version"])
+
+    # Insert data into the worksheet
+    for event in playback_events:
+        parameters_text = ""
+        parameters_object = [obj for obj in event.eventObjects if obj.name == "parameters"][0]
+        parameters = [obj for obj in event.get_values() if obj.parent_level == parameters_object.parent_level + 1 and obj.parent_position == parameters_object.level_position]
+        i = 1
+        for parameter in parameters:
+            parameters_text += parameter.name + ": " + str(int(parameter.value))
+            if i < len(parameters):
+                parameters_text += ", "
+            # end if
+            i += 1
+        # end for
+
+        corrected_event_uuid = [link.event_uuid_link for link in event.eventLinks if link.name == "TIME_CORRECTION"]
+        status = "TIME_CORRECTED"
+        if len(corrected_event_uuid) > 0:
+            corrected_event = [event for event in corrected_playback_events if event.event_uuid == corrected_event_uuid[0]]
+            start = corrected_event[0].start
+            stop = corrected_event[0].stop
+            status = [obj.value for obj in corrected_event[0].eventTexts if obj.name == "status_correction"][0]
+        else:
+            status = "TIME_NOT_CORRECTED"
+            start = event.start
+            stop = event.stop
+        # end if
+        orbit = [obj.value for obj in event.eventDoubles if obj.name == "start_orbit"][0]
+        playback_mean_uuid = [link.event_uuid_link for link in event.eventLinks if link.name == "PLAYBACK_MEAN"]
+        playback_mean_event = [event for event in playback_mean_events if event.event_uuid == playback_mean_uuid[0]][0]
+
+        station = "CGSX"
+        if playback_mean_event.gauge.name == "PLAYBACK_MEAN_XBAND":
+            dfep_schedule_uuid = [link.event_uuid_link for link in event.eventLinks if link.name == "DFEP_SCHEDULE"]
+            station_schedule_uuid = [link.event_uuid_link for link in event.eventLinks if link.name == "STATION_SCHEDULE"]
+            if len(dfep_schedule_uuid) > 0:
+                dfep_schedule_event = [event for event in dfep_schedule_events if event.event_uuid == dfep_schedule_uuid[0]]
+                station = [obj.value for obj in dfep_schedule_event[0].eventTexts if obj.name == "station"][0]
+            elif len(station_schedule_uuid) > 0:
+                station_schedule_event = [event for event in station_schedule_events if event.event_uuid == station_schedule_uuid[0]]
+                station = [obj.value for obj in station_schedule_event[0].eventTexts if obj.name == "station"][0]
+            # end if
+        else:
+            station = "EDRS"
+        # end if
+        ws.append([event.gauge.system, str(int(orbit)), station, event.gauge.name.replace("PLAYBACK_TYPE_", ""), start, stop,  format((stop - start).total_seconds() / 60, ".3f"), parameters_text, status, str(event.event_uuid), event.ingestion_time, event.source.name, event.source.dim_exec_version])
+    # end for
+
 
     # Adjust column widths
     adjust_column_width(ws)
