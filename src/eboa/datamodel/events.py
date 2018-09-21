@@ -39,7 +39,7 @@ class Event(Base):
         self.explicitRef = explicit_ref
         self.source = dim_processing
 
-    def get_values(self):
+    def get_structured_values(self):
         """
         Method to obtain the structure of values in a python dictionary format
         """
@@ -55,6 +55,18 @@ class Event(Base):
         # end if
 
         return json_values
+
+    def get_values(self):
+        """
+        Method to obtain the associated values
+        """
+
+        values = []
+        for values_relation in ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]:
+            values += eval("self." + values_relation)
+        # end for
+
+        return values
 
 class EventLink(Base):
     __tablename__ = 'event_link_tb'
