@@ -62,8 +62,6 @@ def _correct_planning_events(orbpre_events, planning_events):
     corrected_planning_events = []
     for planning_event in planning_events:
         satellite = planning_event.gauge.system
-        start_request = [obj.value for obj in planning_event.eventTexts if obj.name == "start_request"][0]
-        stop_request = [obj.value for obj in planning_event.eventTexts if obj.name == "stop_request"][0]
         start_orbit = [obj.value for obj in planning_event.eventDoubles if obj.name == "start_orbit"][0]
         stop_orbit = [obj.value for obj in planning_event.eventDoubles if obj.name == "stop_orbit"]
         start_angle = [obj.value for obj in planning_event.eventDoubles if obj.name == "start_angle"][0]
@@ -112,24 +110,6 @@ def _correct_planning_events(orbpre_events, planning_events):
             "name": "values",
             "type": "object",
             "values": [
-                {"name": "start_request",
-                 "type": "text",
-                 "value": start_request},
-                {"name": "stop_request",
-                 "type": "text",
-                 "value": stop_request},
-                {"name": "start_orbit",
-                 "type": "double",
-                 "value": start_orbit},
-                {"name": "start_angle",
-                 "type": "double",
-                 "value": start_angle},
-                {"name": "stop_orbit",
-                 "type": "double",
-                 "value": stop_orbit},
-                {"name": "stop_angle",
-                 "type": "double",
-                 "value": stop_angle},
                 {"name": "status_correction",
                  "type": "text",
                  "value": status},
@@ -138,7 +118,10 @@ def _correct_planning_events(orbpre_events, planning_events):
                  "value": str((planning_event.start - corrected_start).total_seconds())},
                 {"name": "delta_stop",
                  "type": "double",
-                 "value": str((planning_event.stop - corrected_stop).total_seconds())}]
+                 "value": str((planning_event.stop - corrected_stop).total_seconds())},
+                {"name": "satellite",
+                 "type": "text",
+                 "value": satellite}]
         }]
 
         corrected_planning_event = {
@@ -174,7 +157,7 @@ def _generate_corrected_planning_events(satellite, validity_start, validity_stop
     planning_gauges = query.get_gauges_join(dim_signatures = {"list": ["NPPF_" + satellite], "op": "in"})
 
     planning_events = query.get_events(gauge_ids = {"list": [gauge.gauge_id for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
-    
+
     events = _correct_planning_events(list_of_events, planning_events)
 
     return events
@@ -250,7 +233,10 @@ def _generate_orbpre_events(xpath_xml, source, list_of_events):
                      "value": vy},
                     {"name": "vz",
                      "type": "double",
-                     "value": vz}
+                     "value": vz},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
