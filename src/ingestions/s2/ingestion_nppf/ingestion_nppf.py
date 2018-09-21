@@ -10,6 +10,7 @@ import os
 import argparse
 from dateutil import parser
 import datetime
+import json
 
 # Import xml parser
 from lxml import etree
@@ -176,7 +177,10 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": record_stop_orbit},
                     {"name": "stop_angle",
                      "type": "double",
-                     "value": record_stop_angle}
+                     "value": record_stop_angle},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
@@ -248,7 +252,10 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": cut_imaging_stop_orbit},
                     {"name": "stop_angle",
                      "type": "double",
-                     "value": cut_imaging_stop_angle}
+                     "value": cut_imaging_stop_angle},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
@@ -323,7 +330,10 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": imaging_stop_orbit},
                     {"name": "stop_angle",
                      "type": "double",
-                     "value": imaging_stop_angle}
+                     "value": imaging_stop_angle},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
@@ -384,7 +394,10 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
                  "value": idle_stop_orbit},
                 {"name": "stop_angle",
                  "type": "double",
-                 "value": idle_stop_angle}
+                 "value": idle_stop_angle},
+                {"name": "satellite",
+                 "type": "text",
+                 "value": satellite}
             ]
         else:
             idle_stop_orbit = None
@@ -400,7 +413,10 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
                  "value": idle_start_orbit},
                 {"name": "start_angle",
                  "type": "double",
-                 "value": idle_start_angle}
+                 "value": idle_start_angle},
+                {"name": "satellite",
+                 "type": "text",
+                 "value": satellite}
             ]
         # end if
 
@@ -416,8 +432,10 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
             "values": [{
                 "name": "values",
                 "type": "object",
-                "values": values
-            }]
+                "values": values},
+                {"name": "satellite",
+                 "type": "text",
+                 "value": satellite}]
         }
 
         # Insert idle_event
@@ -510,7 +528,10 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                      "value": playback_stop_orbit},
                     {"name": "stop_angle",
                      "type": "double",
-                     "value": playback_stop_angle}
+                     "value": playback_stop_angle},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
@@ -562,7 +583,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                 {
                     "link": playback_mean_link_id,
                     "link_mode": "by_ref",
-                    "name": "PLAYBACK_OPERATION",
+                    "name": "PLAYBACK_MEAN",
                     "back_ref": "true"
                 }
             ],
@@ -587,10 +608,68 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                      "value": playback_type_stop_orbit},
                     {"name": "stop_angle",
                      "type": "double",
-                     "value": playback_type_stop_angle}
+                     "value": playback_type_stop_angle},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite}
                 ]
             }]
         }
+
+        parameters = []
+        playback_type_event["values"][0]["values"].append(
+            {"name": "parameters",
+             "type": "object",
+             "values": parameters},
+        )
+        if playback_type == "HKTM_SAD":
+            parameters.append(
+                {"name": "MEM_FRHK",
+                 "type": "double",
+                 "value": playback_type_start_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'MEM_FRHK']/RQ_Parameter_Value")[0].text},
+            )
+            parameters.append(
+                {"name": "MEM_FSAD",
+                 "type": "double",
+                 "value": playback_type_start_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'MEM_FSAD']/RQ_Parameter_Value")[0].text},
+            )
+        # end if
+        if playback_type in ["HKTM", "SAD", "NOMINAL", "REGULAR", "NRT", "RT"]:
+            parameters.append(
+                {"name": "MEM_FREE",
+                 "type": "double",
+                 "value": playback_type_start_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'MEM_FREE']/RQ_Parameter_Value")[0].text},
+            )
+        # end if
+        if playback_type in ["NOMINAL", "REGULAR", "NRT"]:
+            parameters.append(
+                {"name": "SCN_DUP",
+                 "type": "double",
+                 "value": playback_type_stop_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_DUP']/RQ_Parameter_Value")[0].text},
+            )
+            parameters.append(
+                {"name": "SCN_RWD",
+                 "type": "double",
+                 "value": playback_type_stop_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_RWD']/RQ_Parameter_Value")[0].text},
+            )
+        # end if
+        if playback_type == "RT":
+            parameters.append(
+                {"name": "SCN_DUP_START",
+                 "type": "double",
+                 "value": playback_type_start_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_DUP']/RQ_Parameter_Value")[0].text},
+            )
+            parameters.append(
+                {"name": "SCN_DUP_STOP",
+                 "type": "double",
+                 "value": playback_type_stop_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_DUP']/RQ_Parameter_Value")[0].text},
+            )
+            parameters.append(
+                {"name": "SCN_RWD",
+                 "type": "double",
+                 "value": playback_type_stop_operation.xpath("RQ/List_of_RQ_Parameters/RQ_Parameter[RQ_Parameter_Name = 'SCN_RWD']/RQ_Parameter_Value")[0].text},
+            )
+        # end if
 
         # Insert playback_type_event
         ingestion.insert_event_for_ingestion(playback_type_event, source, list_of_events)
@@ -659,7 +738,7 @@ def insert_data_into_DDBB(data, filename, engine):
 
     return returned_value
 
-def command_process_file(file_path):
+def command_process_file(file_path, output_path = None):
     # Process file
     data = process_file(file_path)
 
@@ -667,8 +746,14 @@ def command_process_file(file_path):
     # Validate data
     filename = os.path.basename(file_path)
 
+    returned_value = 0
     # Treat data
-    returned_value = insert_data_into_DDBB(data, filename, engine)
+    if output_path == None:
+        returned_value = insert_data_into_DDBB(data, filename, engine)
+    else:
+        with open(output_path, "w") as write_file:
+            json.dump(data, write_file, indent=4)
+    # end if
     
     return returned_value
 
@@ -679,12 +764,18 @@ if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description='Process NPPFs.')
     args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
                         help='path to the file to process', required=True)
+    args_parser.add_argument('-o', dest='output_path', type=str, nargs=1,
+                             help='path to the output file', required=False)
     args = args_parser.parse_args()
     file_path = args.file_path[0]
+    output_path = None
+    if args.output_path != None:
+        output_path = args.output_path[0]
+    # end if
 
     # Before calling to the processor there should be a validation of
     # the file following a schema. Schema not available for NPPFs
 
-    returned_value = command_process_file(file_path)
+    returned_value = command_process_file(file_path, output_path)
     
     logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
