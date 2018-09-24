@@ -81,6 +81,7 @@ Events can be inserted following 3 different methods associated to their gauges:
 \item SIMPLE\_UPDATE: all events are inserted
 \item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
 \item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
+\item insert\_and\_erase: this method is similar to the method ERASE\_and\_REPLACE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
 \end{itemize}
 
 \subsection {ERASE\_and\_REPLACE method}

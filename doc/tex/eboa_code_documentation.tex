@@ -664,6 +664,22 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.gauge_id}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_id}}}
 \end{fulllineitems}
 
+\index{get\_structured\_values() (eboa.datamodel.events.Event method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.get_structured_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_structured\_values}}}{}{}
+Method to obtain the structure of values in a python dictionary format
+
+\end{fulllineitems}
+
+\index{get\_values() (eboa.datamodel.events.Event method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.get_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_values}}}{}{}
+Method to obtain the associated values
+
+\end{fulllineitems}
+
 \index{ingestion\_time (eboa.datamodel.events.Event attribute)}
 
 \begin{fulllineitems}
@@ -1536,6 +1552,12 @@ Export definition for providing formatted extracted data
 Written by DEIMOS Space S.L. (dibb)
 
 module eboa
+\index{build\_values\_structure() (in module eboa.engine.export)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.export.build_values_structure}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.export.}}\sphinxbfcode{\sphinxupquote{build\_values\_structure}}}{\emph{values}, \emph{structure}, \emph{level\_position=0}, \emph{parent\_level=-1}, \emph{parent\_level\_position=0}}{}
+\end{fulllineitems}
+
 
 
 \subsubsection{eboa.engine.functions module}
@@ -1659,6 +1681,14 @@ Method to insert an event into a list for ingestion so that some checks are perf
 
 \end{fulllineitems}
 
+\index{remove\_namespaces() (in module eboa.engine.ingestion)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.ingestion.remove_namespaces}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.ingestion.}}\sphinxbfcode{\sphinxupquote{remove\_namespaces}}}{\emph{file\_path}, \emph{new\_file\_path}}{}
+Method to insert an event into a list for ingestion so that some checks are performed before
+
+\end{fulllineitems}
+
 
 
 \subsubsection{eboa.engine.parsing module}
@@ -1693,7 +1723,7 @@ Class to implement the dialect needed for every column type
 \index{colspecs (eboa.engine.printing.LiteralDialect attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}\}}}}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}\}}}}
 \end{fulllineitems}
 
 
@@ -1907,13 +1937,13 @@ list
 \index{get\_linked\_events() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{event\_uuids=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{event\_uuids=None}, \emph{return\_prime\_events=True}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_events\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{return\_prime\_events=True}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_explicit\_refs() (eboa.engine.query.Query method)}
