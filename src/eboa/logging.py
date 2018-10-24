@@ -44,7 +44,7 @@ class Log():
             self.logger.removeHandler(stream_handlers[0])
         # end if
 
-        file_handlers = [handler for handler in self.logger.handlers if type(handler) == logging.FileHandler]
+        file_handlers = [handler for handler in self.logger.handlers if type(handler) == logging.handlers.RotatingFileHandler]
         if len(file_handlers) < 1:
             # Set the path to the log file
             file_handler = RotatingFileHandler(eboa_resources_path + "/" + config["LOG"]["PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
