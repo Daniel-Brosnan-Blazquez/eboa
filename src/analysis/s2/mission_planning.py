@@ -36,9 +36,13 @@ missions = ["S2A", "S2B"]
 
 def generate_imaging_analysis(workbook, query, begin, end):
 
-    imaging_events_and_linked = query.get_linked_events_join(gauge_name_like = {"str": "CUT_IMAGING%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"], "op": "in"})
+    events = query.get_linked_events_join(gauge_name_like = {"str": "CUT_IMAGING%", "op": "like"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["RECORD_OPERATION", "COMPLETE_IMAGING_OPERATION"], "op": "in"})
 
-    corrected_imaging_events = query.get_linked_events(event_uuids = {"list": [event.event_uuid for event in imaging_events_and_linked], "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+    imaging_events_and_linked = events["linked_events"] + events["prime_events"]
+
+    events = query.get_linked_events(event_uuids = [event.event_uuid for event in imaging_events_and_linked], start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+
+    corrected_imaging_events = events["linked_events"]
 
     imaging_events_and_linked.sort(key=lambda k: k.__dict__["start"])
 
@@ -221,13 +225,21 @@ def generate_imaging_analysis(workbook, query, begin, end):
 
     playback_event_uuids = [event.event_uuid for event in playback_events]
 
-    corrected_playback_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+    events = query.get_linked_events(event_uuids = playback_event_uuids, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
 
-    playback_mean_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["PLAYBACK_MEAN"], "op": "in"}, return_prime_events = False)
+    corrected_playback_events = events["linked_events"]
 
-    dfep_schedule_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["DFEP_SCHEDULE"], "op": "in"}, return_prime_events = False)
+    events = query.get_linked_events(event_uuids = playback_event_uuids, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["PLAYBACK_MEAN"], "op": "in"}, return_prime_events = False)
 
-    station_schedule_events = query.get_linked_events(event_uuids = {"list": playback_event_uuids, "op": "in"}, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["STATION_SCHEDULE"], "op": "in"}, return_prime_events = False)
+    playback_mean_events = events["linked_events"]
+
+    events = query.get_linked_events(event_uuids = playback_event_uuids, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["DFEP_SCHEDULE"], "op": "in"}, return_prime_events = False)
+
+    dfep_schedule_events = events["linked_events"]
+
+    events = query.get_linked_events(event_uuids = playback_event_uuids, start_filters = [{"date": end, "op": "<"}], stop_filters = [{"date": begin, "op": ">"}], link_names = {"list": ["STATION_SCHEDULE"], "op": "in"}, return_prime_events = False)
+
+    station_schedule_events = events["linked_events"]
 
     playback_events.sort(key=lambda k: k.__dict__["start"])
 

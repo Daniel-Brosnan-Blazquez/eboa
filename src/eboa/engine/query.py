@@ -769,12 +769,21 @@ class Query():
 
         return links
 
-    def get_linked_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None, return_prime_events = True):
-        
-        # Obtain prime events 
-        prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters, event_uuids = event_uuids)
+    def get_linked_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None, return_prime_events = True, back_ref = False):
 
-        prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
+        if not event_uuids or (event_uuids and return_prime_events):
+            # Obtain prime events
+            prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters)
+        # end if
+
+        if event_uuids:
+            if type(event_uuids) != list:
+                raise InputError("The parameter event_uuids must be a list of UUIDs.")
+            # end if
+            prime_event_uuids = event_uuids
+        else:
+            prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
+        # end if
 
         # Obtain the links from the prime events to other events
         links = []
@@ -789,15 +798,27 @@ class Query():
             linked_events = self.get_events(event_uuids = {"list": linked_event_uuids, "op": "in"})
         # end if
 
+        events = {}
         if return_prime_events:
-            events = prime_events + linked_events
-        else:
-            events = linked_events
+            events["prime_events"] = prime_events
+        # end if
+        events["linked_events"] = linked_events
+        
+        if back_ref:
+            # Obtain the events linking the prime events
+            links = self.get_event_links(event_uuids = {"list": prime_event_uuids, "op": "in"})
+            event_linking_uuids = [str(link.event_uuid_link) for link in links]
+            events_linking = []
+            if len(event_linking_uuids) > 0:
+                events_linking = self.get_events(event_uuids = {"list": event_linking_uuids, "op": "in"})
+            # end if
+
+            events["events_linking"] = event_linking_uuids
         # end if
 
         return events
 
-    def get_linked_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, value_filters = None, values_names_type = None, values_name_type_like = None, return_prime_events = True):
+    def get_linked_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, value_filters = None, values_names_type = None, values_name_type_like = None, return_prime_events = True, back_ref = False):
         
         # Obtain prime events 
         prime_events = self.get_events_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, gauge_names = gauge_names, gauge_name_like = gauge_name_like, gauge_systems = gauge_systems, gauge_system_like = gauge_system_like, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters, values_names_type = values_names_type, values_name_type_like = values_name_type_like)
@@ -817,11 +838,24 @@ class Query():
             linked_events = self.get_events(event_uuids = {"list": linked_event_uuids, "op": "in"})
         # end if
         
+        events = {}
         if return_prime_events:
-            events = prime_events + linked_events
-        else:
-            events = linked_events
+            events["prime_events"] = prime_events
         # end if
+        events["linked_events"] = linked_events
+
+        if back_ref:
+            # Obtain the events linking the prime events
+            links = self.get_event_links(event_uuids = {"list": prime_event_uuids, "op": "in"})
+            event_linking_uuids = [str(link.event_uuid_link) for link in links]
+            events_linking = []
+            if len(event_linking_uuids) > 0:
+                events_linking = self.get_events(event_uuids = {"list": event_linking_uuids, "op": "in"})
+            # end if
+
+            events["events_linking"] = event_linking_uuids
+        # end if
+
         return events
 
     def get_annotation_cnfs(self, dim_signature_ids = None, annotation_cnf_ids = None, names = None, name_like = None, systems = None, system_like = None):
@@ -1332,7 +1366,7 @@ class Query():
         for value_class in [EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp]:
             if event_uuids:
                 if type(event_uuids) != list:
-                    raise InputError("The parameters event_uuids must be a list of UUIDs.")
+                    raise InputError("The parameter event_uuids must be a list of UUIDs.")
                 # end if
                 values.append(self.get_event_values_type(value_class, event_uuids))
             else:
@@ -1346,7 +1380,7 @@ class Query():
         """
         if event_uuids:
             if type(event_uuids) != list:
-                raise InputError("The parameters event_uuids must be a list of UUIDs.")
+                raise InputError("The parameter event_uuids must be a list of UUIDs.")
             # end if
             values = self.session.query(value_class).filter(value_class.event_uuid.in_(event_uuids)).all()
         else:
@@ -1361,7 +1395,7 @@ class Query():
         for value_class in [AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp]:
             if annotation_uuids:
                 if type(annotation_uuids) != list:
-                    raise InputError("The parameters annotation_uuids must be a list of UUIDs.")
+                    raise InputError("The parameter annotation_uuids must be a list of UUIDs.")
                 # end if
                 values.append(self.get_annotation_values_type(value_class, annotation_uuids))
             else:
@@ -1375,7 +1409,7 @@ class Query():
         """
         if annotation_uuids:
             if type(annotation_uuids) != list:
-                raise InputError("The parameters annotation_uuids must be a list of UUIDs.")
+                raise InputError("The parameter annotation_uuids must be a list of UUIDs.")
             # end if
             values = self.session.query(value_class).filter(value_class.annotation_uuid.in_(annotation_uuids)).all()
         else:

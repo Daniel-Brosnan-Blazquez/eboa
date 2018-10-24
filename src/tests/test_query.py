@@ -1837,9 +1837,10 @@ class TestQuery(unittest.TestCase):
             }]}
         self.engine_eboa.treat_data(data)
 
-        linked_events = self.query.get_linked_events()
+        events = self.query.get_linked_events()
 
-        assert len(linked_events) == 4
+        assert len(events["linked_events"]) == 2
+        assert len(events["prime_events"]) == 2
 
         source1 = self.query.get_sources()
         explicit_ref1 = self.query.get_explicit_refs()
@@ -1848,27 +1849,46 @@ class TestQuery(unittest.TestCase):
         event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
 
 
-        linked_events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
+        events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
                                                    explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
                                                    gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
-                                                   event_uuids = {"list": [event1[0].event_uuid], "op": "in"},
+                                                   event_uuids = [event1[0].event_uuid],
                                                    start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
                                                    stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                                    link_names = {"list": ["EVENT_LINK1"], "op": "in"},
                                                    link_name_like = {"str": "EVENT_LINK%", "op": "like"})
 
-        assert len(linked_events) == 2
+        assert len(events["linked_events"]) == 1
+        assert len(events["prime_events"]) == 1
 
-        linked_events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
+        events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
                                                    explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
                                                    gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
-                                                   event_uuids = {"list": [event2[0].event_uuid], "op": "in"},
+                                                   event_uuids = [event2[0].event_uuid],
                                                    start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
                                                    stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                                    link_names = {"list": ["EVENT_LINK2"], "op": "in"},
                                                    link_name_like = {"str": "EVENT_LINK%", "op": "like"})
 
-        assert len(linked_events) == 2
+        assert len(events["linked_events"]) == 1
+        assert len(events["prime_events"]) == 1
+
+        events = self.query.get_linked_events(back_ref = True)
+
+        assert len(events["linked_events"]) == 2
+        assert len(events["prime_events"]) == 2
+        assert len(events["events_linking"]) == 2
+
+    def test_wrong_inputs_query_linked_events(self):
+        
+        result = False
+        try:
+            self.query.get_linked_events(event_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
 
     def test_query_linked_event_join(self):
         data = {"operations": [{
@@ -1913,9 +1933,10 @@ class TestQuery(unittest.TestCase):
             }]}
         self.engine_eboa.treat_data(data)
 
-        linked_events = self.query.get_linked_events_join()
+        events = self.query.get_linked_events_join()
 
-        assert len(linked_events) == 4
+        assert len(events["linked_events"]) == 2
+        assert len(events["prime_events"]) == 2
 
         source1 = self.query.get_sources()
         explicit_ref1 = self.query.get_explicit_refs()
@@ -1923,7 +1944,7 @@ class TestQuery(unittest.TestCase):
         event1 = self.query.get_events(start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
         event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
 
-        linked_events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
+        events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
                                                      source_like = {"str": "%", "op": "like"},
                                                      explicit_refs = {"list": [data["operations"][0]["events"][0]["explicit_reference"]], "op": "in"},
                                                      gauge_names = {"list": [data["operations"][0]["events"][0]["gauge"]["name"]], "op": "in"},
@@ -1934,9 +1955,10 @@ class TestQuery(unittest.TestCase):
                                                      stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                                      link_names = {"list": ["EVENT_LINK1"], "op": "in"},
                                                      link_name_like = {"str": "EVENT_LINK%", "op": "like"})
-        assert len(linked_events) == 2
+        assert len(events["linked_events"]) == 1
+        assert len(events["prime_events"]) == 1
 
-        linked_events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
+        events = self.query.get_linked_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"},
                                                      source_like = {"str": "%", "op": "like"},
                                                      explicit_refs = {"list": [data["operations"][0]["events"][1]["explicit_reference"]], "op": "in"},
                                                      gauge_names = {"list": [data["operations"][0]["events"][1]["gauge"]["name"]], "op": "in"},
@@ -1948,7 +1970,14 @@ class TestQuery(unittest.TestCase):
                                                      link_names = {"list": ["EVENT_LINK2"], "op": "in"},
                                                      link_name_like = {"str": "EVENT_LINK%", "op": "like"})
 
-        assert len(linked_events) == 2
+        assert len(events["linked_events"]) == 1
+        assert len(events["prime_events"]) == 1
+
+        events = self.query.get_linked_events(back_ref = True)
+
+        assert len(events["linked_events"]) == 2
+        assert len(events["prime_events"]) == 2
+        assert len(events["events_linking"]) == 2
 
     def test_query_annotation_cnf(self):
         data = {"operations": [{

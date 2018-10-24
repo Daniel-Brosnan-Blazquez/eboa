@@ -68,10 +68,10 @@ def _generate_station_schedule_events(xpath_xml, source, list_of_events):
 
         status = "MATCHED_PLAYBACK"
         links = []
-        if len(playbacks) == 0:
+        if len(playbacks["linked_events"]) == 0:
             status = "NO_MATCHED_PLAYBACK"
         else:
-            for playback in playbacks:
+            for playback in playbacks["linked_events"]:
                 links.append({
                     "link": str(playback.event_uuid),
                     "link_mode": "by_uuid",

@@ -60,16 +60,14 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
         start = schedule.xpath("start")[0].text
         stop = schedule.xpath("stop")[0].text
 
-        playbacks = query.get_linked_events_join(gauge_names = {"list": ["CORRECTION_PLAYBACK_MEAN_XBAND"], "op": "in"}, gauge_systems = {"list": [satellite], "op": "in"}, start_filters = [{"date": stop, "op": "<"}], stop_filters = [{"date": start, "op": ">"}])
-
         playbacks = query.get_linked_events_join(gauge_name_like = {"str": "CORRECTION_PLAYBACK_TYPE%", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, start_filters = [{"date": start, "op": ">"}], stop_filters = [{"date": stop, "op": "<"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
 
         status = "MATCHED_PLAYBACK"
         links = []
-        if len(playbacks) == 0:
+        if len(playbacks["linked_events"]) == 0:
             status = "NO_MATCHED_PLAYBACK"
         else:
-            for playback in playbacks:
+            for playback in playbacks["linked_events"]:
                 links.append({
                     "link": str(playback.event_uuid),
                     "link_mode": "by_uuid",
