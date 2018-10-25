@@ -1873,6 +1873,11 @@ class TestQuery(unittest.TestCase):
         assert len(events["linked_events"]) == 1
         assert len(events["prime_events"]) == 1
 
+        events = self.query.get_linked_events(event_uuids = [event2[0].event_uuid])
+
+        assert len(events["linked_events"]) == 1
+        assert len(events["prime_events"]) == 1
+
         events = self.query.get_linked_events(back_ref = True)
 
         assert len(events["linked_events"]) == 2

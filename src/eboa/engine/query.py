@@ -773,7 +773,11 @@ class Query():
 
         if not event_uuids or (event_uuids and return_prime_events):
             # Obtain prime events
-            prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters)
+            parameter_event_uuids = None
+            if event_uuids:
+                parameter_event_uuids = {"list": event_uuids, "op": "in"}
+            # end if
+            prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters, event_uuids = parameter_event_uuids)
         # end if
 
         if event_uuids:
