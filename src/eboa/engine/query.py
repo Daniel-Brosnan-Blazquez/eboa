@@ -817,7 +817,7 @@ class Query():
                 events_linking = self.get_events(event_uuids = {"list": event_linking_uuids, "op": "in"})
             # end if
 
-            events["events_linking"] = event_linking_uuids
+            events["events_linking"] = events_linking
         # end if
 
         return events
@@ -857,7 +857,7 @@ class Query():
                 events_linking = self.get_events(event_uuids = {"list": event_linking_uuids, "op": "in"})
             # end if
 
-            events["events_linking"] = event_linking_uuids
+            events["events_linking"] = events_linking
         # end if
 
         return events
