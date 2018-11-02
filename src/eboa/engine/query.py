@@ -10,6 +10,7 @@ import datetime
 from datetime import timedelta
 from lxml import etree
 import operator
+import uuid
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -858,6 +859,53 @@ class Query():
             # end if
 
             events["events_linking"] = events_linking
+        # end if
+
+        return events
+
+    def get_linked_events_details(self, event_uuid, return_prime_events = True, back_ref = False):
+
+        if not event_uuid or type(event_uuid) != uuid.UUID:
+            raise InputError("The parameter event_uuid must be a UUID.")
+        # end if
+
+        events = {}
+        if return_prime_events:
+            events["prime_events"] = self.get_events(event_uuids = {"list": [event_uuid], "op": "in"})
+        # end if
+
+        # Obtain the links from the prime events to other events
+        links = self.get_event_links(event_uuid_links = {"list": [event_uuid], "op": "in"})
+
+        # Obtain the events linked by the prime events
+        linked_event_uuids = [str(link.event_uuid) for link in links]
+        linked_events = []
+        if len(linked_event_uuids) > 0:
+            linked_events = self.get_events(event_uuids = {"list": linked_event_uuids, "op": "in"})
+        # end if
+
+        events["linked_events"] = []
+        for event in linked_events:
+            link_name = [str(link.name) for link in links if link.event_uuid == event.event_uuid][0]
+            events["linked_events"].append({"link_name": link_name,
+                                            "event": event})
+        # end for
+        
+        if back_ref:
+            # Obtain the events linking the prime events
+            links = self.get_event_links(event_uuids = {"list": [event_uuid], "op": "in"})
+            event_linking_uuids = [str(link.event_uuid_link) for link in links]
+            events_linking = []
+            if len(event_linking_uuids) > 0:
+                events_linking = self.get_events(event_uuids = {"list": event_linking_uuids, "op": "in"})
+            # end if
+
+            events["events_linking"] = []
+            for event in events_linking:
+                link_name = [str(link.name) for link in links if link.event_uuid_link == event.event_uuid][0]
+                events["events_linking"].append({"link_name": link_name,
+                                                "event": event})
+            # end for
         # end if
 
         return events
