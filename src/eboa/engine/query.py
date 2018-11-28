@@ -91,6 +91,11 @@ class Query():
     
         return
 
+    def clear_db(self):
+        for table in reversed(Base.metadata.sorted_tables):
+            engine.execute(table.delete())
+        # end for
+
     def get_dim_signatures(self, dim_signature_ids = None, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None):
         """
         Method to obtain the DIM signature entities filtered by the received parameters
