@@ -27,6 +27,14 @@ class ExplicitRef(Base):
         self.explicit_ref = explicitRef
         self.group = group
 
+    def jsonify(self):
+        return {
+            "explicit_ref_id": self.explicit_ref_id,
+            "ingestion_time": self.ingestion_time,
+            "explicit_ref": self.explicit_ref,
+            "expl_ref_cnf_id": self.expl_ref_cnf_id
+        }
+
 class ExplicitRefGrp(Base):
     __tablename__ = 'explicit_ref_cnf_tb'
 

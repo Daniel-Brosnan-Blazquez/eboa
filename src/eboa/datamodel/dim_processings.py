@@ -39,6 +39,17 @@ class DimProcessing(Base):
         self.dim_exec_version = exec_version
         self.dimSignature = dim_signature
 
+    def jsonify(self):
+        return {
+            "processing_uuid": self.processing_uuid,
+            "name": self.name,
+            "validity_start": self.validity_start,
+            "validity_stop": self.validity_stop,
+            "generation_time": self.generation_time,
+            "ingestion_time": self.ingestion_time,
+            "dim_signature_id": self.dim_signature_id
+        }
+
 class DimProcessingStatus(Base):
     __tablename__ = 'dim_processing_status_tb'
 

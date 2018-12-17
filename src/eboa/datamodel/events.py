@@ -102,6 +102,13 @@ class EventKey(Base):
         self.event = event
         self.dim_signature = dim_signature
 
+    def jsonify(self):
+        return {
+            "event_key": self.event_key,
+            "event_uuid": self.event_uuid,
+            "dim_signature_id": self.dim_signature_id
+        }
+
 class EventBoolean(Base):
     __tablename__ = 'event_boolean_tb'
 

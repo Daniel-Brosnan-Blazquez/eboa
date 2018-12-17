@@ -49,6 +49,14 @@ class AnnotationCnf(Base):
         self.system = system
         self.dim_signature = dim_signature
 
+    def jsonify(self):
+        return {
+            "annotation_cnf_id": self.annotation_cnf_id,
+            "system": self.system,
+            "name": self.name,
+            "dim_signature_id": self.dim_signature_id
+        }
+
 class AnnotationBoolean(Base):
     __tablename__ = 'annotation_boolean_tb'
 

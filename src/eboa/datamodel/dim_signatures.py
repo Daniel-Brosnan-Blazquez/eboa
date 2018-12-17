@@ -24,3 +24,9 @@ class DimSignature(Base):
         self.dim_signature = dim_signature
         self.dim_exec_name = dim_exec_name
 
+    def jsonify(self):
+        return {
+            "dim_signature_id": self.dim_signature_id,
+            "dim_signature": self.dim_signature,
+            "dim_exec_name": self.dim_exec_name,
+        }
