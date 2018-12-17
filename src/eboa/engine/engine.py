@@ -60,6 +60,63 @@ eboa_resources_path = get_resources_path()
 logging = Log()
 logger = logging.logger
 
+
+exit_codes = {
+    "OK": {
+        "status": 0,
+        "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has ingested correctly {} event/s and {} annotation/s"
+    },
+    "INGESTION_STARTED": {
+        "status": 1,
+        "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
+    },
+    "SOURCE_ALREADY_INGESTED": {
+        "status": 2,
+        "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
+    },
+    "WRONG_SOURCE_PERIOD": {
+        "status": 3,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
+    },
+    "WRONG_EVENT_PERIOD": {
+        "status": 4,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
+    },
+    "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
+        "status": 5,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
+    },
+    "UNDEFINED_EVENT_LINK_REF": {
+        "status": 6,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which links to an undefined reference identifier {}"
+    },
+    "WRONG_VALUE": {
+        "status": 7,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the value {} that cannot be converted to the specified type {}"
+    },
+    "ODD_NUMBER_OF_COORDINATES": {
+        "status": 8,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the geometry value {} with an odd number of coordinates"
+    },
+    "FILE_NOT_VALID": {
+        "status": 9,
+        "message": "The source file with name {} does not pass the schema verification"
+    },
+    "WRONG_GEOMETRY": {
+        "status": 10,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines a wrong geometry. The exception raised has been the following: {}"
+    },
+    "DUPLICATED_EVENT_LINK_REF": {
+        "status": 11,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains more than one event which defines the same link reference identifier {}"
+    },
+    "LINKS_INCONSISTENCY": {
+        "status": 12,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
+    }
+}
+
+
 class Engine():
     """Class for communicating with the engine of the eboa module
 
@@ -447,6 +504,9 @@ class Engine():
         :type source: str
         :param validate: flag to indicate if the schema check has to be performed
         :type validate: bool
+
+        :return: exit_codes for every operation with the associated information (DIM signature, processor and source)
+        :rtype: list of dictionaries
         """
         if data != None:
             self.data = data
@@ -457,10 +517,17 @@ class Engine():
             if not is_valid:
                 # Log the error
                 logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(source))
-                return self.exit_codes["FILE_NOT_VALID"]["status"]
+                returned_information = {
+                    "source": source,
+                    "dim_signature": None,
+                    "processor": None,
+                    "status": self.exit_codes["FILE_NOT_VALID"]["status"]
+                }
+                return [returned_information]
             # end if
         # end if
 
+        returned_values = []
         for self.operation in self.data.get("operations") or []:
             returned_value = -1
             self.all_gauges_for_erase_and_replace = False
@@ -470,12 +537,16 @@ class Engine():
 
             if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
                 returned_value = self._insert_data()
-            # end if
-            if returned_value != self.exit_codes["OK"]["status"]:
-                return returned_value
+                returned_information = {
+                    "source": self.operation.get("source").get("name"),
+                    "dim_signature": self.operation.get("dim_signature").get("name"),
+                    "processor": self.operation.get("dim_signature").get("exec"),
+                    "status": returned_value
+                }
+                returned_values.append(returned_information)
             # end if
         # end for
-        return self.exit_codes["OK"]["status"]
+        return returned_values
 
     def _initialize_context_insert_data(self):
         # Initialize context

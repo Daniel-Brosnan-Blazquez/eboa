@@ -1334,7 +1334,7 @@ class TestEngine(unittest.TestCase):
             }]
             }
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"]
 
@@ -1385,7 +1385,7 @@ class TestEngine(unittest.TestCase):
             }]
             }
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
 
@@ -2871,7 +2871,7 @@ class TestEngine(unittest.TestCase):
             }]
         }]}
 
-        returned_value = self.engine_eboa.treat_data(data)
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
@@ -2911,7 +2911,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
 
@@ -2939,7 +2939,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
 
@@ -2974,7 +2974,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
 
@@ -3004,7 +3004,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"]
 
@@ -3041,7 +3041,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
@@ -3078,7 +3078,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
@@ -3113,7 +3113,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
@@ -3148,7 +3148,7 @@ class TestEngine(unittest.TestCase):
         }]}
 
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
@@ -3162,7 +3162,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_simple_update.xml"
         self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        returned_value = self.engine_eboa.treat_data()
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
@@ -3198,7 +3198,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_simple_update.json"
         self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        returned_value = self.engine_eboa.treat_data(source = filename)
+        returned_value = self.engine_eboa.treat_data(source = filename)[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
@@ -3227,7 +3227,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_wrong_structure.json"
         self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename, check_schema = False)
 
-        returned_value = self.engine_eboa.treat_data(self.engine_eboa.data, filename)
+        returned_value = self.engine_eboa.treat_data(self.engine_eboa.data, filename)[0]["status"]
 
         assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
 
