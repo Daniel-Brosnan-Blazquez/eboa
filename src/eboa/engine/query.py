@@ -575,7 +575,7 @@ class Query():
 
         return events
 
-    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None):
+    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, keys = None, key_like = None):
         """
         """
         params = []
@@ -638,6 +638,18 @@ class Query():
             filter = eval('Gauge.system.' + gauge_system_like["op"])
             params.append(filter(gauge_system_like["str"]))
             tables.append(Gauge)
+        # end if
+
+        # keys
+        if keys != None:
+            is_valid_operator_list(keys)
+            filter = eval('EventKey.event_key.' + keys["op"] + '_')
+            params.append(filter(keys["list"]))
+        # end if
+        if key_like != None:
+            is_valid_operator_like(key_like)
+            filter = eval('EventKey.event_key.' + key_like["op"])
+            params.append(filter(key_like["str"]))
         # end if
 
         # start filters
