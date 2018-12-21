@@ -2924,6 +2924,58 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources_status) == 1
 
+    def test_treat_data_same_dim_signature_diferent_processors(self):
+
+        data = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "processor1",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "ERASE_and_REPLACE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }],
+
+        }]}
+
+        self.engine_eboa.data = data
+        self.engine_eboa.treat_data()
+
+        data = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "processor2",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "ERASE_and_REPLACE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }],
+
+        }]}
+
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
+
+        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
     def test_treat_data_wrong_source_period(self):
 
         data = {"operations": [{

@@ -811,7 +811,8 @@ class Engine():
 
         self.source = self.session.query(Source).filter(Source.name == name,
                                                                Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
-                                                               Source.processor_version == version).first()
+                                                               Source.processor_version == version,
+                Source.processor == processor).first()
         if self.source and self.source.ingestion_duration:
             # The source has been already ingested
             raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
@@ -838,7 +839,8 @@ class Engine():
             self.session.rollback()
             self.source = self.session.query(Source).filter(Source.name == name,
                                                                    Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
-                                                                   Source.processor_version == version).first()
+                                                                   Source.processor_version == version,
+                Source.processor == processor).first()
             raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                               self.dim_signature.dim_signature,
                                                               processor, 
