@@ -23,7 +23,7 @@ eboa.datamodel.base module
 eboa.datamodel.dim\_processings module
 --------------------------------------
 
-.. automodule:: eboa.datamodel.dim_processings
+.. automodule:: eboa.datamodel.sources
     :members:
     :undoc-members:
     :show-inheritance:

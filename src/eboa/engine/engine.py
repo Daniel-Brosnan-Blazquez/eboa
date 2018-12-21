@@ -32,7 +32,7 @@ from eboa.datamodel.base import Session
 from eboa.datamodel.dim_signatures import DimSignature
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
-from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
@@ -220,7 +220,7 @@ class Engine():
         except ValueError:
             error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
             self._insert_source_without_dim_signature(json_name)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+            self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
             self.source.parse_error = "The json file cannot be loaded as it has a wrong structure"
             # Insert the content of the file into the DDBB
             with open(json_path) as input_file:
@@ -237,7 +237,7 @@ class Engine():
                 parsing.validate_data_dictionary(data)
             except ErrorParsingDictionary as e:
                 self._insert_source_without_dim_signature(json_name)
-                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 # Insert the content of the file into the DDBB
                 with open(json_path) as input_file:
@@ -272,7 +272,7 @@ class Engine():
             parsed_xml = etree.parse(xml_path)
         except etree.XMLSyntaxError as e:
             self._insert_source_without_dim_signature(xml_name)
-            self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
@@ -296,7 +296,7 @@ class Engine():
             if not valid:
                 error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
                 self._insert_source_without_dim_signature(xml_name)
-                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
                 # Insert the parse error into the DDBB
                 self.source.parse_error = str(schema.error_log.last_error)
                 # Insert the content of the file into the DDBB
@@ -483,7 +483,7 @@ class Engine():
         except ErrorParsingDictionary as e:
             if source != None:
                 self._insert_source_without_dim_signature(source)
-                self._insert_proc_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 self.session.commit()
                 self.session.close()
@@ -575,16 +575,16 @@ class Engine():
         try:
             self._insert_source()
             self.ingestion_start = datetime.datetime.now()
-            self._insert_proc_status(self.exit_codes["INGESTION_STARTED"]["status"])
+            self._insert_source_status(self.exit_codes["INGESTION_STARTED"]["status"])
             # Log that the ingestion of the source file has been started
             logger.info(self.exit_codes["INGESTION_STARTED"]["message"].format(
-                self.operation["source"]["name"],
+                self.source.name,
                 self.dim_signature.dim_signature,
-                self.dim_signature.dim_exec_name, 
-                self.operation["dim_signature"]["version"]))
+                self.source.processor, 
+                self.source.processor_version))
         except SourceAlreadyIngested as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
             # Log that the source file has been already been processed
             logger.error(e)
             self.session.commit()
@@ -592,7 +592,7 @@ class Engine():
             return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
             # Log that the source file has a wrong specified period as the stop is lower than the start
             logger.error(e)
             # Insert content in the DDBB
@@ -623,7 +623,7 @@ class Engine():
             self._insert_events()
         except DuplicatedEventLinkRef as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -633,7 +633,7 @@ class Engine():
             return self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
         except LinksInconsistency as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -643,7 +643,7 @@ class Engine():
             return self.exit_codes["LINKS_INCONSISTENCY"]["status"]
         except UndefinedEventLink as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -653,7 +653,7 @@ class Engine():
             return self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -663,7 +663,7 @@ class Engine():
             return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
         except WrongValue as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -673,7 +673,7 @@ class Engine():
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -688,7 +688,7 @@ class Engine():
             self._insert_annotations()
         except WrongValue as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -698,7 +698,7 @@ class Engine():
             return self.exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_proc_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -724,12 +724,12 @@ class Engine():
         # end if
 
         # Log that the file has been ingested correctly
-        self._insert_proc_status(self.exit_codes["OK"]["status"],True)
+        self._insert_source_status(self.exit_codes["OK"]["status"],True)
         logger.info(self.exit_codes["OK"]["message"].format(
             self.source.name,
             self.dim_signature.dim_signature,
-            self.dim_signature.dim_exec_name, 
-            self.source.dim_exec_version,
+            self.source.processor, 
+            self.source.processor_version,
             n_events,
             n_annotations))
 
@@ -748,11 +748,10 @@ class Engine():
         """
         dim_signature = self.operation.get("dim_signature")
         dim_name = dim_signature.get("name")
-        exec_name = dim_signature.get("exec")
-        self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
+        self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name).first()
         if not self.dim_signature:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-            self.dim_signature = DimSignature(id, dim_name, exec_name)
+            self.dim_signature = DimSignature(id, dim_name)
             self.session.add(self.dim_signature)
             try:
                 race_condition()
@@ -763,14 +762,14 @@ class Engine():
                 # re-using the session
                 self.session.rollback()
                 # Get the stored DIM signature
-                self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name, DimSignature.dim_exec_name == exec_name).first()
+                self.dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == dim_name).first()
                 pass
             # end try
         # end if
 
         if hasattr(self, "all_gauges_for_erase_and_replace") and self.all_gauges_for_erase_and_replace:
             for gauge in self.dim_signature.gauges:
-                self.erase_and_replace_gauges[gauge.gauge_id] = None
+                self.erase_and_replace_gauges[gauge.gauge_uuid] = None
             # end for
         # end if
 
@@ -782,6 +781,7 @@ class Engine():
         Method to insert the DIM processing
         """
         version = self.operation.get("dim_signature").get("version")
+        processor = self.operation.get("dim_signature").get("exec")
         source = self.operation.get("source")
         name = source.get("name")
         generation_time = source.get("generation_time")
@@ -791,9 +791,9 @@ class Engine():
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         if parser.parse(validity_stop) < parser.parse(validity_start):
             # The validity period is not correct (stop > start)
-            # Create DimProcessing for registering the error in the DDBB
-            self.source = DimProcessing(id, name, generation_time,
-                                        version, self.dim_signature)
+            # Create Source for registering the error in the DDBB
+            self.source = Source(id, name, generation_time,
+                                        version, self.dim_signature, processor = processor)
             self.session.add(self.source)
             try:
                 race_condition()
@@ -801,21 +801,22 @@ class Engine():
             except IntegrityError:
                 # The DIM processing was already ingested
                 self.session.rollback()
-                self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
-                                                                       DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
-                                                                       DimProcessing.dim_exec_version == version).first()
+                self.source = self.session.query(Source).filter(Source.name == name,
+                                                                       Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
+                                                                       Source.processor_version == version,
+                Source.processor == processor).first()
             # end try
-            raise WrongPeriod(self.exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, version, validity_stop, validity_start))
+            raise WrongPeriod(self.exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start))
         # end if
 
-        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
-                                                               DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
-                                                               DimProcessing.dim_exec_version == version).first()
+        self.source = self.session.query(Source).filter(Source.name == name,
+                                                               Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
+                                                               Source.processor_version == version).first()
         if self.source and self.source.ingestion_duration:
             # The source has been already ingested
             raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                                                                      self.dim_signature.dim_signature,
-                                                                                                     self.dim_signature.dim_exec_name, 
+                                                                                                     processor, 
                                                                                                      version))
         elif self.source:
             # Upadte the information
@@ -825,9 +826,9 @@ class Engine():
             return
         # end if
 
-        self.source = DimProcessing(id, name,
+        self.source = Source(id, name,
                                     generation_time, version, self.dim_signature,
-                                    validity_start, validity_stop)
+                                    validity_start, validity_stop, processor = processor)
         self.session.add(self.source)
         try:
             race_condition()
@@ -835,12 +836,12 @@ class Engine():
         except IntegrityError:
             # The DIM processing has been ingested between the query and the insertion
             self.session.rollback()
-            self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name,
-                                                                   DimProcessing.dim_signature_id == self.dim_signature.dim_signature_id,
-                                                                   DimProcessing.dim_exec_version == version).first()
+            self.source = self.session.query(Source).filter(Source.name == name,
+                                                                   Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
+                                                                   Source.processor_version == version).first()
             raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                               self.dim_signature.dim_signature,
-                                                              self.dim_signature.dim_exec_name, 
+                                                              processor, 
                                                               version))
         # end try
 
@@ -854,9 +855,9 @@ class Engine():
         :type name: str
         """
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        self.source = self.session.query(DimProcessing).filter(DimProcessing.name == name).first()
+        self.source = self.session.query(Source).filter(Source.name == name).first()
         if not self.source:
-            self.source = DimProcessing(id, name)
+            self.source = Source(id, name)
             self.session.add(self.source)
             # If there is a race condition here the eboa will insert a
             # new row with the same name as the unique constraint is
@@ -878,7 +879,7 @@ class Engine():
         for gauge in unique_gauges:
             name = gauge[0]
             system = gauge[1]
-            self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == self.dim_signature.dim_signature_id).first()
+            self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
             if not self.gauges[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -892,7 +893,7 @@ class Engine():
                     # re-using the session
                     self.session.rollback()
                     # Get the stored gauge
-                    self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_id == self.dim_signature.dim_signature_id).first()
+                    self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
                     pass
                 # end try
             # end if
@@ -909,7 +910,7 @@ class Engine():
         for annotation in unique_annotation_cnfs:
             name = annotation[0]
             system = annotation[1]
-            self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == self.dim_signature.dim_signature_id).first()
+            self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
             if not self.annotation_cnfs[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -923,7 +924,7 @@ class Engine():
                     # re-using the session
                     self.session.rollback()
                     # Get the stored annotation configuration
-                    self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_id == self.dim_signature.dim_signature_id).first()
+                    self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
                     pass
                 # end try
             # end if
@@ -1007,10 +1008,10 @@ class Engine():
             for link in explicit_ref.get("links") or []:
                 explicit_ref1 = self.explicit_refs[explicit_ref.get("name")]
                 explicit_ref2 = self.explicit_refs[link.get("link")]
-                link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_id_link == explicit_ref1.explicit_ref_id, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_id == explicit_ref2.explicit_ref_id).first()
+                link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref1.explicit_ref_uuid, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_uuid == explicit_ref2.explicit_ref_uuid).first()
                 if not link_ddbb:
                     self.session.begin_nested()
-                    self.session.add(ExplicitRefLink(explicit_ref1.explicit_ref_id, link.get("name"), explicit_ref2))
+                    self.session.add(ExplicitRefLink(explicit_ref1.explicit_ref_uuid, link.get("name"), explicit_ref2))
                     try:
                         race_condition()
                         self.session.commit()
@@ -1022,10 +1023,10 @@ class Engine():
                 # end if
                 # Insert the back ref if specified
                 if bool(link.get("back_ref")):
-                    link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_id_link == explicit_ref2.explicit_ref_id, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_id == explicit_ref1.explicit_ref_id).first()
+                    link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref2.explicit_ref_uuid, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_uuid == explicit_ref1.explicit_ref_uuid).first()
                     if not link_ddbb:
                         self.session.begin_nested()
-                        self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_id, link.get("name"), explicit_ref1))
+                        self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_uuid, link.get("name"), explicit_ref1))
                         try:
                             race_condition()
                             self.session.commit()
@@ -1041,7 +1042,7 @@ class Engine():
 
         return
 
-    def _insert_event(self, list_events, id, start, stop, gauge_id, explicit_ref_id, visible, source = None, source_id = None):
+    def _insert_event(self, list_events, id, start, stop, gauge_uuid, explicit_ref_uuid, visible, source = None, source_id = None):
         """
         Method to insert an event
 
@@ -1053,10 +1054,10 @@ class Engine():
         :type start: start date of the period of the event
         :param stop: datetime
         :type stop: stop date of the period of the event
-        :param gauge_id: reference to the associated gauge
-        :type gauge_id: int
-        :param explicit_ref_id: identifier of the associated explicit reference
-        :type explicit_ref_id: int
+        :param gauge_uuid: reference to the associated gauge
+        :type gauge_uuid: int
+        :param explicit_ref_uuid: identifier of the associated explicit reference
+        :type explicit_ref_uuid: int
         :param visible: indicator of the visibility of the event
         :type visible: bool
         :param source: associated DIM processing (default None). Provide this parameter or source_id
@@ -1073,11 +1074,11 @@ class Engine():
         if stop < start:
             # The period of the event is not correct (stop > start)
             self.session.rollback()
-            raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, stop, start))
+            raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, stop, start))
         # end if
         
         if source == None:
-            source = self.session.query(DimProcessing).filter(DimProcessing.processing_uuid == source_id).first()
+            source = self.session.query(Source).filter(Source.source_uuid == source_id).first()
         # end if
 
         source_start = source.validity_start
@@ -1085,14 +1086,14 @@ class Engine():
         if start < source_start or stop > source_stop:
             # The period of the event is not inside the validity period of the input
             self.session.rollback()
-            raise WrongPeriod(self.exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, start, stop, source_start, source_stop))
+            raise WrongPeriod(self.exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, start, stop, source_start, source_stop))
         # end if
             
         list_events.append(dict(event_uuid = id, start = start, stop = stop,
                                 ingestion_time = datetime.datetime.now(),
-                                gauge_id = gauge_id,
-                                explicit_ref_id = explicit_ref_id,
-                                processing_uuid = source.processing_uuid,
+                                gauge_uuid = gauge_uuid,
+                                explicit_ref_uuid = explicit_ref_uuid,
+                                source_uuid = source.source_uuid,
                                 visible = visible))
         return
 
@@ -1122,23 +1123,23 @@ class Engine():
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
                 visible = True
             elif gauge_info["insertion_type"] == "ERASE_and_REPLACE":
-                self.erase_and_replace_gauges[gauge.gauge_id] = None
+                self.erase_and_replace_gauges[gauge.gauge_uuid] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
-                self.keys_events[(key, str(self.dim_signature.dim_signature_id))] = None
+                self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
-            explicit_ref_id = None
+            explicit_ref_uuid = None
             if explicit_ref != None:
-                explicit_ref_id = explicit_ref.explicit_ref_id
+                explicit_ref_uuid = explicit_ref.explicit_ref_uuid
             # end if
             # Insert the event into the list for bulk ingestion
-            self._insert_event(list_events, id, start, stop, gauge.gauge_id, explicit_ref_id,
+            self._insert_event(list_events, id, start, stop, gauge.gauge_uuid, explicit_ref_uuid,
                                     visible, source = self.source)
 
             # Insert the key into the list for bulk ingestion
             if key != None:
                 list_keys.append(dict(event_key = key, event_uuid = id,
                                       visible = visible,
-                                      dim_signature_id = self.dim_signature.dim_signature_id))
+                                      dim_signature_uuid = self.dim_signature.dim_signature_uuid))
             # end if
             # Insert values
             if "values" in event:
@@ -1178,7 +1179,7 @@ class Engine():
                 if event["link_ref"] in list_event_link_refs:
                     # The same link identifier has been specified in more than one event
                     self.session.rollback()
-                    raise DuplicatedEventLinkRef(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, event["link_ref"]))
+                    raise DuplicatedEventLinkRef(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, event["link_ref"]))
                 # end if
                 list_event_link_refs[event["link_ref"]] = id
             # end if
@@ -1209,7 +1210,7 @@ class Engine():
                 self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
             except InternalError as e:
                 self.session.rollback()
-                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, e))
+                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
         # Insert links by reference
@@ -1218,7 +1219,7 @@ class Engine():
             if not link_ref in list_event_link_refs:
                 # There has not been defined this link reference in any event
                 self.session.rollback()
-                raise UndefinedEventLink(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, link_ref))
+                raise UndefinedEventLink(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
             # end if
             event_uuid = list_event_link_refs[link_ref]
             
@@ -1240,7 +1241,7 @@ class Engine():
             self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
         except IntegrityError as e:
             self.session.rollback()
-            raise LinksInconsistency(self.exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, e))
+            raise LinksInconsistency(self.exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
 
@@ -1301,7 +1302,7 @@ class Engine():
                         value = False
                     else:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     list_to_use = list_values["booleans"]
                 elif item["type"] == "text":
                     value = str(item.get("value"))
@@ -1314,7 +1315,7 @@ class Engine():
                         value = float(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     # end try
                     if not "doubles" in list_values:
                         list_values["doubles"] = []
@@ -1325,7 +1326,7 @@ class Engine():
                         value = parser.parse(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value"), item["type"]))
+                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     # end try
                     if not "timestamps" in list_values:
                         list_values["timestamps"] = []
@@ -1335,7 +1336,7 @@ class Engine():
                     list_coordinates = item.get("value").split(" ")
                     if len (list_coordinates) % 2 != 0:
                         self.session.rollback()
-                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, item.get("value")))
+                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
                     # end if
                     coordinates = 0
                     value = "POLYGON(("
@@ -1348,7 +1349,7 @@ class Engine():
                             float(coordinate)
                         except ValueError:
                             self.session.rollback()
-                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.dim_signature.dim_exec_name, self.source.dim_exec_version, coordinate, "float"))
+                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
                         # end try
                         value = value + coordinate
                         coordinates += 1
@@ -1394,9 +1395,9 @@ class Engine():
 
             # Insert the annotation into the list for bulk ingestion
             list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
-                                         annotation_cnf_id = annotation_cnf.annotation_cnf_id,
-                                         explicit_ref_id = explicit_ref.explicit_ref_id,
-                                         processing_uuid = self.source.processing_uuid,
+                                         annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
+                                         explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
+                                         source_uuid = self.source.source_uuid,
                                          visible = False))
             # Insert values
             if "values" in annotation:
@@ -1435,7 +1436,7 @@ class Engine():
         return
 
     @debug
-    def _insert_proc_status(self, status, final = False, error_message = None):
+    def _insert_source_status(self, status, final = False, error_message = None):
         """
         Method to insert the DIM processing status
 
@@ -1447,7 +1448,7 @@ class Engine():
         :type final: bool
         """
         # Insert processing status
-        status = DimProcessingStatus(datetime.datetime.now(),status,self.source)
+        status = SourceStatus(datetime.datetime.now(),status,self.source)
         self.session.add(status)
 
         if error_message:
@@ -1492,17 +1493,17 @@ class Engine():
                                      "links": []}
         list_event_uuids_aliases = {}
         list_events_to_be_removed = []
-        for gauge_id in self.erase_and_replace_gauges:
+        for gauge_uuid in self.erase_and_replace_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
-            lock = "erase_and_replace" + str(gauge_id)
+            lock = "erase_and_replace" + str(gauge_uuid)
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
-            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_id, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
+            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
-                dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_id == gauge_id).first()
-                sources = self.session.query(DimProcessing).join(DimSignature).filter(DimSignature.dim_signature_id == dim_signature.dim_signature_id,
-                                                                                      DimProcessing.validity_start < self.source.validity_stop,
-                                                                                      DimProcessing.validity_stop > self.source.validity_start).all()
+                dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
+                sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                                                      Source.validity_start < self.source.validity_stop,
+                                                                                      Source.validity_stop > self.source.validity_start).all()
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
@@ -1520,7 +1521,7 @@ class Engine():
                             event = list_split_events[event_uuid]
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                             self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                               gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
                             self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
                             self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
@@ -1534,23 +1535,23 @@ class Engine():
                     validity_stop = filtered_timeline_points[next_timestamp]
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
-                    max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_id == dim_signature.dim_signature_id,
-                                                                                                                                DimProcessing.validity_start < validity_stop,
-                                                                                                                                DimProcessing.validity_stop > validity_start)
+                    max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                                                                                                Source.validity_start < validity_stop,
+                                                                                                                                Source.validity_stop > validity_start)
                 
                     # The period does not contain events
                     if max_generation_time.first()[0] == None:
                         break
                     # end if
                     # Get the related source
-                    source_max_generation_time = self.session.query(DimProcessing).join(DimSignature).filter(DimProcessing.generation_time == max_generation_time,
-                                                                                                             DimSignature.dim_signature_id == dim_signature.dim_signature_id,
-                                                                                                             DimProcessing.validity_start < validity_stop,
-                                                                                                             DimProcessing.validity_stop > validity_start).first()
+                    source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
+                                                                                                             DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                                                                             Source.validity_start < validity_stop,
+                                                                                                             Source.validity_stop > validity_start).first()
 
                     # Events related to the DIM processing with the maximum generation time
-                    events_max_generation_time = self.session.query(Event).filter(Event.processing_uuid == source_max_generation_time.processing_uuid,
-                                                                                  Event.gauge_id == gauge_id,
+                    events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
+                                                                                  Event.gauge_uuid == gauge_uuid,
                                                                                   Event.start < validity_stop,
                                                                                   Event.stop > validity_start).all()
                     
@@ -1560,7 +1561,7 @@ class Engine():
                             if event.stop <= validity_stop:
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                                   gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
@@ -1575,27 +1576,27 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.processing_uuid != source_max_generation_time.processing_uuid,
-                                                     Event.gauge_id == gauge_id,
+                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid != source_max_generation_time.source_uuid,
+                                                     Event.gauge_uuid == gauge_uuid,
                                                      Event.start >= validity_start,
                                                      Event.stop <= validity_stop)
                     self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session="fetch")
                     event_uuids_to_be_removed.delete(synchronize_session="fetch")
 
                     # Get the events ending on the current period to be removed
-                    events_not_staying_ending_on_period = self.session.query(Event).join(DimProcessing).filter(DimProcessing.generation_time <= max_generation_time,
-                                                                                                               Event.gauge_id == gauge_id,
+                    events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
+                                                                                                               Event.gauge_uuid == gauge_uuid,
                                                                                                                Event.start <= validity_start,
                                                                                                                Event.stop > validity_start,
                                                                                                                Event.stop <= validity_stop,
-                                                                                                               Event.processing_uuid != source_max_generation_time.processing_uuid).all()
+                                                                                                               Event.source_uuid != source_max_generation_time.source_uuid).all()
 
                     # Get the events ending on the current period to be removed
-                    events_not_staying_not_ending_on_period = self.session.query(Event).join(DimProcessing).filter(DimProcessing.generation_time <= max_generation_time,
-                                                                                                                   Event.gauge_id == gauge_id,
+                    events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
+                                                                                                                   Event.gauge_uuid == gauge_uuid,
                                                                                                                    Event.start < validity_stop,
                                                                                                                    Event.stop > validity_stop,
-                                                                                                                   Event.processing_uuid != source_max_generation_time.processing_uuid).all()
+                                                                                                                   Event.source_uuid != source_max_generation_time.source_uuid).all()
 
                     events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                     for event in events_not_staying:
@@ -1609,7 +1610,7 @@ class Engine():
                                 # end if
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                                   gauge_id, event.explicit_ref_id, True, source_id = event.processing_uuid)
+                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
                                 self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
@@ -1629,7 +1630,7 @@ class Engine():
             # end def
             list_events_to_be_created_not_ending_on_period = {}
             list_split_events = {}
-            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_id, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
+            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
         # end for
 
         # Bulk insert events
@@ -1765,7 +1766,7 @@ class Engine():
             list_keys_to_be_created.append(dict(event_key = key.event_key,
                                                 event_uuid = to_event_uuid,
                                                 visible = True,
-                                                dim_signature_id = key.dim_signature_id))
+                                                dim_signature_uuid = key.dim_signature_uuid))
         # end for
         
         return
@@ -1777,23 +1778,23 @@ class Engine():
         """
         for key_pair in self.keys_events:
             key = key_pair[0]
-            dim_signature_id = key_pair[1]
+            dim_signature_uuid = key_pair[1]
 
-            max_generation_time = self.session.query(func.max(DimProcessing.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key, DimProcessing.dim_signature_id == dim_signature_id)
+            max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key, Source.dim_signature_uuid == dim_signature_uuid)
 
-            event_max_generation_time = self.session.query(Event).join(DimProcessing).join(EventKey).filter(DimProcessing.generation_time == max_generation_time,
+            event_max_generation_time = self.session.query(Event).join(Source).join(EventKey).filter(Source.generation_time == max_generation_time,
                                                                                                             EventKey.event_key == key,
-                                                                                                            DimProcessing.dim_signature_id == dim_signature_id).first()
+                                                                                                            Source.dim_signature_uuid == dim_signature_uuid).first()
 
             # Delete deprecated events
-            events_uuids_to_delete = self.session.query(Event.event_uuid).join(DimProcessing).join(EventKey).filter(Event.processing_uuid != event_max_generation_time.processing_uuid,
-                                                                                                                    DimProcessing.generation_time <= max_generation_time,
+            events_uuids_to_delete = self.session.query(Event.event_uuid).join(Source).join(EventKey).filter(Event.source_uuid != event_max_generation_time.source_uuid,
+                                                                                                                    Source.generation_time <= max_generation_time,
                                                                                                                     EventKey.event_key == key,
-                                                                                                                    DimProcessing.dim_signature_id == dim_signature_id)
+                                                                                                                    Source.dim_signature_uuid == dim_signature_uuid)
             self.session.query(Event).filter(Event.event_uuid == events_uuids_to_delete).delete(synchronize_session=False)
 
             # Make events visible
-            events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.processing_uuid == event_max_generation_time.processing_uuid,
+            events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.source_uuid == event_max_generation_time.source_uuid,
                                                                                                 EventKey.event_key == key)
             self.session.query(EventKey).filter(EventKey.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
             self.session.query(Event).filter(Event.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
@@ -1809,37 +1810,37 @@ class Engine():
         for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs:
             annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
             explicit_ref = annotation_cnf_explicit_ref["explicit_ref"]
-            max_generation_time = self.session.query(func.max(DimProcessing.generation_time)) \
+            max_generation_time = self.session.query(func.max(Source.generation_time)) \
                                               .join(Annotation) \
                                               .join(AnnotationCnf) \
-                                              .join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
-                                                                        ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+                                              .join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                        ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
 
             annotation_max_generation_time = self.session.query(Annotation) \
-                                                         .join(DimProcessing) \
+                                                         .join(Source) \
                                                          .join(AnnotationCnf) \
-                                                         .join(ExplicitRef).filter(DimProcessing.generation_time == max_generation_time,
-                                                                                   AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
-                                                                                   ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id).first()
+                                                         .join(ExplicitRef).filter(Source.generation_time == max_generation_time,
+                                                                                   AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                                   ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
 
             # Delete deprecated annotations
             annotations_uuids_to_delete = self.session.query(Annotation.annotation_uuid) \
-                                                      .join(DimProcessing) \
+                                                      .join(Source) \
                                                       .join(AnnotationCnf). \
-                                                      join(ExplicitRef).filter(Annotation.processing_uuid != annotation_max_generation_time.processing_uuid,
-                                                                               DimProcessing.generation_time <= max_generation_time,
-                                                                               AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
-                                                                               ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+                                                      join(ExplicitRef).filter(Annotation.source_uuid != annotation_max_generation_time.source_uuid,
+                                                                               Source.generation_time <= max_generation_time,
+                                                                               AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
             self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_delete).delete(synchronize_session=False)
 
             # Make annotations visible
             annotations_uuids_to_update = self.session.query(Annotation.annotation_uuid) \
-                                                      .join(DimProcessing) \
+                                                      .join(Source) \
                                                       .join(AnnotationCnf) \
-                                                      .join(ExplicitRef).filter(Annotation.processing_uuid == annotation_max_generation_time.processing_uuid,
-                                                                                DimProcessing.generation_time <= max_generation_time,
-                                                                                AnnotationCnf.annotation_cnf_id == annotation_cnf.annotation_cnf_id,
-                                                                                ExplicitRef.explicit_ref_id == explicit_ref.explicit_ref_id)
+                                                      .join(ExplicitRef).filter(Annotation.source_uuid == annotation_max_generation_time.source_uuid,
+                                                                                Source.generation_time <= max_generation_time,
+                                                                                AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                                ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
             self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_update).update({"visible": True}, synchronize_session=False)
         # end for
 

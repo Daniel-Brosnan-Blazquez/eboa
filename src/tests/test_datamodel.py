@@ -19,7 +19,7 @@ from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
-from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
@@ -42,29 +42,29 @@ class TestDatamodel(unittest.TestCase):
     def test_insert_data(self):
         """ Verify the insertion of data using the classes defined in the datamodel. """
         dim_signature_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        dim_signature = DimSignature(dim_signature_uuid, "DIM_SIGNATURE_NAME", "DIM_EXEC_NAME")
+        dim_signature = DimSignature(dim_signature_uuid, "DIM_SIGNATURE_NAME")
         
         # Insert dim_signature into database
         self.session.add(dim_signature)
         self.session.commit()
         
-        assert len (self.session.query(DimSignature).filter(DimSignature.dim_signature == "DIM_SIGNATURE_NAME", DimSignature.dim_exec_name == "DIM_EXEC_NAME").all()) == 1
+        assert len (self.session.query(DimSignature).filter(DimSignature.dim_signature == "DIM_SIGNATURE_NAME").all()) == 1
 
         processing_time = datetime.datetime.now()
-        processing_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        dim_processing = DimProcessing(processing_uuid, "DIM_PROCESSING_NAME", processing_time, "1.0", dim_signature)
+        source_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        source = Source(source_uuid, "DIM_PROCESSING_NAME", processing_time, "1.0", dim_signature, processor = "PROCESSOR")
         
-        # Insert dim_processing into database
-        self.session.add(dim_processing)
+        # Insert source into database
+        self.session.add(source)
         self.session.commit()
         
-        assert len(self.session.query(DimProcessing).filter(DimProcessing.processing_uuid == processing_uuid, DimProcessing.name == "DIM_PROCESSING_NAME", DimProcessing.generation_time == processing_time, DimProcessing.dim_exec_version == "1.0", DimProcessing.dim_signature_id == dim_signature.dim_signature_id).all()) == 1
+        assert len(self.session.query(Source).filter(Source.source_uuid == source_uuid, Source.name == "DIM_PROCESSING_NAME", Source.generation_time == processing_time, Source.processor_version == "1.0", Source.dim_signature_uuid == dim_signature.dim_signature_uuid, Source.processor == "PROCESSOR").all()) == 1
 
-        # Insert status for the dim_processing
-        self.session.add(DimProcessingStatus(processing_time, 0, dim_processing))
+        # Insert status for the source
+        self.session.add(SourceStatus(processing_time, 0, source))
         self.session.commit()
 
-        assert len(self.session.query(DimProcessingStatus).filter(DimProcessingStatus.processing_uuid == processing_uuid, DimProcessingStatus.proc_status == 0).all()) == 1
+        assert len(self.session.query(SourceStatus).filter(SourceStatus.source_uuid == source_uuid, SourceStatus.status == 0).all()) == 1
 
         # Insert explicit reference group
         explicit_ref_grp_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -93,10 +93,10 @@ class TestDatamodel(unittest.TestCase):
         assert len (self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == "EXPLICIT_REFERENCE_NAME2").all()) == 1
 
         # Insert link between explicit references
-        self.session.add (ExplicitRefLink(explicit_ref1.explicit_ref_id, "EXPLICIT_REF_LINK_NAME", explicit_ref2))
+        self.session.add (ExplicitRefLink(explicit_ref1.explicit_ref_uuid, "EXPLICIT_REF_LINK_NAME", explicit_ref2))
         self.session.commit()
 
-        assert len (self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_id_link == explicit_ref1.explicit_ref_id, ExplicitRefLink.name == "EXPLICIT_REF_LINK_NAME", ExplicitRefLink.explicit_ref_id == explicit_ref2.explicit_ref_id).all()) == 1
+        assert len (self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref1.explicit_ref_uuid, ExplicitRefLink.name == "EXPLICIT_REF_LINK_NAME", ExplicitRefLink.explicit_ref_uuid == explicit_ref2.explicit_ref_uuid).all()) == 1
         
         # Insert gauge
         gauge_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -110,18 +110,18 @@ class TestDatamodel(unittest.TestCase):
         # Insert events
         event_time = datetime.datetime.now()
         event1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event1 = Event(event1_uuid, event_time, event_time, event_time, gauge, dim_processing)
+        event1 = Event(event1_uuid, event_time, event_time, event_time, gauge, source)
         self.session.add (event1)
         self.session.commit()
         
-        assert len (self.session.query(Event).filter(Event.event_uuid == event1_uuid, Event.start == event_time, Event.stop == event_time, Event.gauge_id == gauge.gauge_id, Event.processing_uuid == dim_processing.processing_uuid).all()) == 1
+        assert len (self.session.query(Event).filter(Event.event_uuid == event1_uuid, Event.start == event_time, Event.stop == event_time, Event.gauge_uuid == gauge.gauge_uuid, Event.source_uuid == source.source_uuid).all()) == 1
 
         event2_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        event2 = Event(event2_uuid, event_time, event_time, event_time, gauge, dim_processing, explicit_ref1, False)
+        event2 = Event(event2_uuid, event_time, event_time, event_time, gauge, source, explicit_ref1, False)
         self.session.add (event2)
         self.session.commit()
         
-        assert len (self.session.query(Event).filter(Event.event_uuid == event2_uuid, Event.start == event_time, Event.stop == event_time, Event.gauge_id == gauge.gauge_id, Event.processing_uuid == dim_processing.processing_uuid, Event.explicit_ref_id == explicit_ref1.explicit_ref_id).all()) == 1
+        assert len (self.session.query(Event).filter(Event.event_uuid == event2_uuid, Event.start == event_time, Event.stop == event_time, Event.gauge_uuid == gauge.gauge_uuid, Event.source_uuid == source.source_uuid, Event.explicit_ref_uuid == explicit_ref1.explicit_ref_uuid).all()) == 1
 
         # Insert event key
         self.session.add (EventKey("EVENT_KEY_NAME", event2, dim_signature))
@@ -185,11 +185,11 @@ class TestDatamodel(unittest.TestCase):
         # Insert annotation
         annotation_time = datetime.datetime.now()
         annotation1_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        annotation1 = Annotation(annotation1_uuid, annotation_time, annotation_cnf, explicit_ref1, dim_processing)
+        annotation1 = Annotation(annotation1_uuid, annotation_time, annotation_cnf, explicit_ref1, source)
         self.session.add (annotation1)
         self.session.commit()
         
-        assert len (self.session.query(Annotation).filter(Annotation.annotation_uuid == annotation1_uuid, Annotation.annotation_cnf_id == annotation_cnf.annotation_cnf_id, Annotation.processing_uuid == dim_processing.processing_uuid).all()) == 1
+        assert len (self.session.query(Annotation).filter(Annotation.annotation_uuid == annotation1_uuid, Annotation.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid, Annotation.source_uuid == source.source_uuid).all()) == 1
 
         # Associate to an annotation a text value
         self.session.add (AnnotationText("TEXT_NAME", "TEXT_VALUE", 0, 0, 0, annotation1))

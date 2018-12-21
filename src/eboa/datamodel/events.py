@@ -15,21 +15,21 @@ from eboa.datamodel.base import Base
 import eboa.engine.export as export
 
 class Event(Base):
-    __tablename__ = 'event_tb'
+    __tablename__ = 'events'
 
     event_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     start = Column(DateTime)
     stop = Column(DateTime)
     ingestion_time = Column(DateTime)
     visible = Column(Boolean)
-    gauge_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('gauge_cnf_tb.gauge_id'))
-    explicit_ref_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('explicit_ref_tb.explicit_ref_id'))
-    processing_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_processing_tb.processing_uuid'))
+    gauge_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('gauges.gauge_uuid'))
+    explicit_ref_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('explicit_refs.explicit_ref_uuid'))
+    source_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('sources.source_uuid'))
     gauge = relationship("Gauge", backref="events")
     explicitRef = relationship("ExplicitRef", backref="events")
-    source = relationship("DimProcessing", backref="events")
+    source = relationship("Source", backref="events")
 
-    def __init__(self, event_uuid, start, stop, ingestion_time, gauge, dim_processing, explicit_ref = None, visible = True):
+    def __init__(self, event_uuid, start, stop, ingestion_time, gauge, source, explicit_ref = None, visible = True):
         self.event_uuid = event_uuid
         self.start = start
         self.stop = stop
@@ -37,7 +37,7 @@ class Event(Base):
         self.visible = visible
         self.gauge = gauge
         self.explicitRef = explicit_ref
-        self.source = dim_processing
+        self.source = source
 
     def get_structured_values(self):
         """
@@ -69,10 +69,10 @@ class Event(Base):
         return values
 
 class EventLink(Base):
-    __tablename__ = 'event_link_tb'
+    __tablename__ = 'event_links'
     event_uuid_link = Column(postgresql.UUID(as_uuid=True))
     name = Column(Text)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventLinks")
     __mapper_args__ = {
         'primary_key':[event_uuid_link, name, event_uuid]
@@ -84,13 +84,13 @@ class EventLink(Base):
         self.event = event
 
 class EventKey(Base):
-    __tablename__ = 'event_key_tb'
+    __tablename__ = 'event_keys'
 
     event_key = Column(Text)
     visible = Column(Boolean)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventKeys")
-    dim_signature_id = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signature_tb.dim_signature_id'))
+    dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dim_signature = relationship("DimSignature", backref="eventKeys")
     __mapper_args__ = {
         'primary_key':[event_uuid]
@@ -106,18 +106,18 @@ class EventKey(Base):
         return {
             "event_key": self.event_key,
             "event_uuid": self.event_uuid,
-            "dim_signature_id": self.dim_signature_id
+            "dim_signature_uuid": self.dim_signature_uuid
         }
 
 class EventBoolean(Base):
-    __tablename__ = 'event_boolean_tb'
+    __tablename__ = 'event_booleans'
 
     name = Column(Text)
     value = Column(Boolean)
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventBooleans")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
@@ -132,14 +132,14 @@ class EventBoolean(Base):
         self.event = event
 
 class EventText(Base):
-    __tablename__ = 'event_text_tb'
+    __tablename__ = 'event_texts'
 
     name = Column(Text)
     value = Column(Text)
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventTexts")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
@@ -154,14 +154,14 @@ class EventText(Base):
         self.event = event
 
 class EventDouble(Base):
-    __tablename__ = 'event_double_tb'
+    __tablename__ = 'event_doubles'
 
     name = Column(Text)
     value = Column(Float)
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventDoubles")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
@@ -176,14 +176,14 @@ class EventDouble(Base):
         self.event = event
 
 class EventTimestamp(Base):
-    __tablename__ = 'event_timestamp_tb'
+    __tablename__ = 'event_timestamps'
 
     name = Column(Text)
     value = Column(DateTime)
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventTimestamps")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
@@ -198,13 +198,13 @@ class EventTimestamp(Base):
         self.event = event
 
 class EventObject(Base):
-    __tablename__ = 'event_object_tb'
+    __tablename__ = 'event_objects'
 
     name = Column(Text)
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventObjects")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
@@ -218,14 +218,14 @@ class EventObject(Base):
         self.event = event
 
 class EventGeometry(Base):
-    __tablename__ = 'event_geometry_tb'
+    __tablename__ = 'event_geometrys'
 
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
     level_position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
-    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('event_tb.event_uuid'))
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventGeometries")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, event_uuid]

@@ -21,7 +21,7 @@ from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
-from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from sqlalchemy.dialects import postgresql
@@ -53,7 +53,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(dim_signature1) == 1
 
-        dim_signature2 = self.query.get_dim_signatures(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"})
+        dim_signature2 = self.query.get_dim_signatures(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(dim_signature2) == 1
 
@@ -66,28 +66,17 @@ class TestQuery(unittest.TestCase):
 
         assert len(dim_signature4) == 1
 
-        dim_signature5 = self.query.get_dim_signatures(dim_exec_names = {"list": [data["dim_signature"]["exec"]], "op": "in"})
+        dim_signature5 = self.query.get_dim_signatures(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"},
+                                                       dim_signatures = {"list": [data["dim_signature"]["name"]], "op": "in"},
+                                                       dim_signature_like = {"str": name, "op": "like"})
 
         assert len(dim_signature5) == 1
-
-        exec_name = data["dim_signature"]["exec"][0:1] + "%"
-        dim_signature6 = self.query.get_dim_signatures(dim_exec_name_like = {"str": exec_name, "op": "like"})
-
-        assert len(dim_signature6) == 1
-
-        dim_signature7 = self.query.get_dim_signatures(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"},
-                                                       dim_signatures = {"list": [data["dim_signature"]["name"]], "op": "in"},
-                                                       dim_signature_like = {"str": name, "op": "like"},
-                                                       dim_exec_names = {"list": [data["dim_signature"]["exec"]], "op": "in"},
-                                                       dim_exec_name_like = {"str": exec_name, "op": "like"})
-
-        assert len(dim_signature7) == 1
 
     def test_wrong_inputs_query_dim_signature(self):
         
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = "not_a_dict")
+            self.query.get_dim_signatures(dim_signature_uuids = "not_a_dict")
         except InputError:
             result = True
         # end try
@@ -96,7 +85,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"]})
+            self.query.get_dim_signatures(dim_signature_uuids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"]})
         except InputError:
             result = True
         # end try
@@ -105,7 +94,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"op": "in"})
+            self.query.get_dim_signatures(dim_signature_uuids = {"op": "in"})
         except InputError:
             result = True
         # end try
@@ -114,7 +103,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"], "op": "in", "not_a_valid_key": 0})
+            self.query.get_dim_signatures(dim_signature_uuids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"], "op": "in", "not_a_valid_key": 0})
         except InputError:
             result = True
         # end try
@@ -123,7 +112,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"], "op": "not_a_valid_operator"})
+            self.query.get_dim_signatures(dim_signature_uuids = {"list": ["e6f03f0c-aced-11e8-9fef-000000001643"], "op": "not_a_valid_operator"})
         except InputError:
             result = True
         # end try
@@ -132,7 +121,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"list": "not_a_list", "op": "in"})
+            self.query.get_dim_signatures(dim_signature_uuids = {"list": "not_a_list", "op": "in"})
         except InputError:
             result = True
         # end try
@@ -141,7 +130,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_dim_signatures(dim_signature_ids = {"list": [["not_a_string"]], "op": "in"})
+            self.query.get_dim_signatures(dim_signature_uuids = {"list": [["not_a_string"]], "op": "in"})
         except InputError:
             result = True
         # end try
@@ -212,24 +201,6 @@ class TestQuery(unittest.TestCase):
 
         assert result == True
 
-        result = False
-        try:
-            self.query.get_dim_signatures(dim_exec_names = "not_a_dict")
-        except InputError:
-            result = True
-        # end try
-
-        assert result == True
-
-        result = False
-        try:
-            self.query.get_dim_signatures(dim_exec_name_like = "not_a_dict")
-        except InputError:
-            result = True
-        # end try
-
-        assert result == True
-
     def test_query_source(self):
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
@@ -243,11 +214,11 @@ class TestQuery(unittest.TestCase):
         self.engine_eboa._insert_dim_signature()
         self.engine_eboa._insert_source()
         self.engine_eboa.ingestion_start = datetime.datetime.now()
-        self.engine_eboa._insert_proc_status(0, final = True)
+        self.engine_eboa._insert_source_status(0, final = True)
 
         dim_signature1 = self.query.get_dim_signatures()
 
-        source = self.query.get_sources(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"})
+        source = self.query.get_sources(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(source) == 1
 
@@ -255,7 +226,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(source1) == 1
 
-        source = self.query.get_sources(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"})
+        source = self.query.get_sources(source_uuids = {"list": [source1[0].source_uuid], "op": "in"})
 
         assert len(source) == 1
 
@@ -284,12 +255,12 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
-        source = self.query.get_sources(dim_exec_version_filters = [{"str": "0.0", "op": ">"}])
+        source = self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": ">"}])
 
         assert len(source) == 1
 
-        source = self.query.get_sources(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"},
-                                        processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
+        source = self.query.get_sources(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"},
+                                        source_uuids = {"list": [source1[0].source_uuid], "op": "in"},
                                         names = {"list": [data["source"]["name"]], "op": "in"},
                                         name_like = {"str": name, "op": "like"},
                                         validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
@@ -297,7 +268,7 @@ class TestQuery(unittest.TestCase):
                                         generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}],
                                         ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                         ingestion_duration_filters = [{"float": 10, "op": "<"}],
-                                        dim_exec_version_filters = [{"str": "0.0", "op": ">"}])
+                                        processor_version_filters = [{"str": "0.0", "op": ">"}])
 
         assert len(source) == 1
 
@@ -368,7 +339,7 @@ class TestQuery(unittest.TestCase):
         
         result = False
         try:
-            self.query.get_sources(dim_signature_ids = "not_a_dict")
+            self.query.get_sources(dim_signature_uuids = "not_a_dict")
         except InputError:
             result = True
         # end try
@@ -377,7 +348,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(processing_uuids = "not_a_dict")
+            self.query.get_sources(source_uuids = "not_a_dict")
         except InputError:
             result = True
         # end try
@@ -530,7 +501,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = "not_a_list")
+            self.query.get_sources(processor_version_filters = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -539,7 +510,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = ["not_a_dict"])
+            self.query.get_sources(processor_version_filters = ["not_a_dict"])
         except InputError:
             result = True
         # end try
@@ -548,7 +519,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = [{"str": "0.0"}])
+            self.query.get_sources(processor_version_filters = [{"str": "0.0"}])
         except InputError:
             result = True
         # end try
@@ -557,7 +528,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = [{"op": ">"}])
+            self.query.get_sources(processor_version_filters = [{"op": ">"}])
         except InputError:
             result = True
         # end try
@@ -566,7 +537,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = [{"str": "0.0", "op": ">", "not_a_valid_key": "not_a_valid_value"}])
+            self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": ">", "not_a_valid_key": "not_a_valid_value"}])
         except InputError:
             result = True
         # end try
@@ -575,7 +546,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = [{"str": "0.0", "op": "not_a_valid_operator"}])
+            self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": "not_a_valid_operator"}])
         except InputError:
             result = True
         # end try
@@ -584,7 +555,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(dim_exec_version_filters = [{"str": ["not_a_valid_string"], "op": "=="}])
+            self.query.get_sources(processor_version_filters = [{"str": ["not_a_valid_string"], "op": "=="}])
         except InputError:
             result = True
         # end try
@@ -604,7 +575,7 @@ class TestQuery(unittest.TestCase):
         self.engine_eboa._insert_dim_signature()
         self.engine_eboa._insert_source()
         self.engine_eboa.ingestion_start = datetime.datetime.now()
-        self.engine_eboa._insert_proc_status(0, final = True)
+        self.engine_eboa._insert_source_status(0, final = True)
 
         source = self.query.get_sources_join(dim_signatures = {"list": [data["dim_signature"]["name"]], "op": "in"})
 
@@ -619,12 +590,12 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
-        source = self.query.get_sources_join(dim_exec_names = {"list": [data["dim_signature"]["exec"]], "op": "in"})
+        source = self.query.get_sources_join(processors = {"list": [data["dim_signature"]["exec"]], "op": "in"})
 
         assert len(source) == 1
 
         exec_name = data["dim_signature"]["exec"][0:2] + "%"
-        source = self.query.get_sources_join(dim_exec_name_like = {"str": exec_name, "op": "like"})
+        source = self.query.get_sources_join(processor_like = {"str": exec_name, "op": "like"})
 
         assert len(source) == 1
 
@@ -661,7 +632,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
-        source = self.query.get_sources_join(dim_exec_version_filters = [{"str": "0.0", "op": ">"}])
+        source = self.query.get_sources_join(processor_version_filters = [{"str": "0.0", "op": ">"}])
 
         assert len(source) == 1
 
@@ -670,8 +641,8 @@ class TestQuery(unittest.TestCase):
 
         source = self.query.get_sources_join(dim_signatures = {"list": [data["dim_signature"]["name"]], "op": "in"},
                                              dim_signature_like = {"str": dim_sig_name, "op": "like"},
-                                             dim_exec_names = {"list": [data["dim_signature"]["exec"]], "op": "in"},
-                                             dim_exec_name_like = {"str": exec_name, "op": "like"},
+                                             processors = {"list": [data["dim_signature"]["exec"]], "op": "in"},
+                                             processor_like = {"str": exec_name, "op": "like"},
                                              status_filters = [{"float": 0, "op": "=="}],
                                              names = {"list": [data["source"]["name"]], "op": "in"},
                                              name_like = {"str": source_name, "op": "like"},
@@ -680,7 +651,7 @@ class TestQuery(unittest.TestCase):
                                              generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}],
                                              ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                              ingestion_duration_filters = [{"float": 10, "op": "<"}],
-                                             dim_exec_version_filters = [{"str": "0.0", "op": ">"}])
+                                             processor_version_filters = [{"str": "0.0", "op": ">"}])
 
         assert len(source) == 1
 
@@ -697,7 +668,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources_join(dim_exec_names = "not_a_dict")
+            self.query.get_sources_join(processors = "not_a_dict")
         except InputError:
             result = True
         # end try
@@ -733,7 +704,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources_join(dim_exec_name_like = "not_a_dict")
+            self.query.get_sources_join(processor_like = "not_a_dict")
         except InputError:
             result = True
         # end try
@@ -765,7 +736,7 @@ class TestQuery(unittest.TestCase):
 
         dim_signature1 = self.query.get_dim_signatures()
 
-        gauge = self.query.get_gauges(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"})
+        gauge = self.query.get_gauges(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(gauge) == 1
 
@@ -773,7 +744,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(gauge1) == 1
 
-        gauge = self.query.get_gauges(gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"})
+        gauge = self.query.get_gauges(gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"})
 
         assert len(gauge) == 1
 
@@ -795,8 +766,8 @@ class TestQuery(unittest.TestCase):
 
         assert len(gauge) == 1
 
-        gauge = self.query.get_gauges(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"},
-                                        gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
+        gauge = self.query.get_gauges(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"},
+                                        gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"},
                                         names = {"list": [data["operations"][0]["events"][0]["gauge"]["name"]], "op": "in"},
                                         name_like = {"str": gauge_name, "op": "like"},
                                         systems = {"list": [data["operations"][0]["events"][0]["gauge"]["system"]], "op": "in"},
@@ -808,7 +779,7 @@ class TestQuery(unittest.TestCase):
         
         result = False
         try:
-            self.query.get_gauges(dim_signature_ids = "not_a_list")
+            self.query.get_gauges(dim_signature_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -817,7 +788,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_gauges(gauge_ids = "not_a_list")
+            self.query.get_gauges(gauge_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -894,15 +865,6 @@ class TestQuery(unittest.TestCase):
 
         assert len(gauge) == 1
 
-        gauge = self.query.get_gauges_join(dim_exec_names = {"list": [data["operations"][0]["dim_signature"]["exec"]], "op": "in"})
-
-        assert len(gauge) == 1
-
-        exec_name = data["operations"][0]["dim_signature"]["exec"][0:2] + "%"
-        gauge = self.query.get_gauges_join(dim_exec_name_like = {"str": exec_name, "op": "like"})
-
-        assert len(gauge) == 1
-
         gauge1 = self.query.get_gauges_join()
 
         assert len(gauge1) == 1
@@ -927,8 +889,6 @@ class TestQuery(unittest.TestCase):
 
         gauge = self.query.get_gauges_join(dim_signatures = {"list": [data["operations"][0]["dim_signature"]["name"]], "op": "in"},
                                            dim_signature_like = {"str": dim_sig_name, "op": "like"},
-                                           dim_exec_names = {"list": [data["operations"][0]["dim_signature"]["exec"]], "op": "in"},
-                                           dim_exec_name_like = {"str": exec_name, "op": "like"},
                                            names = {"list": [data["operations"][0]["events"][0]["gauge"]["name"]], "op": "in"},
                                            name_like = {"str": gauge_name, "op": "like"},
                                            systems = {"list": [data["operations"][0]["events"][0]["gauge"]["system"]], "op": "in"},
@@ -949,28 +909,12 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_gauges_join(dim_exec_names = "not_a_list")
-        except InputError:
-            result = True
-        # end try
-
-        assert result == True
-
-        result = False
-        try:
             self.query.get_gauges_join(dim_signature_like = ["not_a_valid_string"])
         except InputError:
             result = True
         # end try
 
         assert result == True
-
-        result = False
-        try:
-            self.query.get_gauges_join(dim_exec_name_like = ["not_a_valid_string"])
-        except InputError:
-            result = True
-        # end try
 
         result = False
         try:
@@ -1034,19 +978,19 @@ class TestQuery(unittest.TestCase):
 
         source1 = self.query.get_sources()
 
-        event = self.query.get_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"})
+        event = self.query.get_events(source_uuids = {"list": [source1[0].source_uuid], "op": "in"})
 
         assert len(event) == 1
 
         explicit_ref1 = self.query.get_explicit_refs()
 
-        event = self.query.get_events(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
+        event = self.query.get_events(explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"})
 
         assert len(event) == 1
 
         gauge1 = self.query.get_gauges()
 
-        event = self.query.get_events(gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"})
+        event = self.query.get_events(gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"})
 
         assert len(event) == 1
 
@@ -1070,9 +1014,9 @@ class TestQuery(unittest.TestCase):
 
         assert len(event) == 1
 
-        event = self.query.get_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
-                                      explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
-                                      gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
+        event = self.query.get_events(source_uuids = {"list": [source1[0].source_uuid], "op": "in"},
+                                      explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                      gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"},
                                       event_uuids = {"list": [event1[0].event_uuid], "op": "in"},
                                       start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
                                       stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
@@ -1084,7 +1028,7 @@ class TestQuery(unittest.TestCase):
         
         result = False
         try:
-            self.query.get_events(processing_uuids = "not_a_list")
+            self.query.get_events(source_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -1102,7 +1046,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_events(explicit_ref_ids = "not_a_list")
+            self.query.get_events(explicit_ref_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -1111,7 +1055,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_events(gauge_ids = "not_a_list")
+            self.query.get_events(gauge_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -1607,7 +1551,7 @@ class TestQuery(unittest.TestCase):
 
         dim_signature1 = self.query.get_dim_signatures()
 
-        event_key = self.query.get_event_keys(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"})
+        event_key = self.query.get_event_keys(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(event_key) == 1
 
@@ -1628,7 +1572,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(event_key) == 1
 
-        event_key = self.query.get_event_keys(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"},
+        event_key = self.query.get_event_keys(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"},
                                               event_uuids = {"list": [event1[0].event_uuid], "op": "in"},
                                               keys = {"list": [data["operations"][0]["events"][0]["key"]], "op": "in"},
                                               key_like = {"str": event_key_name, "op": "like"})
@@ -1639,7 +1583,7 @@ class TestQuery(unittest.TestCase):
         
         result = False
         try:
-            self.query.get_event_keys(dim_signature_ids = "not_a_list")
+            self.query.get_event_keys(dim_signature_uuids = "not_a_list")
         except InputError:
             result = True
         # end try
@@ -1849,9 +1793,9 @@ class TestQuery(unittest.TestCase):
         event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
 
 
-        events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
-                                                   explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
-                                                   gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
+        events = self.query.get_linked_events(source_uuids = {"list": [source1[0].source_uuid], "op": "in"},
+                                                   explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                                   gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"},
                                                    event_uuids = [event1[0].event_uuid],
                                                    start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
                                                    stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
@@ -1861,9 +1805,9 @@ class TestQuery(unittest.TestCase):
         assert len(events["linked_events"]) == 1
         assert len(events["prime_events"]) == 1
 
-        events = self.query.get_linked_events(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
-                                                   explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
-                                                   gauge_ids = {"list": [gauge1[0].gauge_id], "op": "in"},
+        events = self.query.get_linked_events(source_uuids = {"list": [source1[0].source_uuid], "op": "in"},
+                                                   explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                                   gauge_uuids = {"list": [gauge1[0].gauge_uuid], "op": "in"},
                                                    event_uuids = [event2[0].event_uuid],
                                                    start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
                                                    stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
@@ -2004,7 +1948,7 @@ class TestQuery(unittest.TestCase):
 
         dim_signature1 = self.query.get_dim_signatures()
 
-        annotation_cnf = self.query.get_annotation_cnfs(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"})
+        annotation_cnf = self.query.get_annotation_cnfs(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
@@ -2012,7 +1956,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation_cnf1) == 1
 
-        annotation_cnf = self.query.get_annotation_cnfs(annotation_cnf_ids = {"list": [annotation_cnf1[0].annotation_cnf_id], "op": "in"})
+        annotation_cnf = self.query.get_annotation_cnfs(annotation_cnf_uuids = {"list": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
@@ -2034,8 +1978,8 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf = self.query.get_annotation_cnfs(dim_signature_ids = {"list": [dim_signature1[0].dim_signature_id], "op": "in"},
-                                        annotation_cnf_ids = {"list": [annotation_cnf1[0].annotation_cnf_id], "op": "in"},
+        annotation_cnf = self.query.get_annotation_cnfs(dim_signature_uuids = {"list": [dim_signature1[0].dim_signature_uuid], "op": "in"},
+                                        annotation_cnf_uuids = {"list": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"},
                                         names = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["name"]], "op": "in"},
                                         name_like = {"str": annotation_cnf_name, "op": "like"},
                                         systems = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"},
@@ -2072,15 +2016,6 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf = self.query.get_annotation_cnfs_join(dim_exec_names = {"list": [data["operations"][0]["dim_signature"]["exec"]], "op": "in"})
-
-        assert len(annotation_cnf) == 1
-
-        exec_name = data["operations"][0]["dim_signature"]["exec"][0:2] + "%"
-        annotation_cnf = self.query.get_annotation_cnfs_join(dim_exec_name_like = {"str": exec_name, "op": "like"})
-
-        assert len(annotation_cnf) == 1
-
         annotation_cnf1 = self.query.get_annotation_cnfs_join()
 
         assert len(annotation_cnf1) == 1
@@ -2105,8 +2040,6 @@ class TestQuery(unittest.TestCase):
 
         annotation_cnf = self.query.get_annotation_cnfs_join(dim_signatures = {"list": [data["operations"][0]["dim_signature"]["name"]], "op": "in"},
                                            dim_signature_like = {"str": dim_sig_name, "op": "like"},
-                                           dim_exec_names = {"list": [data["operations"][0]["dim_signature"]["exec"]], "op": "in"},
-                                           dim_exec_name_like = {"str": exec_name, "op": "like"},
                                            names = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["name"]], "op": "in"},
                                            name_like = {"str": annotation_cnf_name, "op": "like"},
                                            systems = {"list": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"},
@@ -2144,19 +2077,19 @@ class TestQuery(unittest.TestCase):
 
         source1 = self.query.get_sources()
 
-        annotation = self.query.get_annotations(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"})
+        annotation = self.query.get_annotations(source_uuids = {"list": [source1[0].source_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
         explicit_ref1 = self.query.get_explicit_refs()
 
-        annotation = self.query.get_annotations(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
+        annotation = self.query.get_annotations(explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
         annotation_cnf1 = self.query.get_annotation_cnfs()
 
-        annotation = self.query.get_annotations(annotation_cnf_ids = {"list": [annotation_cnf1[0].annotation_cnf_id], "op": "in"})
+        annotation = self.query.get_annotations(annotation_cnf_uuids = {"list": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
@@ -2172,9 +2105,9 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation) == 1
 
-        annotation = self.query.get_annotations(processing_uuids = {"list": [source1[0].processing_uuid], "op": "in"},
-                                      explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
-                                      annotation_cnf_ids = {"list": [annotation_cnf1[0].annotation_cnf_id], "op": "in"},
+        annotation = self.query.get_annotations(source_uuids = {"list": [source1[0].source_uuid], "op": "in"},
+                                      explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                      annotation_cnf_uuids = {"list": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"},
                                       annotation_uuids = {"list": [annotation1[0].annotation_uuid], "op": "in"},
                                       ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
 
@@ -2315,7 +2248,7 @@ class TestQuery(unittest.TestCase):
 
         expl_group1 = self.query.get_explicit_refs_groups()
 
-        explicit_ref1 = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"})
+        explicit_ref1 = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_uuid], "op": "in"})
 
         assert len(explicit_ref1) == 1
 
@@ -2323,7 +2256,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(explicit_refs) == 2
 
-        explicit_reference = self.query.get_explicit_refs(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"})
+        explicit_reference = self.query.get_explicit_refs(explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"})
 
         assert len(explicit_reference) == 1
 
@@ -2340,8 +2273,8 @@ class TestQuery(unittest.TestCase):
 
         assert len(explicit_reference) == 2
 
-        explicit_reference = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"},
-                                      explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+        explicit_reference = self.query.get_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_uuid], "op": "in"},
+                                      explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
                                       explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"},
                                       explicit_ref_like = {"str": "EXPLICIT%", "op": "like"},
                                       ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
@@ -2452,15 +2385,15 @@ class TestQuery(unittest.TestCase):
 
         assert len(explicit_ref_links) == 2
 
-        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
-                                                explicit_ref_id_links = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
+        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                                explicit_ref_uuid_links = {"list": [explicit_ref2[0].explicit_ref_uuid], "op": "in"},
                                                 link_names = {"list": ["LINK_NAME"], "op": "in"},
                                                 link_name_like = {"str": "LINK_N%", "op": "like"})
 
         assert len(explicit_ref_link) == 1
 
-        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_ids = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
-                                                explicit_ref_id_links = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+        explicit_ref_link = self.query.get_explicit_ref_links(explicit_ref_uuids = {"list": [explicit_ref2[0].explicit_ref_uuid], "op": "in"},
+                                                explicit_ref_uuid_links = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
                                                 link_names = {"list": ["LINK_NAME"], "op": "in"},
                                                 link_name_like = {"str": "LINK_N%", "op": "like"})
 
@@ -2505,8 +2438,8 @@ class TestQuery(unittest.TestCase):
         explicit_ref1 = self.query.get_explicit_refs(explicit_ref_like = {"str": "EXPLICIT_REFERENCE", "op": "like"})
         explicit_ref2 = self.query.get_explicit_refs(explicit_ref_like = {"str": "EXPLICIT_REFERENCE", "op": "notlike"})
 
-        linked_explicit_refs = self.query.get_linked_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_id], "op": "in"},
-                                                            explicit_ref_ids = {"list": [explicit_ref1[0].explicit_ref_id], "op": "in"},
+        linked_explicit_refs = self.query.get_linked_explicit_refs(group_ids = {"list": [expl_group1[0].expl_ref_cnf_uuid], "op": "in"},
+                                                            explicit_ref_uuids = {"list": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
                                                             explicit_refs = {"list": ["EXPLICIT_REFERENCE"], "op": "in"},
                                                             explicit_ref_like = {"str": "EXPLICIT_REF%", "op": "like"},
                                                             ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
@@ -2515,7 +2448,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(linked_explicit_refs) == 2 
 
-        linked_explicit_refs = self.query.get_linked_explicit_refs(explicit_ref_ids = {"list": [explicit_ref2[0].explicit_ref_id], "op": "in"},
+        linked_explicit_refs = self.query.get_linked_explicit_refs(explicit_ref_uuids = {"list": [explicit_ref2[0].explicit_ref_uuid], "op": "in"},
                                                             explicit_refs = {"list": ["EXPLICIT_REFERENCE_EVENT"], "op": "in"},
                                                             explicit_ref_like = {"str": "EXPLICIT_REF%", "op": "like"},
                                                             ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
@@ -2606,7 +2539,7 @@ class TestQuery(unittest.TestCase):
         assert len(group1) == 1
 
 
-        group = self.query.get_explicit_refs_groups(group_ids = {"list": [group1[0].expl_ref_cnf_id],
+        group = self.query.get_explicit_refs_groups(group_ids = {"list": [group1[0].expl_ref_cnf_uuid],
                                                                  "op": "in"},
                                                     names = {"list": ["EXPL_GROUP"], "op": "in"},
                                                     name_like = {"str": "EXPL_G%", "op": "like"})

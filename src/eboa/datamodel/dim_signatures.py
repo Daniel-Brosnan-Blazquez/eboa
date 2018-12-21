@@ -13,20 +13,17 @@ from sqlalchemy.orm import relationship
 from eboa.datamodel.base import Base
 
 class DimSignature(Base):
-    __tablename__ = 'dim_signature_tb'
+    __tablename__ = 'dim_signatures'
 
-    dim_signature_id = Column(postgresql.UUID(as_uuid=True), primary_key=True)
+    dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     dim_signature = Column(Text)
-    dim_exec_name = Column(Text)
 
-    def __init__(self, dim_signature_id, dim_signature, dim_exec_name):
-        self.dim_signature_id = dim_signature_id
+    def __init__(self, dim_signature_uuid, dim_signature):
+        self.dim_signature_uuid = dim_signature_uuid
         self.dim_signature = dim_signature
-        self.dim_exec_name = dim_exec_name
 
     def jsonify(self):
         return {
-            "dim_signature_id": self.dim_signature_id,
-            "dim_signature": self.dim_signature,
-            "dim_exec_name": self.dim_exec_name,
+            "dim_signature_uuid": self.dim_signature_uuid,
+            "dim_signature": self.dim_signature
         }

@@ -21,7 +21,7 @@ from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
-from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from sqlalchemy.dialects import postgresql
@@ -96,20 +96,16 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_dim_signatures(self, dim_signature_ids = None, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None):
+    def get_dim_signatures(self, dim_signature_uuids = None, dim_signatures = None, dim_signature_like = None):
         """
         Method to obtain the DIM signature entities filtered by the received parameters
 
-        :param dim_signature_ids: list of DIM signature identifiers
-        :type dim_signature_ids: operator_list
+        :param dim_signature_uuids: list of DIM signature identifiers
+        :type dim_signature_uuids: operator_list
         :param dim_signatures: list of DIM signature names
         :type dim_signatures: operator_list
         :param dim_signature_like: dictionary with a string and the associated operation to perform
         :type dim_signature_like: operator_like
-        :param dim_exec_names: list of DIM execution names
-        :type dim_exec_names: operator_list
-        :param dim_exec_name_like: dictionary with a string and the associated operation to perform
-        :type dim_exec_name_like: operator_like
 
         :return: found DIM signatures
         :rtype: list
@@ -117,10 +113,10 @@ class Query():
         params = []
         
         # DIM signature UUIDs
-        if dim_signature_ids != None:
-            is_valid_operator_list(dim_signature_ids)
-            filter = eval('DimSignature.dim_signature_id.' + dim_signature_ids["op"] + '_')
-            params.append(filter(dim_signature_ids["list"]))
+        if dim_signature_uuids != None:
+            is_valid_operator_list(dim_signature_uuids)
+            filter = eval('DimSignature.dim_signature_uuid.' + dim_signature_uuids["op"] + '_')
+            params.append(filter(dim_signature_uuids["list"]))
         # end if
 
         # DIM signatures
@@ -135,25 +131,13 @@ class Query():
             params.append(filter(dim_signature_like["str"]))
         # end if
 
-        # DIM exec names
-        if dim_exec_names != None:
-            is_valid_operator_list(dim_exec_names)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_names["op"] + '_')
-            params.append(filter(dim_exec_names["list"]))
-        # end if
-        if dim_exec_name_like != None:
-            is_valid_operator_like(dim_exec_name_like)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_name_like["op"])
-            params.append(filter(dim_exec_name_like["str"]))
-        # end if
-
         query = self.session.query(DimSignature).filter(*params)
         log_query(query)
         dim_signatures = query.all()
 
         return dim_signatures
 
-    def get_sources(self, names = None, name_like = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, dim_exec_version_filters = None, dim_signature_ids = None, processing_uuids = None):
+    def get_sources(self, names = None, name_like = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_like = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -171,40 +155,44 @@ class Query():
         :type ingestion_time_filters: date_filters
         :param ingestion_duration_filters: list of ingestion duration filters
         :type ingestion_duration_filters: float_filters
-        :param dim_exec_version_filters: list of version filters
-        :type dim_exec_version_filters: string_filter
-        :param dim_signature_ids: list of DIM signature identifiers
-        :type dim_signature_ids: operator_list
-        :param processing_uuids: list of DIM processing identifiers
-        :type processing_uuids: operator_list
+        :param processor_version_filters: list of version filters
+        :type processor_version_filters: string_filter
+        :param procesors: list of processors
+        :type procesors: operator_list
+        :param processor_like: dictionary with a string and the associated operation to perform
+        :type processor_like: operator_like
+        :param dim_signature_uuids: list of DIM signature identifiers
+        :type dim_signature_uuids: operator_list
+        :param source_uuids: list of DIM processing identifiers
+        :type source_uuids: operator_list
 
         :return: found sources
         :rtype: list
         """
         params = []
         # DIM signature UUIDs
-        if dim_signature_ids != None:
-            is_valid_operator_list(dim_signature_ids)
-            filter = eval('DimProcessing.dim_signature_id.' + dim_signature_ids["op"] + '_')
-            params.append(filter(dim_signature_ids["list"]))
+        if dim_signature_uuids != None:
+            is_valid_operator_list(dim_signature_uuids)
+            filter = eval('Source.dim_signature_uuid.' + dim_signature_uuids["op"] + '_')
+            params.append(filter(dim_signature_uuids["list"]))
         # end if
 
         # Processing UUIDs
-        if processing_uuids != None:
-            is_valid_operator_list(processing_uuids)
-            filter = eval('DimProcessing.processing_uuid.' + processing_uuids["op"] + '_')
-            params.append(filter(processing_uuids["list"]))
+        if source_uuids != None:
+            is_valid_operator_list(source_uuids)
+            filter = eval('Source.source_uuid.' + source_uuids["op"] + '_')
+            params.append(filter(source_uuids["list"]))
         # end if
 
         # File names
         if names != None:
             is_valid_operator_list(names)
-            filter = eval('DimProcessing.name.' + names["op"] + '_')
+            filter = eval('Source.name.' + names["op"] + '_')
             params.append(filter(names["list"]))
         # end if
         if name_like != None:
             is_valid_operator_like(name_like)
-            filter = eval('DimProcessing.name.' + name_like["op"])
+            filter = eval('Source.name.' + name_like["op"])
             params.append(filter(name_like["str"]))
         # end if
 
@@ -213,7 +201,7 @@ class Query():
             is_valid_date_filters(validity_start_filters, self.operators)
             for validity_start_filter in validity_start_filters:
                 op = self.operators[validity_start_filter["op"]]
-                params.append(op(DimProcessing.validity_start, validity_start_filter["date"]))
+                params.append(op(Source.validity_start, validity_start_filter["date"]))
             # end for
         # end if
 
@@ -222,7 +210,7 @@ class Query():
             is_valid_date_filters(validity_stop_filters, self.operators)
             for validity_stop_filter in validity_stop_filters:
                 op = self.operators[validity_stop_filter["op"]]
-                params.append(op(DimProcessing.validity_stop, validity_stop_filter["date"]))
+                params.append(op(Source.validity_stop, validity_stop_filter["date"]))
             # end for
         # end if
 
@@ -231,7 +219,7 @@ class Query():
             is_valid_date_filters(generation_time_filters, self.operators)
             for generation_time_filter in generation_time_filters:
                 op = self.operators[generation_time_filter["op"]]
-                params.append(op(DimProcessing.generation_time, generation_time_filter["date"]))
+                params.append(op(Source.generation_time, generation_time_filter["date"]))
             # end for
         # end if
 
@@ -240,7 +228,7 @@ class Query():
             is_valid_date_filters(ingestion_time_filters, self.operators)
             for ingestion_time_filter in ingestion_time_filters:
                 op = self.operators[ingestion_time_filter["op"]]
-                params.append(op(DimProcessing.ingestion_time, ingestion_time_filter["date"]))
+                params.append(op(Source.ingestion_time, ingestion_time_filter["date"]))
             # end for
         # end if
 
@@ -249,26 +237,38 @@ class Query():
             is_valid_float_filters(ingestion_duration_filters, self.operators)
             for ingestion_duration_filter in ingestion_duration_filters:
                 op = self.operators[ingestion_duration_filter["op"]]
-                params.append(op(DimProcessing.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
+                params.append(op(Source.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
             # end for
         # end if
 
-        # dim_exec_version filters
-        if dim_exec_version_filters != None:
-            is_valid_string_filters(dim_exec_version_filters, self.operators)
-            for dim_exec_version_filter in dim_exec_version_filters:
-                op = self.operators[dim_exec_version_filter["op"]]
-                params.append(op(DimProcessing.dim_exec_version, dim_exec_version_filter["str"]))
+        # processor_version filters
+        if processor_version_filters != None:
+            is_valid_string_filters(processor_version_filters, self.operators)
+            for processor_version_filter in processor_version_filters:
+                op = self.operators[processor_version_filter["op"]]
+                params.append(op(Source.processor_version, processor_version_filter["str"]))
             # end for
         # end if
 
-        query = self.session.query(DimProcessing).filter(*params)
+        # Processors
+        if processors != None:
+            is_valid_operator_list(processors)
+            filter = eval('Source.processor.' + processors["op"] + '_')
+            params.append(filter(processors["list"]))
+        # end if
+        if processor_like != None:
+            is_valid_operator_like(processor_like)
+            filter = eval('Source.processor.' + processor_like["op"])
+            params.append(filter(processor_like["str"]))
+        # end if
+
+        query = self.session.query(Source).filter(*params)
         log_query(query)
         sources = query.all()
 
         return sources
 
-    def get_sources_join(self, names = None, name_like = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, dim_exec_version_filters = None, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None, status_filters = None):
+    def get_sources_join(self, names = None, name_like = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_like = None, processor_version_filters = None, dim_signatures = None, dim_signature_like = None, status_filters = None):
         """
         """
         params = []
@@ -289,38 +289,24 @@ class Query():
             params.append(filter(dim_signature_like["str"]))
         # end if
 
-        # DIM exec names
-        if dim_exec_names != None:
-            tables.append(DimSignature)
-            is_valid_operator_list(dim_exec_names)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_names["op"] + '_')
-            params.append(filter(dim_exec_names["list"]))
-        # end if
-        if dim_exec_name_like != None:
-            tables.append(DimSignature)
-            is_valid_operator_like(dim_exec_name_like)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_name_like["op"])
-            params.append(filter(dim_exec_name_like["str"]))
-        # end if
-
         # status filters
         if status_filters != None:
             is_valid_float_filters(status_filters, self.operators)
             for status_filter in status_filters:
                 op = self.operators[status_filter["op"]]
-                params.append(op(DimProcessingStatus.proc_status, status_filter["float"]))
+                params.append(op(SourceStatus.status, status_filter["float"]))
             # end for
         # end if
 
         # File names
         if names != None:
             is_valid_operator_list(names)
-            filter = eval('DimProcessing.name.' + names["op"] + '_')
+            filter = eval('Source.name.' + names["op"] + '_')
             params.append(filter(names["list"]))
         # end if
         if name_like != None:
             is_valid_operator_like(name_like)
-            filter = eval('DimProcessing.name.' + name_like["op"])
+            filter = eval('Source.name.' + name_like["op"])
             params.append(filter(name_like["str"]))
         # end if
 
@@ -329,7 +315,7 @@ class Query():
             is_valid_date_filters(validity_start_filters, self.operators)
             for validity_start_filter in validity_start_filters:
                 op = self.operators[validity_start_filter["op"]]
-                params.append(op(DimProcessing.validity_start, validity_start_filter["date"]))
+                params.append(op(Source.validity_start, validity_start_filter["date"]))
             # end for
         # end if
 
@@ -338,7 +324,7 @@ class Query():
             is_valid_date_filters(validity_stop_filters, self.operators)
             for validity_stop_filter in validity_stop_filters:
                 op = self.operators[validity_stop_filter["op"]]
-                params.append(op(DimProcessing.validity_stop, validity_stop_filter["date"]))
+                params.append(op(Source.validity_stop, validity_stop_filter["date"]))
             # end for
         # end if
 
@@ -347,7 +333,7 @@ class Query():
             is_valid_date_filters(generation_time_filters, self.operators)
             for generation_time_filter in generation_time_filters:
                 op = self.operators[generation_time_filter["op"]]
-                params.append(op(DimProcessing.generation_time, generation_time_filter["date"]))
+                params.append(op(Source.generation_time, generation_time_filter["date"]))
             # end for
         # end if
 
@@ -356,7 +342,7 @@ class Query():
             is_valid_date_filters(ingestion_time_filters, self.operators)
             for ingestion_time_filter in ingestion_time_filters:
                 op = self.operators[ingestion_time_filter["op"]]
-                params.append(op(DimProcessing.ingestion_time, ingestion_time_filter["date"]))
+                params.append(op(Source.ingestion_time, ingestion_time_filter["date"]))
             # end for
         # end if
 
@@ -365,20 +351,32 @@ class Query():
             is_valid_float_filters(ingestion_duration_filters, self.operators)
             for ingestion_duration_filter in ingestion_duration_filters:
                 op = self.operators[ingestion_duration_filter["op"]]
-                params.append(op(DimProcessing.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
+                params.append(op(Source.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
             # end for
         # end if
 
-        # dim_exec_version filters
-        if dim_exec_version_filters != None:
-            is_valid_string_filters(dim_exec_version_filters, self.operators)
-            for dim_exec_version_filter in dim_exec_version_filters:
-                op = self.operators[dim_exec_version_filter["op"]]
-                params.append(op(DimProcessing.dim_exec_version, dim_exec_version_filter["str"]))
+        # processor_version filters
+        if processor_version_filters != None:
+            is_valid_string_filters(processor_version_filters, self.operators)
+            for processor_version_filter in processor_version_filters:
+                op = self.operators[processor_version_filter["op"]]
+                params.append(op(Source.processor_version, processor_version_filter["str"]))
             # end for
         # end if
 
-        query = self.session.query(DimProcessing)
+        # Processors
+        if processors != None:
+            is_valid_operator_list(processors)
+            filter = eval('Source.processor.' + processors["op"] + '_')
+            params.append(filter(processors["list"]))
+        # end if
+        if processor_like != None:
+            is_valid_operator_like(processor_like)
+            filter = eval('Source.processor.' + processor_like["op"])
+            params.append(filter(processor_like["str"]))
+        # end if
+
+        query = self.session.query(Source)
         for table in set(tables):
             query = query.join(table)
         # end for
@@ -389,22 +387,22 @@ class Query():
 
         return sources
 
-    def get_gauges(self, dim_signature_ids = None, gauge_ids = None, names = None, name_like = None, systems = None, system_like = None):
+    def get_gauges(self, dim_signature_uuids = None, gauge_uuids = None, names = None, name_like = None, systems = None, system_like = None):
         """
         """
         params = []
         # DIM signature UUIDs
-        if dim_signature_ids != None:
-            is_valid_operator_list(dim_signature_ids)
-            filter = eval('Gauge.dim_signature_id.' + dim_signature_ids["op"] + '_')
-            params.append(filter(dim_signature_ids["list"]))
+        if dim_signature_uuids != None:
+            is_valid_operator_list(dim_signature_uuids)
+            filter = eval('Gauge.dim_signature_uuid.' + dim_signature_uuids["op"] + '_')
+            params.append(filter(dim_signature_uuids["list"]))
         # end if
 
         # Gauge UUIDs
-        if gauge_ids != None:
-            is_valid_operator_list(gauge_ids)
-            filter = eval('Gauge.gauge_id.' + gauge_ids["op"] + '_')
-            params.append(filter(gauge_ids["list"]))
+        if gauge_uuids != None:
+            is_valid_operator_list(gauge_uuids)
+            filter = eval('Gauge.gauge_uuid.' + gauge_uuids["op"] + '_')
+            params.append(filter(gauge_uuids["list"]))
         # end if
 
         # Gauge names
@@ -437,7 +435,7 @@ class Query():
 
         return gauges
 
-    def get_gauges_join(self, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None, names = None, name_like = None, systems = None, system_like = None):
+    def get_gauges_join(self, dim_signatures = None, dim_signature_like = None, names = None, name_like = None, systems = None, system_like = None):
         """
         """
         params = []
@@ -455,20 +453,6 @@ class Query():
             is_valid_operator_like(dim_signature_like)
             filter = eval('DimSignature.dim_signature.' + dim_signature_like["op"])
             params.append(filter(dim_signature_like["str"]))
-            tables.append(DimSignature)
-        # end if
-
-        # DIM exec names
-        if dim_exec_names != None:
-            is_valid_operator_list(dim_exec_names)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_names["op"] + '_')
-            params.append(filter(dim_exec_names["list"]))
-            tables.append(DimSignature)
-        # end if
-        if dim_exec_name_like != None:
-            is_valid_operator_like(dim_exec_name_like)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_name_like["op"])
-            params.append(filter(dim_exec_name_like["str"]))
             tables.append(DimSignature)
         # end if
 
@@ -507,32 +491,32 @@ class Query():
 
         return gauges
 
-    def get_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None):
+    def get_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None):
         """
         """
         params = []
         # Allow only obtain visible events
         params.append(Event.visible == True)
 
-        # processing_uuids
-        if processing_uuids != None:
-            is_valid_operator_list(processing_uuids)
-            filter = eval('Event.processing_uuid.' + processing_uuids["op"] + '_')
-            params.append(filter(processing_uuids["list"]))
+        # source_uuids
+        if source_uuids != None:
+            is_valid_operator_list(source_uuids)
+            filter = eval('Event.source_uuid.' + source_uuids["op"] + '_')
+            params.append(filter(source_uuids["list"]))
         # end if
 
-        # explicit_ref_ids
-        if explicit_ref_ids != None:
-            is_valid_operator_list(explicit_ref_ids)
-            filter = eval('Event.explicit_ref_id.' + explicit_ref_ids["op"] + '_')
-            params.append(filter(explicit_ref_ids["list"]))
+        # explicit_ref_uuids
+        if explicit_ref_uuids != None:
+            is_valid_operator_list(explicit_ref_uuids)
+            filter = eval('Event.explicit_ref_uuid.' + explicit_ref_uuids["op"] + '_')
+            params.append(filter(explicit_ref_uuids["list"]))
         # end if
 
-        # gauge_ids
-        if gauge_ids != None:
-            is_valid_operator_list(gauge_ids)
-            filter = eval('Event.gauge_id.' + gauge_ids["op"] + '_')
-            params.append(filter(gauge_ids["list"]))
+        # gauge_uuids
+        if gauge_uuids != None:
+            is_valid_operator_list(gauge_uuids)
+            filter = eval('Event.gauge_uuid.' + gauge_uuids["op"] + '_')
+            params.append(filter(gauge_uuids["list"]))
         # end if
 
         # event_uuids
@@ -587,15 +571,15 @@ class Query():
         # Sources
         if sources != None:
             is_valid_operator_list(sources)
-            filter = eval('DimProcessing.name.' + sources["op"] + '_')
+            filter = eval('Source.name.' + sources["op"] + '_')
             params.append(filter(sources["list"]))
-            tables.append(DimProcessing)
+            tables.append(Source)
         # end if
         if source_like != None:
             is_valid_operator_like(source_like)
-            filter = eval('DimProcessing.name.' + source_like["op"])
+            filter = eval('Source.name.' + source_like["op"])
             params.append(filter(source_like["str"]))
-            tables.append(DimProcessing)
+            tables.append(Source)
         # end if
 
         # Explicit references
@@ -716,16 +700,16 @@ class Query():
 
         return events
 
-    def get_event_keys(self, event_uuids = None, dim_signature_ids = None, keys = None, key_like = None):
+    def get_event_keys(self, event_uuids = None, dim_signature_uuids = None, keys = None, key_like = None):
         """
         """
         params = []
         
         # DIM signature UUIDs
-        if dim_signature_ids != None:
-            is_valid_operator_list(dim_signature_ids)
-            filter = eval('EventKey.dim_signature_id.' + dim_signature_ids["op"] + '_')
-            params.append(filter(dim_signature_ids["list"]))
+        if dim_signature_uuids != None:
+            is_valid_operator_list(dim_signature_uuids)
+            filter = eval('EventKey.dim_signature_uuid.' + dim_signature_uuids["op"] + '_')
+            params.append(filter(dim_signature_uuids["list"]))
         # end if
 
         # event_uuids
@@ -787,7 +771,7 @@ class Query():
 
         return links
 
-    def get_linked_events(self, processing_uuids = None, explicit_ref_ids = None, gauge_ids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None, return_prime_events = True, back_ref = False):
+    def get_linked_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, link_name_like = None, event_uuids = None, return_prime_events = True, back_ref = False):
 
         if not event_uuids or (event_uuids and return_prime_events):
             # Obtain prime events
@@ -795,7 +779,7 @@ class Query():
             if event_uuids:
                 parameter_event_uuids = {"list": event_uuids, "op": "in"}
             # end if
-            prime_events = self.get_events(processing_uuids = processing_uuids, explicit_ref_ids = explicit_ref_ids, gauge_ids = gauge_ids, start_filters = start_filters, stop_filters = stop_filters, event_uuids = parameter_event_uuids)
+            prime_events = self.get_events(source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, start_filters = start_filters, stop_filters = stop_filters, event_uuids = parameter_event_uuids)
         # end if
 
         if event_uuids:
@@ -927,22 +911,22 @@ class Query():
 
         return events
 
-    def get_annotation_cnfs(self, dim_signature_ids = None, annotation_cnf_ids = None, names = None, name_like = None, systems = None, system_like = None):
+    def get_annotation_cnfs(self, dim_signature_uuids = None, annotation_cnf_uuids = None, names = None, name_like = None, systems = None, system_like = None):
         """
         """
         params = []
         # DIM signature UUIDs
-        if dim_signature_ids != None:
-            is_valid_operator_list(dim_signature_ids)
-            filter = eval('AnnotationCnf.dim_signature_id.' + dim_signature_ids["op"] + '_')
-            params.append(filter(dim_signature_ids["list"]))
+        if dim_signature_uuids != None:
+            is_valid_operator_list(dim_signature_uuids)
+            filter = eval('AnnotationCnf.dim_signature_uuid.' + dim_signature_uuids["op"] + '_')
+            params.append(filter(dim_signature_uuids["list"]))
         # end if
 
         # AnnotationCnf UUIDs
-        if annotation_cnf_ids != None:
-            is_valid_operator_list(annotation_cnf_ids)
-            filter = eval('AnnotationCnf.annotation_cnf_id.' + annotation_cnf_ids["op"] + '_')
-            params.append(filter(annotation_cnf_ids["list"]))
+        if annotation_cnf_uuids != None:
+            is_valid_operator_list(annotation_cnf_uuids)
+            filter = eval('AnnotationCnf.annotation_cnf_uuid.' + annotation_cnf_uuids["op"] + '_')
+            params.append(filter(annotation_cnf_uuids["list"]))
         # end if
 
         # AnnotationCnf names
@@ -975,7 +959,7 @@ class Query():
 
         return annotation_cnfs
 
-    def get_annotation_cnfs_join(self, dim_signatures = None, dim_signature_like = None, dim_exec_names = None, dim_exec_name_like = None, names = None, name_like = None, systems = None, system_like = None):
+    def get_annotation_cnfs_join(self, dim_signatures = None, dim_signature_like = None, names = None, name_like = None, systems = None, system_like = None):
         """
         """
         params = []
@@ -993,20 +977,6 @@ class Query():
             is_valid_operator_like(dim_signature_like)
             filter = eval('DimSignature.dim_signature.' + dim_signature_like["op"])
             params.append(filter(dim_signature_like["str"]))
-            tables.append(DimSignature)
-        # end if
-
-        # DIM exec names
-        if dim_exec_names != None:
-            is_valid_operator_list(dim_exec_names)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_names["op"] + '_')
-            params.append(filter(dim_exec_names["list"]))
-            tables.append(DimSignature)
-        # end if
-        if dim_exec_name_like != None:
-            is_valid_operator_like(dim_exec_name_like)
-            filter = eval('DimSignature.dim_exec_name.' + dim_exec_name_like["op"])
-            params.append(filter(dim_exec_name_like["str"]))
             tables.append(DimSignature)
         # end if
 
@@ -1045,32 +1015,32 @@ class Query():
 
         return annotation_cnfs
 
-    def get_annotations(self, processing_uuids = None, explicit_ref_ids = None, annotation_cnf_ids = None, ingestion_time_filters = None, annotation_uuids = None):
+    def get_annotations(self, source_uuids = None, explicit_ref_uuids = None, annotation_cnf_uuids = None, ingestion_time_filters = None, annotation_uuids = None):
         """
         """
         params = []
         # Allow only obtain visible annotations
         params.append(Annotation.visible == True)
 
-        # processing_uuids
-        if processing_uuids != None:
-            is_valid_operator_list(processing_uuids)
-            filter = eval('Annotation.processing_uuid.' + processing_uuids["op"] + '_')
-            params.append(filter(processing_uuids["list"]))
+        # source_uuids
+        if source_uuids != None:
+            is_valid_operator_list(source_uuids)
+            filter = eval('Annotation.source_uuid.' + source_uuids["op"] + '_')
+            params.append(filter(source_uuids["list"]))
         # end if
 
-        # explicit_ref_ids
-        if explicit_ref_ids != None:
-            is_valid_operator_list(explicit_ref_ids)
-            filter = eval('Annotation.explicit_ref_id.' + explicit_ref_ids["op"] + '_')
-            params.append(filter(explicit_ref_ids["list"]))
+        # explicit_ref_uuids
+        if explicit_ref_uuids != None:
+            is_valid_operator_list(explicit_ref_uuids)
+            filter = eval('Annotation.explicit_ref_uuid.' + explicit_ref_uuids["op"] + '_')
+            params.append(filter(explicit_ref_uuids["list"]))
         # end if
 
-        # annotation_cnf_ids
-        if annotation_cnf_ids != None:
-            is_valid_operator_list(annotation_cnf_ids)
-            filter = eval('Annotation.annotation_cnf_id.' + annotation_cnf_ids["op"] + '_')
-            params.append(filter(annotation_cnf_ids["list"]))
+        # annotation_cnf_uuids
+        if annotation_cnf_uuids != None:
+            is_valid_operator_list(annotation_cnf_uuids)
+            filter = eval('Annotation.annotation_cnf_uuid.' + annotation_cnf_uuids["op"] + '_')
+            params.append(filter(annotation_cnf_uuids["list"]))
         # end if
 
         # annotation_uuids
@@ -1107,15 +1077,15 @@ class Query():
         # Sources
         if sources != None:
             is_valid_operator_list(sources)
-            filter = eval('DimProcessing.name.' + sources["op"] + '_')
+            filter = eval('Source.name.' + sources["op"] + '_')
             params.append(filter(sources["list"]))
-            tables.append(DimProcessing)
+            tables.append(Source)
         # end if
         if source_like != None:
             is_valid_operator_like(source_like)
-            filter = eval('DimProcessing.name.' + source_like["op"])
+            filter = eval('Source.name.' + source_like["op"])
             params.append(filter(source_like["str"]))
-            tables.append(DimProcessing)
+            tables.append(Source)
         # end if
 
         # Explicit references
@@ -1206,7 +1176,7 @@ class Query():
 
         return annotations
 
-    def get_explicit_refs(self, group_ids = None, explicit_ref_ids = None, explicit_refs = None, explicit_ref_like = None, ingestion_time_filters = None):
+    def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, explicit_ref_like = None, ingestion_time_filters = None):
         """
         """
         params = []
@@ -1214,15 +1184,15 @@ class Query():
         # group_ids
         if group_ids != None:
             is_valid_operator_list(group_ids)
-            filter = eval('ExplicitRef.expl_ref_cnf_id.' + group_ids["op"] + '_')
+            filter = eval('ExplicitRef.expl_ref_cnf_uuid.' + group_ids["op"] + '_')
             params.append(filter(group_ids["list"]))
         # end if
 
-        # explicit_ref_ids
-        if explicit_ref_ids != None:
-            is_valid_operator_list(explicit_ref_ids)
-            filter = eval('ExplicitRef.explicit_ref_id.' + explicit_ref_ids["op"] + '_')
-            params.append(filter(explicit_ref_ids["list"]))
+        # explicit_ref_uuids
+        if explicit_ref_uuids != None:
+            is_valid_operator_list(explicit_ref_uuids)
+            filter = eval('ExplicitRef.explicit_ref_uuid.' + explicit_ref_uuids["op"] + '_')
+            params.append(filter(explicit_ref_uuids["list"]))
         # end if
 
         # Explicit references
@@ -1295,19 +1265,25 @@ class Query():
         # end if
 
         # Events
-        events = self.get_events_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, gauge_names = gauge_names, gauge_name_like = gauge_name_like, gauge_systems = gauge_systems, gauge_system_like = gauge_system_like, start_filters = start_filters, stop_filters = stop_filters, value_filters = event_value_filters, values_names_type = event_values_names_type, values_name_type_like = event_values_name_type_like)
+        explicit_ref_uuids_events = []
+        if sources or source_like or gauge_names or gauge_name_like or gauge_systems or gauge_system_like or start_filters or stop_filters:
+            events = self.get_events_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, gauge_names = gauge_names, gauge_name_like = gauge_name_like, gauge_systems = gauge_systems, gauge_system_like = gauge_system_like, start_filters = start_filters, stop_filters = stop_filters, value_filters = event_value_filters, values_names_type = event_values_names_type, values_name_type_like = event_values_name_type_like)
 
-        explicit_ref_uuids_events = [str(event.explicit_ref_id) for event in events]
+            explicit_ref_uuids_events = [str(event.explicit_ref_uuid) for event in events]
+        # end if
 
         # Annotations
-        annotations = self.get_annotations_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, annotation_cnf_names = annotation_cnf_names, annotation_cnf_name_like = annotation_cnf_name_like, annotation_cnf_systems = annotation_cnf_systems, annotation_cnf_system_like = annotation_cnf_system_like, value_filters = annotation_value_filters, values_names_type = annotation_values_names_type, values_name_type_like = annotation_values_name_type_like)
+        explicit_ref_uuids_annotations = []
+        if sources or source_like or annotation_cnf_names or annotation_cnf_name_like or annotation_cnf_systems or annotation_cnf_system_like:
+            annotations = self.get_annotations_join(sources = sources, source_like = source_like, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, annotation_cnf_names = annotation_cnf_names, annotation_cnf_name_like = annotation_cnf_name_like, annotation_cnf_systems = annotation_cnf_systems, annotation_cnf_system_like = annotation_cnf_system_like, value_filters = annotation_value_filters, values_names_type = annotation_values_names_type, values_name_type_like = annotation_values_name_type_like)
 
-        explicit_ref_uuids_annotations = [str(annotation.explicit_ref_id) for annotation in annotations]
+            explicit_ref_uuids_annotations = [str(annotation.explicit_ref_uuid) for annotation in annotations]
+        # end if
 
         # explicit references uuids
         explicit_ref_uuids = set (explicit_ref_uuids_events + explicit_ref_uuids_annotations)
         if len(explicit_ref_uuids) > 0:
-            params.append(ExplicitRef.explicit_ref_id.in_(explicit_ref_uuids))
+            params.append(ExplicitRef.explicit_ref_uuid.in_(explicit_ref_uuids))
         # end if
 
         query = self.session.query(ExplicitRef)
@@ -1321,20 +1297,20 @@ class Query():
 
         return explicit_refs
 
-    def get_explicit_ref_links(self, explicit_ref_id_links = None, explicit_ref_ids = None, link_names = None, link_name_like = None):
+    def get_explicit_ref_links(self, explicit_ref_uuid_links = None, explicit_ref_uuids = None, link_names = None, link_name_like = None):
         """
         """
         params = []
-        if explicit_ref_id_links:
-            is_valid_operator_list(explicit_ref_id_links)
-            filter = eval('ExplicitRefLink.explicit_ref_id_link.' + explicit_ref_id_links["op"] + '_')
-            params.append(filter(explicit_ref_id_links["list"]))
+        if explicit_ref_uuid_links:
+            is_valid_operator_list(explicit_ref_uuid_links)
+            filter = eval('ExplicitRefLink.explicit_ref_uuid_link.' + explicit_ref_uuid_links["op"] + '_')
+            params.append(filter(explicit_ref_uuid_links["list"]))
         # end if
 
-        if explicit_ref_ids:
-            is_valid_operator_list(explicit_ref_ids)
-            filter = eval('ExplicitRefLink.explicit_ref_id.' + explicit_ref_ids["op"] + '_')
-            params.append(filter(explicit_ref_ids["list"]))
+        if explicit_ref_uuids:
+            is_valid_operator_list(explicit_ref_uuids)
+            filter = eval('ExplicitRefLink.explicit_ref_uuid.' + explicit_ref_uuids["op"] + '_')
+            params.append(filter(explicit_ref_uuids["list"]))
         # end if
 
         if link_names:
@@ -1355,24 +1331,24 @@ class Query():
 
         return links
 
-    def get_linked_explicit_refs(self, group_ids = None, explicit_ref_ids = None, explicit_refs = None, explicit_ref_like = None, ingestion_time_filters = None, link_names = None, link_name_like = None):
+    def get_linked_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, explicit_ref_like = None, ingestion_time_filters = None, link_names = None, link_name_like = None):
         
         # Obtain prime explicit_refs 
-        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, explicit_ref_ids = explicit_ref_ids, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, ingestion_time_filters = ingestion_time_filters)
+        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, ingestion_time_filters = ingestion_time_filters)
 
-        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_id) for explicit_ref in prime_explicit_refs]
+        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
 
         # Obtain the links from the prime explicit_refs to other explicit_refs
         links = []
         if len(prime_explicit_ref_uuids) > 0:
-            links = self.get_explicit_ref_links(explicit_ref_id_links = {"list": prime_explicit_ref_uuids, "op": "in"}, link_names = link_names, link_name_like = link_name_like)
+            links = self.get_explicit_ref_links(explicit_ref_uuid_links = {"list": prime_explicit_ref_uuids, "op": "in"}, link_names = link_names, link_name_like = link_name_like)
         # end if
 
         # Obtain the explicit_refs linked by the prime explicit_refs
-        linked_explicit_ref_uuids = [str(link.explicit_ref_id) for link in links]
+        linked_explicit_ref_uuids = [str(link.explicit_ref_uuid) for link in links]
         linked_explicit_refs = []
         if len(linked_explicit_ref_uuids) > 0:
-            linked_explicit_refs = self.get_explicit_refs(explicit_ref_ids = {"list": linked_explicit_ref_uuids, "op": "in"})
+            linked_explicit_refs = self.get_explicit_refs(explicit_ref_uuids = {"list": linked_explicit_ref_uuids, "op": "in"})
         # end if
 
         return prime_explicit_refs + linked_explicit_refs
@@ -1382,19 +1358,19 @@ class Query():
         # Obtain prime events 
         prime_explicit_refs = self.get_explicit_refs_join(explicit_refs = explicit_refs, explicit_ref_like = explicit_ref_like, sources = sources, source_like = source_like, gauge_names = gauge_names, gauge_name_like = gauge_name_like, gauge_systems = gauge_systems, gauge_system_like = gauge_system_like, start_filters = start_filters, stop_filters = stop_filters, explicit_ref_ingestion_time_filters = explicit_ref_ingestion_time_filters, event_value_filters = event_value_filters, event_values_names_type = event_values_names_type, event_values_name_type_like = event_values_name_type_like, annotation_cnf_names = annotation_cnf_names, annotation_cnf_name_like = annotation_cnf_name_like, annotation_cnf_systems = annotation_cnf_systems, annotation_cnf_system_like = annotation_cnf_system_like, annotation_value_filters = annotation_value_filters, annotation_values_names_type = annotation_values_names_type, annotation_values_name_type_like = annotation_values_name_type_like, expl_groups = expl_groups, expl_group_like = expl_group_like)
 
-        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_id) for explicit_ref in prime_explicit_refs]
+        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
 
         # Obtain the links from the prime explicit_refs to other explicit_refs
         links = []
         if len(prime_explicit_ref_uuids) > 0:
-            links = self.get_explicit_ref_links(explicit_ref_id_links = {"list": prime_explicit_ref_uuids, "op": "in"}, link_names = link_names, link_name_like = link_name_like)
+            links = self.get_explicit_ref_links(explicit_ref_uuid_links = {"list": prime_explicit_ref_uuids, "op": "in"}, link_names = link_names, link_name_like = link_name_like)
         # end if
 
         # Obtain the explicit_refs linked by the prime explicit_refs
-        linked_explicit_ref_uuids = [str(link.explicit_ref_id) for link in links]
+        linked_explicit_ref_uuids = [str(link.explicit_ref_uuid) for link in links]
         linked_explicit_refs = []
         if len(linked_explicit_ref_uuids) > 0:
-            linked_explicit_refs = self.get_explicit_refs(explicit_ref_ids = {"list": linked_explicit_ref_uuids, "op": "in"})
+            linked_explicit_refs = self.get_explicit_refs(explicit_ref_uuids = {"list": linked_explicit_ref_uuids, "op": "in"})
         # end if
 
         return prime_explicit_refs + linked_explicit_refs
@@ -1406,7 +1382,7 @@ class Query():
         # Group UUIDs
         if group_ids != None:
             is_valid_operator_list(group_ids)
-            filter = eval('ExplicitRefGrp.expl_ref_cnf_id.' + group_ids["op"] + '_')
+            filter = eval('ExplicitRefGrp.expl_ref_cnf_uuid.' + group_ids["op"] + '_')
             params.append(filter(group_ids["list"]))
         # end if
 

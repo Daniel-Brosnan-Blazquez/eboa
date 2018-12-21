@@ -25,7 +25,7 @@ from eboa.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, Wrong
 from eboa.datamodel.dim_signatures import DimSignature
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
-from eboa.datamodel.dim_processings import DimProcessing, DimProcessingStatus
+from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
@@ -61,7 +61,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.operation = data
         self.engine_eboa._insert_dim_signature()
 
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).all()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).all()
 
         assert len(dim_signature_ddbb) == 1
 
@@ -88,7 +88,7 @@ class TestEngine(unittest.TestCase):
         with before_after.before("eboa.engine.engine.race_condition", self.engine_eboa_race_conditions._insert_dim_signature):
             self.engine_eboa._insert_dim_signature()
 
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).all()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).all()
 
         assert len(dim_signature_ddbb) == 1
 
@@ -106,7 +106,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_dim_signature()
         self.engine_eboa._insert_source()
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -115,14 +115,14 @@ class TestEngine(unittest.TestCase):
         data = self.engine_eboa.operation
 
         self.engine_eboa.ingestion_start = datetime.datetime.now()
-        self.engine_eboa._insert_proc_status(0, final = True)
+        self.engine_eboa._insert_source_status(0, final = True)
         
         try:
             self.test_insert_source()
         except SourceAlreadyIngested:
             pass
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -154,7 +154,7 @@ class TestEngine(unittest.TestCase):
         except WrongPeriod:
             pass
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -190,7 +190,7 @@ class TestEngine(unittest.TestCase):
         with before_after.before("eboa.engine.engine.race_condition", insert_source_race_condition):
             insert_source()
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -226,7 +226,7 @@ class TestEngine(unittest.TestCase):
         with before_after.before("eboa.engine.engine.race_condition", insert_source_race_condition):
             insert_source()
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -234,7 +234,7 @@ class TestEngine(unittest.TestCase):
         name = "source_withoud_dim_signature.xml"
         self.engine_eboa._insert_source_without_dim_signature(name)
 
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == name).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == name).all()
 
         assert len(source_ddbb) == 1
 
@@ -498,8 +498,8 @@ class TestEngine(unittest.TestCase):
         explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
 
         explicit_reference_link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == data["explicit_references"][0]["links"][0]["name"],
-                                                                                  ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id,
-                                                                                  ExplicitRefLink.explicit_ref_id == explicit_reference_event_ddbb.explicit_ref_id).all()
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_event_ddbb.explicit_ref_uuid).all()
 
         assert len(explicit_reference_link_ddbb) == 1
 
@@ -538,8 +538,8 @@ class TestEngine(unittest.TestCase):
         explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         
         explicit_reference_link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == data["explicit_references"][0]["links"][0]["name"],
-                                                                                  ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id,
-                                                                                  ExplicitRefLink.explicit_ref_id == explicit_reference_event_ddbb.explicit_ref_id).all()
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_event_ddbb.explicit_ref_uuid).all()
 
         assert len(explicit_reference_link_ddbb) == 1
 
@@ -595,8 +595,8 @@ class TestEngine(unittest.TestCase):
         explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         
         explicit_reference_link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == data["explicit_references"][0]["links"][0]["name"],
-                                                                                  ExplicitRefLink.explicit_ref_id_link == explicit_reference_ddbb.explicit_ref_id,
-                                                                                  ExplicitRefLink.explicit_ref_id == explicit_reference_event_ddbb.explicit_ref_id).all()
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_event_ddbb.explicit_ref_uuid).all()
 
         assert len(explicit_reference_link_ddbb) == 1
 
@@ -627,16 +627,16 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_explicit_refs()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(event_ddbb) == 1
@@ -733,16 +733,16 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_explicit_refs()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == False).all()
 
         assert len(event_ddbb) == 1
@@ -776,16 +776,16 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_explicit_refs()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == False).all()
 
         event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["events"][0]["key"],
@@ -820,14 +820,14 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.treat_data(data)
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"], DimSignature.dim_exec_name == data["operations"][0]["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["operations"][0]["source"]["name"], Source.validity_start == data["operations"][0]["source"]["validity_start"], Source.validity_stop == data["operations"][0]["source"]["validity_stop"], Source.generation_time == data["operations"][0]["source"]["generation_time"], Source.processor_version == data["operations"][0]["dim_signature"]["version"], Source.processor == data["operations"][0]["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["operations"][0]["events"][0]["explicit_reference"]).first()
         event_ddbb = self.session.query(Event).filter(Event.start == data["operations"][0]["events"][0]["start"],
                                                       Event.stop == data["operations"][0]["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["operations"][0]["events"][0]["key"],
@@ -863,14 +863,14 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.treat_data(data)
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["operations"][0]["events"][0]["gauge"]["name"], Gauge.system == data["operations"][0]["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["operations"][0]["source"]["name"], DimProcessing.validity_start == data["operations"][0]["source"]["validity_start"], DimProcessing.validity_stop == data["operations"][0]["source"]["validity_stop"], DimProcessing.generation_time == data["operations"][0]["source"]["generation_time"], DimProcessing.dim_exec_version == data["operations"][0]["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"], DimSignature.dim_exec_name == data["operations"][0]["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["operations"][0]["source"]["name"], Source.validity_start == data["operations"][0]["source"]["validity_start"], Source.validity_stop == data["operations"][0]["source"]["validity_stop"], Source.generation_time == data["operations"][0]["source"]["generation_time"], Source.processor_version == data["operations"][0]["dim_signature"]["version"], Source.processor == data["operations"][0]["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["operations"][0]["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["operations"][0]["events"][0]["explicit_reference"]).first()
         event_ddbb = self.session.query(Event).filter(Event.start == data["operations"][0]["events"][0]["start"],
                                                       Event.stop == data["operations"][0]["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["operations"][0]["events"][0]["key"],
@@ -931,14 +931,14 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
                                                       Event.visible == True).all()
 
         assert len(event_ddbb) == 1
@@ -977,8 +977,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except WrongValue:
@@ -1018,8 +1018,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except WrongGeometry:
@@ -1059,8 +1059,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except OddNumberOfCoordinates:
@@ -1100,8 +1100,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except WrongValue:
@@ -1141,8 +1141,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except WrongValue:
@@ -1182,8 +1182,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except WrongValue:
@@ -1338,8 +1338,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -1389,8 +1389,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -1423,8 +1423,8 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_gauges()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         try:
             self.engine_eboa._insert_events()
         except UndefinedEventLink:
@@ -1485,12 +1485,11 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_annotations()
         self.engine_eboa.session.commit()
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["annotations"][0]["explicit_reference"]).first()
-        annotation_ddbb = self.session.query(Annotation).filter(Annotation.visible == False, Annotation.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
-                                                                Annotation.processing_uuid == source_ddbb.processing_uuid, Annotation.annotation_cnf_id == annotation_cnf_ddbb.annotation_cnf_id).all()
+        annotation_ddbb = self.session.query(Annotation).filter(Annotation.visible == False, Annotation.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                Annotation.source_uuid == source_ddbb.source_uuid, Annotation.annotation_cnf_uuid == annotation_cnf_ddbb.annotation_cnf_uuid).all()
 
         assert len(annotation_ddbb) == 1
 
@@ -1607,15 +1606,15 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_event_keys()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
 
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["events"][0]["key"],
@@ -1733,12 +1732,12 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_annotations()
         self.engine_eboa.session.commit()
         annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotations"][0]["annotation_cnf"]["name"], AnnotationCnf.system == data["annotations"][0]["annotation_cnf"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["annotations"][0]["explicit_reference"]).first()
-        annotation_ddbb = self.session.query(Annotation).filter(Annotation.visible == True, Annotation.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
-                                                                Annotation.processing_uuid == source_ddbb.processing_uuid, Annotation.annotation_cnf_id == annotation_cnf_ddbb.annotation_cnf_id).all()
+        annotation_ddbb = self.session.query(Annotation).filter(Annotation.visible == True, Annotation.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                Annotation.source_uuid == source_ddbb.source_uuid, Annotation.annotation_cnf_uuid == annotation_cnf_ddbb.annotation_cnf_uuid).all()
 
         assert len(annotation_ddbb) == 1
 
@@ -1858,15 +1857,15 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2088,43 +2087,43 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data2["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["start"],
                                                       Event.stop == data2["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][0]["start"],
                                                       Event.stop == data2["source"]["validity_start"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][1]["start"],
                                                       Event.stop == data2["source"]["validity_start"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][2]["start"],
                                                       Event.stop == data1["events"][2]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2141,7 +2140,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(links_ddbb) == 6
 
-        events_with_links = self.session.query(Event).join(DimProcessing).filter(DimProcessing.name == "source.xml").order_by(Event.start).all()
+        events_with_links = self.session.query(Event).join(Source).filter(Source.name == "source.xml").order_by(Event.start).all()
         
         rest_of_event_uuids = [events_with_links[1].event_uuid, events_with_links[2].event_uuid]
         
@@ -2397,29 +2396,29 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data2["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["start"],
                                                       Event.stop == data2["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data1["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["stop"],
                                                       Event.stop == data1["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2541,15 +2540,15 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data2["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["start"],
                                                       Event.stop == data2["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2647,66 +2646,66 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data1["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][0]["start"],
                                                       Event.stop == data1["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data2["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["start"],
                                                       Event.stop == data2["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data3["events"][0]["gauge"]["name"], Gauge.system == data3["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data3["source"]["name"], DimProcessing.validity_start == data3["source"]["validity_start"], DimProcessing.validity_stop == data3["source"]["validity_stop"], DimProcessing.generation_time == data3["source"]["generation_time"], DimProcessing.dim_exec_version == data3["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"], DimSignature.dim_exec_name == data3["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data3["source"]["name"], Source.validity_start == data3["source"]["validity_start"], Source.validity_stop == data3["source"]["validity_stop"], Source.generation_time == data3["source"]["generation_time"], Source.processor_version == data3["dim_signature"]["version"], Source.processor == data3["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data3["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data3["events"][0]["start"],
                                                       Event.stop == data1["source"]["validity_start"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data3["events"][0]["gauge"]["name"], Gauge.system == data3["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data3["source"]["name"], DimProcessing.validity_start == data3["source"]["validity_start"], DimProcessing.validity_stop == data3["source"]["validity_stop"], DimProcessing.generation_time == data3["source"]["generation_time"], DimProcessing.dim_exec_version == data3["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"], DimSignature.dim_exec_name == data3["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data3["source"]["name"], Source.validity_start == data3["source"]["validity_start"], Source.validity_stop == data3["source"]["validity_stop"], Source.generation_time == data3["source"]["generation_time"], Source.processor_version == data3["dim_signature"]["version"], Source.processor == data3["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data3["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["source"]["validity_stop"],
                                                       Event.stop == data2["source"]["validity_start"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["source"]["validity_stop"],
                                                       Event.stop == data3["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2800,43 +2799,43 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data1["source"]["name"], DimProcessing.validity_start == data1["source"]["validity_start"], DimProcessing.validity_stop == data1["source"]["validity_stop"], DimProcessing.generation_time == data1["source"]["generation_time"], DimProcessing.dim_exec_version == data1["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"], DimSignature.dim_exec_name == data1["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data1["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data1["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data1["events"][0]["start"],
                                                       Event.stop == data1["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data2["source"]["name"], DimProcessing.validity_start == data2["source"]["validity_start"], DimProcessing.validity_stop == data2["source"]["validity_stop"], DimProcessing.generation_time == data2["source"]["generation_time"], DimProcessing.dim_exec_version == data2["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"], DimSignature.dim_exec_name == data2["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data2["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data2["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data2["events"][0]["start"],
                                                       Event.stop == data2["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
 
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data3["events"][0]["gauge"]["name"], Gauge.system == data3["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data3["source"]["name"], DimProcessing.validity_start == data3["source"]["validity_start"], DimProcessing.validity_stop == data3["source"]["validity_stop"], DimProcessing.generation_time == data3["source"]["generation_time"], DimProcessing.dim_exec_version == data3["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"], DimSignature.dim_exec_name == data3["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data3["source"]["name"], Source.validity_start == data3["source"]["validity_start"], Source.validity_stop == data3["source"]["validity_stop"], Source.generation_time == data3["source"]["generation_time"], Source.processor_version == data3["dim_signature"]["version"], Source.processor == data3["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data3["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data3["events"][0]["explicit_reference"]).first()
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == data3["events"][0]["start"],
                                                       Event.stop == data1["source"]["validity_start"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(filtered_events_ddbb) == 1
@@ -2915,13 +2914,13 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -2943,8 +2942,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -2978,8 +2977,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3008,8 +3007,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3045,8 +3044,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3082,8 +3081,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3117,8 +3116,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3152,8 +3151,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
-                                                                           DimProcessing.name == data["operations"][0]["source"]["name"]).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
@@ -3166,8 +3165,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
-                                                                                            DimProcessing.name == filename).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+                                                                                            Source.name == filename).all()
 
         assert len(sources_status) == 1
 
@@ -3202,8 +3201,8 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(DimProcessingStatus).join(DimProcessing).filter(DimProcessingStatus.proc_status == self.engine_eboa.exit_codes["OK"]["status"],
-                                                                                            DimProcessing.name == filename).all()
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+                                                                                            Source.name == filename).all()
 
         assert len(sources_status) == 1
 
@@ -3276,16 +3275,16 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa._insert_explicit_refs()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(DimProcessing).filter(DimProcessing.name == data["source"]["name"], DimProcessing.validity_start == data["source"]["validity_start"], DimProcessing.validity_stop == data["source"]["validity_stop"], DimProcessing.generation_time == data["source"]["generation_time"], DimProcessing.dim_exec_version == data["dim_signature"]["version"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"], DimSignature.dim_exec_name == data["dim_signature"]["exec"]).first()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
+        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
         event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
-                                                      Event.gauge_id == gauge_ddbb.gauge_id,
-                                                      Event.processing_uuid == source_ddbb.processing_uuid,
-                                                      Event.explicit_ref_id == explicit_reference_ddbb.explicit_ref_id,
+                                                      Event.gauge_uuid == gauge_ddbb.gauge_uuid,
+                                                      Event.source_uuid == source_ddbb.source_uuid,
+                                                      Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == True).all()
 
         assert len(event_ddbb) == 1
