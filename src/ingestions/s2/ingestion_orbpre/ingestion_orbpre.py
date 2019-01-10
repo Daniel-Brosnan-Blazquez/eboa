@@ -156,7 +156,7 @@ def _generate_corrected_planning_events(satellite, validity_start, validity_stop
     
     planning_gauges = query.get_gauges_join(dim_signatures = {"list": ["NPPF_" + satellite], "op": "in"})
 
-    planning_events = query.get_events(gauge_ids = {"list": [gauge.gauge_id for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
+    planning_events = query.get_events(gauge_uuids = {"list": [gauge.gauge_uuid for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
 
     events = _correct_planning_events(list_of_events, planning_events)
 
