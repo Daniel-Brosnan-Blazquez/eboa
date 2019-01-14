@@ -559,7 +559,7 @@ class Query():
 
         return events
 
-    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, keys = None, key_like = None):
+    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, keys = None, key_like = None, event_uuids = None):
         """
         """
         params = []
@@ -567,6 +567,13 @@ class Query():
         params.append(Event.visible == True)
 
         tables = []
+
+        # event_uuids
+        if event_uuids != None:
+            is_valid_operator_list(event_uuids)
+            filter = eval('Event.event_uuid.' + event_uuids["op"] + '_')
+            params.append(filter(event_uuids["list"]))
+        # end if
 
         # Sources
         if sources != None:
