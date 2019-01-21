@@ -131,6 +131,16 @@ class EventBoolean(Base):
         self.parent_position = parent_position
         self.event = event
 
+    def jsonify(self):
+        return {
+            "type": "boolean",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class EventText(Base):
     __tablename__ = 'event_texts'
 
@@ -152,6 +162,16 @@ class EventText(Base):
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
+
+    def jsonify(self):
+        return {
+            "type": "text",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
 
 class EventDouble(Base):
     __tablename__ = 'event_doubles'
@@ -175,6 +195,16 @@ class EventDouble(Base):
         self.parent_position = parent_position
         self.event = event
 
+    def jsonify(self):
+        return {
+            "type": "double",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class EventTimestamp(Base):
     __tablename__ = 'event_timestamps'
 
@@ -197,6 +227,16 @@ class EventTimestamp(Base):
         self.parent_position = parent_position
         self.event = event
 
+    def jsonify(self):
+        return {
+            "type": "timestamp",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class EventObject(Base):
     __tablename__ = 'event_objects'
 
@@ -216,6 +256,16 @@ class EventObject(Base):
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
+
+    def jsonify(self):
+        return {
+            "type": "object",
+            "name": self.name,
+            "value": "",
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
 
 class EventGeometry(Base):
     __tablename__ = 'event_geometrys'
@@ -238,3 +288,13 @@ class EventGeometry(Base):
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
+
+    def jsonify(self):
+        return {
+            "type": "geometry",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
