@@ -1,0 +1,1320 @@
+<?xml version ="1.0" encoding="UTF-8"?>
+<Earth_Explorer_File>
+   <Earth_Explorer_Header>
+      <Fixed_Header>
+         <File_Name>S2B_OPER_REP_PASS_E_EDRS_20180721T191902_V20180721T191317_20180721T191851</File_Name>
+         <File_Description>Acquisition Report</File_Description>
+         <Notes></Notes>
+         <Mission>Sentinel-2B</Mission>
+         <File_Class>OPER</File_Class>
+         <File_Type>REP_PASS_E</File_Type>
+         <Validity_Period>
+            <Validity_Start>UTC=2018-07-21T19:13:17</Validity_Start>
+            <Validity_Stop>UTC=2018-07-21T19:18:51</Validity_Stop>
+         </Validity_Period>
+         <File_Version>0001</File_Version>
+         <Source>
+            <System>EDRS</System>
+            <Creator>EISPProcessor</Creator>
+            <Creator_Version>1.0</Creator_Version>
+            <Creation_Date>UTC=2018-07-21T19:19:02</Creation_Date>
+         </Source>
+      </Fixed_Header>
+      <Variable_Header>
+         <Data_Block>XML</Data_Block>
+         <Downlink_Orbit>7174</Downlink_Orbit>
+         <Format_Reference>GMES-GSEG-EOPG-TN-10-0103</Format_Reference>
+      </Variable_Header>
+   </Earth_Explorer_Header>
+   <Data_Block type="xml">
+      <input_files>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00001.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00002.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00003.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00004.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00005.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00006.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00007.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00008.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00009.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00010.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00011.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00012.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00013.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00014.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00015.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00016.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00017.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00018.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00019.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00020.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00021.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00022.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00023.raw</input_file>
+         <input_file>DCS_02_L20180608110636117000168_ch2_DSDB_00024.raw</input_file>
+      </input_files>
+      <data_C2>
+         <Name>S2B</Name>
+         <Orbit>7174</Orbit>
+         <Configuration Standard="AOS">
+            <CaduLength>2044</CaduLength>
+            <SynchLength>4</SynchLength>
+            <RsLength>128</RsLength>
+            <ReedSolomon>None</ReedSolomon>
+            <CRC>false</CRC>
+            <InsertZoneSize>0</InsertZoneSize>
+            <RsStatusLength>2</RsStatusLength>
+            <FsStatusLength>8</FsStatusLength>
+            <TimeLength>8</TimeLength>
+         </Configuration>
+         <Status VCID="20">
+            <Description>Nominal Mission Data (Half scene 2)</Description>
+            <NumFrames>10952286</NumFrames>
+            <AcqStartTime>21-JUL-2018 19:13:17.888450</AcqStartTime>
+            <AcqStopTime>21-JUL-2018 19:18:37.687693</AcqStopTime>
+            <StartCounter>5319319</StartCounter>
+            <EndCounter>16271604</EndCounter>
+            <RsUncorrectable>0</RsUncorrectable>
+            <RsCorrectable>0</RsCorrectable>
+            <ISP_Status>
+               <Status APID="0">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="1">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="2">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="3">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="4">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="5">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="6">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="7">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="8">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="9">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="10">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="11">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="12">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="16">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="17">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="18">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="19">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="20">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="21">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="22">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="23">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="24">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="25">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="26">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="27">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="28">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="32">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="33">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="34">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="35">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="36">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="37">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="38">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="39">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="40">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="41">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 1, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="42">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 1, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="43">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 1, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="44">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 1, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="48">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="49">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="50">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="51">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="52">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="53">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="54">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="55">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="56">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="57">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 1, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="58">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 1, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="59">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 1, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="60">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 1, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="64">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="65">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="66">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="67">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="68">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="69">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="70">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="71">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="72">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="73">
+                  <Description>VNIR, VCM 0, Detector 0, WICOM 2, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="74">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 2, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="75">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 2, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="76">
+                  <Description>SWIR, VCM 0, Detector 0, WICOM 2, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="80">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="81">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="82">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="83">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="84">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="85">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="86">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="87">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="88">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="89">
+                  <Description>VNIR, VCM 0, Detector 1, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="90">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="91">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="92">
+                  <Description>SWIR, VCM 0, Detector 1, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="256">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.890056</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.910838</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="257">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.902747</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.478170</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="258">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.022706</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.599462</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="259">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.144079</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.729744</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="260">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.779885</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.811742</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="261">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.818672</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.851201</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="262">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.857470</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.890524</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="263">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.897846</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.473051</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="264">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.018532</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.555283</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="265">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.057395</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.580539</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="266">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.071469</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.594945</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="267">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.083803</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.623416</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="268">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.633131</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.665709</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="272">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.896420</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.917086</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="273">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.962712</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.539178</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="274">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.082485</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.662636</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="275">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.714771</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.791003</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="276">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.800251</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.830606</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="277">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.838886</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.870087</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="278">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.877675</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.411717</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="279">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.957891</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.534392</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="280">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.038829</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.574233</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="281">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.063597</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.588636</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="282">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.077639</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.601225</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="283">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.609012</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.643640</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="284">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.659572</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.687510</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="288">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.890240</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.910924</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="289">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.902881</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.478327</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="290">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.022837</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.599594</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="291">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.144212</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.729875</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="292">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.779970</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.811828</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="293">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.818757</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.851288</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="294">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.857556</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.890612</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="295">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.897975</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.473183</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="296">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.018620</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.555376</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="297">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 1, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.057481</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.580626</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="298">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 1, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.071555</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.595031</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="299">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 1, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.083895</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.623508</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="300">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 1, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.633269</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.665802</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="304">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.896507</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.917172</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="305">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.962843</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.539314</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="306">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.082615</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.662767</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="307">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.714925</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.791141</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="308">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.800336</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.830694</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="309">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.838971</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.870174</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="310">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.877760</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.411804</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="311">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.958025</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.534533</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="312">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.038919</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.574323</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="313">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 1, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.063686</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.588722</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="314">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 1, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.077725</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.601315</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="315">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 1, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.609128</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.643733</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="316">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 1, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.659686</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.687602</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="320">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.890339</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.911009</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="321">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.903014</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.478462</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="322">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.022968</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.599725</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="323">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.144342</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.730007</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="324">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.780060</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.811913</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="325">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.818841</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.851376</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="326">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.857641</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.890698</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="327">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.898108</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.473321</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="328">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.018706</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.555462</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="329">
+                  <Description>VNIR, VCM 1, Detector 0, WICOM 2, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.057566</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.580714</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="330">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 2, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.071640</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.595117</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="331">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 2, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.083988</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.623600</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="332">
+                  <Description>SWIR, VCM 1, Detector 0, WICOM 2, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.633388</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.665894</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="336">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 1, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.896594</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:35.917257</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="337">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 2, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.962974</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.539448</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="338">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 3, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.082747</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.662899</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="339">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 4, 10m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.715084</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.791275</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="340">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 5, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.800422</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.830780</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="341">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 6, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.839060</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:36.870261</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="342">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 7, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.877846</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.411893</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="343">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 8, 20m</Description>
+                  <NumPackets>27360</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:18.958156</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.534668</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>143</EndCounter>
+               </Status>
+               <Status APID="344">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 8a, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.039005</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.574413</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="345">
+                  <Description>VNIR, VCM 1, Detector 1, WICOM 0, Band 9, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.063772</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.588808</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="346">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 10, 60m</Description>
+                  <NumPackets>4560</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.077810</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.601403</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>23</EndCounter>
+               </Status>
+               <Status APID="347">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 11, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.609240</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.643826</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="348">
+                  <Description>SWIR, VCM 1, Detector 1, WICOM 0, Band 12, 20m</Description>
+                  <NumPackets>13680</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:19.659798</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.687693</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>71</EndCounter>
+               </Status>
+               <Status APID="2047">
+                  <Description></Description>
+                  <NumPackets>1</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:37.687693</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.687693</AcqStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>0</EndCounter>
+               </Status>
+               <Summary>
+                  <NumPackets>1231201</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:13:17.890056</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:37.687693</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 14:35:20.946569</SensStartTime>
+                  <SensStopTime>21-JUL-2018 14:56:33.193589</SensStopTime>
+               </Summary>
+            </ISP_Status>
+         </Status>
+         <Status VCID="2">
+            <Description>Satellite Ancillary Data</Description>
+            <NumFrames>108652</NumFrames>
+            <AcqStartTime>21-JUL-2018 19:18:39.241575</AcqStartTime>
+            <AcqStopTime>21-JUL-2018 19:18:51.046182</AcqStopTime>
+            <StartCounter>2209772</StartCounter>
+            <EndCounter>2318423</EndCounter>
+            <RsUncorrectable>0</RsUncorrectable>
+            <RsCorrectable>0</RsCorrectable>
+            <ISP_Status>
+               <Status APID="150">
+                  <Description>MSI_SA (Thermal) data</Description>
+                  <NumPackets>5041</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.245045</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.044958</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:27.024884</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:27.024873</SensStopTime>
+                  <StartCounter>15550</StartCounter>
+                  <EndCounter>4206</EndCounter>
+               </Status>
+               <Status APID="182">
+                  <Description>AOCS Packet</Description>
+                  <NumPackets>1058677</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.242874</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046252</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:21.510945</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:34.510293</SensStopTime>
+                  <StartCounter>12303</StartCounter>
+                  <EndCounter>6019</EndCounter>
+               </Status>
+               <Status APID="598">
+                  <Description>STR-A Instrument Packet</Description>
+                  <NumPackets>504130</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.243018</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046216</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:21.348206</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:34.248322</SensStopTime>
+                  <StartCounter>11097</StartCounter>
+                  <EndCounter>7353</EndCounter>
+               </Status>
+               <Status APID="614">
+                  <Description>STR-B Instrument Packet</Description>
+                  <NumPackets>504130</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.243059</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046236</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:21.348328</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:34.248566</SensStopTime>
+                  <StartCounter>10264</StartCounter>
+                  <EndCounter>6520</EndCounter>
+               </Status>
+               <Status APID="630">
+                  <Description>STR-C Instrument Packet</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="774">
+                  <Description>GNSS Packet on nominal chain</Description>
+                  <NumPackets>93942</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.243007</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046116</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:20.999382</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:32.999382</SensStopTime>
+                  <StartCounter>8591</StartCounter>
+                  <EndCounter>4228</EndCounter>
+               </Status>
+               <Status APID="779">
+                  <Description>GNSS Packet on nominal chain</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="780">
+                  <Description>GPSR SAD Diagnostic</Description>
+                  <NumPackets>5041</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.244877</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.044874</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:23.999381</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:23.999382</SensStopTime>
+                  <StartCounter>9818</StartCounter>
+                  <EndCounter>14858</EndCounter>
+               </Status>
+               <Status APID="781">
+                  <Description>GNSS Packet on nominal chain</Description>
+                  <NumPackets>848</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.312392</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.043589</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:16:58.799382</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:17.999381</SensStopTime>
+                  <StartCounter>220</StartCounter>
+                  <EndCounter>1067</EndCounter>
+               </Status>
+               <Status APID="790">
+                  <Description>GNSS Packet on redundant chain</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="795">
+                  <Description>GNSS Packet on redundant chain</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="797">
+                  <Description>GNSS Packet on redundant chain</Description>
+                  <NumPackets>0</NumPackets>
+               </Status>
+               <Status APID="2047">
+                  <Description></Description>
+                  <NumPackets>1</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:51.046252</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046252</AcqStopTime>
+                  <StartCounter>0</StartCounter>
+                  <EndCounter>0</EndCounter>
+               </Status>
+               <Summary>
+                  <NumPackets>2171810</NumPackets>
+                  <AcqStartTime>21-JUL-2018 19:18:39.242874</AcqStartTime>
+                  <AcqStopTime>21-JUL-2018 19:18:51.046252</AcqStopTime>
+                  <SensStartTime>21-JUL-2018 05:11:20.999382</SensStartTime>
+                  <SensStopTime>21-JUL-2018 19:11:34.510293</SensStopTime>
+               </Summary>
+            </ISP_Status>
+         </Status>
+         <Summary>
+            <NumFrames>11060938</NumFrames>
+            <AcqStartTime>21-JUL-2018 19:13:17.888450</AcqStartTime>
+            <AcqStopTime>21-JUL-2018 19:18:51.046182</AcqStopTime>
+            <RsUncorrectable>0</RsUncorrectable>
+            <RsCorrectable>0</RsCorrectable>
+         </Summary>
+      </data_C2>
+      <distribution_C2_ISP>
+         <output_file>S2B_OPER_STO_ISP__S_EDRS_20180721T191902_V20180721T143520_20180721T191134_C2_S001.DBL</output_file>
+      </distribution_C2_ISP>
+      <distribution_C2_TF>
+      </distribution_C2_TF>
+   </Data_Block>
+</Earth_Explorer_File>
