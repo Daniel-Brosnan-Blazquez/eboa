@@ -77,21 +77,21 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
         # Obtain the sensing segment received (EFEP reports only give information about the start date of the first and last scenes)
         sensing_starts = vcid.xpath("ISP_Status/Status/SensStartTime")
         sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
-        
+
         # Sort list
         sensing_starts_in_iso_8601.sort()
         sensing_start = sensing_starts_in_iso_8601[0]
 
         sensing_stops = vcid.xpath("ISP_Status/Status/SensStopTime")
         sensing_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_stop.text) for sensing_stop in sensing_stops]
-        
+
         # Sort list
         sensing_stops_in_iso_8601.sort()
         sensing_stop = sensing_stops_in_iso_8601[-1]
 
         # APID configuration
         apid_conf = functions.get_vcid_apid_configuration(vcid_number)
-        
+
         # Obtain complete missing APIDs
         complete_missing_apids = vcid.xpath("ISP_Status/Status[number(NumPackets) = 0 and number(@APID) >= number($min_apid) and number(@APID) <= number($max_apid)]", min_apid = apid_conf["min_apid"], max_apid = apid_conf["max_apid"])
         for apid in complete_missing_apids:
@@ -308,7 +308,7 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
         list_of_events.append(isp_validity_event)
 
     # end for
-    
+
     return status
 
 @debug
@@ -403,7 +403,7 @@ def process_file(file_path):
     """
     Function to process the file and insert its relevant information
     into the DDBB of the eboa
-    
+
     :param file_path: path to the file to be processed
     :type file_path: str
     """
@@ -426,7 +426,13 @@ def process_file(file_path):
 
     satellite = file_name[0:3]
     generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
-    validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
+    # Set the validity start to be the first sensing received to avoid error ingesting
+    sensing_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/SensStartTime")
+    sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
+
+    # Sort list
+    sensing_starts_in_iso_8601.sort()
+    validity_start = sensing_starts_in_iso_8601[0]
     validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
 
     source = {
@@ -483,7 +489,7 @@ def command_process_file(file_path, output_path = None):
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
     # end if
-    
+
     return returned_value
 
 if __name__ == "__main__":
@@ -506,5 +512,5 @@ if __name__ == "__main__":
     # the file following a schema. Schema not available for ORBPREs
 
     returned_value = command_process_file(file_path, output_path)
-    
+
     logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
