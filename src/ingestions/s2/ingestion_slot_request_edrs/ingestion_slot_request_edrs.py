@@ -19,6 +19,9 @@ from lxml import etree
 # Import engine
 from eboa.engine.engine import Engine
 
+# Import query
+from eboa.engine.query import Query
+
 # Import ingestion helpers
 import eboa.engine.ingestion as ingestion
 
@@ -69,6 +72,8 @@ def process_file(file_path):
         "validity_stop": validity_stop
     }
 
+    query = Query()
+
     # Extract the slots
     slots = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_Sessions/Session")
     for slot in slots:
@@ -80,6 +85,24 @@ def process_file(file_path):
         orbit = -1
         if orbit_node:
             orbit = orbit_node[0].text
+        # end if
+
+        # Get the associated planned playback in the NPPF
+        playbacks = query.get_linked_events_join(gauge_name_like = {"str": "CORRECTION_PLAYBACK_TYPE%", "op": "like"}, gauge_systems = {"list": [sentinel], "op": "in"}, start_filters = [{"date": start, "op": ">"}], stop_filters = [{"date": stop, "op": "<"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+
+        status = "MATCHED_PLAYBACK"
+        links = []
+        if len(playbacks["linked_events"]) == 0:
+            status = "NO_MATCHED_PLAYBACK"
+        else:
+            for playback in playbacks["linked_events"]:
+                links.append({
+                    "link": str(playback.event_uuid),
+                    "link_mode": "by_uuid",
+                    "name": "SLOT_REQUEST_EDRS",
+                    "back_ref": "true"
+                })
+            # end for
         # end if
 
         # Associate the explicit reference to the group EDRS_SESSION_IDs
@@ -95,6 +118,7 @@ def process_file(file_path):
                 "name": "SLOT_REQUEST_EDRS",
                 "system": sentinel
             },
+            "links": links,
             "start": start,
             "stop": stop,
             "values": [{
@@ -109,7 +133,13 @@ def process_file(file_path):
                      "value": edrs},
                     {"name": "orbit",
                      "type": "double",
-                     "value": str(orbit)}
+                     "value": str(orbit)},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": sentinel},
+                    {"name": "status",
+                     "type": "text",
+                     "value": status}
                 ]
             }]
         }
