@@ -79,6 +79,16 @@ class AnnotationBoolean(Base):
         self.parent_position = parent_position
         self.annotation = annotation
 
+    def jsonify(self):
+        return {
+            "type": "boolean",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class AnnotationText(Base):
     __tablename__ = 'annotation_texts'
 
@@ -100,6 +110,16 @@ class AnnotationText(Base):
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
+
+    def jsonify(self):
+        return {
+            "type": "text",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
 
 class AnnotationDouble(Base):
     __tablename__ = 'annotation_doubles'
@@ -123,6 +143,16 @@ class AnnotationDouble(Base):
         self.parent_position = parent_position
         self.annotation = annotation
 
+    def jsonify(self):
+        return {
+            "type": "double",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class AnnotationTimestamp(Base):
     __tablename__ = 'annotation_timestamps'
 
@@ -145,6 +175,16 @@ class AnnotationTimestamp(Base):
         self.parent_position = parent_position
         self.annotation = annotation
 
+    def jsonify(self):
+        return {
+            "type": "timestamp",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class AnnotationObject(Base):
     __tablename__ = 'annotation_objects'
 
@@ -165,8 +205,18 @@ class AnnotationObject(Base):
         self.parent_position = parent_position
         self.annotation = annotation
 
+    def jsonify(self):
+        return {
+            "type": "object",
+            "name": self.name,
+            "value": "",
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }
+
 class AnnotationGeometry(Base):
-    __tablename__ = 'annotation_geometrys'
+    __tablename__ = 'annotation_geometries'
 
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
@@ -174,7 +224,7 @@ class AnnotationGeometry(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotGeometrys")
+    annotation = relationship("Annotation", backref="annotGeometries")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -186,3 +236,13 @@ class AnnotationGeometry(Base):
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.annotation = annotation
+
+    def jsonify(self):
+        return {
+            "type": "geometry",
+            "name": self.name,
+            "value": self.value,
+            "level_position": self.level_position,
+            "parent_level": self.parent_level,
+            "parent_position": self.parent_position,
+        }

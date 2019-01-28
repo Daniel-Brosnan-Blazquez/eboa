@@ -268,7 +268,7 @@ class EventObject(Base):
         }
 
 class EventGeometry(Base):
-    __tablename__ = 'event_geometrys'
+    __tablename__ = 'event_geometries'
 
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
