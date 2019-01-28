@@ -88,7 +88,7 @@
             "properties": {
                 "name": {"type": "string"},
                 "link": {"type": "string"},
-                "back_ref": {"enum": ["true", "false"]}
+                "back_ref": {"type": "string"}
             },
             "additionalProperties": false
         },
@@ -130,7 +130,7 @@
                 "name": {"type": "string"},
                 "link": {"type": "string"},
                 "link_mode": {"enum": ["by_ref", "by_uuid", null]},
-                "back_ref": {"enum": ["true", "false", null]}
+                "back_ref": {"type": "string"}
             },
             "additionalProperties": false
         },
