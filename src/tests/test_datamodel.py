@@ -100,12 +100,24 @@ class TestDatamodel(unittest.TestCase):
         
         # Insert gauge
         gauge_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        gauge = Gauge (gauge_uuid, "GAUGE_NAME", dim_signature)
+        gauge = Gauge (gauge_uuid, "GAUGE_NAME", dim_signature, system = "GAUGE_SYSTEM")
 
         self.session.add (gauge)
         self.session.commit()
         
         assert len (self.session.query(Gauge).filter(Gauge.name == "GAUGE_NAME").all()) == 1
+
+        # Insert a second gauge with same name and system but different DIM signature
+        dim_signature_2_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        dim_signature_2 = DimSignature(dim_signature_2_uuid, "DIM_SIGNATURE_NAME_2")
+        self.session.add(dim_signature_2)
+        self.session.commit()
+        assert len (self.session.query(DimSignature).filter(DimSignature.dim_signature == "DIM_SIGNATURE_NAME_2").all()) == 1
+        gauge_2_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        gauge_2 = Gauge (gauge_2_uuid, "GAUGE_NAME", dim_signature_2, system = "GAUGE_SYSTEM")
+        self.session.add (gauge_2)
+        self.session.commit()
+        assert len (self.session.query(Gauge).filter(Gauge.name == "GAUGE_NAME").all()) == 2
 
         # Insert events
         event_time = datetime.datetime.now()
