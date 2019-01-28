@@ -2362,7 +2362,7 @@ class TestQuery(unittest.TestCase):
                 "name": "EXPLICIT_REFERENCE",
                 "links": [{"name": "LINK_NAME",
                            "link": "EXPLICIT_REFERENCE_EVENT",
-                           "back_ref": "true"}]
+                           "back_ref": "LINK_NAME"}]
             }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
@@ -2414,7 +2414,7 @@ class TestQuery(unittest.TestCase):
                 "name": "EXPLICIT_REFERENCE",
                 "links": [{"name": "LINK_NAME",
                            "link": "EXPLICIT_REFERENCE_EVENT",
-                           "back_ref": "true"}]
+                           "back_ref": "LINK_NAME"}]
             }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
@@ -2472,7 +2472,7 @@ class TestQuery(unittest.TestCase):
                 "name": "EXPLICIT_REFERENCE",
                 "links": [{"name": "LINK_NAME",
                            "link": "EXPLICIT_REFERENCE_EVENT",
-                           "back_ref": "true"}]
+                           "back_ref": "LINK_BACK_REF_NAME"}]
             }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",

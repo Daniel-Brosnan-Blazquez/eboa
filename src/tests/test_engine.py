@@ -479,7 +479,7 @@ class TestEngine(unittest.TestCase):
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
                        "link": "EXPLICIT_REFERENCE_EVENT",
-                       "back_ref": "true"}]
+                       "back_ref": "LINK_BACK_REF_NAME"}]
         }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
@@ -571,7 +571,7 @@ class TestEngine(unittest.TestCase):
             "name": "EXPLICIT_REFERENCE",
             "links": [{"name": "LINK_NAME",
                        "link": "EXPLICIT_REFERENCE_EVENT",
-                       "back_ref": "true"}]
+                       "back_ref": "LINK_BACK_REF_NAME"}]
         }],
                 "events": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT"
@@ -1259,7 +1259,7 @@ class TestEngine(unittest.TestCase):
                         "link": events_ddbb[0].event_uuid,
                         "link_mode": "by_uuid",
                         "name": "EVENT_LINK_NAME",
-                        "back_ref": "true"
+                        "back_ref": "LINK_BACK_REF_NAME"
                     }]
                 }]
             }
@@ -1315,7 +1315,7 @@ class TestEngine(unittest.TestCase):
                         "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME",
-                        "back_ref": "true"
+                        "back_ref": "EVENT_LINK_NAME"
                     }]
                 },
                 {
@@ -1366,7 +1366,7 @@ class TestEngine(unittest.TestCase):
                         "link": "EVENT_LINK1",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME",
-                        "back_ref": "true"
+                        "back_ref": "LINK_BACK_REF_NAME"
                     }]
                 },
                 {
@@ -1966,7 +1966,7 @@ class TestEngine(unittest.TestCase):
                         "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME1",
-                        "back_ref": "true"
+                        "back_ref": "LINK_BACK_REF_NAME"
                     }],
                     "key": "EVENT_KEY",
                     "values": [{"name": "VALUES",
@@ -2007,7 +2007,7 @@ class TestEngine(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME2",
-                                   "back_ref": "true"
+                                   "back_ref": "LINK_BACK_REF_NAME"
                                }]},
                            {
                                "explicit_reference": "EXPLICIT_REFERENCE_EVENT3",
@@ -2020,7 +2020,7 @@ class TestEngine(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME3",
-                                   "back_ref": "true"
+                                   "back_ref": "LINK_BACK_REF_NAME"
                                }]}]
             }
         self.engine_eboa.operation = data1
@@ -2182,7 +2182,7 @@ class TestEngine(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME4",
-                                   "back_ref": "true"
+                                   "back_ref": "LINK_BACK_REF_NAME"
                                }]},
                            {
                     "link_ref": "EVENT_LINK1",
@@ -2196,7 +2196,7 @@ class TestEngine(unittest.TestCase):
                         "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME1",
-                        "back_ref": "true"
+                        "back_ref": "LINK_BACK_REF_NAME"
                     }],
                     "key": "EVENT_KEY",
                     "values": [{"name": "VALUES",
@@ -2237,7 +2237,7 @@ class TestEngine(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME2",
-                                   "back_ref": "true"
+                                   "back_ref": "LINK_BACK_REF_NAME"
                                }]},
                            {
                                "explicit_reference": "EXPLICIT_REFERENCE_EVENT3",
@@ -2250,7 +2250,7 @@ class TestEngine(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME3",
-                                   "back_ref": "true"
+                                   "back_ref": "LINK_BACK_REF_NAME"
                                }]}]
             }]}
 

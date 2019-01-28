@@ -12,7 +12,7 @@
     <data>
       <explicit_reference name="test_explicit_ref1" group="test_explicit_ref_group1">
         <links>
-          <link back_ref="true" name="test_link_name1">test_explicit_ref2</link>
+          <link back_ref="test_link_back_ref_name1" name="test_link_name1">test_explicit_ref2</link>
         </links>
       </explicit_reference>
       <event start="2018-06-05T02:07:03"
@@ -24,7 +24,7 @@
                system="test_gauge_system1"
                insertion_type="SIMPLE_UPDATE"/>
         <links>
-          <link name="test_link_name1" link_mode="by_ref" back_ref="true">event_link_id2</link>
+          <link name="test_link_name1" link_mode="by_ref" back_ref="test_link_back_ref_name1">event_link_id2</link>
         </links>
         <values name="test_object_name1">
           <value name="test_text_name1" type="text">test text1</value>

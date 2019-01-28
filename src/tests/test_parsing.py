@@ -36,7 +36,7 @@ class TestParsing(unittest.TestCase):
                         "group": "test_explicit_ref_group1",
                         "links": [
                             {
-                                "back_ref": "true",
+                                "back_ref": "test_link_bak_ref_name1",
                                 "link": "test_explicit_ref2",
                                 "name": "test_link_name1"
                             }
@@ -55,13 +55,12 @@ class TestParsing(unittest.TestCase):
                         "key": "test_key1",
                         "links": [
                             {
-                                "back_ref": "false",
                                 "link": "event_link_id1",
                                 "link_mode": "by_ref",
                                 "name": "test_link_name1"
                             },
                             {
-                                "back_ref": "true",
+                                "back_ref": "test_link_bak_ref_name2",
                                 "link": "event_link_id2",
                                 "link_mode": "by_ref",
                                 "name": "test_link_name2"
@@ -981,7 +980,7 @@ class TestParsing(unittest.TestCase):
                  "name": "EXPLICIT_REFERENCE",
                  "links": [{"link": "EXPLICIT_REFERENCE_LINK",
                             "name": "LINK_NAME",
-                            "back_ref": "not_valid_value"}]
+                            "back_ref": False}]
              }]
          }
         ]}
@@ -1722,7 +1721,7 @@ class TestParsing(unittest.TestCase):
                     "link": "EVENT_LINK",
                     "link_mode": "by_ref",
                     "name": "EVENT_LINK_NAME",
-                    "back_ref": "not_valid"
+                    "back_ref": False
                 }]
              }]
          }

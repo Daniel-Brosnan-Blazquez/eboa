@@ -18,13 +18,13 @@
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
              key="test_key1"
+             link_ref="event_link_id1"
              explicit_reference="test_explicit_ref1">
         <gauge name="test_gauge_name1"
                system="test_gauge_system1"
                insertion_type="SIMPLE_UPDATE"/>
         <links>
-          <link name="test_link_name1" link_mode="by_ref">event_link_id1</link>
-          <link name="test_link_name2" link_mode="by_ref">event_link_id2</link>
+          <link name="test_link_name1" link_mode="by_ref">event_link_id2</link>
         </links>
         <values name="test_object_name1">
           <value name="test_text_name1" type="text">test text1</value>
@@ -47,10 +47,10 @@
       <event start="2018-06-05T02:07:03"
              stop="2018-06-05T02:07:36"
              key="test_key2"
+             link_ref="event_link_id2"
              explicit_reference="test_explicit_ref2">
         <links>
           <link name="test_link_name2" link_mode="by_ref">event_link_id1</link>
-          <link name="test_link_name3" link_mode="by_ref">event_link_id2</link>
         </links>
         <gauge name="test_gauge_name2"
                system="test_gauge_system2"

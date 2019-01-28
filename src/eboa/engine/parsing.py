@@ -205,8 +205,8 @@ def _validate_explicit_reference_links(data):
         # end if
 
         # Optional tags
-        if "back_ref" in link and not link["back_ref"] in ["true", "false"]:
-            raise ErrorParsingDictionary("The tag back_ref inside links structure for explicit_references has to be of type string and allowed values are 'true' or 'false'")
+        if "back_ref" in link and not type(link["back_ref"]) == str:
+            raise ErrorParsingDictionary("The tag back_ref inside links structure for explicit_references has to be of type string")
         # end if
 
     # end for
@@ -331,8 +331,8 @@ def _validate_event_links(data):
         # end if
 
         # Optional tags
-        if "back_ref" in link and not link["back_ref"] in ["true", "false"]:
-            raise ErrorParsingDictionary("The tag back_ref inside links structure for events has to be of type string and allowed values are true or false")
+        if "back_ref" in link and not type(link["back_ref"]) == str:
+            raise ErrorParsingDictionary("The tag back_ref inside links structure for events has to be of type string")
         # end if
 
     # end for

@@ -17,7 +17,7 @@
                 "group": "test_explicit_ref_group1",
                 "links": [
                     {
-                        "back_ref": "true",
+                        "back_ref": "test_link_back_ref_name1",
                         "link": "test_explicit_ref2",
                         "name": "test_link_name1"
                     }

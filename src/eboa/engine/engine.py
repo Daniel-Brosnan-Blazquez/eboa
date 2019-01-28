@@ -1024,11 +1024,11 @@ class Engine():
                     # end try
                 # end if
                 # Insert the back ref if specified
-                if bool(link.get("back_ref")):
-                    link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref2.explicit_ref_uuid, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_uuid == explicit_ref1.explicit_ref_uuid).first()
+                if link.get("back_ref"):
+                    link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref2.explicit_ref_uuid, ExplicitRefLink.name == link.get("back_ref"), ExplicitRefLink.explicit_ref_uuid == explicit_ref1.explicit_ref_uuid).first()
                     if not link_ddbb:
                         self.session.begin_nested()
-                        self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_uuid, link.get("name"), explicit_ref1))
+                        self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_uuid, link.get("back_ref"), explicit_ref1))
                         try:
                             race_condition()
                             self.session.commit()
@@ -1154,8 +1154,10 @@ class Engine():
             if "links" in event:
                 for link in event["links"]:
                     back_ref = False
+                    back_ref_name = ""
                     if "back_ref" in link:
                         back_ref = True
+                        back_ref_name = link["back_ref"]
                     # end if
                     
                     if link["link_mode"] == "by_ref":
@@ -1164,14 +1166,15 @@ class Engine():
                         # end if
                         list_event_links_by_ref[link["link"]].append({"name": link["name"],
                                                                       "event_uuid": id,
-                                                                      "back_ref": back_ref})
+                                                                      "back_ref": back_ref,
+                                                                      "back_ref_name": back_ref_name})
                     else:
                         list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = id,
                                                                   name = link["name"],
                                                                   event_uuid = link["link"]))
                         if back_ref:
                             list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = link["link"],
-                                                                      name = link["name"],
+                                                                      name = back_ref_name,
                                                                       event_uuid = id))
                         # end if
                     # end if
@@ -1231,7 +1234,7 @@ class Engine():
                                                          event_uuid = event_uuid))
                 if link["back_ref"]:
                     list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
-                                                             name = link["name"],
+                                                             name = link["back_ref_name"],
                                                              event_uuid = link["event_uuid"]))
                 # end if
             # end for
