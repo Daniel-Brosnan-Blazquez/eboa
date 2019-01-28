@@ -23,7 +23,7 @@ do
     esac
 done
 
-# Check that the init of the DDBB is being executed by Postgres
+# Check that the init of the DDBB is being executed by Postgres or root
 if [ "$(whoami)" != "postgres" ] && [ "$(whoami)" != "root" ]; then
         echo "ERROR: Script must be run as user: postgres"
         exit -1

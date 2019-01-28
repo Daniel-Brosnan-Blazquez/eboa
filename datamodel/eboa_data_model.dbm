@@ -75,9 +75,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="gauge_cnfs_pk" type="pk-constr" table="eboa.gauges">
 		<columns names="gauge_uuid" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_gauge_cnf" type="uq-constr" table="eboa.gauges">
-		<columns names="system,name" ref-type="src-columns"/>
-	</constraint>
 
 	<customidxs object-type="column">
 		<object name="dim_signature_uuid" index="3"/>
@@ -272,7 +269,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<table name="event_geometrys">
+<table name="event_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="660" y="1400"/>
@@ -418,7 +415,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<table name="annotation_geometrys">
+<table name="annotation_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1780" y="1400"/>
@@ -462,9 +459,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<constraint name="annotation_cnfs_pk" type="pk-constr" table="eboa.annotation_cnfs">
 		<columns names="annotation_cnf_uuid" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_annotation_cnf" type="uq-constr" table="eboa.annotation_cnfs">
-		<columns names="name,system" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
@@ -820,13 +814,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="events_has_many_event_geometrys" type="rel1n"
+<relationship name="events_has_many_event_geometries" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#901502"
 	 src-table="eboa.events"
-	 dst-table="eboa.event_geometrys"
+	 dst-table="eboa.event_geometries"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -864,13 +858,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="annotations_has_many_annotation_geometrys" type="rel1n"
+<relationship name="annotations_has_many_annotation_geometries" type="rel1n"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#543aed"
 	 src-table="eboa.annotations"
-	 dst-table="eboa.annotation_geometrys"
+	 dst-table="eboa.annotation_geometries"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
@@ -1148,7 +1142,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_event_uuid" table="eboa.event_geometrys"
+<index name="idx_event_geometry_event_uuid" table="eboa.event_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1156,7 +1150,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_name" table="eboa.event_geometrys"
+<index name="idx_event_geometry_name" table="eboa.event_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1164,7 +1158,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_event_geometry_value" table="eboa.event_geometrys"
+<index name="idx_event_geometry_value" table="eboa.event_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="gist" factor="0">
 		<idxelement use-sorting="false">
@@ -1284,7 +1278,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_annotation_uuid" table="eboa.annotation_geometrys"
+<index name="idx_annotation_geometry_annotation_uuid" table="eboa.annotation_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1292,7 +1286,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_name" table="eboa.annotation_geometrys"
+<index name="idx_annotation_geometry_name" table="eboa.annotation_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
@@ -1300,7 +1294,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<index name="idx_annotation_geometry_value" table="eboa.annotation_geometrys"
+<index name="idx_annotation_geometry_value" table="eboa.annotation_geometries"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="gist" factor="0">
 		<idxelement use-sorting="false">
@@ -1630,6 +1624,62 @@ CAUTION: Do not modify this file unless you know what you are doing.
 
 <constraint name="unique_explicit_ref_links" type="uq-constr" table="eboa.explicit_ref_links">
 	<columns names="explicit_ref_uuid_link,name,explicit_ref_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_gauge_cnf" type="uq-constr" table="eboa.gauges">
+	<columns names="system,name,dim_signature_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_annotation_cnf" type="uq-constr" table="eboa.annotation_cnfs">
+	<columns names="system,name,dim_signature_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_booleans" type="uq-constr" table="eboa.event_booleans">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_texts" type="uq-constr" table="eboa.event_texts">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_doubles" type="uq-constr" table="eboa.event_doubles">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_timestamps" type="uq-constr" table="eboa.event_timestamps">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_objects" type="uq-constr" table="eboa.event_objects">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_event_geometries" type="uq-constr" table="eboa.event_geometries">
+  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_booleans" type="uq-constr" table="eboa.annotation_booleans">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_texts" type="uq-constr" table="eboa.annotation_texts">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_doubles" type="uq-constr" table="eboa.annotation_doubles">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_timestamps" type="uq-constr" table="eboa.annotation_timestamps">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_objects" type="uq-constr" table="eboa.annotation_objects">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_annotation_geometries" type="uq-constr" table="eboa.annotation_geometries">
+  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 </dbmodel>

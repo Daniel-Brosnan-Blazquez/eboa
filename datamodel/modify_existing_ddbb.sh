@@ -1,13 +1,13 @@
 #################################################################
 #
-# Init DDBB of the eboa
+# Modify existing DDBB of the eboa with a SQL file with differences
 #
 # Written by DEIMOS Space S.L. (dibb)
 #
 # module eboa
 #################################################################
-USAGE="Usage: `basename $0` -f datamodel_file -d ddbb -p port -h host"
-DATAMODEL_FILE=""
+USAGE="Usage: `basename $0` -f diff_sql_file -d ddbb -p port -h host"
+DIFF_SQL_FILE=""
 PORT="5432"
 HOST="localhost"
 
@@ -15,7 +15,7 @@ while getopts f:d:p:h: option
 do
     case "${option}"
         in
-        f) DATAMODEL_FILE=${OPTARG};;
+        f) DIFF_SQL_FILE=${OPTARG};;
         d) DDBB=${OPTARG};;
         p) PORT=${OPTARG};;
         h) HOST=${OPTARG};;
@@ -31,7 +31,7 @@ if [ "$(whoami)" != "postgres" ] && [ "$(whoami)" != "root" ]; then
 fi
 
 # Check that option -f has been specified
-if [ "$DATAMODEL_FILE" == "" ];
+if [ "$DIFF_SQL_FILE" == "" ];
 then
     echo "ERROR: The option -f has to be provided"
     echo $USAGE
@@ -46,10 +46,10 @@ then
     exit -1
 fi
 
-# Check that the sql file for filling up the DDBB exists
-if [ ! -f $DATAMODEL_FILE ];
+# Check that the sql file for modifying the DDBB exists
+if [ ! -f $DIFF_SQL_FILE ];
 then
-    echo "ERROR: The file $DATAMODEL_FILE provided does not exist"
+    echo "ERROR: The file $DIFF_SQL_FILE provided does not exist"
     exit -1
 fi
 
@@ -65,32 +65,16 @@ then
     fi
 fi
 
-# Remove DDBB if it exists
-if [ $DATABASE -eq 1 ];
-then
-    # Drop the DDBB
-    psql -p $PORT -h $HOST -U postgres -c "DROP DATABASE $DDBB;"
-
-    # Drop the eboa role
-    psql -p $PORT -h $HOST -U postgres -c "DROP ROLE eboa;"
-fi
-
-# Create DDBB
-psql -p $PORT -h $HOST -U postgres -c "CREATE DATABASE $DDBB;"
-
-# Add extenstion for postgis
-psql -p $PORT -h $HOST -U postgres -d $DDBB -c "CREATE EXTENSION postgis;"
-
-# Fill DDBB
-psql -p $PORT -h $HOST -U postgres -d $DDBB -f $DATAMODEL_FILE
+# Modify DDBB
+psql -p $PORT -h $HOST -U postgres -d $DDBB -f $DIFF_SQL_FILE
 status=$?
 
 if [ $status -ne 0 ];
 then
-    echo "ERROR: It was not possible to fill up the DDBB"
+    echo "ERROR: It was not possible to modify the DDBB"
     exit -1
 fi
 
-echo "DDBB has been initiated correctly!"
+echo "DDBB has been modified correctly!"
 
 exit 0
