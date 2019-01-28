@@ -151,7 +151,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             "link_ref": record_link_id,
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "RECORD_" + record_type,
+                "name": "PLANNED_RECORD_" + record_type,
                 "system": satellite
             },
             "start": record_start,
@@ -213,7 +213,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             "link_ref": cut_imaging_link_id,
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "CUT_IMAGING_" + cut_imaging_mode,
+                "name": "PLANNED_CUT_IMAGING_" + cut_imaging_mode,
                 "system": satellite
             },
             "start": cut_imaging_start,
@@ -222,13 +222,14 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                 {
                     "link": record_link_id,
                     "link_mode": "by_ref",
-                    "name": "RECORD_OPERATION"
+                    "name": "PLANNED_RECORD_OPERATION",
+                    "back_ref": "PLANNED_IMAGING_OPERATION"
                 },
                 {
                     "link": imaging_link_id,
                     "link_mode": "by_ref",
-                    "name": "COMPLETE_IMAGING_OPERATION",
-                    "back_ref": "true"
+                    "name": "PLANNED_COMPLETE_IMAGING_OPERATION",
+                    "back_ref": "PLANNED_CUT_IMAGING_OPERATION"
                 }
             ],
             "values": [{
@@ -255,20 +256,13 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": cut_imaging_stop_angle},
                     {"name": "satellite",
                      "type": "text",
-                     "value": satellite}
+                     "value": satellite},
+                    {"name": "record_type",
+                     "type": "text",
+                     "value": record_type}
                 ]
             }]
         }
-
-        if not "links" in record_event:
-            record_event["links"] = []
-        # end if
-
-        record_event["links"].append({
-            "link": cut_imaging_link_id,
-            "link_mode": "by_ref",
-            "name": "IMAGING_OPERATION"
-        })
 
         # Insert imaging_event
         ingestion.insert_event_for_ingestion(cut_imaging_event, source, list_of_events)
@@ -304,7 +298,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             "link_ref": imaging_link_id,
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "IMAGING_" + imaging_mode,
+                "name": "PLANNED_IMAGING_" + imaging_mode,
                 "system": satellite
             },
             "start": imaging_start,
@@ -424,7 +418,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
         idle_event = {
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "IDLE",
+                "name": "PLANNED_IDLE",
                 "system": satellite
             },
             "start": idle_start,
@@ -502,7 +496,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
             "link_ref": playback_mean_link_id,
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "PLAYBACK_MEAN_" + playback_mean,
+                "name": "PLANNED_PLAYBACK_MEAN_" + playback_mean,
                 "system": satellite
             },
             "start": playback_start,
@@ -574,7 +568,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
         playback_type_event = {
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "PLAYBACK_TYPE_" + playback_type,
+                "name": "PLANNED_PLAYBACK_TYPE_" + playback_type,
                 "system": satellite
             },
             "start": playback_type_start,
@@ -583,8 +577,8 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                 {
                     "link": playback_mean_link_id,
                     "link_mode": "by_ref",
-                    "name": "PLAYBACK_MEAN",
-                    "back_ref": "true"
+                    "name": "PLANNED_PLAYBACK_MEAN",
+                    "back_ref": "PLANNED_PLAYBACK_TYPE"
                 }
             ],
             "values": [{

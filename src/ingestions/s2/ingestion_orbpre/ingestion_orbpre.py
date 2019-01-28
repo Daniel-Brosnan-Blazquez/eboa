@@ -127,14 +127,14 @@ def _correct_planning_events(orbpre_events, planning_events):
         corrected_planning_event = {
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
-                "name": "CORRECTION_" + planning_event.gauge.name,
+                "name": planning_event.gauge.name + "_CORRECTION",
                 "system": planning_event.gauge.system
             },
             "links": [{
                 "link": str(planning_event.event_uuid),
                 "link_mode": "by_uuid",
                 "name": "TIME_CORRECTION",
-                "back_ref": "true"
+                "back_ref": planning_event.gauge.name
             }],
             "start": str(corrected_start),
             "stop": str(corrected_stop),

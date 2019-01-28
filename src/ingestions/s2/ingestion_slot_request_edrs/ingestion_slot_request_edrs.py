@@ -88,7 +88,7 @@ def process_file(file_path):
         # end if
 
         # Get the associated planned playback in the NPPF
-        playbacks = query.get_linked_events_join(gauge_name_like = {"str": "CORRECTION_PLAYBACK_TYPE%", "op": "like"}, gauge_systems = {"list": [sentinel], "op": "in"}, start_filters = [{"date": start, "op": ">"}], stop_filters = [{"date": stop, "op": "<"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
+        playbacks = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_PLAYBACK_TYPE_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [sentinel], "op": "in"}, start_filters = [{"date": start, "op": ">"}], stop_filters = [{"date": stop, "op": "<"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
 
         status = "MATCHED_PLAYBACK"
         links = []
@@ -100,7 +100,7 @@ def process_file(file_path):
                     "link": str(playback.event_uuid),
                     "link_mode": "by_uuid",
                     "name": "SLOT_REQUEST_EDRS",
-                    "back_ref": "true"
+                    "back_ref": "PLANNED_PLAYBACK"
                 })
             # end for
         # end if
