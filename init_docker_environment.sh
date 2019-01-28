@@ -74,6 +74,7 @@ else
     rm -r dist
     python3 setup.py sdist
     cd ..
+    docker exec -it eboa-container bash -c "pip3 install --upgrade pip"
     docker exec -it eboa-container bash -c "pip3 install /eboa/src/dist/*"
 fi
 # Initialize the EBOA database inside the postgis-database container
