@@ -491,7 +491,7 @@ class Query():
 
         return gauges
 
-    def get_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None):
+    def get_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None, value_filters = None, values_names_type = None, values_name_type_like = None):
         """
         """
         params = []
@@ -550,6 +550,34 @@ class Query():
             for ingestion_time_filter in ingestion_time_filters:
                 op = self.operators[ingestion_time_filter["op"]]
                 params.append(op(Event.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # value filters
+        if value_filters != None:
+            is_valid_value_filters(value_filters, self.operators)
+            for value_filter in value_filters:
+                op = self.operators[value_filter["op"]]
+                tables.append(self.event_value_entities[value_filter["type"]])
+                params.append(op(self.event_value_entities[value_filter["type"]].value, value_filter["value"]))
+            # end for
+        # end if
+
+        # Value names
+        if values_names_type != None:
+            is_valid_values_names_type(values_names_type)
+            for value_names_type in values_names_type:
+                filter = eval("self.event_value_entities[value_names_type['type']].name." + value_names_type["op"] + "_")
+                tables.append(self.event_value_entities[value_names_type["type"]])
+                params.append(filter(value_names_type["names"]))
+            # end for
+        # end if
+        if values_name_type_like != None:
+            is_valid_values_name_type_like(values_name_type_like)
+            for value_name_type_like in values_name_type_like:
+                filter = eval("self.event_value_entities[value_name_type_like['type']].name." + value_name_type_like["op"])
+                tables.append(self.event_value_entities[value_name_type_like["type"]])
+                params.append(filter(value_name_type_like["name_like"]))
             # end for
         # end if
 
@@ -684,15 +712,17 @@ class Query():
         if values_names_type != None:
             is_valid_values_names_type(values_names_type)
             for value_names_type in values_names_type:
+                filter = eval("self.event_value_entities[value_names_type['type']].name." + value_names_type["op"] + "_")
                 tables.append(self.event_value_entities[value_names_type["type"]])
-                params.append(self.event_value_entities[value_names_type["type"]].name.in_(value_names_type["names"]))
+                params.append(filter(value_names_type["names"]))
             # end for
         # end if
         if values_name_type_like != None:
             is_valid_values_name_type_like(values_name_type_like)
             for value_name_type_like in values_name_type_like:
+                filter = eval("self.event_value_entities[value_name_type_like['type']].name." + value_name_type_like["op"])
                 tables.append(self.event_value_entities[value_name_type_like["type"]])
-                params.append(self.event_value_entities[value_name_type_like["type"]].name.like(value_name_type_like["name_like"]))
+                params.append(filter(value_name_type_like["name_like"]))
             # end for
         # end if
 
@@ -1160,15 +1190,17 @@ class Query():
         if values_names_type != None:
             is_valid_values_names_type(values_names_type)
             for value_names_type in values_names_type:
+                filter = eval("self.annotation_value_entities[value_names_type['type']].name." + value_names_type["op"] + "_")
                 tables.append(self.annotation_value_entities[value_names_type["type"]])
-                params.append(self.annotation_value_entities[value_names_type["type"]].name.in_(value_names_type["names"]))
+                params.append(filter(value_names_type["names"]))
             # end for
         # end if
         if values_name_type_like != None:
             is_valid_values_name_type_like(values_name_type_like)
             for value_name_type_like in values_name_type_like:
+                filter = eval("self.annotation_value_entities[value_name_type_like['type']].name." + value_name_type_like["op"])
                 tables.append(self.annotation_value_entities[value_name_type_like["type"]])
-                params.append(self.annotation_value_entities[value_name_type_like["type"]].name.like(value_name_type_like["name_like"]))
+                params.append(filter(value_name_type_like["name_like"]))
             # end for
         # end if
 

@@ -1182,11 +1182,11 @@ class TestQuery(unittest.TestCase):
 
         assert len(event) == 1
 
-        event = self.query.get_events_join(values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}])
+        event = self.query.get_events_join(values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}])
 
         assert len(event) == 1
 
-        event = self.query.get_events_join(values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}])
+        event = self.query.get_events_join(values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}])
 
         assert len(event) == 1
 
@@ -1203,10 +1203,109 @@ class TestQuery(unittest.TestCase):
                                            stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                            ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                            value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
-                                           values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
-                                           values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}])
+                                           values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}],
+                                           values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}])
 
         assert len(event) == 1
+
+    def test_query_events_notin_values(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"}]}]
+                    
+                }]
+            }]}
+        self.engine_eboa.treat_data(data)
+
+        event = self.query.get_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"})
+
+        assert len(event) == 1
+
+        event = self.query.get_events_join(values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}])
+
+        assert len(event) == 1
+
+        event = self.query.get_events_join(values_names_type = [{"names": ["TEXT"], "type": "text", "op": "notin"}])
+
+        assert len(event) == 0
+
+        event = self.query.get_events_join(values_names_type = [{"names": ["NOT_EXISTENT_TEXT"], "type": "text", "op": "notin"}])
+
+        assert len(event) == 1
+
+    def test_query_events_notlike_values(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"}]}]
+                    
+                }]
+            }]}
+        self.engine_eboa.treat_data(data)
+
+        event = self.query.get_events_join(sources = {"list": [data["operations"][0]["source"]["name"]], "op": "in"})
+
+        assert len(event) == 1
+
+        event = self.query.get_events_join(values_name_type_like = [{"name_like": "TEXT", "type": "text", "op": "like"}])
+
+        assert len(event) == 1
+
+        event = self.query.get_events_join(values_name_type_like = [{"name_like": "TEXT", "type": "text", "op": "notlike"}])
+
+        assert len(event) == 0
+
+        event = self.query.get_events_join(values_name_type_like = [{"name_like": "NOT_EXISTENT_TEXT", "type": "text", "op": "notlike"}])
+
+        assert len(event) == 1
+
 
     def test_wrong_inputs_query_event_join(self):
         
@@ -1464,6 +1563,15 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
+            self.query.get_events_join(values_names_type = [{"names": ["TEXT"], "type": "text", "op": "not_a_valid_operator"}])
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
+        result = False
+        try:
             self.query.get_events_join(values_name_type_like = "not_a_list")
         except InputError:
             result = True
@@ -1519,6 +1627,15 @@ class TestQuery(unittest.TestCase):
         result = False
         try:
             self.query.get_events_join(values_name_type_like = [{"name_like": "TEX%", "type": "not_a_valid_type"}])
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
+        result = False
+        try:
+            self.query.get_events_join(values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "not_a_valid_operator"}])
         except InputError:
             result = True
         # end try
@@ -2193,11 +2310,11 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation) == 1
 
-        annotation = self.query.get_annotations_join(values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}])
+        annotation = self.query.get_annotations_join(values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}])
 
         assert len(annotation) == 1
 
-        annotation = self.query.get_annotations_join(values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}])
+        annotation = self.query.get_annotations_join(values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}])
 
         assert len(annotation) == 1
 
@@ -2211,8 +2328,8 @@ class TestQuery(unittest.TestCase):
                                            annotation_cnf_system_like = {"str": annotation_cnf_system_name, "op": "like"},
                                            ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                            value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
-                                           values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
-                                           values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}])
+                                           values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}],
+                                           values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}])
 
         assert len(annotation) == 1
 
@@ -2338,11 +2455,11 @@ class TestQuery(unittest.TestCase):
                                                                       annotation_cnf_system_like = {"str": "SYS%", "op": "like"},
                                                                       explicit_ref_ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                                                       event_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
-                                                                      event_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
-                                                                      event_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      event_values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}],
+                                                                      event_values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}],
                                                                       annotation_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
-                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
-                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}],
+                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}],
                                                                       expl_groups = {"list": ["EXPL_GROUP"], "op": "in"},
                                                                       expl_group_like = {"str": "EXPL_%", "op": "like"})
 
@@ -2510,8 +2627,8 @@ class TestQuery(unittest.TestCase):
                                                                       annotation_cnf_system_like = {"str": "SYS%", "op": "like"},
                                                                       explicit_ref_ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                                                       annotation_value_filters = [{"value": "TEXT", "type": "text", "op": "=="}, {"value": "true", "type": "boolean", "op": "=="}],
-                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text"}, {"names": ["BOOLEAN"], "type": "boolean"}],
-                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text"}, {"name_like": "BOOL%", "type": "boolean"}],
+                                                                      annotation_values_names_type = [{"names": ["TEXT"], "type": "text", "op": "in"}, {"names": ["BOOLEAN"], "type": "boolean", "op": "in"}],
+                                                                      annotation_values_name_type_like = [{"name_like": "TEX%", "type": "text", "op": "like"}, {"name_like": "BOOL%", "type": "boolean", "op": "like"}],
                                                                       expl_groups = {"list": ["EXPL_GROUP"], "op": "in"},
                                                                       expl_group_like = {"str": "EXPL_%", "op": "like"})
 

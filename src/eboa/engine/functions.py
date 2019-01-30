@@ -162,8 +162,8 @@ def is_valid_values_names_type(values_names_type):
         if type(value_names_type) != dict:
             raise InputError("The parameter values_names_type must contain dictionaries.")
         # end if
-        if len(value_names_type.keys()) != 2 or not "names" in value_names_type.keys() or not "type" in value_names_type.keys():
-            raise InputError("Every value_names_type should be a dictionary with keys names and type.")
+        if len(value_names_type.keys()) != 3 or not "names" in value_names_type.keys() or not "type" in value_names_type.keys() or not "op" in value_names_type.keys():
+            raise InputError("Every value_names_type should be a dictionary with keys names, type and op.")
         # end if
         if type(value_names_type["names"]) != list:
             raise InputError("The specified names must be a list of string.")
@@ -176,7 +176,9 @@ def is_valid_values_names_type(values_names_type):
         if not type(value_names_type["type"]) == str or not value_names_type["type"] in ["text", "timestamp", "boolean", "double", "geometry", "object"]:
             raise InputError("The specified type must be a string and allowed values are 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object'")
         # end if
-
+        if type(value_names_type["op"]) != str or not value_names_type["op"] in ["in", "notin"]:
+            raise InputError("The specified op must be a string equal to 'in' or 'notin'.")
+        # end if
 
     # end for
 
@@ -191,8 +193,8 @@ def is_valid_values_name_type_like(values_name_type_like):
         if type(value_name_type_like) != dict:
             raise InputError("The parameter value_name_type_like must contain dictionaries.")
         # end if
-        if len(value_name_type_like.keys()) != 2 or not "name_like" in value_name_type_like.keys() or not "type" in value_name_type_like.keys():
-            raise InputError("Every value_name_type_like should be a dictionary with keys name_like and type.")
+        if len(value_name_type_like.keys()) != 3 or not "name_like" in value_name_type_like.keys() or not "type" in value_name_type_like.keys() or not "op" in value_name_type_like.keys():
+            raise InputError("Every value_name_type_like should be a dictionary with keys name_like, type and op.")
         # end if
         if type(value_name_type_like["name_like"]) != str:
             raise InputError("The specified name_like must be a string.")
@@ -200,6 +202,11 @@ def is_valid_values_name_type_like(values_name_type_like):
         if not type(value_name_type_like["type"]) == str or not value_name_type_like["type"] in ["text", "timestamp", "boolean", "double", "geometry", "object"]:
             raise InputError("The specified type must be a string and allowed values are 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object'")
         # end if
+
+        if type(value_name_type_like["op"]) != str or not value_name_type_like["op"] in ["like", "notlike"]:
+            raise InputError("The specified op must be a string equal to 'like' or 'notlike'.")
+        # end if
+
     # end for
 
     return True
