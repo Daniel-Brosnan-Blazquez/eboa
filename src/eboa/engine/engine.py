@@ -1908,6 +1908,7 @@ class Engine():
             # end if
 
             continue_with_values_ingestion = True
+            self.session.begin_nested()
             # Bulk insert values
             if "objects" in list_values:
                 try:
@@ -1949,6 +1950,8 @@ class Engine():
                     }
                     return exit_status
             # end if
+
+            self.session.commit()
 
             object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
         # end for
