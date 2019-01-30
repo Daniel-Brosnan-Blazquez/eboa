@@ -1682,4 +1682,52 @@ CAUTION: Do not modify this file unless you know what you are doing.
   <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
+<constraint name="unique_value_position_event_booleans" type="uq-constr" table="eboa.event_booleans">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_event_texts" type="uq-constr" table="eboa.event_texts">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_event_doubles" type="uq-constr" table="eboa.event_doubles">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_event_timestamps" type="uq-constr" table="eboa.event_timestamps">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_event_objects" type="uq-constr" table="eboa.event_objects">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_event_geometries" type="uq-constr" table="eboa.event_geometries">
+  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_booleans" type="uq-constr" table="eboa.annotation_booleans">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_texts" type="uq-constr" table="eboa.annotation_texts">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_doubles" type="uq-constr" table="eboa.annotation_doubles">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_timestamps" type="uq-constr" table="eboa.annotation_timestamps">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_objects" type="uq-constr" table="eboa.annotation_objects">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_position_annotation_geometries" type="uq-constr" table="eboa.annotation_geometries">
+  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+</constraint>
+
 </dbmodel>

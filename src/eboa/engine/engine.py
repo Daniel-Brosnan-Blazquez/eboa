@@ -1434,9 +1434,12 @@ class Engine():
             self.session.bulk_insert_mappings(AnnotationTimestamp, list_values["timestamps"])
         # end if
         if "geometries" in list_values:
-            self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
+            try:
+                self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
+            except InternalError as e:
+                self.session.rollback()
+                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
-
 
         return
 
@@ -1851,3 +1854,100 @@ class Engine():
 
         return
 
+    def insert_event_values(self, event_uuid, values):
+        """
+        Method to insert values and associate them to the event related to the UUID received in the position specified
+
+        IMPORTANT!!! This method does not perform the commit. Anyhow,
+        the engine will block processes accesing this method at
+        self.session.bulk_insert_mappings(EventObject,
+        list_values["objects"]) so remember to commit or release the session
+
+        :param event_uuid: event to assiciate the value to
+        :type from_event_uuid: uuid
+        :param values: list of values to be inserted
+        :type values: dict
+
+        """
+        exit_status = {
+            "error": False,
+            "inserted": False,
+        }
+
+        # Validate the structure of the values received
+        try:
+            parsing.validate_values([values])
+        except ErrorParsingDictionary as e:
+            logger.error(str(e))
+            exit_status = {
+                "error": True,
+                "inserted": False,
+            }
+            return exit_status
+        # end try
+
+        # The event had no values associated
+        entity_uuid = {"name": "event_uuid",
+                       "id": event_uuid
+                   }
+
+        values_name = values["name"]
+        object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
+        while not object:
+            list_values = {}
+            first_object = self.session.query(EventObject).filter(EventObject.parent_level == -1, EventObject.parent_position == 0).first()
+            if not first_object:
+                new_structure_values = {
+                    "name": "values",
+                    "type": "object",
+                    "values": [values]
+                }
+                self._insert_values(new_structure_values, entity_uuid, list_values)
+            else:
+                event_values = self.query.get_event_values([event_uuid])
+                event_values_first_level = [value for value in event_values if value.parent_level == 0 and value.parent_position == 0]
+                self._insert_values(values, entity_uuid, list_values, level_position = len(event_values_first_level), parent_level = 0, parent_level_position = 0)
+            # end if
+
+            continue_with_values_ingestion = True
+            # Bulk insert values
+            if "objects" in list_values:
+                try:
+                    race_condition()
+                    self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+                    exit_status = {
+                        "error": False,
+                        "inserted": True,
+                    }
+                except IntegrityError:
+                    continue_with_values_ingestion = False
+                    # The object has not been ingested because of two possible reasons:
+                    # 1. The values with the same name have been inserted by another process
+                    # 2. The level_position specified has been taken by another process
+                    self.session.rollback()
+                # end try
+            # end if
+            if "booleans" in list_values and continue_with_values_ingestion:
+                self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
+            # end if
+            if "texts" in list_values and continue_with_values_ingestion:
+                self.session.bulk_insert_mappings(EventText, list_values["texts"])
+            # end if
+            if "doubles" in list_values and continue_with_values_ingestion:
+                self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
+            # end if
+            if "timestamps" in list_values and continue_with_values_ingestion:
+                self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
+            # end if
+            if "geometries" in list_values and continue_with_values_ingestion:
+                try:
+                    self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+                except InternalError as e:
+                    self.session.rollback()
+                    raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            # end if
+
+            object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
+        # end for
+        
+        return exit_status

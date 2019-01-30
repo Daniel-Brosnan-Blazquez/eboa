@@ -3347,3 +3347,285 @@ class TestEngine(unittest.TestCase):
             del os.environ["EBOA_LOG_LEVEL"]
         # end if
         logging_module.define_logging_configuration()
+
+    def test_race_condition_insert_event_values_same_name(self):
+        """
+        Method to test the race condition that could be produced if the
+        values are inserted with the same name by two different processes
+        """
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                }]
+            }]
+            }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values = {
+            "name": "first_object",
+            "type": "object",
+            "values": []
+        }
+
+        def insert_event_values_race_condition():
+            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values)
+            self.engine_eboa_race_conditions.session.commit()
+        # end def
+
+        def insert_event_values():
+            exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+            self.engine_eboa.session.commit()
+        # end def
+
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_values_race_condition):
+            insert_event_values()
+        # end with
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object").all()
+
+        assert len(event_objects) == 1
+
+    def test_race_condition_insert_event_values_different_names_no_previous_values(self):
+        """
+        Method to test the race condition that could be produced if the
+        values are inserted with no created structure of values by different processes
+        as all of them are going to try to initiate this structure of values
+        """
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                }]
+            }]
+            }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values1 = {
+            "name": "first_object1",
+            "type": "object",
+            "values": []
+        }
+
+        values2 = {
+            "name": "first_object2",
+            "type": "object",
+            "values": []
+        }
+
+        def insert_event_values1():
+            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
+            self.engine_eboa_race_conditions.session.commit()
+        # end def
+
+        def insert_event_values2():
+            exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
+            self.engine_eboa.session.commit()
+        # end def
+
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
+            insert_event_values2()
+        # end with
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object1").all()
+
+        assert len(event_objects) == 1
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object2").all()
+
+        assert len(event_objects) == 1
+
+    def test_race_condition_insert_event_values_different_names_previous_values(self):
+        """
+        Method to test the race condition that could be produced if the
+        several processes try to insert the values even with different name in the same position
+        """
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{
+                        "name": "values",
+                        "type": "object",
+                        "values": []
+                    }]
+                }]
+            }]
+            }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values1 = {
+            "name": "first_object1",
+            "type": "object",
+            "values": []
+        }
+
+        values2 = {
+            "name": "first_object2",
+            "type": "object",
+            "values": []
+        }
+
+        def insert_event_values1():
+            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
+            self.engine_eboa_race_conditions.session.commit()
+        # end def
+
+        def insert_event_values2():
+            exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
+            self.engine_eboa.session.commit()
+        # end def
+
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
+            insert_event_values2()
+        # end with
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object1").all()
+
+        assert len(event_objects) == 1
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object2").all()
+
+        assert len(event_objects) == 1
+
+        event_objects = self.session.query(EventObject).filter(EventObject.level_position == 0, EventObject.parent_level == 0, EventObject.parent_position == 0).all()
+
+        assert len(event_objects) == 1
+
+    def test_insert_event_values_all_types(self):
+        """
+        Method to test that the values can contain all the types
+        """
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{
+                        "name": "values",
+                        "type": "object",
+                        "values": []
+                    }]
+                }]
+            }]
+            }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values = {
+            "name": "OBJECT",
+            "type": "object",
+            "values": [
+                {"type": "text",
+                 "name": "TEXT",
+                 "value": "TEXT"},
+                {"type": "boolean",
+                 "name": "BOOLEAN",
+                 "value": "true"},
+                {"type": "boolean",
+                "name": "BOOLEAN2",
+                 "value": "false"},
+                {"type": "double",
+                 "name": "DOUBLE",
+                 "value": "0.9"},
+                {"type": "timestamp",
+                 "name": "TIMESTAMP",
+                 "value": "20180712T00:00:00"},
+                {"type": "geometry",
+                 "name": "GEOMETRY",
+                 "value": "29.012974905944 -118.33483458667 28.8650301641571 -118.372028380632 28.7171766138274 -118.409121707686 28.5693112139334 -118.44612300623 28.4213994944367 -118.483058731035 28.2734085660472 -118.519970531113 28.1253606038163 -118.556849863134 27.9772541759126 -118.593690316835 27.8291247153939 -118.630472520505 27.7544158362332 -118.64900551674 27.7282373644786 -118.48032600682 27.7015162098732 -118.314168792268 27.6742039940042 -118.150246300849 27.6462511775992 -117.98827485961 27.6176070520608 -117.827974178264 27.5882197156561 -117.669066835177 27.5580360448116 -117.511277813618 27.5270016492436 -117.354334035359 27.4950608291016 -117.197963963877 27.4621565093409 -117.041897175848 27.4282301711374 -116.885863967864 27.3932217651372 -116.729594956238 27.3570696128269 -116.572820673713 27.3197103000253 -116.415271199941 27.2810785491022 -116.256675748617 27.241107085821 -116.09676229722 27.1997272484913 -115.935260563566 27.1524952198729 -115.755436839005 27.2270348347386 -115.734960009089 27.3748346522356 -115.694299254844 27.5226008861849 -115.653563616829 27.6702779354428 -115.612760542177 27.8178690071708 -115.571901649363 27.9653506439026 -115.531000691074 28.1127600020619 -115.490011752733 28.2601469756437 -115.44890306179 28.4076546372628 -115.407649898021 28.455192866856 -115.589486631416 28.4968374106496 -115.752807970928 28.5370603096399 -115.91452902381 28.575931293904 -116.074924211465 28.6135193777855 -116.234273707691 28.6498895688451 -116.392847129762 28.6851057860975 -116.550917254638 28.7192301322012 -116.708756374584 28.752323018501 -116.866636764481 28.7844432583843 -117.024831047231 28.8156481533955 -117.183612605748 28.8459935678779 -117.343255995623 28.8755339855462 -117.504037348554 28.9043225601122 -117.666234808407 28.9324111491586 -117.830128960026 28.9598503481156 -117.996003330616 28.9866878706574 -118.164136222141 29.012974905944 -118.33483458667"}
+            ]
+        }
+
+        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        self.engine_eboa.session.commit()
+
+        event_objects = self.session.query(EventObject).filter(EventObject.name == "OBJECT").all()
+
+        assert len(event_objects) == 1
+
+        event_texts = self.session.query(EventText).filter(EventText.name == "TEXT").all()
+
+        assert len(event_texts) == 1
+
+        event_booleans = self.session.query(EventBoolean).filter(EventBoolean.name == "BOOLEAN").all()
+
+        assert len(event_texts) == 1
+
+        event_doubles = self.session.query(EventDouble).filter(EventDouble.name == "DOUBLE").all()
+
+        assert len(event_doubles) == 1
+
+        event_timestamps = self.session.query(EventTimestamp).filter(EventTimestamp.name == "TIMESTAMP").all()
+
+        assert len(event_timestamps) == 1
+
+        event_geometries = self.session.query(EventGeometry).filter(EventGeometry.name == "GEOMETRY").all()
+
+        assert len(event_geometries) == 1

@@ -57,8 +57,7 @@ CREATE TABLE eboa.gauges(
 	system text,
 	name text NOT NULL,
 	dim_signature_uuid uuid NOT NULL,
-	CONSTRAINT gauge_cnfs_pk PRIMARY KEY (gauge_uuid),
-	CONSTRAINT unique_gauge_cnf UNIQUE (system,name)
+	CONSTRAINT gauge_cnfs_pk PRIMARY KEY (gauge_uuid)
 
 );
 -- ddl-end --
@@ -157,9 +156,9 @@ CREATE TABLE eboa.event_objects(
 ALTER TABLE eboa.event_objects OWNER TO eboa;
 -- ddl-end --
 
--- object: eboa.event_geometrys | type: TABLE --
--- DROP TABLE IF EXISTS eboa.event_geometrys CASCADE;
-CREATE TABLE eboa.event_geometrys(
+-- object: eboa.event_geometries | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.event_geometries CASCADE;
+CREATE TABLE eboa.event_geometries(
 	name text NOT NULL,
 	value geometry NOT NULL,
 	level_position integer NOT NULL,
@@ -168,7 +167,7 @@ CREATE TABLE eboa.event_geometrys(
 	event_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE eboa.event_geometrys OWNER TO eboa;
+ALTER TABLE eboa.event_geometries OWNER TO eboa;
 -- ddl-end --
 
 -- object: eboa.annotations | type: TABLE --
@@ -229,9 +228,9 @@ CREATE TABLE eboa.annotation_objects(
 ALTER TABLE eboa.annotation_objects OWNER TO eboa;
 -- ddl-end --
 
--- object: eboa.annotation_geometrys | type: TABLE --
--- DROP TABLE IF EXISTS eboa.annotation_geometrys CASCADE;
-CREATE TABLE eboa.annotation_geometrys(
+-- object: eboa.annotation_geometries | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.annotation_geometries CASCADE;
+CREATE TABLE eboa.annotation_geometries(
 	name text NOT NULL,
 	value geometry NOT NULL,
 	level_position integer NOT NULL,
@@ -240,7 +239,7 @@ CREATE TABLE eboa.annotation_geometrys(
 	annotation_uuid uuid NOT NULL
 );
 -- ddl-end --
-ALTER TABLE eboa.annotation_geometrys OWNER TO eboa;
+ALTER TABLE eboa.annotation_geometries OWNER TO eboa;
 -- ddl-end --
 
 -- object: eboa.annotation_cnfs | type: TABLE --
@@ -250,8 +249,7 @@ CREATE TABLE eboa.annotation_cnfs(
 	name text NOT NULL,
 	system text,
 	dim_signature_uuid uuid NOT NULL,
-	CONSTRAINT annotation_cnfs_pk PRIMARY KEY (annotation_cnf_uuid),
-	CONSTRAINT unique_annotation_cnf UNIQUE (name,system)
+	CONSTRAINT annotation_cnfs_pk PRIMARY KEY (annotation_cnf_uuid)
 
 );
 -- ddl-end --
@@ -453,8 +451,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: events_fk | type: CONSTRAINT --
--- ALTER TABLE eboa.event_geometrys DROP CONSTRAINT IF EXISTS events_fk CASCADE;
-ALTER TABLE eboa.event_geometrys ADD CONSTRAINT events_fk FOREIGN KEY (event_uuid)
+-- ALTER TABLE eboa.event_geometries DROP CONSTRAINT IF EXISTS events_fk CASCADE;
+ALTER TABLE eboa.event_geometries ADD CONSTRAINT events_fk FOREIGN KEY (event_uuid)
 REFERENCES eboa.events (event_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -481,8 +479,8 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: annotations_fk | type: CONSTRAINT --
--- ALTER TABLE eboa.annotation_geometrys DROP CONSTRAINT IF EXISTS annotations_fk CASCADE;
-ALTER TABLE eboa.annotation_geometrys ADD CONSTRAINT annotations_fk FOREIGN KEY (annotation_uuid)
+-- ALTER TABLE eboa.annotation_geometries DROP CONSTRAINT IF EXISTS annotations_fk CASCADE;
+ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT annotations_fk FOREIGN KEY (annotation_uuid)
 REFERENCES eboa.annotations (annotation_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
@@ -741,7 +739,7 @@ CREATE INDEX idx_event_object_name ON eboa.event_objects
 
 -- object: idx_event_geometry_event_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_event_geometry_event_uuid CASCADE;
-CREATE INDEX idx_event_geometry_event_uuid ON eboa.event_geometrys
+CREATE INDEX idx_event_geometry_event_uuid ON eboa.event_geometries
 	USING btree
 	(
 	  event_uuid
@@ -750,7 +748,7 @@ CREATE INDEX idx_event_geometry_event_uuid ON eboa.event_geometrys
 
 -- object: idx_event_geometry_name | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_event_geometry_name CASCADE;
-CREATE INDEX idx_event_geometry_name ON eboa.event_geometrys
+CREATE INDEX idx_event_geometry_name ON eboa.event_geometries
 	USING btree
 	(
 	  name
@@ -759,7 +757,7 @@ CREATE INDEX idx_event_geometry_name ON eboa.event_geometrys
 
 -- object: idx_event_geometry_value | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_event_geometry_value CASCADE;
-CREATE INDEX idx_event_geometry_value ON eboa.event_geometrys
+CREATE INDEX idx_event_geometry_value ON eboa.event_geometries
 	USING gist
 	(
 	  value
@@ -894,7 +892,7 @@ CREATE INDEX idx_annotation_object_name ON eboa.annotation_objects
 
 -- object: idx_annotation_geometry_annotation_uuid | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_annotation_geometry_annotation_uuid CASCADE;
-CREATE INDEX idx_annotation_geometry_annotation_uuid ON eboa.annotation_geometrys
+CREATE INDEX idx_annotation_geometry_annotation_uuid ON eboa.annotation_geometries
 	USING btree
 	(
 	  annotation_uuid
@@ -903,7 +901,7 @@ CREATE INDEX idx_annotation_geometry_annotation_uuid ON eboa.annotation_geometry
 
 -- object: idx_annotation_geometry_name | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_annotation_geometry_name CASCADE;
-CREATE INDEX idx_annotation_geometry_name ON eboa.annotation_geometrys
+CREATE INDEX idx_annotation_geometry_name ON eboa.annotation_geometries
 	USING btree
 	(
 	  name
@@ -912,7 +910,7 @@ CREATE INDEX idx_annotation_geometry_name ON eboa.annotation_geometrys
 
 -- object: idx_annotation_geometry_value | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_annotation_geometry_value CASCADE;
-CREATE INDEX idx_annotation_geometry_value ON eboa.annotation_geometrys
+CREATE INDEX idx_annotation_geometry_value ON eboa.annotation_geometries
 	USING gist
 	(
 	  value
@@ -1275,6 +1273,136 @@ ALTER TABLE eboa.event_links ADD CONSTRAINT unique_event_links UNIQUE (event_uui
 -- object: unique_explicit_ref_links | type: CONSTRAINT --
 -- ALTER TABLE eboa.explicit_ref_links DROP CONSTRAINT IF EXISTS unique_explicit_ref_links CASCADE;
 ALTER TABLE eboa.explicit_ref_links ADD CONSTRAINT unique_explicit_ref_links UNIQUE (explicit_ref_uuid_link,name,explicit_ref_uuid);
+-- ddl-end --
+
+-- object: unique_gauge_cnf | type: CONSTRAINT --
+-- ALTER TABLE eboa.gauges DROP CONSTRAINT IF EXISTS unique_gauge_cnf CASCADE;
+ALTER TABLE eboa.gauges ADD CONSTRAINT unique_gauge_cnf UNIQUE (system,name,dim_signature_uuid);
+-- ddl-end --
+
+-- object: unique_annotation_cnf | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_cnfs DROP CONSTRAINT IF EXISTS unique_annotation_cnf CASCADE;
+ALTER TABLE eboa.annotation_cnfs ADD CONSTRAINT unique_annotation_cnf UNIQUE (system,name,dim_signature_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_booleans DROP CONSTRAINT IF EXISTS unique_value_event_booleans CASCADE;
+ALTER TABLE eboa.event_booleans ADD CONSTRAINT unique_value_event_booleans UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_texts DROP CONSTRAINT IF EXISTS unique_value_event_texts CASCADE;
+ALTER TABLE eboa.event_texts ADD CONSTRAINT unique_value_event_texts UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_doubles DROP CONSTRAINT IF EXISTS unique_value_event_doubles CASCADE;
+ALTER TABLE eboa.event_doubles ADD CONSTRAINT unique_value_event_doubles UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_timestamps DROP CONSTRAINT IF EXISTS unique_value_event_timestamps CASCADE;
+ALTER TABLE eboa.event_timestamps ADD CONSTRAINT unique_value_event_timestamps UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_objects DROP CONSTRAINT IF EXISTS unique_value_event_objects CASCADE;
+ALTER TABLE eboa.event_objects ADD CONSTRAINT unique_value_event_objects UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_event_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_geometries DROP CONSTRAINT IF EXISTS unique_value_event_geometries CASCADE;
+ALTER TABLE eboa.event_geometries ADD CONSTRAINT unique_value_event_geometries UNIQUE (name,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_booleans DROP CONSTRAINT IF EXISTS unique_value_annotation_booleans CASCADE;
+ALTER TABLE eboa.annotation_booleans ADD CONSTRAINT unique_value_annotation_booleans UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_texts DROP CONSTRAINT IF EXISTS unique_value_annotation_texts CASCADE;
+ALTER TABLE eboa.annotation_texts ADD CONSTRAINT unique_value_annotation_texts UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_doubles DROP CONSTRAINT IF EXISTS unique_value_annotation_doubles CASCADE;
+ALTER TABLE eboa.annotation_doubles ADD CONSTRAINT unique_value_annotation_doubles UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_timestamps DROP CONSTRAINT IF EXISTS unique_value_annotation_timestamps CASCADE;
+ALTER TABLE eboa.annotation_timestamps ADD CONSTRAINT unique_value_annotation_timestamps UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_objects DROP CONSTRAINT IF EXISTS unique_value_annotation_objects CASCADE;
+ALTER TABLE eboa.annotation_objects ADD CONSTRAINT unique_value_annotation_objects UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_annotation_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_geometries DROP CONSTRAINT IF EXISTS unique_value_annotation_geometries CASCADE;
+ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_annotation_geometries UNIQUE (name,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_booleans DROP CONSTRAINT IF EXISTS unique_value_position_event_booleans CASCADE;
+ALTER TABLE eboa.event_booleans ADD CONSTRAINT unique_value_position_event_booleans UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_texts DROP CONSTRAINT IF EXISTS unique_value_position_event_texts CASCADE;
+ALTER TABLE eboa.event_texts ADD CONSTRAINT unique_value_position_event_texts UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_doubles DROP CONSTRAINT IF EXISTS unique_value_position_event_doubles CASCADE;
+ALTER TABLE eboa.event_doubles ADD CONSTRAINT unique_value_position_event_doubles UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_event_timestamps CASCADE;
+ALTER TABLE eboa.event_timestamps ADD CONSTRAINT unique_value_position_event_timestamps UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_objects DROP CONSTRAINT IF EXISTS unique_value_position_event_objects CASCADE;
+ALTER TABLE eboa.event_objects ADD CONSTRAINT unique_value_position_event_objects UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_event_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_geometries DROP CONSTRAINT IF EXISTS unique_value_position_event_geometries CASCADE;
+ALTER TABLE eboa.event_geometries ADD CONSTRAINT unique_value_position_event_geometries UNIQUE (level_position,parent_level,parent_position,event_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_booleans DROP CONSTRAINT IF EXISTS unique_value_position_annotation_booleans CASCADE;
+ALTER TABLE eboa.annotation_booleans ADD CONSTRAINT unique_value_position_annotation_booleans UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_texts DROP CONSTRAINT IF EXISTS unique_value_position_annotation_texts CASCADE;
+ALTER TABLE eboa.annotation_texts ADD CONSTRAINT unique_value_position_annotation_texts UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_doubles DROP CONSTRAINT IF EXISTS unique_value_position_annotation_doubles CASCADE;
+ALTER TABLE eboa.annotation_doubles ADD CONSTRAINT unique_value_position_annotation_doubles UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_annotation_timestamps CASCADE;
+ALTER TABLE eboa.annotation_timestamps ADD CONSTRAINT unique_value_position_annotation_timestamps UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_objects DROP CONSTRAINT IF EXISTS unique_value_position_annotation_objects CASCADE;
+ALTER TABLE eboa.annotation_objects ADD CONSTRAINT unique_value_position_annotation_objects UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_annotation_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_geometries DROP CONSTRAINT IF EXISTS unique_value_position_annotation_geometries CASCADE;
+ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_position_annotation_geometries UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 

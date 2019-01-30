@@ -258,7 +258,7 @@ def _validate_events(data):
             _validate_event_links(event["links"])
         # end if
         if "values" in event:
-            _validate_values(event["values"])
+            validate_values(event["values"])
         # end if
 
     # end for
@@ -369,7 +369,7 @@ def _validate_annotations(data):
 
         # Optional tags
         if "values" in annotation:
-            _validate_values(annotation["values"])
+            validate_values(annotation["values"])
         # end if
 
     # end for
@@ -402,7 +402,7 @@ def _validate_annotation_cnf(data):
 
     return
 
-def _validate_values(data):
+def validate_values(data):
 
     if type(data) != list:
         raise ErrorParsingDictionary("The tag values has to be of type list")
@@ -437,7 +437,7 @@ def _validate_values(data):
         # end if
 
         if "values" in value:
-            _validate_values(value["values"])
+            validate_values(value["values"])
         # end if
 
         if "value" in value and not type(value["value"]) == str:
