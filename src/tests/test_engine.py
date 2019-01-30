@@ -53,6 +53,13 @@ class TestEngine(unittest.TestCase):
         for table in reversed(Base.metadata.sorted_tables):
             engine.execute(table.delete())
 
+    def tearDown(self):
+        # Close connections to the DDBB
+        self.engine_eboa.session.close()
+        self.engine_eboa_race_conditions.session.close()
+        self.query_eboa.session.close()
+        self.session.close()
+
     def test_insert_dim_signature(self):
         data = {"dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
@@ -290,12 +297,10 @@ class TestEngine(unittest.TestCase):
         def insert_gauges():
             self.engine_eboa._insert_gauges()
             self.engine_eboa.session.commit()
-            self.engine_eboa.session.close()
 
         def insert_gauges_race_condition():
             self.engine_eboa_race_conditions._insert_gauges()
             self.engine_eboa_race_conditions.session.commit()
-            self.engine_eboa_race_conditions.session.close()
 
         with before_after.before("eboa.engine.engine.race_condition", insert_gauges_race_condition):
             insert_gauges()
@@ -990,41 +995,31 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_wrong_geometry(self):
 
-        self.engine_eboa._initialize_context_insert_data()
-        data = {"dim_signature": {"name": "dim_signature",
-                                  "exec": "exec",
-                                  "version": "1.0"},
-                "source": {"name": "source.xml",
-                           "generation_time": "2018-07-05T02:07:03",
-                           "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"},
-                "events": [{"gauge": {"name": "GAUGE_NAME",
-                                      "system": "GAUGE_SYSTEM",
-                                      "insertion_type": "SIMPLE_UPDATE"},
-                            "start": "2018-06-05T02:07:03",
-                            "stop": "2018-06-05T08:07:36",
-                            "values": [{"name": "VALUES",
-                                       "type": "object",
-                                       "values": [
-                                           {"type": "geometry",
-                                            "name": "GEOMETRY",
-                                            "value": "29.012974905944 -118.33483458667"}]
-                                    }]
-                        }]
-            }
-        self.engine_eboa.operation = data
-        self.engine_eboa._insert_dim_signature()
-        self.engine_eboa._insert_source()
-        self.engine_eboa._insert_gauges()
-        self.engine_eboa.session.commit()
-        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
-        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
-        dim_signature_ddbb = self.session.query(DimSignature).filter(DimSignature.dim_signature == data["dim_signature"]["name"]).first()
-        try:
-            self.engine_eboa._insert_events()
-        except WrongGeometry:
-            self.session.rollback()
-            pass
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36",
+                        "values": [{"name": "VALUES",
+                                    "type": "object",
+                                    "values": [
+                                        {"type": "geometry",
+                                         "name": "GEOMETRY",
+                                         "value": "29.012974905944 -118.33483458667"}]
+                                }]
+                    }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
         event_ddbb = self.session.query(Event).all()
 
         assert len(event_ddbb) == 0
@@ -1878,7 +1873,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_erase_and_replace_same_period_no_events(self):
+    def test_remove_deprecated_event_erase_and_replace_no_events(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -1926,6 +1921,10 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         self.engine_eboa.treat_data()
 
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+
         data = {"operations": [{
             "mode": "insert_and_erase",
             "dim_signature": {"name": "dim_signature",
@@ -1934,7 +1933,7 @@ class TestEngine(unittest.TestCase):
                 "source": {"name": "source2.xml",
                            "generation_time": "2018-07-05T02:07:04",
                            "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"}
+                           "validity_stop": "2018-06-06T08:07:36"}
                 }]
             }
         self.engine_eboa.data = data
@@ -3208,6 +3207,36 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources_status) == 1
 
+    def test_treat_data_annotation_wrong_geometry(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {"name": "GAUGE_NAME",
+                                   "system": "GAUGE_SYSTEM"},
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "geometry",
+                                 "name": "GEOMETRY",
+                                 "value": "29.012974905944 -118.33483458667"}]
+                        }]
+            }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+        annotation_ddbb = self.session.query(Annotation).all()
+
+        assert len(annotation_ddbb) == 0
+
     def test_insert_xml(self):
 
         filename = "test_simple_update.xml"
@@ -3388,11 +3417,15 @@ class TestEngine(unittest.TestCase):
         def insert_event_values_race_condition():
             exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values)
             self.engine_eboa_race_conditions.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == True
         # end def
 
         def insert_event_values():
             exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
             self.engine_eboa.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == False
         # end def
 
         with before_after.before("eboa.engine.engine.race_condition", insert_event_values_race_condition):
@@ -3450,11 +3483,15 @@ class TestEngine(unittest.TestCase):
         def insert_event_values1():
             exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
             self.engine_eboa_race_conditions.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == True
         # end def
 
         def insert_event_values2():
             exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
             self.engine_eboa.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == True
         # end def
 
         with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
@@ -3520,11 +3557,15 @@ class TestEngine(unittest.TestCase):
         def insert_event_values1():
             exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
             self.engine_eboa_race_conditions.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == True
         # end def
 
         def insert_event_values2():
             exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
             self.engine_eboa.session.commit()
+            assert exit_status["error"] == False
+            assert exit_status["inserted"] == True
         # end def
 
         with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
@@ -3605,6 +3646,8 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
         self.engine_eboa.session.commit()
+        assert exit_status["error"] == False
+        assert exit_status["inserted"] == True
 
         event_objects = self.session.query(EventObject).filter(EventObject.name == "OBJECT").all()
 
@@ -3629,3 +3672,85 @@ class TestEngine(unittest.TestCase):
         event_geometries = self.session.query(EventGeometry).filter(EventGeometry.name == "GEOMETRY").all()
 
         assert len(event_geometries) == 1
+
+    def test_insert_event_values_wrong_format(self):
+        """
+        Method to test that the values can contain all the types
+        """
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            }]
+            }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values = {
+            "no_valid_structure": "OBJECT"
+        }
+
+        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        self.engine_eboa.session.commit()
+        assert exit_status["error"] == True
+        assert exit_status["inserted"] == False
+
+    def test_insert_event_values_wrong_geometry(self):
+        """
+        Method to test the treatment of a wrong geomerty value
+        """
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36"
+                    }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid = events[0].event_uuid
+        
+        values = {"type": "geometry",
+                  "name": "GEOMETRY",
+                  "value": "29.012974905944 -118.33483458667"}
+
+        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        self.engine_eboa.session.commit()
+        assert exit_status["error"] == True
+        assert exit_status["inserted"] == False
+
+        event_values = self.query_eboa.get_event_values()
+
+        assert len(event_values) == 0

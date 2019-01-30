@@ -226,7 +226,6 @@ class Engine():
             with open(json_path) as input_file:
                 self.source.content_text = input_file.read()
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(error_message)
             return self.exit_codes["FILE_NOT_VALID"]["status"]
@@ -243,7 +242,6 @@ class Engine():
                 with open(json_path) as input_file:
                     self.source.content_text = input_file.read()
                 self.session.commit()
-                self.session.close()
                 # Log the error
                 logger.error(str(e))
                 logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
@@ -279,7 +277,6 @@ class Engine():
             with open(xml_path,"r") as xml_file:
                 self.source.content_text = xml_file.read()
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
             return self.exit_codes["FILE_NOT_VALID"]["status"]
@@ -303,7 +300,6 @@ class Engine():
                 with open(xml_path,"r") as xml_file:
                     self.source.content_text = xml_file.read()
                 self.session.commit()
-                self.session.close()
                 # Log the error
                 logger.error(error_message)
                 return self.exit_codes["FILE_NOT_VALID"]["status"]
@@ -486,7 +482,6 @@ class Engine():
                 self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 self.session.commit()
-                self.session.close()
             # end if
             logger.error(str(e))
             return False
@@ -588,7 +583,6 @@ class Engine():
             # Log that the source file has been already been processed
             logger.error(e)
             self.session.commit()
-            self.session.close()
             return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
@@ -598,7 +592,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             return self.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
         # end try
 
@@ -627,7 +620,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
@@ -637,7 +629,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["LINKS_INCONSISTENCY"]["status"]
@@ -647,7 +638,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
@@ -657,7 +647,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
@@ -667,7 +656,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["WRONG_VALUE"]["status"]
@@ -677,10 +665,18 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        except WrongGeometry as e:
+            self.session.rollback()
+            self._insert_source_status(self.exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return self.exit_codes["WRONG_GEOMETRY"]["status"]
         # end try
 
         # Insert annotations
@@ -692,7 +688,6 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["WRONG_VALUE"]["status"]
@@ -702,10 +697,18 @@ class Engine():
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            self.session.close()
             # Log the error
             logger.error(e)
             return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        except WrongGeometry as e:
+            self.session.rollback()
+            self._insert_source_status(self.exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return self.exit_codes["WRONG_GEOMETRY"]["status"]
         # end try
 
         # Review the inserted events (with modes EVENT_KEYS and
@@ -736,9 +739,8 @@ class Engine():
         # Remove if the content was inserted due to errors processing the input
         self.source.content_json = None
         
-        # Commit data and close connection
+        # Commit data
         self.session.commit()
-        self.session.close()
         return self.exit_codes["OK"]["status"]
         
     @debug
@@ -1546,11 +1548,7 @@ class Engine():
                     max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                                                                                                 Source.validity_start < validity_stop,
                                                                                                                                 Source.validity_stop > validity_start)
-                
-                    # The period does not contain events
-                    if max_generation_time.first()[0] == None:
-                        break
-                    # end if
+
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
                                                                                                              DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
@@ -1944,7 +1942,12 @@ class Engine():
                     self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
                 except InternalError as e:
                     self.session.rollback()
-                    raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                    logger.error(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                    exit_status = {
+                        "error": True,
+                        "inserted": False,
+                    }
+                    return exit_status
             # end if
 
             object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
