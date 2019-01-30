@@ -1468,3 +1468,10 @@ class Query():
             values = self.session.query(value_class).all()
         # end if
         return values
+
+    def close_session (self):
+        """
+        Method to close the session
+        """
+        self.session.close()
+        return

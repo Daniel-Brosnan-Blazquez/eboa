@@ -55,9 +55,9 @@ class TestEngine(unittest.TestCase):
 
     def tearDown(self):
         # Close connections to the DDBB
-        self.engine_eboa.session.close()
-        self.engine_eboa_race_conditions.session.close()
-        self.query_eboa.session.close()
+        self.engine_eboa.close_session()
+        self.engine_eboa_race_conditions.close_session()
+        self.query_eboa.close_session()
         self.session.close()
 
     def test_insert_dim_signature(self):

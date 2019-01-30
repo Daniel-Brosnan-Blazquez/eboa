@@ -1954,3 +1954,10 @@ class Engine():
         # end for
         
         return exit_status
+
+    def close_session (self):
+        """
+        Method to close the session
+        """
+        self.session.close()
+        return
