@@ -19,15 +19,15 @@ def build_values_structure(values, structure, level_position = 0, parent_level =
     child_values = sorted([value for value in values if value.parent_level == parent_level + 1 and value.parent_position == level_position], key=lambda x: x.level_position)
     structure.append(object_entity_structure)
     for value in child_values:
-        if str(type(value)) in ["<class 'EventBoolean'>", "<class 'AnnotationBoolean'>"]:
+        if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
             value_type = "boolean"
-        elif str(type(value)) in ["<class 'EventDouble'>", "<class 'AnnotationDouble'>"]:
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
             value_type = "double"
-        elif str(type(value)) in ["<class 'EventTimestamp'>", "<class 'AnnotationTimestamp'>"]:
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
             value_type = "timestamp"
-        elif str(type(value)) in ["<class 'EventGeometry'>", "<class 'AnnotationGeometry'>"]:
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
             value_type = "geometry"
-        elif str(type(value)) in ["<class 'EventObject'>", "<class 'AnnotationObject'>"]:
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
             value_type = "object"
         else:
             value_type = "text"
@@ -57,39 +57,39 @@ def build_values_structure(values, structure, level_position = 0, parent_level =
     #                        "parameters": {"name": name}
     #                    }
                 
-    #     # Get the dim_processing from the DDBB
-    #     dim_processing = self.get_sources([name])
+    #     # Get the source from the DDBB
+    #     source = self.get_sources([name])
 
-    #     if len(dim_processing) == 0:
+    #     if len(source) == 0:
     #         # Log that the name provided does not exist into DDBB
-    #         logger.error("There is no dim_processing into the DDBB with name {}".format(name))
+    #         logger.error("There is no source into the DDBB with name {}".format(name))
     #         return -1
     #     # end if
 
-    #     data["source"] = {"processing_uuid": dim_processing[0].processing_uuid,
-    #                       "name": dim_processing[0].name,
-    #                       "generation_time": dim_processing[0].generation_time,
-    #                       "validity_start": dim_processing[0].validity_start,
-    #                       "validity_stop": dim_processing[0].validity_stop,
-    #                       "ingestion_time": dim_processing[0].ingestion_time,
-    #                       "ingestion_duration": dim_processing[0].ingestion_duration.total_seconds()
+    #     data["source"] = {"source_uuid": source[0].source_uuid,
+    #                       "name": source[0].name,
+    #                       "generation_time": source[0].generation_time,
+    #                       "validity_start": source[0].validity_start,
+    #                       "validity_stop": source[0].validity_stop,
+    #                       "ingestion_time": source[0].ingestion_time,
+    #                       "ingestion_duration": source[0].ingestion_duration.total_seconds()
     #                   }
 
-    #     exec_version = dim_processing[0].dim_exec_version
+    #     processor_version = source[0].processor_version
 
     #     # Get the status of the source from the DDBB
-    #     dim_processing_status = self.get_sources_statuses([dim_processing[0].processing_uuid])
+    #     source_status = self.get_sources_statuses([source[0].source_uuid])
 
     #     # Get the dim_signature from the DDBB
-    #     dim_signature = self.get_dim_signatures([dim_processing[0].dim_signature_id])
+    #     dim_signature = self.get_dim_signatures([source[0].dim_signature_uuid])
 
     #     data["dim_signature"] = {"name": dim_signature[0].dim_signature,
-    #                              "version": exec_version,
+    #                              "version": processor_version,
     #                              "exec": dim_signature[0].dim_exec_name
     #                   }
 
     #     # Get the events from the DDBB
-    #     events = self.get_events(processing_uuids = [dim_processing[0].processing_uuid])
+    #     events = self.get_events(source_uuids = [source[0].source_uuid])
 
     #     if len(events) > 0:
     #         data["events"] = []
@@ -109,7 +109,7 @@ def build_values_structure(values, structure, level_position = 0, parent_level =
     #     # en if
 
     #     # Get the annotations from the DDBB
-    #     annotations = self.get_annotations([dim_processing[0].processing_uuid])
+    #     annotations = self.get_annotations([source[0].source_uuid])
     #     if len(annotations) > 0:
     #         data["annotations"] = []
     #         for annotation in annotations:
