@@ -106,23 +106,19 @@ def _correct_planning_events(orbpre_events, planning_events):
 
         # end if
 
-        values = [{
-            "name": "values",
-            "type": "object",
-            "values": [
-                {"name": "status_correction",
-                 "type": "text",
-                 "value": status},
-                {"name": "delta_start",
-                 "type": "double",
-                 "value": str((planning_event.start - corrected_start).total_seconds())},
-                {"name": "delta_stop",
-                 "type": "double",
-                 "value": str((planning_event.stop - corrected_stop).total_seconds())},
-                {"name": "satellite",
-                 "type": "text",
-                 "value": satellite}]
-        }]
+        planning_event_values = planning_event.get_structured_values()
+
+        planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
+            {"name": "status_correction",
+             "type": "text",
+             "value": status},
+            {"name": "delta_start",
+             "type": "double",
+             "value": str((planning_event.start - corrected_start).total_seconds())},
+            {"name": "delta_stop",
+             "type": "double",
+             "value": str((planning_event.stop - corrected_stop).total_seconds())}
+        ]
 
         corrected_planning_event = {
             "gauge": {
@@ -138,7 +134,7 @@ def _correct_planning_events(orbpre_events, planning_events):
             }],
             "start": str(corrected_start),
             "stop": str(corrected_stop),
-            "values": values
+            "values": planning_event_values
         }
 
         corrected_planning_events.append(corrected_planning_event)
@@ -156,7 +152,7 @@ def _generate_corrected_planning_events(satellite, validity_start, validity_stop
     
     planning_gauges = query.get_gauges_join(dim_signatures = {"list": ["NPPF_" + satellite], "op": "in"})
 
-    planning_events = query.get_events(gauge_uuids = {"list": [gauge.gauge_uuid for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
+    planning_events = query.get_events(gauge_uuids = {"list": [gauge.gauge_uuid for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}], values_names_type = [{"names": ["used"], "type": "object", "op": "notin"}])
 
     events = _correct_planning_events(list_of_events, planning_events)
 
