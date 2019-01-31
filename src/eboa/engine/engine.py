@@ -1890,10 +1890,10 @@ class Engine():
                    }
 
         values_name = values["name"]
-        object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
+        object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name, EventObject.event_uuid == event_uuid).first()
         while not object:
             list_values = {}
-            first_object = self.session.query(EventObject).filter(EventObject.parent_level == -1, EventObject.parent_position == 0).first()
+            first_object = self.session.query(EventObject).filter(EventObject.parent_level == -1, EventObject.parent_position == 0, EventObject.event_uuid == event_uuid).first()
             if not first_object:
                 new_structure_values = {
                     "name": "values",
@@ -1951,9 +1951,11 @@ class Engine():
                     return exit_status
             # end if
 
-            self.session.commit()
+            if continue_with_values_ingestion:
+                self.session.commit()
+            # end if
 
-            object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name).first()
+            object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name, EventObject.event_uuid == event_uuid).first()
         # end for
         
         return exit_status

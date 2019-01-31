@@ -3754,3 +3754,65 @@ class TestEngine(unittest.TestCase):
         event_values = self.query_eboa.get_event_values()
 
         assert len(event_values) == 0
+
+
+    def test_insert_same_values_to_different_events(self):
+        """
+        Method to test the insertion of the same values to different events
+        """
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36"
+                    },
+                       {"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36"
+                    }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 2
+
+        event_uuid1 = events[0].event_uuid
+        event_uuid2 = events[1].event_uuid
+        
+        values = {
+            "name": "first_object",
+            "type": "object",
+            "values": []
+        }
+
+        exit_status = self.engine_eboa.insert_event_values(event_uuid1, values)
+        self.engine_eboa.session.commit()
+        assert exit_status["error"] == False
+        assert exit_status["inserted"] == True
+
+        event_values = self.query_eboa.get_event_values(event_uuids=[event_uuid1])
+
+        assert len(event_values) == 2
+
+        exit_status = self.engine_eboa.insert_event_values(event_uuid2, values)
+        self.engine_eboa.session.commit()
+        assert exit_status["error"] == False
+        assert exit_status["inserted"] == True
+
+        event_values = self.query_eboa.get_event_values(event_uuids=[event_uuid2])
+
+        assert len(event_values) == 2
