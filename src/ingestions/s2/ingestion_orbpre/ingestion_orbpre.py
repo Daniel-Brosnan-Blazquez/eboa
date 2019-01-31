@@ -197,7 +197,7 @@ def _generate_orbpre_events(xpath_xml, source, list_of_events):
 
         # Orbit predicted event
         orbpre_event = {
-            "key": satellite + "-" + str(orbit),
+            "key": "ORBIT_PREDICTION-" + satellite + "-" + str(orbit),
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
                 "name": "ORBIT_PREDICTION",
