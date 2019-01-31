@@ -38,16 +38,18 @@ logger = logging_module.logger
 
 version = "1.0"
 
-
-
 @debug
-def _generate_received_data_information(xpath_xml, source, list_of_events):
+def _generate_received_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations):
     """
     Method to generate the events for the idle operation of the satellite
     :param xpath_xml: source of information that was xpath evaluated
     :type xpath_xml: XPathEvaluator
     :param source: information of the source
-    :type xpath_xml: dict
+    :type source: dict
+    :param engine: object to access the engine of the EBOA
+    :type engine: Engine
+    :param query: object to access the query interface of the EBOA
+    :type query: Query
     :param list_of_events: list to store the events to be inserted into the eboa
     :type list_of_events: list
 
@@ -77,14 +79,14 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
         # Obtain the sensing segment received (EFEP reports only give information about the start date of the first and last scenes)
         sensing_starts = vcid.xpath("ISP_Status/Status/SensStartTime")
         sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
-
+        
         # Sort list
         sensing_starts_in_iso_8601.sort()
         sensing_start = sensing_starts_in_iso_8601[0]
 
         sensing_stops = vcid.xpath("ISP_Status/Status/SensStopTime")
         sensing_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_stop.text) for sensing_stop in sensing_stops]
-
+        
         # Sort list
         sensing_stops_in_iso_8601.sort()
         sensing_stop = sensing_stops_in_iso_8601[-1]
@@ -92,6 +94,54 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
         # APID configuration
         apid_conf = functions.get_vcid_apid_configuration(vcid_number)
 
+        # ISP validity event
+        isp_validity_event_link_ref = vcid_number + "_" + "ISP_VALIDITY"
+        isp_validity_event = {
+            "link_ref": isp_validity_event_link_ref,
+            "explicit_reference": session_id,
+            "key": session_id + channel,
+            "gauge": {
+                "insertion_type": "EVENT_KEYS",
+                "name": "RAW-ISP-VALIDITY",
+                "system": "EDRS"
+            },
+            "start": sensing_start,
+            "stop": sensing_stop,
+            "values": [{
+                "name": "values",
+                "type": "object",
+                "values": [
+                    {"name": "status",
+                     "type": "text",
+                     "value": status},
+                    {"name": "downlink_orbit",
+                     "type": "double",
+                     "value": downlink_orbit},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite},
+                    {"name": "reception_station",
+                     "type": "text",
+                     "value": "EPAE"},
+                    {"name": "vcid",
+                     "type": "double",
+                     "value": vcid_number},
+                    {"name": "downlink_mode",
+                     "type": "text",
+                     "value": downlink_mode},
+                    {"name": "num_packets",
+                     "type": "double",
+                     "value": vcid.xpath("ISP_Status/Summary/NumPackets")[0].text},
+                    {"name": "num_frames",
+                     "type": "double",
+                     "value": vcid.xpath("NumFrames")[0].text}
+               ]
+            }]
+        }
+
+        # Insert isp_validity_event
+        list_of_events.append(isp_validity_event)
+        
         # Obtain complete missing APIDs
         complete_missing_apids = vcid.xpath("ISP_Status/Status[number(NumPackets) = 0 and number(@APID) >= number($min_apid) and number(@APID) <= number($max_apid)]", min_apid = apid_conf["min_apid"], max_apid = apid_conf["max_apid"])
         for apid in complete_missing_apids:
@@ -108,6 +158,13 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
                 },
                 "start": sensing_start,
                 "stop": sensing_stop,
+                "links": [
+                    {
+                        "link": isp_validity_event_link_ref,
+                        "link_mode": "by_ref",
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "true"
+                    }],
                 "values": [{
                     "name": "values",
                     "type": "object",
@@ -165,6 +222,13 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
                 },
                 "start": sensing_start,
                 "stop": functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text),
+                "links": [
+                    {
+                        "link": isp_validity_event_link_ref,
+                        "link_mode": "by_ref",
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "true"
+                    }],
                 "values": [{
                     "name": "values",
                     "type": "object",
@@ -222,6 +286,13 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
                 },
                 "start": functions.three_letter_to_iso_8601(apid.xpath("SensStopTime")[0].text),
                 "stop": sensing_stop,
+                "links": [
+                    {
+                        "link": isp_validity_event_link_ref,
+                        "link_mode": "by_ref",
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "true"
+                    }],
                 "values": [{
                     "name": "values",
                     "type": "object",
@@ -262,63 +333,81 @@ def _generate_received_data_information(xpath_xml, source, list_of_events):
 
         # end for
 
-        isp_validity_event = {
-            "explicit_reference": session_id,
-            "key": session_id + channel,
-            "gauge": {
-                "insertion_type": "EVENT_KEYS",
-                "name": "ISP-VALIDITY",
-                "system": "EDRS"
-            },
-            "start": sensing_start,
-            "stop": sensing_stop,
-            "values": [{
-                "name": "values",
-                "type": "object",
-                "values": [
-                    {"name": "status",
-                     "type": "text",
-                     "value": status},
-                    {"name": "downlink_orbit",
-                     "type": "double",
-                     "value": downlink_orbit},
-                    {"name": "satellite",
-                     "type": "text",
-                     "value": satellite},
-                    {"name": "reception_station",
-                     "type": "text",
-                     "value": "EPAE"},
-                    {"name": "vcid",
-                     "type": "double",
-                     "value": vcid_number},
-                    {"name": "downlink_mode",
-                     "type": "text",
-                     "value": downlink_mode},
-                    {"name": "num_packets",
-                     "type": "double",
-                     "value": vcid.xpath("ISP_Status/Summary/NumPackets")[0].text},
-                    {"name": "num_frames",
-                     "type": "double",
-                     "value": vcid.xpath("NumFrames")[0].text}
-               ]
-            }]
-        }
-
-        # Insert isp_gap_event
-        list_of_events.append(isp_validity_event)
-
+        # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW-ISP-VALIDTY
+        record_type = downlink_mode
+        planned_imagings = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": sensing_stop, "op": "<"}], stop_filters = [{"date": sensing_start, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"})
+        
+        # If there are no found planned imaging events, the MSI will not be linked to the plan and so it will be unexpected
+        
+        # If there are found planned imaging events, the MSI will be linked to the plan and its segment will be removed from the completeness
+        if len(planned_imagings["linked_events"]) > 0:
+            for planned_imaging in planned_imagings["linked_events"]:
+                value = {
+                    "name": "used",
+                    "type": "object",
+                    "values": []
+                }
+                exit_status = engine.insert_event_values(planned_imaging.event_uuid, value)
+                value = {
+                    "name": "completeness_began",
+                    "type": "object",
+                    "values": []
+                }
+                exit_status = engine.insert_event_values(planned_imaging.event_uuid, value)
+                if exit_status["inserted"] == True:
+                    # Insert the linked MISSING event for the automatic completess check
+                    missing_planning_operation = {"operations": [{
+                        "mode": "insert",
+                        "dim_signature": {
+                            "name": "NPPF_" + satellite,
+                            "exec": os.path.basename(__file__),
+                            "version": version
+                        },
+                        "source": {
+                            "name": source["name"],
+                            "generation_time": str(planned_imaging.source.generation_time),
+                            "validity_start": str(planned_imaging.start),
+                            "validity_stop": str(planned_imaging.stop)
+                        },
+                        "events": [{
+                            "gauge": {
+                                "insertion_type": "SIMPLE_UPDATE",
+                                "name": "MISSING",
+                                "system": satellite
+                            },
+                            "start": str(planned_imaging.start),
+                            "stop": str(planned_imaging.stop),
+                            "links": [
+                                {
+                                    "link": str(planned_imaging.event_uuid),
+                                    "link_mode": "by_uuid",
+                                    "name": "PLANNED_IMAGING",
+                                    "back_ref": "MISSING"
+                                }]
+                        }]
+                    }]
+                    }
+                    # Insert isp_gap_event
+                    list_of_planning_operations.append(missing_planning_operation)
+                # end if
+            # end for
+        # end if
     # end for
 
     return status
 
 @debug
-def _generate_pass_information(xpath_xml, source, list_of_annotations, list_of_explicit_references, status):
+def _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, status):
     """
     Method to generate the events for the idle operation of the satellite
     :param xpath_xml: source of information that was xpath evaluated
     :type xpath_xml: XPathEvaluator
     :param source: information of the source
-    :type xpath_xml: dict
+    :type source: dict
+    :param engine: object to access the engine of the EBOA
+    :type engine: Engine
+    :param query: object to access the query interface of the EBOA
+    :type query: Query
     :param list_of_annotations: list to store the annotations to be inserted into the eboa
     :type list_of_annotations: list
     :param list_of_explicit_references: list to store the annotations to be inserted into the eboa
@@ -399,15 +488,20 @@ def _generate_pass_information(xpath_xml, source, list_of_annotations, list_of_e
 
     return
 
-def process_file(file_path):
+def process_file(file_path, engine, query):
     """
     Function to process the file and insert its relevant information
     into the DDBB of the eboa
-
+    
     :param file_path: path to the file to be processed
     :type file_path: str
+    :param engine: object to access the engine of the EBOA
+    :type engine: Engine
+    :param query: object to access the query interface of the EBOA
+    :type query: Query
     """
     list_of_events = []
+    list_of_planning_operations = []
     list_of_annotations = []
     list_of_explicit_references = []
     file_name = os.path.basename(file_path)
@@ -443,13 +537,17 @@ def process_file(file_path):
     }
 
     # Extract the information of the received data
-    status = _generate_received_data_information(xpath_xml, source, list_of_events)
+    status = _generate_received_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations)
 
     # Extract the information of the pass
-    _generate_pass_information(xpath_xml, source, list_of_annotations, list_of_explicit_references, status)
+    _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, status)
+
+    
 
     # Build the xml
-    data = {"operations": [{
+    data = {"operations": []}
+    data["operations"] = data["operations"] + list_of_planning_operations
+    data["operations"].append({
         "mode": "insert_and_erase",
         "dim_signature": {
             "name": "SLOT_REQUEST_EDRS",
@@ -460,7 +558,7 @@ def process_file(file_path):
         "explicit_references": list_of_explicit_references,
         "events": list_of_events,
         "annotations": list_of_annotations
-    }]}
+    })
 
     return data
 
@@ -474,10 +572,12 @@ def insert_data_into_DDBB(data, filename, engine):
     return returned_value
 
 def command_process_file(file_path, output_path = None):
-    # Process file
-    data = process_file(file_path)
-
     engine = Engine()
+    query = Query()
+
+    # Process file
+    data = process_file(file_path, engine, query)
+
     # Validate data
     filename = os.path.basename(file_path)
 
@@ -489,7 +589,7 @@ def command_process_file(file_path, output_path = None):
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
     # end if
-
+    
     return returned_value
 
 if __name__ == "__main__":
@@ -512,5 +612,5 @@ if __name__ == "__main__":
     # the file following a schema. Schema not available for ORBPREs
 
     returned_value = command_process_file(file_path, output_path)
-
+    
     logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
