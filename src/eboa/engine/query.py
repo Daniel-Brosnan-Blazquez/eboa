@@ -495,6 +495,7 @@ class Query():
         """
         """
         params = []
+        tables = []
         # Allow only obtain visible events
         params.append(Event.visible == True)
 
@@ -581,7 +582,12 @@ class Query():
             # end for
         # end if
 
-        query = self.session.query(Event).filter(*params)
+        query = self.session.query(Event)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
         log_query(query)
         events = query.all()
 
