@@ -77,8 +77,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
     completeness_planning_operation = {
         "mode": "insert",
         "dim_signature": {
-            "name": "NPPF_" + satellite,
-            "exec": os.path.basename(__file__),
+            "name": "RECEPTION_" + satellite,
+            "exec": "planning_" + os.path.basename(__file__),
             "version": version
         },
         "events": []
@@ -380,7 +380,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     completeness_planning_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "COMPLETENESS",
+                            "name": "PLANNING_COMPLETENESS",
                             "system": satellite
                         },
                         "start": str(corrected_planned_imaging.start),
@@ -443,7 +443,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             "back_ref": "ISP-VALIDITY"
                         },{
                             "link": str(isp_validity_valid_segment["id1"]),
-                            "link_mode": "by_uuid",
+                            "link_mode": "by_ref",
                             "name": "RAW_ISP_VALIDITY",
                             "back_ref": "ISP-VALIDITY"
                         }],
@@ -482,8 +482,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "key": session_id + channel,
                     "gauge": {
                         "insertion_type": "ERASE_and_REPLACE",
-                        "name": "COMPLETENESS",
-                        "system": "EDRS"
+                        "name": "PLANNING_COMPLETENESS",
+                        "system": satellite
                     },
                     "links": [
                         {
@@ -512,7 +512,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
     # end for
 
     # Insert completeness operation for the completeness analysis of the plan
-    list_of_planning_operations.append(completeness_planning_operation)
+    if "source" in completeness_planning_operation:
+        list_of_planning_operations.append(completeness_planning_operation)
+    # end if
 
     return status
 
