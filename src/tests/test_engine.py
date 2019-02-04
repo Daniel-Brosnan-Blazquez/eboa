@@ -771,6 +771,14 @@ class TestEngine(unittest.TestCase):
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "key": "EVENT_KEY"
+                },{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
                 }]
             }
         self.engine_eboa.operation = data
@@ -786,15 +794,17 @@ class TestEngine(unittest.TestCase):
         explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["events"][0]["explicit_reference"]).first()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        event_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
+        events_ddbb = self.session.query(Event).filter(Event.start == data["events"][0]["start"],
                                                       Event.stop == data["events"][0]["stop"],
                                                       Event.gauge_uuid == gauge_ddbb.gauge_uuid,
                                                       Event.source_uuid == source_ddbb.source_uuid,
                                                       Event.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid,
                                                       Event.visible == False).all()
 
+        assert len(events_ddbb) == 2
+
         event_keys = self.session.query(EventKey).filter(EventKey.event_key == data["events"][0]["key"],
-                                                         EventKey.event_uuid == event_ddbb[0].event_uuid,
+                                                         EventKey.event_uuid == events_ddbb[0].event_uuid,
                                                          EventKey.visible == False).all()
 
         assert len(event_keys) == 1
@@ -883,6 +893,74 @@ class TestEngine(unittest.TestCase):
                                                          EventKey.visible == True).all()
 
         assert len(event_keys) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 2
+
+    def test_insert_same_event_keys_same_source_different_processor(self):
+
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec2",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:04",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                },{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 2
 
         event_keys = self.session.query(EventKey).all()
 
