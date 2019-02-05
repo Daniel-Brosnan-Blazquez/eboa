@@ -8,6 +8,8 @@ module eboa
 
 # Import python utilities
 import math
+import datetime
+from dateutil import parser
 
 # Import debugging
 from eboa.debugging import debug
@@ -15,6 +17,30 @@ from eboa.debugging import debug
 ###
 # Acquisition ingestions' helpers
 ###
+
+# Uncomment for debugging reasons
+#@debug
+def convert_from_gps_to_utc(date):
+    """
+    Method to convert a date in GPS precission to UTC
+    :param date: date in GPS precission and ISO format
+    :type date: str
+
+    :return: date coverted in ISO 8601
+    :rtype: str
+
+    """
+    
+    date_datetime = parser.parse(date)
+
+    if date_datetime > datetime.datetime(2015, 6, 30, 23, 59, 59) and date_datetime <= datetime.datetime(2016, 12, 31, 23, 59, 59):
+        correction = -17
+    elif date_datetime > datetime.datetime(2016, 12, 31, 23, 59, 59):
+        correction = -18
+    else:
+        correction = -16
+
+    return str(date_datetime + datetime.timedelta(seconds=correction))
 
 # Uncomment for debugging reasons
 #@debug
