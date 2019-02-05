@@ -1802,8 +1802,8 @@ class Engine():
             # Make events visible
             events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.source_uuid == event_max_generation_time.source_uuid,
                                                                                                 EventKey.event_key == key)
-            self.session.query(EventKey).filter(EventKey.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
-            self.session.query(Event).filter(Event.event_uuid == events_uuids_to_update).update({"visible": True}, synchronize_session=False)
+            self.session.query(EventKey).filter(EventKey.event_uuid.in_(events_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+            self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_update)).update({"visible": True}, synchronize_session=False)
         # end for
 
         return

@@ -22,6 +22,7 @@ from eboa.engine.engine import Engine
 # Import ingestion helpers
 import eboa.engine.ingestion as ingestion
 import ingestions.s2.functions as functions
+import ingestions.functions.date_functions as date_functions
 import ingestions.s2.xpath_functions as xpath_functions
 
 # Import query
@@ -72,6 +73,17 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
+    # Completeness operations for the completeness analysis of the plan
+    completeness_planning_operation = {
+        "mode": "insert",
+        "dim_signature": {
+            "name": "RECEPTION_" + satellite,
+            "exec": "planning_" + os.path.basename(__file__),
+            "version": version
+        },
+        "events": []
+    }
+
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[@VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]")
     for vcid in vcids:
         vcid_number = vcid.get("VCID")
@@ -95,52 +107,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         apid_conf = functions.get_vcid_apid_configuration(vcid_number)
 
         # ISP validity event
-        isp_validity_event_link_ref = vcid_number + "_" + "ISP_VALIDITY"
-        isp_validity_event = {
-            "link_ref": isp_validity_event_link_ref,
-            "explicit_reference": session_id,
-            "key": session_id + channel,
-            "gauge": {
-                "insertion_type": "EVENT_KEYS",
-                "name": "RAW-ISP-VALIDITY",
-                "system": "EDRS"
-            },
-            "start": sensing_start,
-            "stop": sensing_stop,
-            "values": [{
-                "name": "values",
-                "type": "object",
-                "values": [
-                    {"name": "status",
-                     "type": "text",
-                     "value": status},
-                    {"name": "downlink_orbit",
-                     "type": "double",
-                     "value": downlink_orbit},
-                    {"name": "satellite",
-                     "type": "text",
-                     "value": satellite},
-                    {"name": "reception_station",
-                     "type": "text",
-                     "value": "EPAE"},
-                    {"name": "vcid",
-                     "type": "double",
-                     "value": vcid_number},
-                    {"name": "downlink_mode",
-                     "type": "text",
-                     "value": downlink_mode},
-                    {"name": "num_packets",
-                     "type": "double",
-                     "value": vcid.xpath("ISP_Status/Summary/NumPackets")[0].text},
-                    {"name": "num_frames",
-                     "type": "double",
-                     "value": vcid.xpath("NumFrames")[0].text}
-               ]
-            }]
-        }
-
-        # Insert isp_validity_event
-        list_of_events.append(isp_validity_event)
+        raw_isp_validity_event_link_ref = "RAW_ISP_VALIDITY_" + vcid_number
         
         # Obtain complete missing APIDs
         complete_missing_apids = vcid.xpath("ISP_Status/Status[number(NumPackets) = 0 and number(@APID) >= number($min_apid) and number(@APID) <= number($max_apid)]", min_apid = apid_conf["min_apid"], max_apid = apid_conf["max_apid"])
@@ -160,9 +127,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "stop": sensing_stop,
                 "links": [
                     {
-                        "link": isp_validity_event_link_ref,
+                        "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
-                        "name": "ISP_VALIDITY",
+                        "name": "RAW_ISP_VALIDITY",
                         "back_ref": "true"
                     }],
                 "values": [{
@@ -224,9 +191,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "stop": functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text),
                 "links": [
                     {
-                        "link": isp_validity_event_link_ref,
+                        "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
-                        "name": "ISP_VALIDITY",
+                        "name": "RAW_ISP_VALIDITY",
                         "back_ref": "true"
                     }],
                 "values": [{
@@ -288,9 +255,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "stop": sensing_stop,
                 "links": [
                     {
-                        "link": isp_validity_event_link_ref,
+                        "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
-                        "name": "ISP_VALIDITY",
+                        "name": "RAW_ISP_VALIDITY",
                         "back_ref": "true"
                     }],
                 "values": [{
@@ -333,66 +300,221 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
         # end for
 
+        raw_isp_validity_event = {
+            "link_ref": raw_isp_validity_event_link_ref,
+            "explicit_reference": session_id,
+            "key": session_id + channel,
+            "gauge": {
+                "insertion_type": "EVENT_KEYS",
+                "name": "RAW-ISP-VALIDITY",
+                "system": "EDRS"
+            },
+            "start": sensing_start,
+            "stop": sensing_stop,
+            "values": [{
+                "name": "values",
+                "type": "object",
+                "values": [
+                    {"name": "status",
+                     "type": "text",
+                     "value": status},
+                    {"name": "downlink_orbit",
+                     "type": "double",
+                     "value": downlink_orbit},
+                    {"name": "satellite",
+                     "type": "text",
+                     "value": satellite},
+                    {"name": "reception_station",
+                     "type": "text",
+                     "value": "EPAE"},
+                    {"name": "vcid",
+                     "type": "double",
+                     "value": vcid_number},
+                    {"name": "downlink_mode",
+                     "type": "text",
+                     "value": downlink_mode},
+                    {"name": "num_packets",
+                     "type": "double",
+                     "value": vcid.xpath("ISP_Status/Summary/NumPackets")[0].text},
+                    {"name": "num_frames",
+                     "type": "double",
+                     "value": vcid.xpath("NumFrames")[0].text}
+               ]
+            }]
+        }
+
+        # Insert raw_isp_validity_event
+        list_of_events.append(raw_isp_validity_event)
+
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW-ISP-VALIDTY
         record_type = downlink_mode
-        planned_imagings = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": sensing_stop, "op": "<"}], stop_filters = [{"date": sensing_start, "op": ">"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"})
+        corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": sensing_stop, "op": "<"}], stop_filters = [{"date": sensing_start, "op": ">"}])
         
         # If there are no found planned imaging events, the MSI will not be linked to the plan and so it will be unexpected
         
         # If there are found planned imaging events, the MSI will be linked to the plan and its segment will be removed from the completeness
-        if len(planned_imagings["linked_events"]) > 0:
-            for planned_imaging in planned_imagings["linked_events"]:
-                value = {
-                    "name": "used",
-                    "type": "object",
-                    "values": []
-                }
-                exit_status = engine.insert_event_values(planned_imaging.event_uuid, value)
+        if len(corrected_planned_imagings) > 0:
+            corrected_planned_imagings_sorted = sorted(corrected_planned_imagings, key=lambda event: event.start)
+            start_period = corrected_planned_imagings_sorted[0].start
+            stop_period = corrected_planned_imagings_sorted[-1].stop
+
+            for corrected_planned_imaging in corrected_planned_imagings:
                 value = {
                     "name": "completeness_began",
                     "type": "object",
                     "values": []
                 }
-                exit_status = engine.insert_event_values(planned_imaging.event_uuid, value)
+                exit_status = engine.insert_event_values(corrected_planned_imaging.event_uuid, value)
                 if exit_status["inserted"] == True:
-                    # Insert the linked MISSING event for the automatic completess check
-                    missing_planning_operation = {"operations": [{
-                        "mode": "insert",
-                        "dim_signature": {
-                            "name": "NPPF_" + satellite,
-                            "exec": os.path.basename(__file__),
-                            "version": version
-                        },
-                        "source": {
+                    planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+
+                    # Insert the linked COMPLETENESS event for the automatic completeness check
+                    if not "source" in completeness_planning_operation:
+                        completeness_planning_operation["source"] = {
                             "name": source["name"],
-                            "generation_time": str(planned_imaging.source.generation_time),
-                            "validity_start": str(planned_imaging.start),
-                            "validity_stop": str(planned_imaging.stop)
+                            "generation_time": str(corrected_planned_imaging.source.generation_time),
+                            "validity_start": str(start_period),
+                            "validity_stop": str(stop_period)
+                        }
+                    # end if
+                    completeness_planning_operation["events"].append({
+                        "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                            "name": "PLANNING_COMPLETENESS",
+                            "system": satellite
                         },
-                        "events": [{
-                            "gauge": {
-                                "insertion_type": "SIMPLE_UPDATE",
-                                "name": "MISSING",
-                                "system": satellite
-                            },
-                            "start": str(planned_imaging.start),
-                            "stop": str(planned_imaging.stop),
-                            "links": [
-                                {
-                                    "link": str(planned_imaging.event_uuid),
-                                    "link_mode": "by_uuid",
-                                    "name": "PLANNED_IMAGING",
-                                    "back_ref": "MISSING"
-                                }]
+                        "start": str(corrected_planned_imaging.start),
+                        "stop": str(corrected_planned_imaging.stop),
+                        "links": [
+                            {
+                                "link": str(planned_imaging_uuid),
+                                "link_mode": "by_uuid",
+                                "name": "PLANNED_IMAGING",
+                                "back_ref": "COMPLETENESS"
+                            }],
+                        "values": [{
+                            "name": "details",
+                            "type": "object",
+                            "values": [
+                                {"name": "status",
+                                 "type": "text",
+                                 "value": "MISSING"}
+                            ]
                         }]
-                    }]
-                    }
-                    # Insert isp_gap_event
-                    list_of_planning_operations.append(missing_planning_operation)
+                    })
                 # end if
+            # end for
+
+            # Build the ISP-VALIDITY events
+            raw_isp_validity_date_segments = date_functions.convert_input_events_to_date_segments([raw_isp_validity_event])
+            planning_date_segments = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings)
+            isp_validity_valid_segments = date_functions.intersect_timelines(raw_isp_validity_date_segments, planning_date_segments)
+
+            # Obtain the unexpected segments
+            isp_validity_valid_coverage = {
+                "id": "isp_validity_valid_coverage",
+                "start": isp_validity_valid_segments[0]["start"],
+                "stop": isp_validity_valid_segments[-1]["stop"]
+            }
+
+            isp_validity_unexpected_segments = date_functions.difference_timelines(raw_isp_validity_date_segments, [isp_validity_valid_coverage])
+
+            # Insert the valid segments
+            for isp_validity_valid_segment in isp_validity_valid_segments:
+                corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == isp_validity_valid_segment["id2"]][0]
+                planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+
+                # ISP validity event
+                isp_validity_event_link_ref = "ISP_VALIDITY_" + vcid_number + "_" + str(isp_validity_valid_segment["start"])
+                isp_validity_event = {
+                    "link_ref": isp_validity_event_link_ref,
+                    "explicit_reference": session_id,
+                    "key": session_id + channel,
+                    "gauge": {
+                        "insertion_type": "EVENT_KEYS",
+                        "name": "ISP-VALIDITY",
+                        "system": "EDRS"
+                    },
+                    "links": [
+                        {
+                            "link": str(planned_imaging_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "PLANNED_IMAGING",
+                            "back_ref": "ISP-VALIDITY"
+                        },{
+                            "link": str(isp_validity_valid_segment["id1"]),
+                            "link_mode": "by_ref",
+                            "name": "RAW_ISP_VALIDITY",
+                            "back_ref": "ISP-VALIDITY"
+                        }],
+                    "start": str(isp_validity_valid_segment["start"]),
+                    "stop": str(isp_validity_valid_segment["stop"]),
+                    "values": [{
+                        "name": "values",
+                        "type": "object",
+                        "values": [
+                            {"name": "status",
+                             "type": "text",
+                             "value": status},
+                            {"name": "downlink_orbit",
+                             "type": "double",
+                             "value": downlink_orbit},
+                            {"name": "satellite",
+                             "type": "text",
+                             "value": satellite},
+                            {"name": "reception_station",
+                             "type": "text",
+                             "value": "EPAE"},
+                            {"name": "vcid",
+                             "type": "double",
+                             "value": vcid_number},
+                            {"name": "downlink_mode",
+                             "type": "text",
+                             "value": downlink_mode}
+                        ]
+                    }]
+                }
+                # Insert isp_validity_event
+                list_of_events.append(isp_validity_event)
+
+                isp_validity_completeness_event = {
+                    "explicit_reference": session_id,
+                    "key": session_id + channel,
+                    "gauge": {
+                        "insertion_type": "ERASE_and_REPLACE",
+                        "name": "PLANNING_COMPLETENESS",
+                        "system": satellite
+                    },
+                    "links": [
+                        {
+                            "link": isp_validity_event_link_ref,
+                            "link_mode": "by_ref",
+                            "name": "ISP-VALIDITY",
+                            "back_ref": "COMPLETENESS"
+                        }],
+                    "start": str(isp_validity_valid_segment["start"]),
+                    "stop": str(isp_validity_valid_segment["stop"]),
+                    "values": [{
+                        "name": "details",
+                        "type": "object",
+                        "values": [
+                            {"name": "status",
+                             "type": "text",
+                             "value": "RECEIVED"}
+                        ]
+                    }]
+                }
+
+                # Insert isp_validity_event
+                list_of_events.append(isp_validity_completeness_event)
             # end for
         # end if
     # end for
+
+    # Insert completeness operation for the completeness analysis of the plan
+    if "source" in completeness_planning_operation:
+        list_of_planning_operations.append(completeness_planning_operation)
+    # end if
 
     return status
 
@@ -545,12 +667,12 @@ def process_file(file_path, engine, query):
     
 
     # Build the xml
-    data = {"operations": []}
-    data["operations"] = data["operations"] + list_of_planning_operations
+    data = {}
+    data["operations"] = list_of_planning_operations
     data["operations"].append({
-        "mode": "insert_and_erase",
+        "mode": "insert",
         "dim_signature": {
-            "name": "SLOT_REQUEST_EDRS",
+            "name": "RECEPTION_" + satellite,
             "exec": os.path.basename(__file__),
             "version": version
         },
