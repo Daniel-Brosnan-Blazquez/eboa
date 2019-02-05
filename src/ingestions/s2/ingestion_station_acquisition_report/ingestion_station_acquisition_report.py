@@ -1,3 +1,10 @@
+"""
+Ingestion module for the Station Acquisition Report files
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+"""
 # Import python utilities
 import os
 import argparse
@@ -54,15 +61,22 @@ def process_file(file_path, engine, query):
     xpath_xml = etree.XPathEvaluator(parsed_xml)
 
     satellite = file_name[0:3]
-    generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
-    validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
-    validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
-    system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
 
     acq_id = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/Acq_Id")[0].text
     start = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/DownlinkStartTime")[0].text.split("=")[1]
     stop = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/DownlinkEndTime")[0].text.split("=")[1]
     downlink_status = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/DownlinkStatus")[0].text
+
+    generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
+    validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
+    if start < validity_start:
+        validity_start = start
+    # end if
+    validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
+    if stop > validity_stop:
+        validity_stop = stop
+    # end if
+    station = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
 
     if downlink_status != "OK":
         caracterized_downlink_status = "NOK"
@@ -110,20 +124,21 @@ def process_file(file_path, engine, query):
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
-            "name": "STATION_REPORT_" + satellite + "_"+ system,
+            "name": "STATION_REPORT_" + station + "_"+ satellite,
             "exec": os.path.basename(__file__),
             "version": version
         },
         "source": source,
         "events": [{
-            "key": "STATION_REPORT_" + satellite + "_" + system + acq_id,
+            "key": "STATION_REPORT_" + station + "_" + satellite + "_" + acq_id,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
                 "name": "STATION_REPORT",
-                "system": satellite
+                "system": station
             },
             "start": start,
             "stop": stop,
+            "links": links,
             "values": [{
                 "name": "details",
                 "type": "object",
@@ -162,9 +177,12 @@ def process_file(file_path, engine, query):
                     "name": "status",
                     "type": "text",
                     "value": status
+                    },{
+                    "name": "station",
+                    "type": "text",
+                    "value": station
                     }]
-                }],
-            "links": links
+                }]
         }],
     }]}
 
@@ -190,7 +208,7 @@ def command_process_file(file_path, output_path = None):
     filename = os.path.basename(file_path)
 
     returned_value = 0
-    #print(json.dumps(data,indent = 4))
+
     # Treat data
     if output_path == None:
         returned_value = insert_data_into_DDBB(data, filename, engine)
@@ -218,7 +236,7 @@ if __name__ == "__main__":
     # end if
 
     # Before calling to the processor there should be a validation of
-    # the file following a schema. Schema not available for ORBPREs
+    # the file following a schema. Schema not available for STNACQs
 
     returned_value = command_process_file(file_path, output_path)
 
