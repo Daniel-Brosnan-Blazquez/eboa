@@ -1478,6 +1478,50 @@ class Query():
         # end if
         return values
 
+    def get_event_values_interface(self, value_type, value_filters = None, values_names_type = None, values_name_type_like = None, event_uuids = None):
+        """
+        """
+        params = []
+        # event_uuids
+        if event_uuids != None:
+            is_valid_operator_list(event_uuids)
+            filter = eval('self.event_value_entities[value_type].event_uuid.' + event_uuids["op"] + '_')
+            params.append(filter(event_uuids["list"]))
+        # end if
+
+        # value filters
+        if value_filters != None:
+            is_valid_value_filters(value_filters, self.operators)
+            for value_filter in value_filters:
+                op = self.operators[value_filter["op"]]
+                params.append(op(self.event_value_entities[value_type].value, value_filter["value"]))
+            # end for
+        # end if
+
+        # Value names
+        if values_names_type != None:
+            is_valid_values_names_type(values_names_type)
+            for value_names_type in values_names_type:
+                filter = eval("self.event_value_entities[value_names_type['type']].name." + value_names_type["op"] + "_")
+                params.append(filter(value_names_type["names"]))
+            # end for
+        # end if
+        if values_name_type_like != None:
+            is_valid_values_name_type_like(values_name_type_like)
+            for value_name_type_like in values_name_type_like:
+                filter = eval("self.event_value_entities[value_type].name." + value_name_type_like["op"])
+                params.append(filter(value_name_type_like["name_like"]))
+            # end for
+        # end if
+
+        query = self.session.query(self.event_value_entities[value_type])
+
+        query = query.filter(*params)
+        log_query(query)
+        values = query.all()
+
+        return values
+
     def get_annotation_values(self, annotation_uuids = None):
         """
         """
