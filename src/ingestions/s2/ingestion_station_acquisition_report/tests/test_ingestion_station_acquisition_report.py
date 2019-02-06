@@ -76,3 +76,27 @@ class TestEngine(unittest.TestCase):
                                                                                  Event.stop == "2018-07-24T10:47:39").all()
 
         assert len(specific_operation) == 1
+
+        #Check that the validity period changes if the downlink period isn't covered
+        filename = "REPORT_WITH_VALIDITY_PERIOD_NOT_COVERING.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        period = self.session.query(Source).filter(Source.validity_start >= "2018-07-24T10:44:12",
+                                                                                 Source.validity_stop <= "2018-07-24T10:48:57").all()
+
+        assert len(period) == 1
+
+        #Check that the caracterized_downlink_status NOK is correctly set
+        filename = "REPORT_WITH_NOK_CARATERIZED_STATUS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        nok_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
+                                                                                 Event.start == "2018-07-24T21:51:07",
+                                                                                 EventText.name == "caracterized_downlink_status",
+                                                                                 EventText.value == "NOK").all()
+
+        assert len(nok_event) == 1
