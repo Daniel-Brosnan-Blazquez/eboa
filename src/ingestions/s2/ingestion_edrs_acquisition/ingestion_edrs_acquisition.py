@@ -8,7 +8,6 @@ module eboa
 # Import python utilities
 import os
 import argparse
-from dateutil import parser
 import datetime
 import json
 from tempfile import mkstemp
@@ -95,6 +94,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Sort list
         sensing_starts_in_iso_8601.sort()
         sensing_start = sensing_starts_in_iso_8601[0]
+        corrected_sensing_start = functions.convert_from_gps_to_utc(sensing_start)
 
         sensing_stops = vcid.xpath("ISP_Status/Status/SensStopTime")
         sensing_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_stop.text) for sensing_stop in sensing_stops]
@@ -102,12 +102,18 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Sort list
         sensing_stops_in_iso_8601.sort()
         sensing_stop = sensing_stops_in_iso_8601[-1]
+        corrected_sensing_stop = functions.convert_from_gps_to_utc(sensing_stop)
 
         # APID configuration
         apid_conf = functions.get_vcid_apid_configuration(vcid_number)
 
         # ISP validity event
         raw_isp_validity_event_link_ref = "RAW_ISP_VALIDITY_" + vcid_number
+
+        # Received number of packets
+        # The packets registered in the APID 2047 have to be discarded
+        received_number_packets_apid_2047 = int(vcid.xpath("ISP_Status/Status[@APID = 2047]/NumPackets")[0].text)
+        received_number_packets = int(vcid.xpath("ISP_Status/Summary/NumPackets")[0].text) - int(received_number_packets_apid_2047)
         
         # Obtain complete missing APIDs
         complete_missing_apids = vcid.xpath("ISP_Status/Status[number(NumPackets) = 0 and number(@APID) >= number($min_apid) and number(@APID) <= number($max_apid)]", min_apid = apid_conf["min_apid"], max_apid = apid_conf["max_apid"])
@@ -120,17 +126,17 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "key": session_id + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "ISP-GAP",
+                    "name": "ISP_GAP",
                     "system": "EDRS"
                 },
-                "start": sensing_start,
-                "stop": sensing_stop,
+                "start": corrected_sensing_start,
+                "stop": corrected_sensing_stop,
                 "links": [
                     {
                         "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
                         "name": "RAW_ISP_VALIDITY",
-                        "back_ref": "true"
+                        "back_ref": "ISP_GAP"
                     }],
                 "values": [{
                     "name": "values",
@@ -154,6 +160,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         {"name": "reception_station",
                          "type": "text",
                          "value": "EPAE"},
+                        {"name": "channel",
+                         "type": "double",
+                         "value": channel},
                         {"name": "vcid",
                          "type": "double",
                          "value": vcid_number},
@@ -179,22 +188,24 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             apid_number = apid.get("APID")
             band_detector = functions.get_band_detector(apid_number)
 
+            stop = functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text)
+            corrected_stop = functions.convert_from_gps_to_utc(stop)
             isp_gap_event = {
                 "explicit_reference": session_id,
                 "key": session_id + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "ISP-GAP",
+                    "name": "ISP_GAP",
                     "system": "EDRS"
                 },
-                "start": sensing_start,
-                "stop": functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text),
+                "start": corrected_sensing_start,
+                "stop": corrected_stop,
                 "links": [
                     {
                         "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
                         "name": "RAW_ISP_VALIDITY",
-                        "back_ref": "true"
+                        "back_ref": "ISP_GAP"
                     }],
                 "values": [{
                     "name": "values",
@@ -218,6 +229,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         {"name": "reception_station",
                          "type": "text",
                          "value": "EPAE"},
+                        {"name": "channel",
+                         "type": "double",
+                         "value": channel},
                         {"name": "vcid",
                          "type": "double",
                          "value": vcid_number},
@@ -243,22 +257,25 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             apid_number = apid.get("APID")
             band_detector = functions.get_band_detector(apid_number)
 
+            start = functions.three_letter_to_iso_8601(apid.xpath("SensStopTime")[0].text)
+            corrected_start = functions.convert_from_gps_to_utc(start)
+
             isp_gap_event = {
                 "explicit_reference": session_id,
                 "key": session_id + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "ISP-GAP",
+                    "name": "ISP_GAP",
                     "system": "EDRS"
                 },
-                "start": functions.three_letter_to_iso_8601(apid.xpath("SensStopTime")[0].text),
-                "stop": sensing_stop,
+                "start": corrected_start,
+                "stop": corrected_sensing_stop,
                 "links": [
                     {
                         "link": raw_isp_validity_event_link_ref,
                         "link_mode": "by_ref",
                         "name": "RAW_ISP_VALIDITY",
-                        "back_ref": "true"
+                        "back_ref": "ISP_GAP"
                     }],
                 "values": [{
                     "name": "values",
@@ -282,6 +299,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         {"name": "reception_station",
                          "type": "text",
                          "value": "EPAE"},
+                        {"name": "channel",
+                         "type": "double",
+                         "value": channel},
                         {"name": "vcid",
                          "type": "double",
                          "value": vcid_number},
@@ -306,11 +326,11 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             "key": session_id + channel,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
-                "name": "RAW-ISP-VALIDITY",
+                "name": "RAW_ISP_VALIDITY",
                 "system": "EDRS"
             },
-            "start": sensing_start,
-            "stop": sensing_stop,
+            "start": corrected_sensing_start,
+            "stop": corrected_sensing_stop,
             "values": [{
                 "name": "values",
                 "type": "object",
@@ -327,6 +347,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     {"name": "reception_station",
                      "type": "text",
                      "value": "EPAE"},
+                    {"name": "channel",
+                     "type": "double",
+                     "value": channel},
                     {"name": "vcid",
                      "type": "double",
                      "value": vcid_number},
@@ -335,7 +358,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                      "value": downlink_mode},
                     {"name": "num_packets",
                      "type": "double",
-                     "value": vcid.xpath("ISP_Status/Summary/NumPackets")[0].text},
+                     "value": str(received_number_packets)},
                     {"name": "num_frames",
                      "type": "double",
                      "value": vcid.xpath("NumFrames")[0].text}
@@ -346,9 +369,37 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Insert raw_isp_validity_event
         list_of_events.append(raw_isp_validity_event)
 
-        # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW-ISP-VALIDTY
+        # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
         record_type = downlink_mode
-        corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": sensing_stop, "op": "<"}], stop_filters = [{"date": sensing_start, "op": ">"}])
+        corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+
+        # Obtain the expected number of packets and the packet status
+        raw_isp_validity_date_segments = date_functions.convert_input_events_to_date_segments([raw_isp_validity_event])
+        planning_date_segments = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings)
+        isp_validity_valid_segments = date_functions.intersect_timelines(raw_isp_validity_date_segments, planning_date_segments)
+
+        planning_timeline_duration = date_functions.get_timeline_duration(isp_validity_valid_segments)
+        # For calculating the number of expected scenes, for every datastrip expected, the duration of a scene is added to the total duration of the timeline of expected datastrips
+        expected_number_scenes = round(((planning_timeline_duration + 3.608 * len(isp_validity_valid_segments)) / 3.608) / 2)
+        expected_number_packets = expected_number_scenes * 12960
+
+        if (expected_number_packets - received_number_packets) == 0:
+            packet_status = "OK"
+        elif abs(expected_number_packets - received_number_packets) < len(isp_validity_valid_segments) * 12960 and (expected_number_packets - received_number_packets) % 12960 == 0:
+            packet_status = "OK"
+        else:
+            packet_status = "MISSING"
+        # end if
+
+        raw_isp_validity_event["values"].append({"name": "expected_num_packets",
+                                                 "type": "double",
+                                                 "value": str(expected_number_packets)})
+        raw_isp_validity_event["values"].append({"name": "diff_expected_received",
+                                                 "type": "double",
+                                                 "value": str(expected_number_packets - received_number_packets)})
+        raw_isp_validity_event["values"].append({"name": "packet_status",
+                                                 "type": "text",
+                                                 "value": packet_status})
         
         # If there are no found planned imaging events, the MSI will not be linked to the plan and so it will be unexpected
         
@@ -405,11 +456,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 # end if
             # end for
 
-            # Build the ISP-VALIDITY events
-            raw_isp_validity_date_segments = date_functions.convert_input_events_to_date_segments([raw_isp_validity_event])
-            planning_date_segments = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings)
-            isp_validity_valid_segments = date_functions.intersect_timelines(raw_isp_validity_date_segments, planning_date_segments)
-
             # Obtain the unexpected segments
             isp_validity_valid_coverage = {
                 "id": "isp_validity_valid_coverage",
@@ -419,7 +465,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             isp_validity_unexpected_segments = date_functions.difference_timelines(raw_isp_validity_date_segments, [isp_validity_valid_coverage])
 
-            # Insert the valid segments
+            # Build the ISP_VALIDITY events
             for isp_validity_valid_segment in isp_validity_valid_segments:
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == isp_validity_valid_segment["id2"]][0]
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
@@ -432,7 +478,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "key": session_id + channel,
                     "gauge": {
                         "insertion_type": "EVENT_KEYS",
-                        "name": "ISP-VALIDITY",
+                        "name": "ISP_VALIDITY",
                         "system": "EDRS"
                     },
                     "links": [
@@ -465,6 +511,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             {"name": "reception_station",
                              "type": "text",
                              "value": "EPAE"},
+                            {"name": "channel",
+                             "type": "double",
+                             "value": channel},
                             {"name": "vcid",
                              "type": "double",
                              "value": vcid_number},
@@ -486,6 +535,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "system": satellite
                     },
                     "links": [
+                        {
+                            "link": str(planned_imaging_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "PLANNED_IMAGING",
+                            "back_ref": "COMPLETENESS"
+                        },
                         {
                             "link": isp_validity_event_link_ref,
                             "link_mode": "by_ref",
@@ -648,7 +703,8 @@ def process_file(file_path, engine, query):
 
     # Sort list
     sensing_starts_in_iso_8601.sort()
-    validity_start = sensing_starts_in_iso_8601[0]
+    corrected_sensing_start = functions.convert_from_gps_to_utc(sensing_starts_in_iso_8601[0])
+    validity_start = corrected_sensing_start
     validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
 
     source = {

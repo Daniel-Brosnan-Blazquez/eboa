@@ -86,7 +86,6 @@ def _generate_station_schedule_events(xpath_xml, source, list_of_events):
         orbit = schedule.xpath("Orbit_Number")[0].text
         # Station schedule event
         station_schedule_event = {
-            "key": satellite + "-" + str(orbit),
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
                 "name": "STATION_SCHEDULE",

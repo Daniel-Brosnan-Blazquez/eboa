@@ -82,7 +82,6 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
         orbit = schedule.xpath("@id")[0].split("_")[1]
         # DFEP schedule event
         dfep_schedule_event = {
-            "key": satellite + "-" + str(orbit),
             "gauge": {
                 "insertion_type": "ERASE_and_REPLACE",
                 "name": "DFEP_SCHEDULE",

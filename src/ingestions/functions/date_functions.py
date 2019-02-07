@@ -8,6 +8,10 @@ module eboa
 # Import python utilities
 from dateutil import parser
 
+###########
+# Functions using the timelines with the structure defined by identifiers and start and stop vlaues
+###########
+
 def intersect_timelines (timeline1, timeline2):
     """
     Method to obtain the segments from timeline1 intersecting with timeline2
@@ -142,6 +146,19 @@ def sort_timeline_by_start(timeline):
 
     return sorted(timeline, key=lambda segment: segment["start"])
 
+def get_timeline_duration(timeline):
+    """
+    Method to get the duration of the timeline (summing up the duration of every event)
+    Input: list of segments structured for the usage of this component
+    Output: duration of the timeline in seconds
+
+    """
+    return sum([(segment["stop"] - segment["start"]).total_seconds() for segment in timeline])
+
+###########
+# Functions using the timelines with the structure of data to be inserted into the EBOA
+###########
+
 def convert_input_events_to_date_segments(timeline):
     """
     Method to convert from events to be inserted into EBOA to segments to be managed by this component
@@ -160,11 +177,14 @@ def convert_input_events_to_date_segments(timeline):
     
     return sorted(date_segments, key=lambda segment: segment["start"])
 
+###########
+# Functions using the timelines with the structure of data extracted from the EBOA
+###########
 
 def convert_eboa_events_to_date_segments(timeline):
     """
     Method to convert from events extracted from EBOA to segments to be managed by this component
-    Input: list of events structured as the damodel of EBOA
+    Input: list of events structured as the datamodel of EBOA
     Output: list of elements accepted by this component:
     {
     "id": event.event_uuid,
@@ -178,3 +198,13 @@ def convert_eboa_events_to_date_segments(timeline):
     date_segments = [{"id": event.event_uuid, "start": event.start, "stop": event.stop} for event in timeline]
     
     return sorted(date_segments, key=lambda segment: segment["start"])
+
+def get_eboa_timeline_duration(timeline):
+    """
+    Method to get the duration of the timeline (summing up the duration of every event)
+    Input: list of events structured as the datamodel of EBOA
+    Output: duration of the timeline in seconds
+
+    """
+
+    return sum([(event.stop - event.start).total_seconds() for event in timeline])
