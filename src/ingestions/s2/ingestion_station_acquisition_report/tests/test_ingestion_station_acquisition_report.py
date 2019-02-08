@@ -110,6 +110,12 @@ class TestEngine(unittest.TestCase):
         values_text ={"downlink_status" : "OK", "caracterized_downlink_status" : "OK", "comments" : " ", "antenna_id" : "MSP21", "satellite" : "S2A", "status" : "OK", "station" : "MPS_"}
         values_double = {"orbit" : "16121", "support_number" : "01"}
         values_list=[]
+
+        definite_source = self.session.query(Source).filter(Source.validity_start == "2018-07-24T10:44:12",
+                                                                                 Source.validity_stop == "2018-07-24T10:48:57",
+                                                                                 Source.generation_time == "UTC=2018-07-24T11:04:40",
+                                                                                 Source.name == "REPORT_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
+                                                                                 ).all()
         for k,v in values_text.items():
             values_list.append(self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
                                                                                  Event.start == "2018-07-24T10:45:09",
@@ -125,4 +131,4 @@ class TestEngine(unittest.TestCase):
                                                                                  EventText.value == v).all())
         #end for
 
-        assert len(values_list) == 9
+        assert len(values_list) == 9 and len(definite_source) == 1
