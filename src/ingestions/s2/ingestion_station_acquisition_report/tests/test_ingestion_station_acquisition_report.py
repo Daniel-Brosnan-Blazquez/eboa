@@ -100,3 +100,29 @@ class TestEngine(unittest.TestCase):
                                                                                  EventText.value == "NOK").all()
 
         assert len(nok_event) == 1
+
+        #Check that all the values were correctly introduced to the insert_data_into_DDBB
+        filename = "REPORT_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        ingestion.command_process_file(file_path)
+
+        values_text ={"downlink_status" : "OK", "caracterized_downlink_status" : "OK", "comments" : " ", "antenna_id" : "MSP21", "satellite" : "S2A", "status" : "OK", "station" : "MPS_"}
+        values_double = {"orbit" : "16121", "support_number" : "01"}
+        values_list=[]
+        for k,v in values_text.items():
+            values_list.append(self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
+                                                                                 Event.start == "2018-07-24T10:45:09",
+                                                                                 Event.stop == "2018-07-24T10:47:39",
+                                                                                 EventText.name == k,
+                                                                                 EventText.value == v).all())
+        #end for
+        for k,v in values_double.items():
+            values_list.append(self.session.query(EventDouble).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
+                                                                                 Event.start == "2018-07-24T10:45:09",
+                                                                                 Event.stop == "2018-07-24T10:47:39",
+                                                                                 EventText.name == k,
+                                                                                 EventText.value == v).all())
+        #end for
+
+        assert len(values_list) == 9
