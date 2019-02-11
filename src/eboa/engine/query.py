@@ -1108,7 +1108,7 @@ class Query():
 
         return annotations
 
-    def get_annotations_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, annotation_cnf_names = None, annotation_cnf_name_like = None, annotation_cnf_systems = None, annotation_cnf_system_like = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None):
+    def get_annotations_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, annotation_cnf_names = None, annotation_cnf_name_like = None, annotation_cnf_systems = None, annotation_cnf_system_like = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, annotation_uuids = None):
         """
         """
         params = []
@@ -1116,6 +1116,13 @@ class Query():
         params.append(Annotation.visible == True)
 
         tables = []
+
+        # annotation_uuids
+        if annotation_uuids != None:
+            is_valid_operator_list(annotation_uuids)
+            filter = eval('Annotation.annotation_uuid.' + annotation_uuids["op"] + '_')
+            params.append(filter(annotation_uuids["list"]))
+        # end if
 
         # Sources
         if sources != None:
@@ -1549,6 +1556,50 @@ class Query():
         else:
             values = self.session.query(value_class).all()
         # end if
+        return values
+
+    def get_annotation_values_interface(self, value_type, value_filters = None, values_names_type = None, values_name_type_like = None, annotation_uuids = None):
+        """
+        """
+        params = []
+        # annotation_uuids
+        if annotation_uuids != None:
+            is_valid_operator_list(annotation_uuids)
+            filter = eval('self.annotation_value_entities[value_type].annotation_uuid.' + annotation_uuids["op"] + '_')
+            params.append(filter(annotation_uuids["list"]))
+        # end if
+
+        # value filters
+        if value_filters != None:
+            is_valid_value_filters(value_filters, self.operators)
+            for value_filter in value_filters:
+                op = self.operators[value_filter["op"]]
+                params.append(op(self.annotation_value_entities[value_type].value, value_filter["value"]))
+            # end for
+        # end if
+
+        # Value names
+        if values_names_type != None:
+            is_valid_values_names_type(values_names_type)
+            for value_names_type in values_names_type:
+                filter = eval("self.annotation_value_entities[value_names_type['type']].name." + value_names_type["op"] + "_")
+                params.append(filter(value_names_type["names"]))
+            # end for
+        # end if
+        if values_name_type_like != None:
+            is_valid_values_name_type_like(values_name_type_like)
+            for value_name_type_like in values_name_type_like:
+                filter = eval("self.annotation_value_entities[value_type].name." + value_name_type_like["op"])
+                params.append(filter(value_name_type_like["name_like"]))
+            # end for
+        # end if
+
+        query = self.session.query(self.annotation_value_entities[value_type])
+
+        query = query.filter(*params)
+        log_query(query)
+        values = query.all()
+
         return values
 
     def close_session (self):
