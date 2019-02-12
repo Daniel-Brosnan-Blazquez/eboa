@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Earth_Explorer_File schemaVersion="2.1" xmlns="http://eop-cfi.esa.int/CFI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://eop-cfi.esa.int/CFI http://eop-cfi.esa.int/CFI/EE_CFI_SCHEMAS/EO_OPER_MPL_ORBPRE_0201.XSD">
+
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S2A_OPER_MPL_ORBPRE_20180720T030221_20180730T030221_0001</File_Name>
+      <File_Description>FOS Predicted Orbit File</File_Description>
+      <Notes></Notes>
+      <Mission>SENTINEL 2A</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>MPL_ORBPRE</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2018-07-24T11:30:00</Validity_Start>
+        <Validity_Stop>UTC=2018-07-24T12:30:00</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>FOS</System>
+        <Creator>NAPEOS</Creator>
+        <Creator_Version>3.0</Creator_Version>
+        <Creation_Date>UTC=2018-07-20T03:02:18</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header>
+      <Ref_Frame>EARTH_FIXED</Ref_Frame>
+      <Time_Reference>UTC</Time_Reference>
+    </Variable_Header>
+  </Earth_Explorer_Header>
+
+  <Data_Block type="xml">
+    <List_of_OSVs count="1">
+      <OSV>
+        <TAI>TAI=2018-07-24T11:42:14.755054</TAI>
+        <UTC>UTC=2018-07-24T11:41:37.755054</UTC>
+        <UT1>UT1=2018-07-24T11:41:37.824317</UT1>
+        <Absolute_Orbit>+16122</Absolute_Orbit>
+        <X unit="m">-6823540.610</X>
+        <Y unit="m">+2201778.178</Y>
+        <Z unit="m">-0000000.000</Z>
+        <VX unit="m/s">+0509.586405</VX>
+        <VY unit="m/s">+1551.622675</VY>
+        <VZ unit="m/s">+7374.707679</VZ>
+        <Quality>0000000000000</Quality>
+      </OSV>
+    </List_of_OSVs>
+  </Data_Block>
+
+</Earth_Explorer_File>

@@ -60,7 +60,7 @@ def process_file(file_path, engine, query):
     parsed_xml = etree.parse(new_file_path)
     xpath_xml = etree.XPathEvaluator(parsed_xml)
 
-    satellite = file_name[0:3]
+    satellite = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/File_Name")[0].text[0:3]
 
     acq_id = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/Acq_Id")[0].text
     start = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/DownlinkStartTime")[0].text.split("=")[1]
@@ -103,7 +103,8 @@ def process_file(file_path, engine, query):
     playbacks = query.get_linked_events_join(gauge_name_like = {"str":"PLANNED_PLAYBACK_TYPE_%_CORRECTION","op":"like"},
                                          gauge_systems = {"list":[satellite],"op":"in"},
                                          start_filters = [{"date":start,"op":">"}], stop_filters = [{"date":stop, "op":"<"}],
-                                         link_names = {"list":["TIME_CORRECTION"],"op":"in"}, return_prime_events = False)
+                                         link_names = {"list":["TIME_CORRECTION"],"op":"in"},
+                                         return_prime_events = False)
 
     links = []
     status = "MATCHED_PLAYBACK"
