@@ -491,7 +491,7 @@ class Query():
 
         return gauges
 
-    def get_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None, value_filters = None, values_names_type = None, values_name_type_like = None):
+    def get_events(self, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, event_uuids = None, value_filters = None, values_names_type = None, values_name_type_like = None, limit = None):
         """
         """
         params = []
@@ -588,12 +588,17 @@ class Query():
         # end for
 
         query = query.filter(*params)
+
+        if limit != None:
+            query = query.limit(limit)
+        # end if
+
         log_query(query)
         events = query.all()
 
         return events
 
-    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, keys = None, key_like = None, event_uuids = None):
+    def get_events_join(self, sources = None, source_like = None, explicit_refs = None, explicit_ref_like = None, gauge_names = None, gauge_name_like = None, gauge_systems = None, gauge_system_like = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, values_names_type = None, values_name_type_like = None, keys = None, key_like = None, event_uuids = None, limit = None):
         """
         """
         params = []
@@ -738,6 +743,11 @@ class Query():
         # end for
 
         query = query.filter(*params)
+
+        if limit != None:
+            query = query.limit(limit)
+        # end if
+
         log_query(query)
         events = query.all()
 
