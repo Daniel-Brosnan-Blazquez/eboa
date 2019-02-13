@@ -115,14 +115,14 @@ class TestEngine(unittest.TestCase):
 
         assert len(definite_downlink_status) == 1
 
-        #Check caracterized_downlink_status is correctly taken
-        definite_caracterized_downlink_status = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
+        #Check characterized_downlink_status is correctly taken
+        definite_characterized_downlink_status = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
                                                                              Event.start == "2018-07-24T10:45:09",
                                                                              Event.stop == "2018-07-24T10:47:39",
-                                                                             EventText.name == "caracterized_downlink_status",
+                                                                             EventText.name == "characterized_downlink_status",
                                                                              EventText.value == "OK").all()
 
-        assert len(definite_caracterized_downlink_status) == 1
+        assert len(definite_characterized_downlink_status) == 1
 
         #Check comments is correctly taken
         definite_comments = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
@@ -222,7 +222,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(period) == 1
 
-        #Check that the caracterized_downlink_status NOK is correctly set
+        #Check that the characterized_downlink_status NOK is correctly set
         filename = "REPORT_WITH_NOK_CARATERIZED_STATUS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
@@ -230,7 +230,7 @@ class TestEngine(unittest.TestCase):
 
         nok_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STATION_REPORT",
                                                                                  Event.start == "2018-07-24T21:51:07",
-                                                                                 EventText.name == "caracterized_downlink_status",
+                                                                                 EventText.name == "characterized_downlink_status",
                                                                                  EventText.value == "NOK").all()
 
         assert len(nok_event) == 1
