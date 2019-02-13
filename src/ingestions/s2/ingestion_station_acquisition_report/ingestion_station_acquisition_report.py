@@ -79,9 +79,9 @@ def process_file(file_path, engine, query):
     station = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
 
     if downlink_status != "OK":
-        caracterized_downlink_status = "NOK"
+        characterized_downlink_status = "NOK"
     else:
-        caracterized_downlink_status = "OK"
+        characterized_downlink_status = "OK"
     # end if
 
     comments = xpath_xml("/Earth_Explorer_File/Data_Block/StationAcquisitionReport/StationDownlinkDetails/Comments")[0].text
@@ -149,9 +149,9 @@ def process_file(file_path, engine, query):
                     "value": downlink_status
                     },
                     {
-                    "name": "caracterized_downlink_status",
+                    "name": "characterized_downlink_status",
                     "type": "text",
-                    "value": caracterized_downlink_status
+                    "value": characterized_downlink_status
                     },
                     {
                     "name": "comments",
