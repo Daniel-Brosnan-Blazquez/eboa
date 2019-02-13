@@ -223,7 +223,7 @@ class TestEngine(unittest.TestCase):
         assert len(period) == 1
 
         #Check that the characterized_downlink_status NOK is correctly set
-        filename = "REPORT_WITH_NOK_CARATERIZED_STATUS.EOF"
+        filename = "REPORT_WITH_NOK_CHARATERIZED_STATUS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
         ingestion.command_process_file(file_path)
