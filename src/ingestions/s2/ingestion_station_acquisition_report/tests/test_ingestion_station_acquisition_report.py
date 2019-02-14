@@ -47,12 +47,8 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_station_acquisition_report(self):
         filename = "REPORT_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
-        orbpre_filename = "S2A_ORBPRE_RIPPED.EOF"
-        nppf_filename = "S2A_NPPF_RIPPED.EOF"
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
-        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
 
         ingestion.command_process_file(file_path)
 
@@ -178,10 +174,15 @@ class TestEngine(unittest.TestCase):
 
         assert len(definite_support_number) == 1
 
+    def test_station_acquisition_report_with_links(self):
         #Tests related with linked events
+        orbpre_filename = "S2A_ORBPRE_RIPPED.EOF"
+        nppf_filename = "S2A_NPPF_RIPPED.EOF"
         filename = "FILE_WITH_LINKS.EOF"
-        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
 
         ingestion_nppf.command_process_file(nppf_file_path)
         ingestion_orbpre.command_process_file(orbpre_file_path)
@@ -211,17 +212,19 @@ class TestEngine(unittest.TestCase):
 
         assert definite_linked_event[0].event_uuid in linked_uuids
 
+    def test_station_acquisition_report_corrected_validity_period(self):
         #Check that the validity period changes if the downlink period isn't covered
         filename = "REPORT_WITH_VALIDITY_PERIOD_NOT_COVERING.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
         ingestion.command_process_file(file_path)
-
-        period = self.session.query(Source).filter(Source.validity_start >= "2018-07-24T10:44:12",
-                                                                                 Source.validity_stop <= "2018-07-24T10:48:57").all()
+        
+        period = self.session.query(Source).filter(Source.validity_start >= "2018-07-24T08:53:17",
+                                                                                 Source.validity_stop <= "2018-07-24T09:05:17").all()
 
         assert len(period) == 1
 
+    def test_station_acquisition_report_nok_status(self):
         #Check that the characterized_downlink_status NOK is correctly set
         filename = "REPORT_WITH_NOK_CHARATERIZED_STATUS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
