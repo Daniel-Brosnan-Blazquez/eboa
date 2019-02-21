@@ -82,6 +82,7 @@ def process_file(file_path, engine, query):
     list_of_explicit_references = []
     list_of_annotations = []
     list_of_events = []
+    granule_timeline = []
 
     satellite = file_name[0:3]
     system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
@@ -201,6 +202,13 @@ def process_file(file_path, engine, query):
                 SI_iso_stop = SI_stop.isoformat()
 
                 detector = granule_t[59:61]
+
+                granule_segment = {
+                    "start" = SI_start,
+                    "stop" = SI_stop,
+                    "id" = granule_t
+                }
+                granule_timeline.append(granule_segment)
 
                 event_output_granule={
                     "explicit_reference": ds_output,
@@ -363,6 +371,27 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
+    #COMPLETENESS
+    # Completeness operations for the production completeness analysis of the plan
+    completeness_producing_operation = {
+        "mode": "insert",
+        "dim_signature": {
+            "name": "PRODUCTION" + satellite,
+            "exec": "planning_" + os.path.basename(__file__),
+            "version": version
+        },
+        "events": []
+    }
+
+    no_detectors_timeline = functions.date_functions.merge_timeline(timeline)
+
+    record_type = downlink_mode
+
+    corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+
+
+
+
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
@@ -374,7 +403,8 @@ def process_file(file_path, engine, query):
         "annotations": list_of_annotations,
         "explicit_references": list_of_explicit_references,
         "events": list_of_events,
-        }]}
+        },
+        completeness_producing_operation]}
 
     return data
 
