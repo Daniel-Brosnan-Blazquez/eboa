@@ -174,7 +174,7 @@ def convert_input_events_to_date_segments(timeline):
     # Validate the format of the timeline
 
     date_segments = [{"id": event["link_ref"], "start": parser.parse(event["start"]), "stop": parser.parse(event["stop"])} for event in timeline]
-    
+
     return sorted(date_segments, key=lambda segment: segment["start"])
 
 ###########
@@ -196,8 +196,46 @@ def convert_eboa_events_to_date_segments(timeline):
     # Validate the format of the timeline
 
     date_segments = [{"id": event.event_uuid, "start": event.start, "stop": event.stop} for event in timeline]
-    
+
     return sorted(date_segments, key=lambda segment: segment["start"])
+
+def merge_timeline(timeline):
+    """
+    Method to obtain a merged timeline between the timeline1 and the timeline2
+    PRE: the segments of the timelines are ordered in time (by the start value)
+    """
+    timeline_aux = []
+    segment1 = 0
+    i = 0
+    while segment1 < len(timeline):
+        ids = []
+        jumper = 1
+        i += 1
+        timeline_aux.append({"start":timeline[segment1]["start"],
+                             "stop":timeline[segment1]["stop"],
+                             "ids": []
+                            })
+        timeline_aux[i-1]["ids"].append(timeline[segment1]["id"])
+        segment2 = segment1 + 1
+        while segment2 < len(timeline):
+            if timeline_aux[i-1]["stop"] >= timeline[segment2]["start"]:
+                timeline_aux[i-1]["ids"].append(timeline[segment2]["id"])
+                if timeline_aux[i-1]["stop"] < timeline[segment2]["stop"]:
+                    timeline_aux[i-1]["stop"] = timeline[segment2]["stop"]
+                    jumper += 1
+                #end if
+                else:
+                    jumper += 1
+                #end else
+                segment2 = segment2 + 1
+            #end if
+            else:
+                break
+            #end else
+        segment1 += jumper
+        #end while
+    #end while
+    return timeline_aux
 
 def get_eboa_timeline_duration(timeline):
     """
