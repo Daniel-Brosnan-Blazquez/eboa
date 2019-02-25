@@ -56,6 +56,7 @@ CREATE TABLE eboa.gauges(
 	gauge_uuid uuid NOT NULL,
 	system text,
 	name text NOT NULL,
+	description text,
 	dim_signature_uuid uuid NOT NULL,
 	CONSTRAINT gauge_cnfs_pk PRIMARY KEY (gauge_uuid)
 
@@ -79,6 +80,9 @@ CREATE TABLE eboa.sources(
 	content_json json,
 	content_text text,
 	parse_error text,
+	processor_progress decimal(5,2),
+	ingestion_progress decimal(5,2),
+	ingestion_completeness integer,
 	dim_signature_uuid uuid,
 	CONSTRAINT sources_pk PRIMARY KEY (source_uuid)
 
@@ -248,6 +252,7 @@ CREATE TABLE eboa.annotation_cnfs(
 	annotation_cnf_uuid uuid NOT NULL,
 	name text NOT NULL,
 	system text,
+	description text,
 	dim_signature_uuid uuid NOT NULL,
 	CONSTRAINT annotation_cnfs_pk PRIMARY KEY (annotation_cnf_uuid)
 
@@ -1403,6 +1408,108 @@ ALTER TABLE eboa.annotation_objects ADD CONSTRAINT unique_value_position_annotat
 -- object: unique_value_position_annotation_geometries | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_geometries DROP CONSTRAINT IF EXISTS unique_value_position_annotation_geometries CASCADE;
 ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_position_annotation_geometries UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+-- ddl-end --
+
+-- object: eboa.event_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.event_alerts CASCADE;
+CREATE TABLE eboa.event_alerts(
+	message text NOT NULL,
+	validated boolean,
+	ingestion_time timestamp NOT NULL,
+	generator text,
+	notified boolean NOT NULL,
+	alert_uuid uuid,
+	event_uuid uuid
+);
+-- ddl-end --
+ALTER TABLE eboa.event_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.alerts CASCADE;
+CREATE TABLE eboa.alerts(
+	alert_uuid uuid NOT NULL,
+	name text NOT NULL,
+	severity integer NOT NULL,
+	description text,
+	CONSTRAINT unique_alerts UNIQUE (name),
+	CONSTRAINT alerts_pk PRIMARY KEY (alert_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.source_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.source_alerts CASCADE;
+CREATE TABLE eboa.source_alerts(
+	message text NOT NULL,
+	validated boolean,
+	ingestion_time timestamp NOT NULL,
+	generator text,
+	notified boolean NOT NULL,
+	alert_uuid uuid,
+	source_uuid uuid
+);
+-- ddl-end --
+ALTER TABLE eboa.source_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.explicit_ref_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.explicit_ref_alerts CASCADE;
+CREATE TABLE eboa.explicit_ref_alerts(
+	message text NOT NULL,
+	validated boolean,
+	ingestion_time timestamp NOT NULL,
+	generator text,
+	notified boolean NOT NULL,
+	alert_uuid uuid,
+	explicit_ref_uuid uuid
+);
+-- ddl-end --
+ALTER TABLE eboa.explicit_ref_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.explicit_ref_alerts DROP CONSTRAINT IF EXISTS alerts_fk CASCADE;
+ALTER TABLE eboa.explicit_ref_alerts ADD CONSTRAINT alerts_fk FOREIGN KEY (alert_uuid)
+REFERENCES eboa.alerts (alert_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.source_alerts DROP CONSTRAINT IF EXISTS alerts_fk CASCADE;
+ALTER TABLE eboa.source_alerts ADD CONSTRAINT alerts_fk FOREIGN KEY (alert_uuid)
+REFERENCES eboa.alerts (alert_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_alerts DROP CONSTRAINT IF EXISTS alerts_fk CASCADE;
+ALTER TABLE eboa.event_alerts ADD CONSTRAINT alerts_fk FOREIGN KEY (alert_uuid)
+REFERENCES eboa.alerts (alert_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: events_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.event_alerts DROP CONSTRAINT IF EXISTS events_fk CASCADE;
+ALTER TABLE eboa.event_alerts ADD CONSTRAINT events_fk FOREIGN KEY (event_uuid)
+REFERENCES eboa.events (event_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: explicit_refs_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.explicit_ref_alerts DROP CONSTRAINT IF EXISTS explicit_refs_fk CASCADE;
+ALTER TABLE eboa.explicit_ref_alerts ADD CONSTRAINT explicit_refs_fk FOREIGN KEY (explicit_ref_uuid)
+REFERENCES eboa.explicit_refs (explicit_ref_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: sources_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.source_alerts DROP CONSTRAINT IF EXISTS sources_fk CASCADE;
+ALTER TABLE eboa.source_alerts ADD CONSTRAINT sources_fk FOREIGN KEY (source_uuid)
+REFERENCES eboa.sources (source_uuid) MATCH FULL
+ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
 
