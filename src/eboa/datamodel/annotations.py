@@ -40,13 +40,15 @@ class AnnotationCnf(Base):
     annotation_cnf_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     name = Column(Text)
     system = Column(Text)
+    description = Column(Text)
     dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dim_signature = relationship("DimSignature", backref="annotationCnfs")
     
-    def __init__(self, annotation_cnf_uuid, name, dim_signature, system = None):
+    def __init__(self, annotation_cnf_uuid, name, dim_signature, system = None, description = None):
         self.annotation_cnf_uuid = annotation_cnf_uuid
         self.name = name
         self.system = system
+        self.description = description
         self.dim_signature = dim_signature
 
     def jsonify(self):

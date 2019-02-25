@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,622" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,930" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -62,7 +62,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="gauges">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="860"/>
+	<position x="1040" y="840"/>
 	<column name="gauge_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -72,12 +72,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="gauge_cnfs_pk" type="pk-constr" table="eboa.gauges">
 		<columns names="gauge_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="3"/>
+		<object name="dim_signature_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -88,7 +91,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="sources">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="1200"/>
+	<position x="1020" y="1220"/>
 	<column name="source_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -125,12 +128,21 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parse_error">
 		<type name="text" length="0"/>
 	</column>
+	<column name="processor_progress">
+		<type name="decimal" length="5" precision="2"/>
+	</column>
+	<column name="ingestion_progress">
+		<type name="decimal" length="5" precision="2"/>
+	</column>
+	<column name="ingestion_completeness">
+		<type name="integer" length="0"/>
+	</column>
 	<constraint name="sources_pk" type="pk-constr" table="eboa.sources">
 		<columns names="source_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="12"/>
+		<object name="dim_signature_uuid" index="15"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -141,7 +153,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_signatures">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="880"/>
+	<position x="1440" y="740"/>
 	<column name="dim_signature_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -159,7 +171,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_refs">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1280"/>
+	<position x="1420" y="1160"/>
 	<column name="explicit_ref_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -272,7 +284,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="660" y="1400"/>
+	<position x="660" y="1380"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -301,7 +313,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotations">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1060"/>
+	<position x="1420" y="940"/>
 	<column name="annotation_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -334,7 +346,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_texts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="840"/>
+	<position x="1880" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -363,7 +375,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_doubles">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="980"/>
+	<position x="1880" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -392,7 +404,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_objects">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="1260"/>
+	<position x="1880" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -418,7 +430,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="1400"/>
+	<position x="1880" y="1380"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -447,7 +459,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_cnfs">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="960"/>
+	<position x="1420" y="820"/>
 	<column name="annotation_cnf_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -457,12 +469,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="system">
 		<type name="text" length="1"/>
 	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="annotation_cnfs_pk" type="pk-constr" table="eboa.annotation_cnfs">
 		<columns names="annotation_cnf_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="3"/>
+		<object name="dim_signature_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -493,7 +508,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_cnfs">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1440" y="1380"/>
+	<position x="1420" y="1260"/>
 	<column name="expl_ref_cnf_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -511,7 +526,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_links">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1200"/>
+	<position x="1420" y="1080"/>
 	<column name="explicit_ref_uuid_link" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -534,7 +549,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_statuses">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1060" y="1440"/>
+	<position x="1060" y="1500"/>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -596,7 +611,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_booleans">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="700"/>
+	<position x="1880" y="700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -625,7 +640,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_timestamps">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1780" y="1120"/>
+	<position x="1880" y="1120"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -1635,99 +1650,250 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </constraint>
 
 <constraint name="unique_value_event_booleans" type="uq-constr" table="eboa.event_booleans">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_event_texts" type="uq-constr" table="eboa.event_texts">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_event_doubles" type="uq-constr" table="eboa.event_doubles">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_event_timestamps" type="uq-constr" table="eboa.event_timestamps">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_event_objects" type="uq-constr" table="eboa.event_objects">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_event_geometries" type="uq-constr" table="eboa.event_geometries">
-  <columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_booleans" type="uq-constr" table="eboa.annotation_booleans">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_texts" type="uq-constr" table="eboa.annotation_texts">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_doubles" type="uq-constr" table="eboa.annotation_doubles">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_timestamps" type="uq-constr" table="eboa.annotation_timestamps">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_objects" type="uq-constr" table="eboa.annotation_objects">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_annotation_geometries" type="uq-constr" table="eboa.annotation_geometries">
-  <columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_booleans" type="uq-constr" table="eboa.event_booleans">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_texts" type="uq-constr" table="eboa.event_texts">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_doubles" type="uq-constr" table="eboa.event_doubles">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_timestamps" type="uq-constr" table="eboa.event_timestamps">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_objects" type="uq-constr" table="eboa.event_objects">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_geometries" type="uq-constr" table="eboa.event_geometries">
-  <columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_booleans" type="uq-constr" table="eboa.annotation_booleans">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_texts" type="uq-constr" table="eboa.annotation_texts">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_doubles" type="uq-constr" table="eboa.annotation_doubles">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_timestamps" type="uq-constr" table="eboa.annotation_timestamps">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_objects" type="uq-constr" table="eboa.annotation_objects">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_geometries" type="uq-constr" table="eboa.annotation_geometries">
-  <columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
+
+<table name="event_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1340" y="1340"/>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
+</table>
+
+<table name="alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1620" y="1500"/>
+	<column name="alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="severity" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="unique_alerts" type="uq-constr" table="eboa.alerts">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="alerts_pk" type="pk-constr" table="eboa.alerts">
+		<columns names="alert_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="source_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1340" y="1500"/>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="5"/>
+		<object name="source_uuid" index="6"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="0"/>
+		<object name="sources_fk" index="1"/>
+	</customidxs>
+</table>
+
+<table name="explicit_ref_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1600" y="1340"/>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
+</table>
+
+<relationship name="alerts_has_many_explicit_ref_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#279006"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.explicit_ref_alerts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="alerts_has_many_sources_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#b96d67"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.source_alerts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="alerts_has_many_event_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#fe01ee"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.event_alerts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="events_has_many_event_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#c35c1e"
+	 src-table="eboa.events"
+	 dst-table="eboa.event_alerts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#cdf733"
+	 src-table="eboa.explicit_refs"
+	 dst-table="eboa.explicit_ref_alerts"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="sources_has_many_sources_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#daab63"
+	 src-table="eboa.sources"
+	 dst-table="eboa.source_alerts"
+	 src-required="false" dst-required="false"/>
 
 </dbmodel>

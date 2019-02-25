@@ -32,7 +32,8 @@
                 "gauge": {
                     "insertion_type": "SIMPLE_UPDATE",
                     "name": "test_gauge_name1",
-                    "system": "test_gauge_system1"
+                    "system": "test_gauge_system1",
+                    "description": "test_gauge_description1"
                 },
                 "key": "test_key1",
                 "links": [
@@ -126,7 +127,8 @@
                 "gauge": {
                     "insertion_type": "SIMPLE_UPDATE",
                     "name": "test_gauge_name2",
-                    "system": "test_gauge_system2"
+                    "system": "test_gauge_system2",
+                    "description": "test_gauge_description2"
                 },
                 "key": "test_key2",
                 "links": [
@@ -183,7 +185,8 @@
             {
                 "annotation_cnf": {
                     "name": "test_annotation_cnf_name1",
-                    "system": "test_annotation_cnf_system1"
+                    "system": "test_annotation_cnf_system1",
+                    "description": "test_annotation_cnf_description1"
                 },
                 "explicit_reference": "test_explicit_ref1",
                 "values": [

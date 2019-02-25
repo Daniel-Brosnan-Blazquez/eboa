@@ -298,3 +298,25 @@ class EventGeometry(Base):
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
+
+class EventAlert(Base):
+    __tablename__ = 'event_alerts'
+
+    message = Column(Text)
+    validated = Column(Boolean)
+    ingestion_time = Column(DateTime)
+    generator = Column(Text)
+    notified = Column(Boolean)
+    event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
+    event = relationship("Event", backref="alerts")
+    alert_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('alerts.alert_uuid'))
+    alert = relationship("Alert", backref="event_alerts")
+    __mapper_args__ = {
+        'primary_key':[alert_uuid, event_uuid]
+    }
+
+    def __init__(self, time_stamp, status, event, log = None):
+        self.time_stamp = time_stamp
+        self.status = status
+        self.log = log
+        self.event = event

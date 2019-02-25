@@ -271,9 +271,9 @@ def _validate_gauge(data):
         raise ErrorParsingDictionary("The gauge inside the event structure has to be of type dict")
     # end if
 
-    check_items = [item in ["insertion_type", "name", "system"] for item in data.keys()]
+    check_items = [item in ["insertion_type", "name", "system", "description"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside gauge structure are: insertion_type, system and name")
+        raise ErrorParsingDictionary("The allowed tags inside gauge structure are: insertion_type, description, system and name")
     # end if
 
     # Mandatory tags
@@ -293,6 +293,9 @@ def _validate_gauge(data):
     # Optional tags
     if "system" in data and not type(data["system"]) == str:
         raise ErrorParsingDictionary("The tag system inside gauge structure has to be of type string")
+    # end if
+    if "description" in data and not type(data["description"]) == str:
+        raise ErrorParsingDictionary("The tag description inside gauge structure has to be of type string")
     # end if
 
     return
@@ -382,9 +385,9 @@ def _validate_annotation_cnf(data):
         raise ErrorParsingDictionary("The annotation_cnf inside the annotation structure has to be of type dict")
     # end if
 
-    check_items = [item in ["name", "system"] for item in data.keys()]
+    check_items = [item in ["name", "system", "description"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside annotation_cnf structure are: system and name")
+        raise ErrorParsingDictionary("The allowed tags inside annotation_cnf structure are: description, system and name")
     # end if
 
     # Mandatory tags
@@ -398,6 +401,9 @@ def _validate_annotation_cnf(data):
     # Optional tags
     if "system" in data and not type(data["system"]) == str:
         raise ErrorParsingDictionary("The tag system inside annotation_cnf structure has to be of type string")
+    # end if
+    if "description" in data and not type(data["description"]) == str:
+        raise ErrorParsingDictionary("The tag description inside annotation_cnf structure has to be of type string")
     # end if
 
     return

@@ -1,12 +1,12 @@
 """
-DIM processing data model definition
+Source data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
 module eboa
 """
 
-from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float, Interval, JSON
+from sqlalchemy import Column, Integer, Table, ForeignKey, Text, DateTime, Float, Interval, JSON, Numeric, Boolean
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
@@ -27,7 +27,10 @@ class Source(Base):
     content_json = Column(JSON)
     content_text = Column(Text)
     parse_error = Column(Text)
-    dim_signature_uuid = Column(Integer, ForeignKey('dim_signatures.dim_signature_uuid'))
+    processor_progress = Column(Numeric(5,2))
+    ingestion_progress = Column(Numeric(5,2))
+    ingestion_completeness = Column(Integer)
+    dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dimSignature = relationship("DimSignature", backref="sources")
 
     def __init__(self, source_uuid, name, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None):
@@ -63,7 +66,29 @@ class SourceStatus(Base):
     source_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('sources.source_uuid'))
     source = relationship("Source", backref="statuses")
     __mapper_args__ = {
-        'primary_key':[status, source_uuid]
+        'primary_key':[source_uuid]
+    }
+
+    def __init__(self, time_stamp, status, source, log = None):
+        self.time_stamp = time_stamp
+        self.status = status
+        self.log = log
+        self.source = source
+
+class SourceAlert(Base):
+    __tablename__ = 'source_alerts'
+
+    message = Column(Text)
+    validated = Column(Boolean)
+    ingestion_time = Column(DateTime)
+    generator = Column(Text)
+    notified = Column(Boolean)
+    source_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('sources.source_uuid'))
+    source = relationship("Source", backref="alerts")
+    alert_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('alerts.alert_uuid'))
+    alert = relationship("Alert", backref="source_alerts")
+    __mapper_args__ = {
+        'primary_key':[alert_uuid, source_uuid]
     }
 
     def __init__(self, time_stamp, status, source, log = None):

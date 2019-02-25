@@ -30,6 +30,7 @@ from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, Duplicate
 # Import datamodel
 from eboa.datamodel.base import Session
 from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.alerts import Alert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -59,7 +60,6 @@ eboa_resources_path = get_resources_path()
 
 logging = Log()
 logger = logging.logger
-
 
 exit_codes = {
     "OK": {
@@ -126,61 +126,6 @@ class Engine():
     # Set the synchronized module
     synchronized = lockutils.synchronized_with_prefix('eboa-')
 
-    exit_codes = {
-        "OK": {
-            "status": 0,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has ingested correctly {} event/s and {} annotation/s"
-        },
-        "INGESTION_STARTED": {
-            "status": 1,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} is going to be ingested"
-        },
-        "SOURCE_ALREADY_INGESTED": {
-            "status": 2,
-            "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has been already ingested"
-        },
-        "WRONG_SOURCE_PERIOD": {
-            "status": 3,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a validity period which its stop ({}) is lower than its start ({})"
-        },
-        "WRONG_EVENT_PERIOD": {
-            "status": 4,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a stop value {} lower than its start value {}"
-        },
-        "EVENT_PERIOD_NOT_IN_SOURCE_PERIOD": {
-            "status": 5,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with a period ({}_{}) outside the period of the source ({}_{})"
-        },
-        "UNDEFINED_EVENT_LINK_REF": {
-            "status": 6,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which links to an undefined reference identifier {}"
-        },
-        "WRONG_VALUE": {
-            "status": 7,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the value {} that cannot be converted to the specified type {}"
-        },
-        "ODD_NUMBER_OF_COORDINATES": {
-            "status": 8,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the geometry value {} with an odd number of coordinates"
-        },
-        "FILE_NOT_VALID": {
-            "status": 9,
-            "message": "The source file with name {} does not pass the schema verification"
-        },
-        "WRONG_GEOMETRY": {
-            "status": 10,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines a wrong geometry. The exception raised has been the following: {}"
-        },
-        "DUPLICATED_EVENT_LINK_REF": {
-            "status": 11,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains more than one event which defines the same link reference identifier {}"
-        },
-        "LINKS_INCONSISTENCY": {
-            "status": 12,
-            "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
-        }
-    }
-
     def __init__(self, data = None):
         """
         Instantiation method
@@ -218,9 +163,9 @@ class Engine():
                 data = json.load(input_file)
 
         except ValueError:
-            error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
+            error_message = exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
             self._insert_source_without_dim_signature(json_name)
-            self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
             self.source.parse_error = "The json file cannot be loaded as it has a wrong structure"
             # Insert the content of the file into the DDBB
             with open(json_path) as input_file:
@@ -228,7 +173,7 @@ class Engine():
             self.session.commit()
             # Log the error
             logger.error(error_message)
-            return self.exit_codes["FILE_NOT_VALID"]["status"]
+            return exit_codes["FILE_NOT_VALID"]["status"]
         # end try
 
         if check_schema:
@@ -236,7 +181,7 @@ class Engine():
                 parsing.validate_data_dictionary(data)
             except ErrorParsingDictionary as e:
                 self._insert_source_without_dim_signature(json_name)
-                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 # Insert the content of the file into the DDBB
                 with open(json_path) as input_file:
@@ -244,8 +189,8 @@ class Engine():
                 self.session.commit()
                 # Log the error
                 logger.error(str(e))
-                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
-                return self.exit_codes["FILE_NOT_VALID"]["status"]
+                logger.error(exit_codes["FILE_NOT_VALID"]["message"].format(json_name))
+                return exit_codes["FILE_NOT_VALID"]["status"]
             # end if
 
         # end if
@@ -270,7 +215,7 @@ class Engine():
             parsed_xml = etree.parse(xml_path)
         except etree.XMLSyntaxError as e:
             self._insert_source_without_dim_signature(xml_name)
-            self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
@@ -278,8 +223,8 @@ class Engine():
                 self.source.content_text = xml_file.read()
             self.session.commit()
             # Log the error
-            logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
-            return self.exit_codes["FILE_NOT_VALID"]["status"]
+            logger.error(exit_codes["FILE_NOT_VALID"]["message"].format(xml_name))
+            return exit_codes["FILE_NOT_VALID"]["status"]
         # end try
 
         xpath_xml = etree.XPathEvaluator(parsed_xml)
@@ -291,9 +236,9 @@ class Engine():
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
             if not valid:
-                error_message = self.exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
+                error_message = exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
                 self._insert_source_without_dim_signature(xml_name)
-                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
                 # Insert the parse error into the DDBB
                 self.source.parse_error = str(schema.error_log.last_error)
                 # Insert the content of the file into the DDBB
@@ -302,7 +247,7 @@ class Engine():
                 self.session.commit()
                 # Log the error
                 logger.error(error_message)
-                return self.exit_codes["FILE_NOT_VALID"]["status"]
+                return exit_codes["FILE_NOT_VALID"]["status"]
             # end if
         # end if
         self.data["operations"] = []
@@ -385,6 +330,7 @@ class Engine():
                 # end if
                 event_info["gauge"] = {"name": event.xpath("gauge")[0].get("name"),
                                        "system": event.xpath("gauge")[0].get("system"),
+                                       "description": event.xpath("gauge")[0].get("description"),
                                        "insertion_type": event.xpath("gauge")[0].get("insertion_type")}
                 # end if
                 # Add links
@@ -420,7 +366,8 @@ class Engine():
                 annotation_info = {}
                 annotation_info["explicit_reference"] = annotation.get("explicit_reference")
                 annotation_info["annotation_cnf"] = {"name": annotation.xpath("annotation_cnf")[0].get("name"),
-                                                     "system": annotation.xpath("annotation_cnf")[0].get("system")}
+                                                     "system": annotation.xpath("annotation_cnf")[0].get("system"),
+                                                     "description": annotation.xpath("annotation_cnf")[0].get("description")}
                 # end if
                 # Add values
                 if len(annotation.xpath("values")) > 0:
@@ -479,7 +426,7 @@ class Engine():
         except ErrorParsingDictionary as e:
             if source != None:
                 self._insert_source_without_dim_signature(source)
-                self._insert_source_status(self.exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
                 self.source.parse_error = str(e)
                 self.session.commit()
             # end if
@@ -511,12 +458,12 @@ class Engine():
             is_valid = self._validate_data(self.data, source = source)
             if not is_valid:
                 # Log the error
-                logger.error(self.exit_codes["FILE_NOT_VALID"]["message"].format(source))
+                logger.error(exit_codes["FILE_NOT_VALID"]["message"].format(source))
                 returned_information = {
                     "source": source,
                     "dim_signature": None,
                     "processor": None,
-                    "status": self.exit_codes["FILE_NOT_VALID"]["status"]
+                    "status": exit_codes["FILE_NOT_VALID"]["status"]
                 }
                 return [returned_information]
             # end if
@@ -570,29 +517,29 @@ class Engine():
         try:
             self._insert_source()
             self.ingestion_start = datetime.datetime.now()
-            self._insert_source_status(self.exit_codes["INGESTION_STARTED"]["status"])
+            self._insert_source_status(exit_codes["INGESTION_STARTED"]["status"])
             # Log that the ingestion of the source file has been started
-            logger.info(self.exit_codes["INGESTION_STARTED"]["message"].format(
+            logger.info(exit_codes["INGESTION_STARTED"]["message"].format(
                 self.source.name,
                 self.dim_signature.dim_signature,
                 self.source.processor, 
                 self.source.processor_version))
         except SourceAlreadyIngested as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
             # Log that the source file has been already been processed
             logger.error(e)
             self.session.commit()
-            return self.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
+            return exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
             # Log that the source file has a wrong specified period as the stop is lower than the start
             logger.error(e)
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
-            return self.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
+            return exit_codes["WRONG_SOURCE_PERIOD"]["status"]
         # end try
 
         # Insert gauges
@@ -616,67 +563,67 @@ class Engine():
             self._insert_events()
         except DuplicatedEventLinkRef as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
+            return exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
         except LinksInconsistency as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["LINKS_INCONSISTENCY"]["status"]
+            return exit_codes["LINKS_INCONSISTENCY"]["status"]
         except UndefinedEventLink as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
+            return exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["WRONG_EVENT_PERIOD"]["status"]
+            return exit_codes["WRONG_EVENT_PERIOD"]["status"]
         except WrongValue as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["WRONG_VALUE"]["status"]
+            return exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+            return exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         except WrongGeometry as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["WRONG_GEOMETRY"]["status"]
+            return exit_codes["WRONG_GEOMETRY"]["status"]
         # end try
 
         # Insert annotations
@@ -684,31 +631,31 @@ class Engine():
             self._insert_annotations()
         except WrongValue as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["WRONG_VALUE"]["status"]
+            return exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+            return exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         except WrongGeometry as e:
             self.session.rollback()
-            self._insert_source_status(self.exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             # Log the error
             logger.error(e)
-            return self.exit_codes["WRONG_GEOMETRY"]["status"]
+            return exit_codes["WRONG_GEOMETRY"]["status"]
         # end try
 
         # Review the inserted events (with modes EVENT_KEYS and
@@ -727,8 +674,8 @@ class Engine():
         # end if
 
         # Log that the file has been ingested correctly
-        self._insert_source_status(self.exit_codes["OK"]["status"],True)
-        logger.info(self.exit_codes["OK"]["message"].format(
+        self._insert_source_status(exit_codes["OK"]["status"],True)
+        logger.info(exit_codes["OK"]["message"].format(
             self.source.name,
             self.dim_signature.dim_signature,
             self.source.processor, 
@@ -741,7 +688,7 @@ class Engine():
         
         # Commit data
         self.session.commit()
-        return self.exit_codes["OK"]["status"]
+        return exit_codes["OK"]["status"]
         
     @debug
     def _insert_dim_signature(self):
@@ -808,7 +755,7 @@ class Engine():
                                                                        Source.processor_version == version,
                 Source.processor == processor).first()
             # end try
-            raise WrongPeriod(self.exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start))
+            raise WrongPeriod(exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start))
         # end if
 
         self.source = self.session.query(Source).filter(Source.name == name,
@@ -817,7 +764,7 @@ class Engine():
                 Source.processor == processor).first()
         if self.source and self.source.ingestion_duration:
             # The source has been already ingested
-            raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
+            raise SourceAlreadyIngested(exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                                                                      self.dim_signature.dim_signature,
                                                                                                      processor, 
                                                                                                      version))
@@ -843,7 +790,7 @@ class Engine():
                                                                    Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
                                                                    Source.processor_version == version,
                 Source.processor == processor).first()
-            raise SourceAlreadyIngested(self.exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
+            raise SourceAlreadyIngested(exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                               self.dim_signature.dim_signature,
                                                               processor, 
                                                               version))
@@ -878,6 +825,7 @@ class Engine():
         """
         Method to insert the gauges
         """
+        description = None
         gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"))  for event in self.operation.get("events") or []]
         unique_gauges = set(gauges)
         for gauge in unique_gauges:
@@ -887,7 +835,11 @@ class Engine():
             if not self.gauges[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                self.gauges[(name,system)] = Gauge(id, name, self.dim_signature, system)
+                descriptions = [event.get("gauge").get("description") for event in self.operation.get("events") or [] if event.get("gauge").get("name") == name and event.get("gauge").get("system") == system]
+                if len(descriptions) > 0:
+                    description = descriptions[0]
+                # end if
+                self.gauges[(name,system)] = Gauge(id, name, self.dim_signature, system, description)
                 self.session.add(self.gauges[(name,system)])
                 try:
                     race_condition()
@@ -918,7 +870,11 @@ class Engine():
             if not self.annotation_cnfs[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                self.annotation_cnfs[(name,system)] = AnnotationCnf(id, name, self.dim_signature, system)
+                descriptions = [event.get("annotation_cnf").get("description") for event in self.operation.get("annotations") or [] if event.get("annotation_cnf").get("name") == name and event.get("annotation_cnf").get("system") == system]
+                if len(descriptions) > 0:
+                    description = descriptions[0]
+                # end if
+                self.annotation_cnfs[(name,system)] = AnnotationCnf(id, name, self.dim_signature, system, description)
                 self.session.add(self.annotation_cnfs[(name,system)])
                 try:
                     race_condition()
@@ -1078,7 +1034,7 @@ class Engine():
         if stop < start:
             # The period of the event is not correct (stop > start)
             self.session.rollback()
-            raise WrongPeriod(self.exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, stop, start))
+            raise WrongPeriod(exit_codes["WRONG_EVENT_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, stop, start))
         # end if
         
         if source == None:
@@ -1090,7 +1046,7 @@ class Engine():
         if start < source_start or stop > source_stop:
             # The period of the event is not inside the validity period of the input
             self.session.rollback()
-            raise WrongPeriod(self.exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, start, stop, source_start, source_stop))
+            raise WrongPeriod(exit_codes["EVENT_PERIOD_NOT_IN_SOURCE_PERIOD"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, start, stop, source_start, source_stop))
         # end if
             
         list_events.append(dict(event_uuid = id, start = start, stop = stop,
@@ -1186,7 +1142,7 @@ class Engine():
                 if event["link_ref"] in list_event_link_refs:
                     # The same link identifier has been specified in more than one event
                     self.session.rollback()
-                    raise DuplicatedEventLinkRef(self.exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, event["link_ref"]))
+                    raise DuplicatedEventLinkRef(exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, event["link_ref"]))
                 # end if
                 list_event_link_refs[event["link_ref"]] = id
             # end if
@@ -1217,7 +1173,7 @@ class Engine():
                 self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
             except InternalError as e:
                 self.session.rollback()
-                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
         # Insert links by reference
@@ -1226,7 +1182,7 @@ class Engine():
             if not link_ref in list_event_link_refs:
                 # There has not been defined this link reference in any event
                 self.session.rollback()
-                raise UndefinedEventLink(self.exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
+                raise UndefinedEventLink(exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
             # end if
             event_uuid = list_event_link_refs[link_ref]
             
@@ -1248,7 +1204,7 @@ class Engine():
             self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
         except IntegrityError as e:
             self.session.rollback()
-            raise LinksInconsistency(self.exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
 
@@ -1309,7 +1265,7 @@ class Engine():
                         value = False
                     else:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
+                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     list_to_use = list_values["booleans"]
                 elif item["type"] == "text":
                     value = str(item.get("value"))
@@ -1322,7 +1278,7 @@ class Engine():
                         value = float(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
+                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     # end try
                     if not "doubles" in list_values:
                         list_values["doubles"] = []
@@ -1333,7 +1289,7 @@ class Engine():
                         value = parser.parse(item.get("value"))
                     except ValueError:
                         self.session.rollback()
-                        raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
+                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
                     # end try
                     if not "timestamps" in list_values:
                         list_values["timestamps"] = []
@@ -1343,7 +1299,7 @@ class Engine():
                     list_coordinates = item.get("value").split(" ")
                     if len (list_coordinates) % 2 != 0:
                         self.session.rollback()
-                        raise OddNumberOfCoordinates(self.exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
+                        raise OddNumberOfCoordinates(exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
                     # end if
                     coordinates = 0
                     value = "POLYGON(("
@@ -1356,7 +1312,7 @@ class Engine():
                             float(coordinate)
                         except ValueError:
                             self.session.rollback()
-                            raise WrongValue(self.exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
+                            raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
                         # end try
                         value = value + coordinate
                         coordinates += 1
@@ -1440,7 +1396,7 @@ class Engine():
                 self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
             except InternalError as e:
                 self.session.rollback()
-                raise WrongGeometry(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
         return
@@ -1943,7 +1899,7 @@ class Engine():
                     self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
                 except InternalError as e:
                     self.session.rollback()
-                    logger.error(self.exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                    logger.error(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
                     exit_status = {
                         "error": True,
                         "inserted": False,

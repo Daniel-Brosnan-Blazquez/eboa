@@ -15,7 +15,7 @@ import random
 import before_after
 
 # Import engine of the DDBB
-import eboa.engine.engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 from eboa.engine.query import Query
 from eboa.datamodel.base import Session, engine, Base
@@ -23,6 +23,7 @@ from eboa.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, Wrong
 
 # Import datamodel
 from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.alerts import Alert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -1409,9 +1410,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"]
+        assert returned_value == eboa_engine.exit_codes["LINKS_INCONSISTENCY"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["LINKS_INCONSISTENCY"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["LINKS_INCONSISTENCY"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -1460,9 +1461,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
+        assert returned_value == eboa_engine.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -2949,7 +2950,7 @@ class TestEngine(unittest.TestCase):
 
         returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
 
         events_ddbb = self.session.query(Event).all()
 
@@ -2989,14 +2990,14 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
+        assert returned_value == eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["OK"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3047,7 +3048,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
 
         events = self.session.query(Event).all()
 
@@ -3069,9 +3070,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
+        assert returned_value == eboa_engine.exit_codes["WRONG_SOURCE_PERIOD"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["WRONG_SOURCE_PERIOD"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3104,9 +3105,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
+        assert returned_value == eboa_engine.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3134,9 +3135,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"]
+        assert returned_value == eboa_engine.exit_codes["WRONG_EVENT_PERIOD"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_EVENT_PERIOD"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["WRONG_EVENT_PERIOD"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3171,9 +3172,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
+        assert returned_value == eboa_engine.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["WRONG_VALUE"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3208,9 +3209,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        assert returned_value == eboa_engine.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3243,9 +3244,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"]
+        assert returned_value == eboa_engine.exit_codes["WRONG_VALUE"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["WRONG_VALUE"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["WRONG_VALUE"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3278,9 +3279,9 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.data = data
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
+        assert returned_value == eboa_engine.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
 
         assert len(sources_status) == 1
@@ -3322,9 +3323,9 @@ class TestEngine(unittest.TestCase):
 
         returned_value = self.engine_eboa.treat_data()[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["OK"]["status"],
                                                                                             Source.name == filename).all()
 
         assert len(sources_status) == 1
@@ -3337,19 +3338,37 @@ class TestEngine(unittest.TestCase):
 
         assert len(annotations_ddbb) == 1
 
+        gauges_ddbb = self.session.query(Gauge).filter(Gauge.name == "test_gauge_name1",
+                                                       Gauge.system == "test_gauge_system1",
+                                                       Gauge.description == "test_gauge_description1").all()
+
+        assert len(gauges_ddbb) == 1
+
+        gauges_ddbb = self.session.query(Gauge).filter(Gauge.name == "test_gauge_name2",
+                                                       Gauge.system == "test_gauge_system2",
+                                                       Gauge.description == "test_gauge_description2").all()
+
+        assert len(gauges_ddbb) == 1
+
+        annotation_cnfs_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == "test_annotation_cnf_name1",
+                                                                        AnnotationCnf.system == "test_annotation_cnf_system1",
+                                                                        AnnotationCnf.description == "test_annotation_cnf_description1").all()
+
+        assert len(annotation_cnfs_ddbb) == 1
+
     def test_wrong_xml(self):
 
         filename = "test_wrong_structure.xml"
         returned_value = self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_not_xml(self):
 
         filename = "test_not_xml.xml"
         returned_value = self.engine_eboa.parse_data_from_xml(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename)
 
-        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_insert_json(self):
 
@@ -3358,9 +3377,9 @@ class TestEngine(unittest.TestCase):
 
         returned_value = self.engine_eboa.treat_data(source = filename)[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["OK"]["status"]
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
 
-        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == self.engine_eboa.exit_codes["OK"]["status"],
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["OK"]["status"],
                                                                                             Source.name == filename).all()
 
         assert len(sources_status) == 1
@@ -3373,12 +3392,30 @@ class TestEngine(unittest.TestCase):
 
         assert len(annotations_ddbb) == 1
 
+        gauges_ddbb = self.session.query(Gauge).filter(Gauge.name == "test_gauge_name1",
+                                                       Gauge.system == "test_gauge_system1",
+                                                       Gauge.description == "test_gauge_description1").all()
+
+        assert len(gauges_ddbb) == 1
+
+        gauges_ddbb = self.session.query(Gauge).filter(Gauge.name == "test_gauge_name2",
+                                                       Gauge.system == "test_gauge_system2",
+                                                       Gauge.description == "test_gauge_description2").all()
+
+        assert len(gauges_ddbb) == 1
+
+        annotation_cnfs_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == "test_annotation_cnf_name1",
+                                                                        AnnotationCnf.system == "test_annotation_cnf_system1",
+                                                                        AnnotationCnf.description == "test_annotation_cnf_description1").all()
+
+        assert len(annotation_cnfs_ddbb) == 1
+
     def test_wrong_json(self):
 
         filename = "test_wrong_structure.json"
         returned_value = self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_wrong_json_validating_its_data(self):
 
@@ -3387,14 +3424,14 @@ class TestEngine(unittest.TestCase):
 
         returned_value = self.engine_eboa.treat_data(self.engine_eboa.data, filename)[0]["status"]
 
-        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_not_json(self):
 
         filename = "test_not_json.json"
         returned_value = self.engine_eboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
 
-        assert returned_value == self.engine_eboa.exit_codes["FILE_NOT_VALID"]["status"]
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
 
     def test_insert_event_simple_update_debug(self):
 

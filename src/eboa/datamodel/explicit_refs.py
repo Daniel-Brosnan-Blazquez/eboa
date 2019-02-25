@@ -6,7 +6,7 @@ Written by DEIMOS Space S.L. (dibb)
 module eboa
 """
 
-from sqlalchemy import Column, Table, ForeignKey, Text, DateTime
+from sqlalchemy import Column, Table, ForeignKey, Text, DateTime, Boolean
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
@@ -65,4 +65,26 @@ class ExplicitRefLink(Base):
     def __init__(self, link, name, explicitRef):
         self.explicit_ref_uuid_link = link
         self.name = name
+        self.explicitRef = explicitRef
+
+class ExplicitRefAlert(Base):
+    __tablename__ = 'explicit_ref_alerts'
+
+    message = Column(Text)
+    validated = Column(Boolean)
+    ingestion_time = Column(DateTime)
+    generator = Column(Text)
+    notified = Column(Boolean)
+    explicit_ref_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('explicit_refs.explicit_ref_uuid'))
+    explicit_ref = relationship("ExplicitRef", backref="alerts")
+    alert_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('alerts.alert_uuid'))
+    alert = relationship("Alert", backref="explicitRefAlerts")
+    __mapper_args__ = {
+        'primary_key':[alert_uuid, explicit_ref_uuid]
+    }
+
+    def __init__(self, time_stamp, status, explicitRef, log = None):
+        self.time_stamp = time_stamp
+        self.status = status
+        self.log = log
         self.explicitRef = explicitRef
