@@ -18,6 +18,7 @@ import math
 from lxml import etree, objectify
 
 # Import engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 
 # Import query
@@ -307,7 +308,7 @@ def process_file(file_path):
 def insert_data_into_DDBB(data, filename, engine):
     # Treat data
     returned_value = engine.treat_data(data, filename)
-    if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
+    if returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
         logger.error("The file {} could not be validated".format(filename))
     # end if
 

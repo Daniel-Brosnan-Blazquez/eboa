@@ -16,6 +16,7 @@ from tempfile import mkstemp
 from lxml import etree
 
 # Import engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 
 # Import ingestion helpers
@@ -123,7 +124,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             band_detector = functions.get_band_detector(apid_number)
             isp_gap_event = {
                 "explicit_reference": session_id,
-                "key": session_id + channel,
+                "key": session_id + "_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -192,7 +193,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             corrected_stop = functions.convert_from_gps_to_utc(stop)
             isp_gap_event = {
                 "explicit_reference": session_id,
-                "key": session_id + channel,
+                "key": session_id + "_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -262,7 +263,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             isp_gap_event = {
                 "explicit_reference": session_id,
-                "key": session_id + channel,
+                "key": session_id + "_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -323,7 +324,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         raw_isp_validity_event = {
             "link_ref": raw_isp_validity_event_link_ref,
             "explicit_reference": session_id,
-            "key": session_id + channel,
+            "key": session_id + "_" + channel,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
                 "name": "RAW_ISP_VALIDITY",
@@ -411,7 +412,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             for corrected_planned_imaging in corrected_planned_imagings:
                 value = {
-                    "name": "completeness_began",
+                    "name": "completeness_began_channel_" + channel,
                     "type": "object",
                     "values": []
                 }
@@ -431,7 +432,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     completeness_planning_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNING_COMPLETENESS",
+                            "name": "PLANNING_COMPLETENESS_CHANNEL_" + channel,
                             "system": satellite
                         },
                         "start": str(corrected_planned_imaging.start),
@@ -475,7 +476,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 isp_validity_event = {
                     "link_ref": isp_validity_event_link_ref,
                     "explicit_reference": session_id,
-                    "key": session_id + channel,
+                    "key": session_id + "_" + channel,
                     "gauge": {
                         "insertion_type": "EVENT_KEYS",
                         "name": "ISP_VALIDITY",
@@ -528,10 +529,10 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
                 isp_validity_completeness_event = {
                     "explicit_reference": session_id,
-                    "key": session_id + channel,
+                    "key": session_id + "_" + channel,
                     "gauge": {
                         "insertion_type": "ERASE_and_REPLACE",
-                        "name": "PLANNING_COMPLETENESS",
+                        "name": "PLANNING_COMPLETENESS_CHANNEL_" + channel,
                         "system": satellite
                     },
                     "links": [
@@ -743,7 +744,7 @@ def process_file(file_path, engine, query):
 def insert_data_into_DDBB(data, filename, engine):
     # Treat data
     returned_value = engine.treat_data(data, filename)
-    if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
+    if returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
         logger.error("The file {} could not be validated".format(filename))
     # end if
 
