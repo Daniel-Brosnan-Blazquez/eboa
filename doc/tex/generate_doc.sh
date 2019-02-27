@@ -8,7 +8,7 @@
 #################################################################
 USAGE="Usage: `basename $0` -f pdf_file [-k]\n
 Optional parameters:\n
--k: is set it indicates the script to keep the build directory
+-k: if set it indicates the script to keep the build directory
 "
 if [ -z "$EBOA_RESOURCES_PATH" ];
 then
