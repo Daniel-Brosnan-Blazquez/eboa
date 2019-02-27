@@ -472,9 +472,9 @@ class Engine():
         returned_values = []
         for self.operation in self.data.get("operations") or []:
             returned_value = -1
-            self.all_gauges_for_erase_and_replace = False
+            self.all_gauges_for_insert_and_erase = False
             if self.operation.get("mode") == "insert_and_erase":
-                self.all_gauges_for_erase_and_replace = True
+                self.all_gauges_for_insert_and_erase = True
             # end if
 
             if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
@@ -498,7 +498,7 @@ class Engine():
         self.annotation_cnfs = {}
         self.expl_groups = {}
         self.explicit_refs = {}
-        self.erase_and_replace_gauges = {}
+        self.insert_and_erase_gauges = {}
         self.annotation_cnfs_explicit_refs = []
         self.keys_events = {}
 
@@ -659,7 +659,7 @@ class Engine():
         # end try
 
         # Review the inserted events (with modes EVENT_KEYS and
-        # ERASE_and_REPLACE) and annotations for removing the
+        # INSERT_and_ERASE) and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
 
@@ -716,9 +716,9 @@ class Engine():
             # end try
         # end if
 
-        if hasattr(self, "all_gauges_for_erase_and_replace") and self.all_gauges_for_erase_and_replace:
+        if hasattr(self, "all_gauges_for_insert_and_erase") and self.all_gauges_for_insert_and_erase:
             for gauge in self.dim_signature.gauges:
-                self.erase_and_replace_gauges[gauge.gauge_uuid] = None
+                self.insert_and_erase_gauges[gauge.gauge_uuid] = None
             # end for
         # end if
 
@@ -1082,8 +1082,8 @@ class Engine():
             visible = False
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
                 visible = True
-            elif gauge_info["insertion_type"] == "ERASE_and_REPLACE":
-                self.erase_and_replace_gauges[gauge.gauge_uuid] = None
+            elif gauge_info["insertion_type"] == "INSERT_and_ERASE":
+                self.insert_and_erase_gauges[gauge.gauge_uuid] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
@@ -1437,8 +1437,8 @@ class Engine():
         """
         Method to remove the events and annotations that were overwritten by other data
         """
-        # Remove events due to ERASE_and_REPLACE insertion mode
-        self._remove_deprecated_events_by_erase_and_replace()
+        # Remove events due to INSERT_and_ERASE insertion mode
+        self._remove_deprecated_events_by_insert_and_erase()
 
         # Remove events due to EVENT_KEYS insertion mode
         self._remove_deprecated_events_event_keys()
@@ -1449,9 +1449,9 @@ class Engine():
         return
 
     @debug
-    def _remove_deprecated_events_by_erase_and_replace(self):
+    def _remove_deprecated_events_by_insert_and_erase(self):
         """
-        Method to remove events that were overwritten by other events due to ERASE and REPLACE insertion mode
+        Method to remove events that were overwritten by other events due to INSERT and ERASE insertion mode
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
@@ -1459,12 +1459,12 @@ class Engine():
                                      "links": []}
         list_event_uuids_aliases = {}
         list_events_to_be_removed = []
-        for gauge_uuid in self.erase_and_replace_gauges:
+        for gauge_uuid in self.insert_and_erase_gauges:
             # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
             # /dev/shm is shared memory (RAM)
-            lock = "erase_and_replace" + str(gauge_uuid)
+            lock = "insert_and_erase" + str(gauge_uuid)
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
-            def _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
+            def _remove_deprecated_events_by_insert_and_erase_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
                 # Get the sources of events intersecting the validity period
                 dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
                 sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
@@ -1592,7 +1592,7 @@ class Engine():
             # end def
             list_events_to_be_created_not_ending_on_period = {}
             list_split_events = {}
-            _remove_deprecated_events_by_erase_and_replace_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
+            _remove_deprecated_events_by_insert_and_erase_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
         # end for
 
         # Bulk insert events
@@ -1603,7 +1603,7 @@ class Engine():
         self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
         self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
 
-        # Remove the events that were partially affected by the erase and replace operation
+        # Remove the events that were partially affected by the insert and erase operation
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
         # Bulk insert values
