@@ -286,8 +286,8 @@ def _validate_gauge(data):
     if not type(data["name"]) == str:
         raise ErrorParsingDictionary("The tag name inside gauge structure has to be of type string")
     # end if
-    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "INSERT_and_ERASE"]:
-        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS' and 'INSERT_and_ERASE'")
+    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "INSERT_and_ERASE", "INSERT_and_ERASE_per_EVENT"]:
+        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS', 'INSERT_and_ERASE' and 'INSERT_and_ERASE_per_EVENT'")
     # end if
 
     # Optional tags

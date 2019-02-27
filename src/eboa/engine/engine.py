@@ -499,6 +499,7 @@ class Engine():
         self.expl_groups = {}
         self.explicit_refs = {}
         self.insert_and_erase_gauges = {}
+        self.insert_and_erase_per_event_gauges = {}
         self.annotation_cnfs_explicit_refs = []
         self.keys_events = {}
 
@@ -658,8 +659,7 @@ class Engine():
             return exit_codes["WRONG_GEOMETRY"]["status"]
         # end try
 
-        # Review the inserted events (with modes EVENT_KEYS and
-        # INSERT_and_ERASE) and annotations for removing the
+        # Review the inserted events and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
 
@@ -1084,6 +1084,12 @@ class Engine():
                 visible = True
             elif gauge_info["insertion_type"] == "INSERT_and_ERASE":
                 self.insert_and_erase_gauges[gauge.gauge_uuid] = None
+            elif gauge_info["insertion_type"] == "INSERT_and_ERASE_per_EVENT":
+                if gauge.gauge_uuid not in self.insert_and_erase_per_event_gauges:
+                    # Initialize the list of segments to be reviewed
+                    self.insert_and_erase_per_event_gauges[gauge.gauge_uuid] = []
+                # end if
+                self.insert_and_erase_per_event_gauges[gauge.gauge_uuid].append((start, stop))
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
@@ -1440,6 +1446,9 @@ class Engine():
         # Remove events due to INSERT_and_ERASE insertion mode
         self._remove_deprecated_events_by_insert_and_erase()
 
+        # Remove events due to INSERT_and_ERASE_per_EVENT insertion mode
+        self._remove_deprecated_events_by_insert_and_erase_per_event()
+
         # Remove events due to EVENT_KEYS insertion mode
         self._remove_deprecated_events_event_keys()
 
@@ -1534,6 +1543,10 @@ class Engine():
                             del list_split_events[event.event_uuid]
                         else:
                             event.visible = True
+                            if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            # end if
                         # end if
                     # end for
 
@@ -1731,6 +1744,197 @@ class Engine():
                                                 dim_signature_uuid = key.dim_signature_uuid))
         # end for
         
+        return
+
+    @debug
+    def _remove_deprecated_events_by_insert_and_erase_per_event(self):
+        """
+        Method to remove events that were overwritten by other events due to INSERT and ERASE per EVENT insertion mode
+        """
+
+        for gauge_uuid in self.insert_and_erase_per_event_gauges:
+            for segment in self.insert_and_erase_per_event_gauges[gauge_uuid]:
+                list_events_to_be_created = {"events": [],
+                                             "values": {},
+                                             "keys": [],
+                                             "links": []}
+                list_event_uuids_aliases = {}
+                list_events_to_be_removed = []
+                list_events_to_be_created_not_ending_on_period = {}
+                list_split_events = {}
+            
+                # Make this method process and thread safe (lock_path -> where the lockfile will be stored)
+                # /dev/shm is shared memory (RAM)
+                lock = "insert_and_erase_per_event" + str(gauge_uuid)
+                @self.synchronized(lock, external=True, lock_path="/dev/shm")
+                def _remove_deprecated_events_by_insert_and_erase_per_event_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events):
+
+                    segment_start = parser.parse(segment[0])
+                    segment_stop = parser.parse(segment[1])
+                    # Get the events intersecting the segment
+                    events = self.session.query(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                              Event.start < segment_stop,
+                                                              Event.stop > segment_start).all()
+                    # Get the timeline of validity periods intersecting
+                    timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
+
+                    filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= segment_start and timestamp <= segment_stop]
+
+                    # Sort list
+                    filtered_timeline_points.sort()
+                    # Iterate through the periods
+                    next_timestamp = 1
+                    for timestamp in filtered_timeline_points:
+                        # Check if for the last period there are pending splits
+                        if next_timestamp == len(filtered_timeline_points):
+                            for event_uuid in list_split_events:
+                                event = list_split_events[event_uuid]
+                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
+                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                                self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
+                                self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
+                                self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                                # Remove event
+                                list_events_to_be_removed.append(event_uuid)
+                            # end for
+                            break
+                        # end if
+
+                        validity_start = timestamp
+                        validity_stop = filtered_timeline_points[next_timestamp]
+                        next_timestamp += 1
+                        # Get the maximum generation time at this moment
+                        max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                                      Event.start < validity_stop,
+                                                                                                                      Event.stop > validity_start)
+
+                        # Get the related source
+                        source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                                   Event.gauge_uuid == gauge_uuid,
+                                                                                                   Event.start < validity_stop,
+                                                                                                   Event.stop > validity_start).first()
+
+                        # Events related to the DIM processing with the maximum generation time
+                        events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
+                                                                                      Event.gauge_uuid == gauge_uuid,
+                                                                                      Event.start < validity_stop,
+                                                                                      Event.stop > validity_start).all()
+
+                        # Review events with higher generation time in the period
+                        for event in events_max_generation_time:
+                            if event.event_uuid in list_split_events:
+                                if event.stop <= validity_stop:
+                                    id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                    self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
+                                                       gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                                    self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                    self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                                    self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                    list_events_to_be_removed.append(event.event_uuid)
+                                else:
+                                    list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
+                                # end if
+                                del list_split_events[event.event_uuid]
+                            else:
+                                event.visible = True
+                                if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                    event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                # end if
+
+                            # end if
+                        # end for
+
+                        # Delete deprecated events fully contained into the validity period
+                        event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid != source_max_generation_time.source_uuid,
+                                                         Event.gauge_uuid == gauge_uuid,
+                                                         Event.start >= validity_start,
+                                                         Event.stop <= validity_stop)
+                        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session="fetch")
+                        event_uuids_to_be_removed.delete(synchronize_session="fetch")
+
+                        # Get the events ending on the current period to be removed
+                        events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
+                                                                                                                   Event.gauge_uuid == gauge_uuid,
+                                                                                                                   Event.start <= validity_start,
+                                                                                                                   Event.stop > validity_start,
+                                                                                                                   Event.stop <= validity_stop,
+                                                                                                                   Event.source_uuid != source_max_generation_time.source_uuid).all()
+
+                        # Get the events ending on the current period to be removed
+                        events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
+                                                                                                                       Event.gauge_uuid == gauge_uuid,
+                                                                                                                       Event.start < validity_stop,
+                                                                                                                       Event.stop > validity_stop,
+                                                                                                                       Event.source_uuid != source_max_generation_time.source_uuid).all()
+
+                        events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
+                        for event in events_not_staying:
+                            if not event.event_uuid in list_split_events:
+                                if event.start < validity_start:
+                                    if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                        start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                        del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    else:
+                                        start = event.start
+                                    # end if
+                                    id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                    self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
+                                                       gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                                    self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                    self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                                    self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                # end if
+                                if event.stop > validity_stop:
+                                    event.visible = False
+                                    list_split_events[event.event_uuid] = event
+                                else:
+                                    list_events_to_be_removed.append(event.event_uuid)
+                                # end if
+                            elif event.event_uuid in list_split_events and event.stop <= validity_stop:
+                                list_events_to_be_removed.append(event.event_uuid)
+                                del list_split_events[event.event_uuid]
+                            # end if
+                        # end for
+                    # end for
+                    # Bulk insert events
+                    self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
+                    # Bulk insert keys
+                    self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+                    # Bulk insert links
+                    self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
+                    self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+                    # Remove the events that were partially affected by the insert and erase operation
+                    self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+                    # Bulk insert values
+                    if EventObject in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+                    # end if
+                    if EventBoolean in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+                    # end if
+                    if EventText in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+                    # end if
+                    if EventDouble in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+                    # end if
+                    if EventTimestamp in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+                    # end if
+                    if EventGeometry in list_events_to_be_created["values"]:
+                        self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+                    # end if
+
+                # end def
+                _remove_deprecated_events_by_insert_and_erase_per_event_per_gauge(self, gauge_uuid, list_events_to_be_created, list_events_to_be_created_not_ending_on_period, list_split_events)
+            # end for
+
+        # end for
+
         return
 
     @debug

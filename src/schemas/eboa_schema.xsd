@@ -115,6 +115,7 @@
       <xs:enumeration value="SIMPLE_UPDATE"/>
       <xs:enumeration value="EVENT_KEYS"/>
       <xs:enumeration value="ERASE_and_REPLACE"/>
+      <xs:enumeration value="ERASE_and_REPLACE_per_EVENT"/>
     </xs:restriction>
   </xs:simpleType>
   
