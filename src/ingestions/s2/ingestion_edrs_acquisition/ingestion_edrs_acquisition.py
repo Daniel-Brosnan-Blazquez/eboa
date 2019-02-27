@@ -73,7 +73,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
-    # Completeness operations for the completeness analysis of the plan
+    # Completeness operations for the reception completeness analysis of the plan
     completeness_planning_operation = {
         "mode": "insert",
         "dim_signature": {
@@ -412,7 +412,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             for corrected_planned_imaging in corrected_planned_imagings:
                 value = {
-                    "name": "completeness_began_channel_" + channel,
+                    "name": "reception_completeness_began_channel_" + channel,
                     "type": "object",
                     "values": []
                 }
@@ -429,10 +429,17 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             "validity_stop": str(stop_period)
                         }
                     # end if
+                    planning_event_values = corrected_planned_imaging.get_structured_values()
+                    planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
+                        {"name": "status",
+                         "type": "text",
+                         "value": "MISSING"}
+                    ]
+
                     completeness_planning_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNING_COMPLETENESS_CHANNEL_" + channel,
+                            "name": "PLANNED_IMAGING_COMPLETENESS_CHANNEL_" + channel,
                             "system": satellite
                         },
                         "start": str(corrected_planned_imaging.start),
@@ -444,15 +451,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                                 "name": "PLANNED_IMAGING",
                                 "back_ref": "COMPLETENESS"
                             }],
-                        "values": [{
-                            "name": "details",
-                            "type": "object",
-                            "values": [
-                                {"name": "status",
-                                 "type": "text",
-                                 "value": "MISSING"}
-                            ]
-                        }]
+                        "values": planning_event_values
                     })
                 # end if
             # end for
@@ -531,8 +530,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "explicit_reference": session_id,
                     "key": session_id + "_" + channel,
                     "gauge": {
-                        "insertion_type": "INSERT_and_ERASE",
-                        "name": "PLANNING_COMPLETENESS_CHANNEL_" + channel,
+                        "insertion_type": "INSERT_and_ERASE_per_EVENT",
+                        "name": "PLANNED_IMAGING_COMPLETENESS_CHANNEL_" + channel,
                         "system": satellite
                     },
                     "links": [
@@ -556,7 +555,25 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "values": [
                             {"name": "status",
                              "type": "text",
-                             "value": "RECEIVED"}
+                             "value": "RECEIVED"},
+                            {"name": "downlink_orbit",
+                             "type": "double",
+                             "value": downlink_orbit},
+                            {"name": "satellite",
+                             "type": "text",
+                             "value": satellite},
+                            {"name": "reception_station",
+                             "type": "text",
+                             "value": "EPAE"},
+                            {"name": "channel",
+                             "type": "double",
+                             "value": channel},
+                            {"name": "vcid",
+                             "type": "double",
+                             "value": vcid_number},
+                            {"name": "downlink_mode",
+                             "type": "text",
+                             "value": downlink_mode},
                         ]
                     }]
                 }
