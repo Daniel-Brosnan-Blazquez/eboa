@@ -712,7 +712,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_ddbb) == 0
 
-    def test_insert_event_erase_and_replace(self):
+    def test_insert_event_insert_and_erase(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
@@ -726,7 +726,7 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
-                              "insertion_type": "ERASE_and_REPLACE"},
+                              "insertion_type": "INSERT_and_ERASE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36"
                 }]
@@ -1823,7 +1823,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_erase_and_replace_same_period(self):
+    def test_remove_deprecated_event_insert_and_erase_same_period(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data = {"dim_signature": {"name": "dim_signature",
@@ -1889,7 +1889,7 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
-                              "insertion_type": "ERASE_and_REPLACE"},
+                              "insertion_type": "INSERT_and_ERASE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "values": [{"name": "VALUES",
@@ -1928,7 +1928,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
@@ -1952,7 +1952,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_erase_and_replace_no_events(self):
+    def test_remove_deprecated_event_insert_and_erase_no_events(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -2022,7 +2022,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 0
 
-    def test_remove_deprecated_event_erase_and_replace_one_starts_before_links(self):
+    def test_remove_deprecated_event_insert_and_erase_one_starts_before_links(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
@@ -2123,7 +2123,7 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT4",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
-                              "insertion_type": "ERASE_and_REPLACE"},
+                              "insertion_type": "INSERT_and_ERASE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "values": [{"name": "VALUES",
@@ -2162,7 +2162,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -2238,7 +2238,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_links_ddbb) == 1
 
-    def test_remove_deprecated_event_erase_and_replace_only_remains_last_inserted_source(self):
+    def test_remove_deprecated_event_insert_and_erase_only_remains_last_inserted_source(self):
 
         data1 = {"operations": [{
             "mode": "insert",
@@ -2347,7 +2347,7 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT4",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
-                              "insertion_type": "ERASE_and_REPLACE"},
+                              "insertion_type": "INSERT_and_ERASE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36"
                 }]
@@ -2366,7 +2366,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_values) == 0
 
-    def test_remove_deprecated_event_erase_and_replace_one_starts_after(self):
+    def test_remove_deprecated_event_insert_and_erase_one_starts_after(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
@@ -2432,7 +2432,7 @@ class TestEngine(unittest.TestCase):
                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
-                              "insertion_type": "ERASE_and_REPLACE"},
+                              "insertion_type": "INSERT_and_ERASE"},
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36",
                     "values": [{"name": "VALUES",
@@ -2471,7 +2471,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -2510,7 +2510,7 @@ class TestEngine(unittest.TestCase):
         assert len(values_ddbb) == 16
 
 
-    def test_remove_deprecated_event_erase_and_replace_events_not_overlapping(self):
+    def test_remove_deprecated_event_insert_and_erase_events_not_overlapping(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
@@ -2575,7 +2575,7 @@ class TestEngine(unittest.TestCase):
                      "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
                      "gauge": {"name": "GAUGE_NAME",
                                "system": "GAUGE_SYSTEM",
-                               "insertion_type": "ERASE_and_REPLACE"},
+                               "insertion_type": "INSERT_and_ERASE"},
                      "start": "2018-06-04T05:07:03",
                      "stop": "2018-06-05T07:07:36",
                      "values": [{"name": "VALUES",
@@ -2615,7 +2615,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -2639,7 +2639,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_erase_and_replace_split_events(self):
+    def test_remove_deprecated_event_insert_and_erase_split_events(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
@@ -2706,7 +2706,7 @@ class TestEngine(unittest.TestCase):
                      "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
                      "gauge": {"name": "GAUGE_NAME",
                                "system": "GAUGE_SYSTEM",
-                               "insertion_type": "ERASE_and_REPLACE"},
+                               "insertion_type": "INSERT_and_ERASE"},
                      "start": "2018-06-04T05:07:03",
                      "stop": "2018-06-06T07:07:36"
                 }]
@@ -2721,7 +2721,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
@@ -2792,7 +2792,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 5
 
-    def test_remove_deprecated_event_erase_and_replace_split_events_not_created(self):
+    def test_remove_deprecated_event_insert_and_erase_split_events_not_created(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data1 = {"dim_signature": {"name": "dim_signature",
@@ -2859,7 +2859,7 @@ class TestEngine(unittest.TestCase):
                      "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
                      "gauge": {"name": "GAUGE_NAME",
                                "system": "GAUGE_SYSTEM",
-                               "insertion_type": "ERASE_and_REPLACE"},
+                               "insertion_type": "INSERT_and_ERASE"},
                      "start": "2018-06-04T05:07:03",
                      "stop": "2018-06-05T09:07:36"
                 }]
@@ -2874,7 +2874,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_erase_and_replace()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
@@ -3016,7 +3016,7 @@ class TestEngine(unittest.TestCase):
             "events": [{
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
-                          "insertion_type": "ERASE_and_REPLACE"},
+                          "insertion_type": "INSERT_and_ERASE"},
                 "start": "2018-06-05T02:07:03",
                 "stop": "2018-06-05T08:07:36"
             }],
@@ -3038,7 +3038,7 @@ class TestEngine(unittest.TestCase):
             "events": [{
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
-                          "insertion_type": "ERASE_and_REPLACE"},
+                          "insertion_type": "INSERT_and_ERASE"},
                 "start": "2018-06-05T02:07:03",
                 "stop": "2018-06-05T08:07:36"
             }],
