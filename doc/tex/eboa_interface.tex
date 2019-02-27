@@ -79,21 +79,21 @@ Events can be inserted following 3 different methods associated to their gauges:
 
 \begin{itemize}
 \item SIMPLE\_UPDATE: all events are inserted
-\item ERASE\_and\_REPLACE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
+\item INSERT\_and\_ERASE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
 \item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
-\item insert\_and\_erase: this method is similar to the method ERASE\_and\_REPLACE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
+\item insert\_and\_erase: this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
 \end{itemize}
 
-\subsection {ERASE\_and\_REPLACE method}
+\subsection {INSERT\_and\_ERASE method}
 
-In this section, an example of the behaviour is shown in figure \ref{fg:erase_and_replace_algorithm} and described in table \ref{tb:erase_and_replace_algorithm}. The bubbles in the figure represent events and the line beneath them the validity period of their corresponding source of information. All the events have the same gauge configuration.
+In this section, an example of the behaviour is shown in figure \ref{fg:insert_and_erase_algorithm} and described in table \ref{tb:insert_and_erase_algorithm}. The bubbles in the figure represent events and the line beneath them the validity period of their corresponding source of information. All the events have the same gauge configuration.
 The events are firstly inserted flagged as not visible. Then, the method, after applying the algorithm described bellow, is in charge of deleting the events or making them visible.
 The steps of the algorithm are as follows:
 
 \begin{enumerate}
 
-\item The algorithm iterates over the gauges inserted with mode ERASE\_and\_REPLACE
-\item \label{for_each_gauge} For each gauge inserted with mode ERASE\_and\_REPLACE, the algorithm gets all the validity periods of the sources associated to the events falling into the validity period of the source associated to the events just inserted with this gauge
+\item The algorithm iterates over the gauges inserted with mode INSERT\_and\_ERASE
+\item \label{for_each_gauge} For each gauge inserted with mode INSERT\_and\_ERASE, the algorithm gets all the validity periods of the sources associated to the events falling into the validity period of the source associated to the events just inserted with this gauge
 \item The algorithm sets a timeline with the start and stop values of the validities
 \item The algorithm iterates over every timestamp of the timeline
 \item If the timestamp is the last one of the timeline, the algorithm copies every event inside the list "List of split" into the list "List to be created" with the start value equal to the timestamp and inserts the event into the list "List to be removed". Once this step is finised, it goes to step \ref{for_each_gauge}
@@ -113,9 +113,9 @@ The steps of the algorithm are as follows:
 
 \begin{figure}[H]
   \begin{center}
-	\centering\includegraphics[width=150mm]{../fig/erase_and_replace_algorithm.png}
+	\centering\includegraphics[width=150mm]{../fig/insert_and_erase_algorithm.png}
 	\caption{Example of the effect of the erase and replace operation}
-	\label{fg:erase_and_replace_algorithm}
+	\label{fg:insert_and_erase_algorithm}
   \end{center}
 \end{figure}
 
@@ -134,13 +134,13 @@ Period & List to be created  & List to be created not ending on the current peri
 9      & 7, 8, 9, 11, 13, 15 & -                                                   & 2, 3, 5, 12, 14    & 1             & 4, 6, 10          \\ \hline
 \end{tabular}
 \caption{Table showing the steps done by the erase and replace algorithm}
-\label{tb:erase_and_replace_algorithm}
+\label{tb:insert_and_erase_algorithm}
 \end{table}
 
 
 \subsection {EVENT\_KEYS method}
 
-The algorithm used to insert events using the method EVENT\_KEYS is a lot less complex than the algorithm used to insert events using the method ERASE\_and\_REPLACE.
+The algorithm used to insert events using the method EVENT\_KEYS is a lot less complex than the algorithm used to insert events using the method INSERT\_and\_ERASE.
 The events and the associated keys are firstly inserted flagged as not visible. The method after applying the algorithm described bellow is in charge of deleting the events or making them visible, as well as making the event keys visible.
 This method considers the generation time of the source associated to the events just inserted and its DIM signature assciated joint with every event key.
 The steps are as follows:
