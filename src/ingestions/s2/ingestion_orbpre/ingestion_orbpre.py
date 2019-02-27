@@ -123,7 +123,7 @@ def _correct_planning_events(orbpre_events, planning_events):
 
         corrected_planning_event = {
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": planning_event.gauge.name + "_CORRECTION",
                 "system": planning_event.gauge.system
             },

@@ -115,7 +115,7 @@ def process_file(file_path):
         slot_event = {
             "explicit_reference": session_id,
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "SLOT_REQUEST_EDRS",
                 "system": sentinel
             },

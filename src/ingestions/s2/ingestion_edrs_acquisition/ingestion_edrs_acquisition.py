@@ -531,7 +531,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "explicit_reference": session_id,
                     "key": session_id + "_" + channel,
                     "gauge": {
-                        "insertion_type": "ERASE_and_REPLACE",
+                        "insertion_type": "INSERT_and_ERASE",
                         "name": "PLANNING_COMPLETENESS_CHANNEL_" + channel,
                         "system": satellite
                     },

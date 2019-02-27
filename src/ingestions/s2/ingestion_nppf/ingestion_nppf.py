@@ -151,7 +151,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         record_event = {
             "link_ref": record_link_id,
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_RECORD_" + record_type,
                 "system": satellite
             },
@@ -213,7 +213,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         cut_imaging_event = {
             "link_ref": cut_imaging_link_id,
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_CUT_IMAGING_" + cut_imaging_mode,
                 "system": satellite
             },
@@ -298,7 +298,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         imaging_event = {
             "link_ref": imaging_link_id,
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_IMAGING_" + imaging_mode,
                 "system": satellite
             },
@@ -418,7 +418,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
         # Idle event
         idle_event = {
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_IDLE",
                 "system": satellite
             },
@@ -496,7 +496,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
         playback_event = {
             "link_ref": playback_mean_link_id,
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_PLAYBACK_MEAN_" + playback_mean,
                 "system": satellite
             },
@@ -568,7 +568,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
         # Playback_Type event
         playback_type_event = {
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "PLANNED_PLAYBACK_TYPE_" + playback_type,
                 "system": satellite
             },

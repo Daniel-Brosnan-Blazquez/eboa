@@ -84,7 +84,7 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
         # DFEP schedule event
         dfep_schedule_event = {
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "DFEP_SCHEDULE",
                 "system": station
             },

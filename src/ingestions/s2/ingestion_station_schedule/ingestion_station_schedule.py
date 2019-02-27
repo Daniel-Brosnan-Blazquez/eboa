@@ -88,7 +88,7 @@ def _generate_station_schedule_events(xpath_xml, source, list_of_events):
         # Station schedule event
         station_schedule_event = {
             "gauge": {
-                "insertion_type": "ERASE_and_REPLACE",
+                "insertion_type": "INSERT_and_ERASE",
                 "name": "STATION_SCHEDULE",
                 "system": station
             },
