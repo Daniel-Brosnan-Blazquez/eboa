@@ -18,7 +18,7 @@ module eboa
 \index{Annotation (class in eboa.datamodel.annotations)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{Annotation}}}{\emph{annotation\_uuid}, \emph{ingestion\_time}, \emph{annotation\_cnf}, \emph{explicit\_ref}, \emph{dim\_processing}, \emph{visible=False}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{Annotation}}}{\emph{annotation\_uuid}, \emph{ingestion\_time}, \emph{annotation\_cnf}, \emph{explicit\_ref}, \emph{source}, \emph{visible=False}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \index{annotationCnf (eboa.datamodel.annotations.Annotation attribute)}
 
@@ -26,10 +26,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.annotationCnf}}\pysigline{\sphinxbfcode{\sphinxupquote{annotationCnf}}}
 \end{fulllineitems}
 
-\index{annotation\_cnf\_id (eboa.datamodel.annotations.Annotation attribute)}
+\index{annotation\_cnf\_uuid (eboa.datamodel.annotations.Annotation attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.annotation_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.annotation_cnf_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_uuid}}}
 \end{fulllineitems}
 
 \index{annotation\_uuid (eboa.datamodel.annotations.Annotation attribute)}
@@ -44,10 +44,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
 \end{fulllineitems}
 
-\index{explicit\_ref\_id (eboa.datamodel.annotations.Annotation attribute)}
+\index{explicit\_ref\_uuid (eboa.datamodel.annotations.Annotation attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.explicit_ref_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid}}}
 \end{fulllineitems}
 
 \index{ingestion\_time (eboa.datamodel.annotations.Annotation attribute)}
@@ -56,16 +56,16 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
 \end{fulllineitems}
 
-\index{processing\_uuid (eboa.datamodel.annotations.Annotation attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
-\end{fulllineitems}
-
 \index{source (eboa.datamodel.annotations.Annotation attribute)}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{source\_uuid (eboa.datamodel.annotations.Annotation attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.source_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{source\_uuid}}}
 \end{fulllineitems}
 
 \index{visible (eboa.datamodel.annotations.Annotation attribute)}
@@ -92,6 +92,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationBoolean.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.annotations.AnnotationBoolean method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationBoolean.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{level\_position (eboa.datamodel.annotations.AnnotationBoolean attribute)}
@@ -130,12 +136,18 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \index{AnnotationCnf (class in eboa.datamodel.annotations)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationCnf}}}{\emph{annotation\_cnf\_id}, \emph{name}, \emph{dim\_signature}, \emph{system=None}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.annotations.}}\sphinxbfcode{\sphinxupquote{AnnotationCnf}}}{\emph{annotation\_cnf\_uuid}, \emph{name}, \emph{dim\_signature}, \emph{system=None}, \emph{description=None}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{annotation\_cnf\_id (eboa.datamodel.annotations.AnnotationCnf attribute)}
+\index{annotation\_cnf\_uuid (eboa.datamodel.annotations.AnnotationCnf attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.annotation_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.annotation_cnf_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_cnf\_uuid}}}
+\end{fulllineitems}
+
+\index{description (eboa.datamodel.annotations.AnnotationCnf attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.description}}\pysigline{\sphinxbfcode{\sphinxupquote{description}}}
 \end{fulllineitems}
 
 \index{dim\_signature (eboa.datamodel.annotations.AnnotationCnf attribute)}
@@ -144,10 +156,16 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
 \end{fulllineitems}
 
-\index{dim\_signature\_id (eboa.datamodel.annotations.AnnotationCnf attribute)}
+\index{dim\_signature\_uuid (eboa.datamodel.annotations.AnnotationCnf attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.dim_signature_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.annotations.AnnotationCnf method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationCnf.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{name (eboa.datamodel.annotations.AnnotationCnf attribute)}
@@ -180,6 +198,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationDouble.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.annotations.AnnotationDouble method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationDouble.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{level\_position (eboa.datamodel.annotations.AnnotationDouble attribute)}
@@ -232,6 +256,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationGeometry.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.annotations.AnnotationGeometry method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationGeometry.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.annotations.AnnotationGeometry attribute)}
 
 \begin{fulllineitems}
@@ -282,6 +312,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationObject.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.annotations.AnnotationObject method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationObject.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.annotations.AnnotationObject attribute)}
 
 \begin{fulllineitems}
@@ -324,6 +360,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationText.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.annotations.AnnotationText method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationText.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{level\_position (eboa.datamodel.annotations.AnnotationText attribute)}
@@ -376,6 +418,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationTimestamp.annotation_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.annotations.AnnotationTimestamp method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationTimestamp.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.annotations.AnnotationTimestamp attribute)}
 
 \begin{fulllineitems}
@@ -421,131 +469,223 @@ module eboa
 
 
 \subsubsection{eboa.datamodel.dim\_processings module}
-\label{\detokenize{eboa.datamodel:module-eboa.datamodel.dim_processings}}\label{\detokenize{eboa.datamodel:eboa-datamodel-dim-processings-module}}\index{eboa.datamodel.dim\_processings (module)}
-DIM processing data model definition
+\label{\detokenize{eboa.datamodel:module-eboa.datamodel.sources}}\label{\detokenize{eboa.datamodel:eboa-datamodel-dim-processings-module}}\index{eboa.datamodel.sources (module)}
+Source data model definition
 
 Written by DEIMOS Space S.L. (dibb)
 
 module eboa
-\index{DimProcessing (class in eboa.datamodel.dim\_processings)}
+\index{Source (class in eboa.datamodel.sources)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.dim\_processings.}}\sphinxbfcode{\sphinxupquote{DimProcessing}}}{\emph{processing\_uuid}, \emph{name}, \emph{generation\_time=None}, \emph{exec\_version=None}, \emph{dim\_signature=None}, \emph{validity\_start=None}, \emph{validity\_stop=None}, \emph{ingestion\_time=None}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.sources.}}\sphinxbfcode{\sphinxupquote{Source}}}{\emph{source\_uuid}, \emph{name}, \emph{generation\_time=None}, \emph{processor\_version=None}, \emph{dim\_signature=None}, \emph{validity\_start=None}, \emph{validity\_stop=None}, \emph{ingestion\_time=None}, \emph{processor=None}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{content\_json (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{content\_json (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.content_json}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_json}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.content_json}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_json}}}
 \end{fulllineitems}
 
-\index{content\_text (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{content\_text (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.content_text}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_text}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.content_text}}\pysigline{\sphinxbfcode{\sphinxupquote{content\_text}}}
 \end{fulllineitems}
 
-\index{dimSignature (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{dimSignature (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.dimSignature}}\pysigline{\sphinxbfcode{\sphinxupquote{dimSignature}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.dimSignature}}\pysigline{\sphinxbfcode{\sphinxupquote{dimSignature}}}
 \end{fulllineitems}
 
-\index{dim\_exec\_version (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{dim\_signature\_uuid (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.dim_exec_version}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_exec\_version}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.dim_signature_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_uuid}}}
 \end{fulllineitems}
 
-\index{dim\_signature\_id (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{generation\_time (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.generation_time}}\pysigline{\sphinxbfcode{\sphinxupquote{generation\_time}}}
 \end{fulllineitems}
 
-\index{generation\_time (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{ingestion\_completeness (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.generation_time}}\pysigline{\sphinxbfcode{\sphinxupquote{generation\_time}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.ingestion_completeness}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_completeness}}}
 \end{fulllineitems}
 
-\index{ingestion\_duration (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{ingestion\_duration (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.ingestion_duration}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_duration}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.ingestion_duration}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_duration}}}
 \end{fulllineitems}
 
-\index{ingestion\_time (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{ingestion\_progress (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.ingestion_progress}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_progress}}}
 \end{fulllineitems}
 
-\index{name (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{ingestion\_time (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
 \end{fulllineitems}
 
-\index{parse\_error (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{jsonify() (eboa.datamodel.sources.Source method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.parse_error}}\pysigline{\sphinxbfcode{\sphinxupquote{parse\_error}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
-\index{processing\_uuid (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{name (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.name}}\pysigline{\sphinxbfcode{\sphinxupquote{name}}}
 \end{fulllineitems}
 
-\index{validity\_start (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{parse\_error (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.validity_start}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_start}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.parse_error}}\pysigline{\sphinxbfcode{\sphinxupquote{parse\_error}}}
 \end{fulllineitems}
 
-\index{validity\_stop (eboa.datamodel.dim\_processings.DimProcessing attribute)}
+\index{processor (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessing.validity_stop}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_stop}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.processor}}\pysigline{\sphinxbfcode{\sphinxupquote{processor}}}
 \end{fulllineitems}
 
-
-\end{fulllineitems}
-
-\index{DimProcessingStatus (class in eboa.datamodel.dim\_processings)}
+\index{processor\_progress (eboa.datamodel.sources.Source attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.dim\_processings.}}\sphinxbfcode{\sphinxupquote{DimProcessingStatus}}}{\emph{time\_stamp}, \emph{status}, \emph{dim\_processing}, \emph{log=None}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.processor_progress}}\pysigline{\sphinxbfcode{\sphinxupquote{processor\_progress}}}
+\end{fulllineitems}
+
+\index{processor\_version (eboa.datamodel.sources.Source attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.processor_version}}\pysigline{\sphinxbfcode{\sphinxupquote{processor\_version}}}
+\end{fulllineitems}
+
+\index{source\_uuid (eboa.datamodel.sources.Source attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.source_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{source\_uuid}}}
+\end{fulllineitems}
+
+\index{validity\_start (eboa.datamodel.sources.Source attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.validity_start}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_start}}}
+\end{fulllineitems}
+
+\index{validity\_stop (eboa.datamodel.sources.Source attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.Source.validity_stop}}\pysigline{\sphinxbfcode{\sphinxupquote{validity\_stop}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{SourceAlert (class in eboa.datamodel.sources)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.sources.}}\sphinxbfcode{\sphinxupquote{SourceAlert}}}{\emph{time\_stamp}, \emph{status}, \emph{source}, \emph{log=None}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{log (eboa.datamodel.dim\_processings.DimProcessingStatus attribute)}
+\index{alert (eboa.datamodel.sources.SourceAlert attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus.log}}\pysigline{\sphinxbfcode{\sphinxupquote{log}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.alert}}\pysigline{\sphinxbfcode{\sphinxupquote{alert}}}
 \end{fulllineitems}
 
-\index{proc\_status (eboa.datamodel.dim\_processings.DimProcessingStatus attribute)}
+\index{alert\_uuid (eboa.datamodel.sources.SourceAlert attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus.proc_status}}\pysigline{\sphinxbfcode{\sphinxupquote{proc\_status}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.alert_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{alert\_uuid}}}
 \end{fulllineitems}
 
-\index{processing\_uuid (eboa.datamodel.dim\_processings.DimProcessingStatus attribute)}
+\index{generator (eboa.datamodel.sources.SourceAlert attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.generator}}\pysigline{\sphinxbfcode{\sphinxupquote{generator}}}
 \end{fulllineitems}
 
-\index{source (eboa.datamodel.dim\_processings.DimProcessingStatus attribute)}
+\index{ingestion\_time (eboa.datamodel.sources.SourceAlert attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
 \end{fulllineitems}
 
-\index{time\_stamp (eboa.datamodel.dim\_processings.DimProcessingStatus attribute)}
+\index{message (eboa.datamodel.sources.SourceAlert attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_processings.DimProcessingStatus.time_stamp}}\pysigline{\sphinxbfcode{\sphinxupquote{time\_stamp}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.message}}\pysigline{\sphinxbfcode{\sphinxupquote{message}}}
+\end{fulllineitems}
+
+\index{notified (eboa.datamodel.sources.SourceAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.notified}}\pysigline{\sphinxbfcode{\sphinxupquote{notified}}}
+\end{fulllineitems}
+
+\index{source (eboa.datamodel.sources.SourceAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{source\_uuid (eboa.datamodel.sources.SourceAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.source_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{source\_uuid}}}
+\end{fulllineitems}
+
+\index{validated (eboa.datamodel.sources.SourceAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceAlert.validated}}\pysigline{\sphinxbfcode{\sphinxupquote{validated}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{SourceStatus (class in eboa.datamodel.sources)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.sources.}}\sphinxbfcode{\sphinxupquote{SourceStatus}}}{\emph{time\_stamp}, \emph{status}, \emph{source}, \emph{log=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{log (eboa.datamodel.sources.SourceStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus.log}}\pysigline{\sphinxbfcode{\sphinxupquote{log}}}
+\end{fulllineitems}
+
+\index{source (eboa.datamodel.sources.SourceStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{source\_uuid (eboa.datamodel.sources.SourceStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus.source_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{source\_uuid}}}
+\end{fulllineitems}
+
+\index{status (eboa.datamodel.sources.SourceStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus.status}}\pysigline{\sphinxbfcode{\sphinxupquote{status}}}
+\end{fulllineitems}
+
+\index{time\_stamp (eboa.datamodel.sources.SourceStatus attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.sources.SourceStatus.time_stamp}}\pysigline{\sphinxbfcode{\sphinxupquote{time\_stamp}}}
 \end{fulllineitems}
 
 
@@ -563,24 +703,24 @@ module eboa
 \index{DimSignature (class in eboa.datamodel.dim\_signatures)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.dim\_signatures.}}\sphinxbfcode{\sphinxupquote{DimSignature}}}{\emph{dim\_signature\_id}, \emph{dim\_signature}, \emph{dim\_exec\_name}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.dim\_signatures.}}\sphinxbfcode{\sphinxupquote{DimSignature}}}{\emph{dim\_signature\_uuid}, \emph{dim\_signature}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{dim\_exec\_name (eboa.datamodel.dim\_signatures.DimSignature attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature.dim_exec_name}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_exec\_name}}}
-\end{fulllineitems}
-
 \index{dim\_signature (eboa.datamodel.dim\_signatures.DimSignature attribute)}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
 \end{fulllineitems}
 
-\index{dim\_signature\_id (eboa.datamodel.dim\_signatures.DimSignature attribute)}
+\index{dim\_signature\_uuid (eboa.datamodel.dim\_signatures.DimSignature attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature.dim_signature_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.dim\_signatures.DimSignature method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.dim_signatures.DimSignature.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 
@@ -632,7 +772,7 @@ module eboa
 \index{Event (class in eboa.datamodel.events)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.events.}}\sphinxbfcode{\sphinxupquote{Event}}}{\emph{event\_uuid}, \emph{start}, \emph{stop}, \emph{ingestion\_time}, \emph{gauge}, \emph{dim\_processing}, \emph{explicit\_ref=None}, \emph{visible=True}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.events.}}\sphinxbfcode{\sphinxupquote{Event}}}{\emph{event\_uuid}, \emph{start}, \emph{stop}, \emph{ingestion\_time}, \emph{gauge}, \emph{source}, \emph{explicit\_ref=None}, \emph{visible=True}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \index{event\_uuid (eboa.datamodel.events.Event attribute)}
 
@@ -646,10 +786,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
 \end{fulllineitems}
 
-\index{explicit\_ref\_id (eboa.datamodel.events.Event attribute)}
+\index{explicit\_ref\_uuid (eboa.datamodel.events.Event attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.explicit_ref_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid}}}
 \end{fulllineitems}
 
 \index{gauge (eboa.datamodel.events.Event attribute)}
@@ -658,10 +798,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.gauge}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge}}}
 \end{fulllineitems}
 
-\index{gauge\_id (eboa.datamodel.events.Event attribute)}
+\index{gauge\_uuid (eboa.datamodel.events.Event attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.gauge_id}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.gauge_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_uuid}}}
 \end{fulllineitems}
 
 \index{get\_structured\_values() (eboa.datamodel.events.Event method)}
@@ -686,16 +826,16 @@ Method to obtain the associated values
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
 \end{fulllineitems}
 
-\index{processing\_uuid (eboa.datamodel.events.Event attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.processing_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{processing\_uuid}}}
-\end{fulllineitems}
-
 \index{source (eboa.datamodel.events.Event attribute)}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.source}}\pysigline{\sphinxbfcode{\sphinxupquote{source}}}
+\end{fulllineitems}
+
+\index{source\_uuid (eboa.datamodel.events.Event attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.source_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{source\_uuid}}}
 \end{fulllineitems}
 
 \index{start (eboa.datamodel.events.Event attribute)}
@@ -719,6 +859,68 @@ Method to obtain the associated values
 
 \end{fulllineitems}
 
+\index{EventAlert (class in eboa.datamodel.events)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.events.}}\sphinxbfcode{\sphinxupquote{EventAlert}}}{\emph{time\_stamp}, \emph{status}, \emph{event}, \emph{log=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{alert (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.alert}}\pysigline{\sphinxbfcode{\sphinxupquote{alert}}}
+\end{fulllineitems}
+
+\index{alert\_uuid (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.alert_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{alert\_uuid}}}
+\end{fulllineitems}
+
+\index{event (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.event}}\pysigline{\sphinxbfcode{\sphinxupquote{event}}}
+\end{fulllineitems}
+
+\index{event\_uuid (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{generator (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.generator}}\pysigline{\sphinxbfcode{\sphinxupquote{generator}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+\index{message (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.message}}\pysigline{\sphinxbfcode{\sphinxupquote{message}}}
+\end{fulllineitems}
+
+\index{notified (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.notified}}\pysigline{\sphinxbfcode{\sphinxupquote{notified}}}
+\end{fulllineitems}
+
+\index{validated (eboa.datamodel.events.EventAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventAlert.validated}}\pysigline{\sphinxbfcode{\sphinxupquote{validated}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 \index{EventBoolean (class in eboa.datamodel.events)}
 
 \begin{fulllineitems}
@@ -734,6 +936,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventBoolean.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.events.EventBoolean method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventBoolean.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{level\_position (eboa.datamodel.events.EventBoolean attribute)}
@@ -786,6 +994,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventDouble.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.events.EventDouble method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventDouble.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.events.EventDouble attribute)}
 
 \begin{fulllineitems}
@@ -836,6 +1050,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventGeometry.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.events.EventGeometry method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventGeometry.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.events.EventGeometry attribute)}
 
 \begin{fulllineitems}
@@ -880,10 +1100,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventKey.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
 \end{fulllineitems}
 
-\index{dim\_signature\_id (eboa.datamodel.events.EventKey attribute)}
+\index{dim\_signature\_uuid (eboa.datamodel.events.EventKey attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventKey.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventKey.dim_signature_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_uuid}}}
 \end{fulllineitems}
 
 \index{event (eboa.datamodel.events.EventKey attribute)}
@@ -902,6 +1122,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventKey.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.events.EventKey method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventKey.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{visible (eboa.datamodel.events.EventKey attribute)}
@@ -962,6 +1188,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventObject.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.events.EventObject method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventObject.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.events.EventObject attribute)}
 
 \begin{fulllineitems}
@@ -1004,6 +1236,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventText.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.events.EventText method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventText.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{level\_position (eboa.datamodel.events.EventText attribute)}
@@ -1056,6 +1294,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventTimestamp.event_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{event\_uuid}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.events.EventTimestamp method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.EventTimestamp.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
 \index{level\_position (eboa.datamodel.events.EventTimestamp attribute)}
 
 \begin{fulllineitems}
@@ -1101,12 +1345,12 @@ module eboa
 \index{ExplicitRef (class in eboa.datamodel.explicit\_refs)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRef}}}{\emph{explicit\_ref\_id}, \emph{ingestionTime}, \emph{explicitRef}, \emph{group=None}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRef}}}{\emph{explicit\_ref\_uuid}, \emph{ingestionTime}, \emph{explicitRef}, \emph{group=None}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{expl\_ref\_cnf\_id (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
+\index{expl\_ref\_cnf\_uuid (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.expl_ref_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.expl_ref_cnf_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_uuid}}}
 \end{fulllineitems}
 
 \index{explicit\_ref (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
@@ -1115,10 +1359,10 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.explicit_ref}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref}}}
 \end{fulllineitems}
 
-\index{explicit\_ref\_id (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
+\index{explicit\_ref\_uuid (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.explicit_ref_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid}}}
 \end{fulllineitems}
 
 \index{group (eboa.datamodel.explicit\_refs.ExplicitRef attribute)}
@@ -1133,18 +1377,92 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
 \end{fulllineitems}
 
+\index{jsonify() (eboa.datamodel.explicit\_refs.ExplicitRef method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRef.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{ExplicitRefAlert (class in eboa.datamodel.explicit\_refs)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRefAlert}}}{\emph{time\_stamp}, \emph{status}, \emph{explicitRef}, \emph{log=None}}{}
+Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{alert (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.alert}}\pysigline{\sphinxbfcode{\sphinxupquote{alert}}}
+\end{fulllineitems}
+
+\index{alert\_uuid (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.alert_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{alert\_uuid}}}
+\end{fulllineitems}
+
+\index{explicit\_ref (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.explicit_ref}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref}}}
+\end{fulllineitems}
+
+\index{explicit\_ref\_uuid (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.explicit_ref_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid}}}
+\end{fulllineitems}
+
+\index{generator (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.generator}}\pysigline{\sphinxbfcode{\sphinxupquote{generator}}}
+\end{fulllineitems}
+
+\index{ingestion\_time (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.ingestion_time}}\pysigline{\sphinxbfcode{\sphinxupquote{ingestion\_time}}}
+\end{fulllineitems}
+
+\index{message (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.message}}\pysigline{\sphinxbfcode{\sphinxupquote{message}}}
+\end{fulllineitems}
+
+\index{notified (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.notified}}\pysigline{\sphinxbfcode{\sphinxupquote{notified}}}
+\end{fulllineitems}
+
+\index{validated (eboa.datamodel.explicit\_refs.ExplicitRefAlert attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefAlert.validated}}\pysigline{\sphinxbfcode{\sphinxupquote{validated}}}
+\end{fulllineitems}
+
 
 \end{fulllineitems}
 
 \index{ExplicitRefGrp (class in eboa.datamodel.explicit\_refs)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefGrp}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRefGrp}}}{\emph{expl\_ref\_cnf\_id}, \emph{name}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefGrp}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.explicit\_refs.}}\sphinxbfcode{\sphinxupquote{ExplicitRefGrp}}}{\emph{expl\_ref\_cnf\_uuid}, \emph{name}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
-\index{expl\_ref\_cnf\_id (eboa.datamodel.explicit\_refs.ExplicitRefGrp attribute)}
+\index{expl\_ref\_cnf\_uuid (eboa.datamodel.explicit\_refs.ExplicitRefGrp attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefGrp.expl_ref_cnf_id}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefGrp.expl_ref_cnf_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{expl\_ref\_cnf\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.explicit\_refs.ExplicitRefGrp method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefGrp.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{name (eboa.datamodel.explicit\_refs.ExplicitRefGrp attribute)}
@@ -1167,16 +1485,16 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefLink.explicitRef}}\pysigline{\sphinxbfcode{\sphinxupquote{explicitRef}}}
 \end{fulllineitems}
 
-\index{explicit\_ref\_id (eboa.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+\index{explicit\_ref\_uuid (eboa.datamodel.explicit\_refs.ExplicitRefLink attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_id}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid}}}
 \end{fulllineitems}
 
-\index{explicit\_ref\_id\_link (eboa.datamodel.explicit\_refs.ExplicitRefLink attribute)}
+\index{explicit\_ref\_uuid\_link (eboa.datamodel.explicit\_refs.ExplicitRefLink attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_id_link}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_id\_link}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.explicit_refs.ExplicitRefLink.explicit_ref_uuid_link}}\pysigline{\sphinxbfcode{\sphinxupquote{explicit\_ref\_uuid\_link}}}
 \end{fulllineitems}
 
 \index{name (eboa.datamodel.explicit\_refs.ExplicitRefLink attribute)}
@@ -1221,24 +1539,36 @@ module eboa
 \index{Gauge (class in eboa.datamodel.gauges)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.gauges.}}\sphinxbfcode{\sphinxupquote{Gauge}}}{\emph{gauge\_id}, \emph{name}, \emph{dim\_signature}, \emph{system=None}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.datamodel.gauges.}}\sphinxbfcode{\sphinxupquote{Gauge}}}{\emph{gauge\_uuid}, \emph{name}, \emph{dim\_signature}, \emph{system=None}, \emph{description=None}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
+\index{description (eboa.datamodel.gauges.Gauge attribute)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.description}}\pysigline{\sphinxbfcode{\sphinxupquote{description}}}
+\end{fulllineitems}
+
 \index{dim\_signature (eboa.datamodel.gauges.Gauge attribute)}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.dim_signature}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature}}}
 \end{fulllineitems}
 
-\index{dim\_signature\_id (eboa.datamodel.gauges.Gauge attribute)}
+\index{dim\_signature\_uuid (eboa.datamodel.gauges.Gauge attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.dim_signature_id}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.dim_signature_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{dim\_signature\_uuid}}}
 \end{fulllineitems}
 
-\index{gauge\_id (eboa.datamodel.gauges.Gauge attribute)}
+\index{gauge\_uuid (eboa.datamodel.gauges.Gauge attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.gauge_id}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_id}}}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.gauge_uuid}}\pysigline{\sphinxbfcode{\sphinxupquote{gauge\_uuid}}}
+\end{fulllineitems}
+
+\index{jsonify() (eboa.datamodel.gauges.Gauge method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.gauges.Gauge.jsonify}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{jsonify}}}{}{}
 \end{fulllineitems}
 
 \index{name (eboa.datamodel.gauges.Gauge attribute)}
@@ -1284,10 +1614,36 @@ Class for communicating with the engine of the eboa module
 
 Provides access to the logic for inserting, deleting and updating
 the information stored into the DDBB
-\index{exit\_codes (eboa.engine.engine.Engine attribute)}
+\index{close\_session() (eboa.engine.engine.Engine method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.engine.Engine.exit_codes}}\pysigline{\sphinxbfcode{\sphinxupquote{exit\_codes}}\sphinxbfcode{\sphinxupquote{ = \{'DUPLICATED\_EVENT\_LINK\_REF': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains more than one event which defines the same link reference identifier \{\}', 'status': 11\}, 'EVENT\_PERIOD\_NOT\_IN\_SOURCE\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event with a period (\{\}\_\{\}) outside the period of the source (\{\}\_\{\})', 'status': 5\}, 'FILE\_NOT\_VALID': \{'message': 'The source file with name \{\} does not pass the schema verification', 'status': 9\}, 'INGESTION\_STARTED': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} is going to be ingested', 'status': 1\}, 'LINKS\_INCONSISTENCY': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: \{\}', 'status': 12\}, 'ODD\_NUMBER\_OF\_COORDINATES': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines the geometry value \{\} with an odd number of coordinates', 'status': 8\}, 'OK': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has ingested correctly \{\} event/s and \{\} annotation/s', 'status': 0\}, 'SOURCE\_ALREADY\_INGESTED': \{'message': 'The source file \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has been already ingested', 'status': 2\}, 'UNDEFINED\_EVENT\_LINK\_REF': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event which links to an undefined reference identifier \{\}', 'status': 6\}, 'WRONG\_EVENT\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event with a stop value \{\} lower than its start value \{\}', 'status': 4\}, 'WRONG\_GEOMETRY': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines a wrong geometry. The exception raised has been the following: \{\}', 'status': 10\}, 'WRONG\_SOURCE\_PERIOD': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} has a validity period which its stop (\{\}) is lower than its start (\{\})', 'status': 3\}, 'WRONG\_VALUE': \{'message': 'The source file with name \{\} associated to the DIM signature \{\} and DIM processing \{\} with version \{\} contains an event/annotation which defines the value \{\} that cannot be converted to the specified type \{\}', 'status': 7\}\}}}}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.engine.Engine.close_session}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{close\_session}}}{}{}
+Method to close the session
+
+\end{fulllineitems}
+
+\index{insert\_event\_values() (eboa.engine.engine.Engine method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.engine.Engine.insert_event_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{insert\_event\_values}}}{\emph{event\_uuid}, \emph{values}}{}
+Method to insert values and associate them to the event related to the UUID received in the position specified
+
+IMPORTANT!!! This method does not perform the commit. Anyhow,
+the engine will block processes accesing this method at
+self.session.bulk\_insert\_mappings(EventObject,
+list\_values{[}“objects”{]}) so remember to commit or release the session
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{event\_uuid}} \textendash{} event to assiciate the value to
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{values}} (\sphinxstyleliteralemphasis{\sphinxupquote{dict}}) \textendash{} list of values to be inserted
+
+\end{itemize}
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 \index{parse\_data\_from\_json() (eboa.engine.engine.Engine method)}
@@ -1351,6 +1707,12 @@ Method to treat the data stored in self.data
 \sphinxstyleliteralstrong{\sphinxupquote{validate}} (\sphinxstyleliteralemphasis{\sphinxupquote{bool}}) \textendash{} flag to indicate if the schema check has to be performed
 
 \end{itemize}
+
+\item[{Returns}] \leavevmode
+exit\_codes for every operation with the associated information (DIM signature, processor and source)
+
+\item[{Return type}] \leavevmode
+list of dictionaries
 
 \end{description}\end{quote}
 
@@ -1704,6 +2066,12 @@ module eboa
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.parsing.validate_data_dictionary}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.parsing.}}\sphinxbfcode{\sphinxupquote{validate\_data\_dictionary}}}{\emph{data}}{}
 \end{fulllineitems}
 
+\index{validate\_values() (in module eboa.engine.parsing)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.parsing.validate_values}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.parsing.}}\sphinxbfcode{\sphinxupquote{validate\_values}}}{\emph{data}}{}
+\end{fulllineitems}
+
 
 
 \subsubsection{eboa.engine.printing module}
@@ -1723,7 +2091,7 @@ Class to implement the dialect needed for every column type
 \index{colspecs (eboa.engine.printing.LiteralDialect attribute)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}\}}}}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}\}}}}
 \end{fulllineitems}
 
 
@@ -1786,6 +2154,20 @@ Bases: \sphinxcode{\sphinxupquote{object}}
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.annotation_value_entities}}\pysigline{\sphinxbfcode{\sphinxupquote{annotation\_value\_entities}}\sphinxbfcode{\sphinxupquote{ = \{'boolean': \textless{}class 'eboa.datamodel.annotations.AnnotationBoolean'\textgreater{}, 'double': \textless{}class 'eboa.datamodel.annotations.AnnotationDouble'\textgreater{}, 'geometry': \textless{}class 'eboa.datamodel.annotations.AnnotationGeometry'\textgreater{}, 'object': \textless{}class 'eboa.datamodel.annotations.AnnotationObject'\textgreater{}, 'text': \textless{}class 'eboa.datamodel.annotations.AnnotationText'\textgreater{}, 'timestamp': \textless{}class 'eboa.datamodel.annotations.AnnotationTimestamp'\textgreater{}\}}}}
 \end{fulllineitems}
 
+\index{clear\_db() (eboa.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.clear_db}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{clear\_db}}}{}{}
+\end{fulllineitems}
+
+\index{close\_session() (eboa.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.close_session}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{close\_session}}}{}{}
+Method to close the session
+
+\end{fulllineitems}
+
 \index{event\_value\_entities (eboa.engine.query.Query attribute)}
 
 \begin{fulllineitems}
@@ -1795,19 +2177,25 @@ Bases: \sphinxcode{\sphinxupquote{object}}
 \index{get\_annotation\_cnfs() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs}}}{\emph{dim\_signature\_ids=None}, \emph{annotation\_cnf\_ids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs}}}{\emph{dim\_signature\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_annotation\_cnfs\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_annotation\_values() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_values}}}{\emph{annotation\_uuids=None}}{}
+\end{fulllineitems}
+
+\index{get\_annotation\_values\_interface() (eboa.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_values_interface}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_values\_interface}}}{\emph{value\_type}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{annotation\_uuids=None}}{}
 \end{fulllineitems}
 
 \index{get\_annotation\_values\_type() (eboa.engine.query.Query method)}
@@ -1819,36 +2207,30 @@ Bases: \sphinxcode{\sphinxupquote{object}}
 \index{get\_annotations() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{annotation\_cnf\_ids=None}, \emph{ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations}}}{\emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}}{}
 \end{fulllineitems}
 
 \index{get\_annotations\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_name\_like=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_system\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_name\_like=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_system\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{annotation\_uuids=None}}{}
 \end{fulllineitems}
 
 \index{get\_dim\_signatures() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_ids=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_uuids=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}}{}
 Method to obtain the DIM signature entities filtered by the received parameters
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_ids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
 
 \item {} 
 \sphinxstyleliteralstrong{\sphinxupquote{dim\_signatures}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature names
 
 \item {} 
 \sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
-
-\item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_names}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM execution names
-
-\item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_name\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
 
 \end{itemize}
 
@@ -1865,7 +2247,7 @@ list
 \index{get\_event\_keys() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_keys}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_keys}}}{\emph{event\_uuids=None}, \emph{dim\_signature\_ids=None}, \emph{keys=None}, \emph{key\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_keys}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_keys}}}{\emph{event\_uuids=None}, \emph{dim\_signature\_uuids=None}, \emph{keys=None}, \emph{key\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_event\_links() (eboa.engine.query.Query method)}
@@ -1880,6 +2262,12 @@ list
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_values}}}{\emph{event\_uuids=None}}{}
 \end{fulllineitems}
 
+\index{get\_event\_values\_interface() (eboa.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_values_interface}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_values\_interface}}}{\emph{value\_type}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{event\_uuids=None}}{}
+\end{fulllineitems}
+
 \index{get\_event\_values\_type() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
@@ -1889,25 +2277,25 @@ list
 \index{get\_events() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{event\_uuids=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events}}}{\emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{event\_uuids=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{limit=None}}{}
 \end{fulllineitems}
 
 \index{get\_events\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{keys=None}, \emph{key\_like=None}, \emph{event\_uuids=None}, \emph{limit=None}}{}
 \end{fulllineitems}
 
 \index{get\_explicit\_ref\_links() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_ref_links}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_ref\_links}}}{\emph{explicit\_ref\_id\_links=None}, \emph{explicit\_ref\_ids=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_ref_links}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_ref\_links}}}{\emph{explicit\_ref\_uuid\_links=None}, \emph{explicit\_ref\_uuids=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_explicit\_refs() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_ids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_uuids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}}{}
 \end{fulllineitems}
 
 \index{get\_explicit\_refs\_groups() (eboa.engine.query.Query method)}
@@ -1925,31 +2313,37 @@ list
 \index{get\_gauges() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges}}}{\emph{dim\_signature\_ids=None}, \emph{gauge\_ids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges}}}{\emph{dim\_signature\_uuids=None}, \emph{gauge\_uuids=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_gauges\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges\_join}}}{\emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{names=None}, \emph{name\_like=None}, \emph{systems=None}, \emph{system\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_events() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{processing\_uuids=None}, \emph{explicit\_ref\_ids=None}, \emph{gauge\_ids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{event\_uuids=None}, \emph{return\_prime\_events=True}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{event\_uuids=None}, \emph{return\_prime\_events=True}, \emph{back\_ref=False}}{}
+\end{fulllineitems}
+
+\index{get\_linked\_events\_details() (eboa.engine.query.Query method)}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events_details}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_details}}}{\emph{event\_uuid}, \emph{return\_prime\_events=True}, \emph{back\_ref=False}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_events\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{return\_prime\_events=True}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events\_join}}}{\emph{sources=None}, \emph{source\_like=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{gauge\_names=None}, \emph{gauge\_name\_like=None}, \emph{gauge\_systems=None}, \emph{gauge\_system\_like=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}, \emph{value\_filters=None}, \emph{values\_names\_type=None}, \emph{values\_name\_type\_like=None}, \emph{return\_prime\_events=True}, \emph{back\_ref=False}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_explicit\_refs() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_ids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_uuids=None}, \emph{explicit\_refs=None}, \emph{explicit\_ref\_like=None}, \emph{ingestion\_time\_filters=None}, \emph{link\_names=None}, \emph{link\_name\_like=None}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_explicit\_refs\_join() (eboa.engine.query.Query method)}
@@ -1961,7 +2355,7 @@ list
 \index{get\_sources() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{dim\_exec\_version\_filters=None}, \emph{dim\_signature\_ids=None}, \emph{processing\_uuids=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{processors=None}, \emph{processor\_like=None}, \emph{processor\_version\_filters=None}, \emph{dim\_signature\_uuids=None}, \emph{source\_uuids=None}}{}
 Method to obtain the sources entities filtered by the received parameters
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -1987,13 +2381,19 @@ Method to obtain the sources entities filtered by the received parameters
 \sphinxstyleliteralstrong{\sphinxupquote{ingestion\_duration\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filters}}) \textendash{} list of ingestion duration filters
 
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{dim\_exec\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{string\_filter}}) \textendash{} list of version filters
+\sphinxstyleliteralstrong{\sphinxupquote{processor\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{string\_filter}}) \textendash{} list of version filters
 
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_ids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
+\sphinxstyleliteralstrong{\sphinxupquote{procesors}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of processors
 
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{processing\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM processing identifiers
+\sphinxstyleliteralstrong{\sphinxupquote{processor\_like}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_like}}) \textendash{} dictionary with a string and the associated operation to perform
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{dim\_signature\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM signature identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{source\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{operator\_list}}) \textendash{} list of DIM processing identifiers
 
 \end{itemize}
 
@@ -2010,7 +2410,7 @@ list
 \index{get\_sources\_join() (eboa.engine.query.Query method)}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources\_join}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{dim\_exec\_version\_filters=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{dim\_exec\_names=None}, \emph{dim\_exec\_name\_like=None}, \emph{status\_filters=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources_join}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources\_join}}}{\emph{names=None}, \emph{name\_like=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{processors=None}, \emph{processor\_like=None}, \emph{processor\_version\_filters=None}, \emph{dim\_signatures=None}, \emph{dim\_signature\_like=None}, \emph{status\_filters=None}}{}
 \end{fulllineitems}
 
 \index{operators (eboa.engine.query.Query attribute)}
