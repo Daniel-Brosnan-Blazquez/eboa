@@ -56,6 +56,8 @@ def get_vcid_mode(vcid):
     """
 
     correspondence = {
+        "2": "SAD",
+        "3": "HKTM",
         "4": "NOMINAL",
         "5": "NRT",
         "6": "RT",
