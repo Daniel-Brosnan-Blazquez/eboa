@@ -91,18 +91,27 @@ def process_file(file_path):
         # Get the associated planned playback in the NPPF
         playbacks = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_PLAYBACK_TYPE_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [sentinel], "op": "in"}, start_filters = [{"date": start, "op": ">"}], stop_filters = [{"date": stop, "op": "<"}], link_names = {"list": ["TIME_CORRECTION"], "op": "in"}, return_prime_events = False)
 
-        status = "MATCHED_PLAYBACK"
+        status = "NO_MATCHED_PLAYBACK"
         links = []
-        if len(playbacks["linked_events"]) == 0:
-            status = "NO_MATCHED_PLAYBACK"
-        else:
+        if len(playbacks["linked_events"]) > 0:
             for playback in playbacks["linked_events"]:
-                links.append({
-                    "link": str(playback.event_uuid),
-                    "link_mode": "by_uuid",
-                    "name": "SLOT_REQUEST_EDRS",
-                    "back_ref": "PLANNED_PLAYBACK"
-                })
+                # Get the planned playback mean
+                planned_playback_mean_uuids = [link.event_uuid_link for link in playback.eventLinks if link.name == "PLANNED_PLAYBACK_TYPE"]
+                if len(planned_playback_mean_uuids) > 0:
+                    planned_playback_mean_uuid = planned_playback_mean_uuids[0]
+                
+                    planned_playback_mean = query.get_events(event_uuids = {"op": "in", "list": [planned_playback_mean_uuid]})[0]
+
+                    if planned_playback_mean.gauge.name == "PLANNED_PLAYBACK_MEAN_OCP":
+                        status = "MATCHED_PLAYBACK"
+                        links.append({
+                            "link": str(playback.event_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "SLOT_REQUEST_EDRS",
+                            "back_ref": "PLANNED_PLAYBACK"
+                        })
+                    # end if
+                # end if
             # end for
         # end if
 
