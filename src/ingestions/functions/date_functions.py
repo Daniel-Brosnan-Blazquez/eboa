@@ -147,18 +147,17 @@ def merge_timeline(timeline):
     segment1 = 0
     i = 0
     while segment1 < len(timeline):
-        ids = []
         jumper = 1
         i += 1
         timeline_aux.append({"start":timeline[segment1]["start"],
                              "stop":timeline[segment1]["stop"],
-                             "ids": []
+                             "id": []
                             })
-        timeline_aux[i-1]["ids"].append(timeline[segment1]["id"])
+        timeline_aux[i-1]["id"].append(timeline[segment1]["id"])
         segment2 = segment1 + 1
         while segment2 < len(timeline):
             if timeline_aux[i-1]["stop"] >= timeline[segment2]["start"]:
-                timeline_aux[i-1]["ids"].append(timeline[segment2]["id"])
+                timeline_aux[i-1]["id"].append(timeline[segment2]["id"])
                 if timeline_aux[i-1]["stop"] < timeline[segment2]["stop"]:
                     timeline_aux[i-1]["stop"] = timeline[segment2]["stop"]
                     jumper += 1

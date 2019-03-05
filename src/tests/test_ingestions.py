@@ -24,7 +24,7 @@ class MergeTesting(unittest.TestCase):
         """
         timeline = [{"start":parser.parse("2018-11-21T20:55:17"),"stop":parser.parse("2018-11-21T20:58:17"),"id":"test"}]
         timeline_res = date_functions.merge_timeline(timeline)
-        assert timeline_res == [{"start":parser.parse("2018-11-21T20:55:17"),"stop":parser.parse("2018-11-21T20:58:17"),"ids":["test"]}]
+        assert timeline_res == [{"start":parser.parse("2018-11-21T20:55:17"),"stop":parser.parse("2018-11-21T20:58:17"),"id":["test"]}]
 
     def test_multiple_segments_timeline(self):
         """
@@ -42,4 +42,4 @@ class MergeTesting(unittest.TestCase):
 
         timeline_res = date_functions.merge_timeline(timeline)
 
-        assert timeline_res == [{'start': datetime.datetime(2018, 11, 21, 20, 55), 'stop': datetime.datetime(2018, 11, 21, 20, 59, 45), 'ids': ['testing_Id_1', 'testing_Id_2']}, {'start': datetime.datetime(2018, 11, 21, 21, 30), 'stop': datetime.datetime(2019, 2, 5, 14, 14, 14), 'ids': ['testing_Id_3', 'testing_Id_4', 'testing_Id_5']}]
+        assert timeline_res == [{'start': datetime.datetime(2018, 11, 21, 20, 55), 'stop': datetime.datetime(2018, 11, 21, 20, 59, 45), 'id': ['testing_Id_1', 'testing_Id_2']}, {'start': datetime.datetime(2018, 11, 21, 21, 30), 'stop': datetime.datetime(2019, 2, 5, 14, 14, 14), 'id': ['testing_Id_3', 'testing_Id_4', 'testing_Id_5']}]
