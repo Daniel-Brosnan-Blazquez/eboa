@@ -106,7 +106,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             post_counter = gap.xpath("PostCounter")[0].text
             gap_event = {
                 "explicit_reference": session_id,
-                "key": session_id + "_" + channel,
+                "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "PLAYBACK_GAP",
@@ -183,7 +183,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
                 list_of_events.append({
                     "explicit_reference": session_id,
-                    "key": session_id + "_" + channel,
+                    "key": session_id + "_CHANNEL_" + channel,
                     "gauge": {
                         "insertion_type": "EVENT_KEYS",
                         "name": "PLANNED_ACQUISITION_COMPLETENESS_CHANNEL_" + channel,
@@ -240,7 +240,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         playback_event = {
             "link_ref": playback_validity_event_link_ref,
             "explicit_reference": session_id,
-            "key": session_id + "_" + channel,
+            "key": session_id + "_CHANNEL_" + channel,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
                 "name": "PLAYBACK_VALIDITY",
@@ -335,6 +335,10 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]")
     for vcid in vcids:
+        # Iterator and timeline for the ISP gaps
+        isp_gap_iterator = 0
+        timeline_isp_gaps = []
+
         vcid_number = vcid.get("VCID")
         downlink_mode = functions.get_vcid_mode(vcid_number)
         # Obtain the sensing segment received (EFEP reports only give information about the start date of the first and last scenes)
@@ -372,8 +376,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             apid_number = apid.get("APID")
             band_detector = functions.get_band_detector(apid_number)
             isp_gap_event = {
+                "link_ref": "ISP_GAP_" + isp_gap_iterator,
                 "explicit_reference": session_id,
-                "key": session_id + "_" + channel,
+                "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -429,6 +434,14 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             # Insert isp_gap_event
             list_of_events.append(isp_gap_event)
 
+            # Insert segment for associating the ISP gap
+            timeline_isp_gaps.append({
+                "id": "ISP_GAP_" + isp_gap_iterator,
+                "start": corrected_sensing_start,
+                "stop": corrected_sensing_stop
+            })
+
+            isp_gap_iterator += 1
         # end for
 
         # Obtain ISP gaps at the beggining
@@ -441,8 +454,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             stop = functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text)
             corrected_stop = functions.convert_from_gps_to_utc(stop)
             isp_gap_event = {
+                "link_ref": "ISP_GAP_" + isp_gap_iterator,
                 "explicit_reference": session_id,
-                "key": session_id + "_" + channel,
+                "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -497,6 +511,14 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             # Insert isp_gap_event
             list_of_events.append(isp_gap_event)
+            # Insert segment for associating the ISP gap
+            timeline_isp_gaps.append({
+                "id": "ISP_GAP_" + isp_gap_iterator,
+                "start": corrected_sensing_start,
+                "stop": corrected_stop
+            })
+
+            isp_gap_iterator += 1
 
         # end for
 
@@ -511,8 +533,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             corrected_start = functions.convert_from_gps_to_utc(start)
 
             isp_gap_event = {
+                "link_ref": "ISP_GAP_" + isp_gap_iterator,
                 "explicit_reference": session_id,
-                "key": session_id + "_" + channel,
+                "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
                     "name": "ISP_GAP",
@@ -568,12 +591,21 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             # Insert isp_gap_event
             list_of_events.append(isp_gap_event)
 
+            # Insert segment for associating the ISP gap
+            timeline_isp_gaps.append({
+                "id": "ISP_GAP_" + isp_gap_iterator,
+                "start": corrected_start,
+                "stop": corrected_sensing_stop
+            })
+
+            isp_gap_iterator += 1
+
         # end for
 
         raw_isp_validity_event = {
             "link_ref": raw_isp_validity_event_link_ref,
             "explicit_reference": session_id,
-            "key": session_id + "_" + channel,
+            "key": session_id + "_CHANNEL_" + channel,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
                 "name": "RAW_ISP_VALIDITY",
@@ -619,6 +651,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Insert raw_isp_validity_event
         list_of_events.append(raw_isp_validity_event)
 
+        # Merge timeline of isp gaps
+        merged_timeline_isp_gaps = date_functions.merge_timeline(date_functions.sort_timeline_by_start(timeline_isp_gaps))
+
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
         corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": downlink_mode, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
 
@@ -629,12 +664,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
         planning_timeline_duration = date_functions.get_timeline_duration(isp_validity_valid_segments)
         # For calculating the number of expected scenes, for every datastrip expected, the duration of a scene is added to the total duration of the timeline of expected datastrips
-        expected_number_scenes = round(((planning_timeline_duration + 3.608 * len(isp_validity_valid_segments)) / 3.608) / 2)
-        expected_number_packets = expected_number_scenes * 12960
+        expected_number_scenes = round((planning_timeline_duration + 3.608 * len(isp_validity_valid_segments)) / 3.608)
+        expected_number_packets = expected_number_scenes * 6480
 
         if (expected_number_packets - received_number_packets) == 0:
             packet_status = "OK"
-        elif abs(expected_number_packets - received_number_packets) < len(isp_validity_valid_segments) * 12960 and (expected_number_packets - received_number_packets) % 12960 == 0:
+        elif abs(expected_number_packets - received_number_packets) < len(isp_validity_valid_segments) * 6480 and (expected_number_packets - received_number_packets) % 6480 == 0:
             packet_status = "OK"
         else:
             packet_status = "MISSING"
@@ -696,15 +731,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 # end if
             # end for
 
-            # Obtain the unexpected segments
-            isp_validity_valid_coverage = {
-                "id": "isp_validity_valid_coverage",
-                "start": isp_validity_valid_segments[0]["start"],
-                "stop": isp_validity_valid_segments[-1]["stop"]
-            }
-
-            isp_validity_unexpected_segments = date_functions.difference_timelines(raw_isp_validity_date_segments, [isp_validity_valid_coverage])
-
             # Build the ISP_VALIDITY events
             for isp_validity_valid_segment in isp_validity_valid_segments:
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == isp_validity_valid_segment["id2"]][0]
@@ -712,27 +738,48 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
                 # ISP validity event
                 isp_validity_event_link_ref = "ISP_VALIDITY_" + vcid_number + "_" + str(isp_validity_valid_segment["start"])
+                
+                isp_gaps_intersected = date_functions.intersect_timelines(isp_validity_valid_segment, merged_timeline_isp_gaps)
+
+                isp_validity_status = "COMPLETE"
+                if len(isp_gaps_intersected) > 0:
+                    isp_validity_status = "INCOMPLETE"
+                # end if
+
+                links = [
+                    {
+                            "link": str(planned_imaging_uuid),
+                        "link_mode": "by_uuid",
+                        "name": "ISP-VALIDITY",
+                        "back_ref": "PLANNED_IMAGING"
+                    },{
+                            "link": str(isp_validity_valid_segment["id1"]),
+                        "link_mode": "by_ref",
+                        "name": "RAW_ISP_VALIDITY",
+                        "back_ref": "ISP-VALIDITY"
+                    }]
+
+                for isp_gap_intersected in isp_gaps_intersected:
+                    for id in isp_gaps_intersected["id2"]:
+                        links.append({
+                            "link": id,
+                            "link_mode": "by_ref",
+                            "name": "ISP-VALIDITY",
+                            "back_ref": "ISP-GAP"
+                        })
+                    # end for
+                # end for
+
                 isp_validity_event = {
                     "link_ref": isp_validity_event_link_ref,
                     "explicit_reference": session_id,
-                    "key": session_id + "_" + channel,
+                    "key": session_id + "_CHANNEL_" + channel,
                     "gauge": {
                         "insertion_type": "EVENT_KEYS",
                         "name": "ISP_VALIDITY",
                         "system": "EDRS"
                     },
-                    "links": [
-                        {
-                            "link": str(planned_imaging_uuid),
-                            "link_mode": "by_uuid",
-                            "name": "ISP-VALIDITY",
-                            "back_ref": "PLANNED_IMAGING"
-                        },{
-                            "link": str(isp_validity_valid_segment["id1"]),
-                            "link_mode": "by_ref",
-                            "name": "RAW_ISP_VALIDITY",
-                            "back_ref": "ISP-VALIDITY"
-                        }],
+                    "links": links,
                     "start": str(isp_validity_valid_segment["start"]),
                     "stop": str(isp_validity_valid_segment["stop"]),
                     "values": [{
@@ -741,7 +788,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "values": [
                             {"name": "status",
                              "type": "text",
-                             "value": status},
+                             "value": isp_validity_status},
                             {"name": "downlink_orbit",
                              "type": "double",
                              "value": downlink_orbit},
@@ -767,13 +814,13 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 list_of_events.append(isp_validity_event)
 
                 completeness_status = "RECEIVED"
-                if status != "COMPLETE":
-                    completeness_status = status
+                if isp_validity_status != "COMPLETE":
+                    completeness_status = isp_validity_status
                 # end if                    
 
                 isp_validity_completeness_event = {
                     "explicit_reference": session_id,
-                    "key": session_id + "_" + channel,
+                    "key": session_id + "_CHANNEL_" + channel,
                     "gauge": {
                         "insertion_type": "INSERT_and_ERASE_per_EVENT",
                         "name": "PLANNED_IMAGING_COMPLETENESS_CHANNEL_" + channel,
