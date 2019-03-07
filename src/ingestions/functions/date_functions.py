@@ -7,6 +7,24 @@ module eboa
 """
 # Import python utilities
 from dateutil import parser
+import datetime
+
+###########
+# Functions for computing operations between dates
+###########
+def dates_difference (minuend, subtrahend):
+    """
+    Method to perform the difference between two dates
+    :param minuend: first date in the substruction
+    :type date: str
+    :param subtrahend: second date in the substruction
+    :type date: str
+
+    :return: seconds of difference
+    :rtype: float
+
+    """    
+    return (parser.parse(minuend) - parser.parse(subtrahend)).total_seconds()
 
 ###########
 # Functions using the timelines with the structure defined by identifiers and start and stop vlaues
@@ -29,15 +47,43 @@ def intersect_timelines (timeline1, timeline2):
                 if segment1["stop"] < segment2["stop"]:
                     stop = segment1["stop"]
                 # end if
-                timeline.append({"id1": segment1["id"],
-                                 "id2": segment2["id"],
-                                 "start": start,
-                                 "stop": stop
-                                 })
+                timeline.append({
+                    "id": str(segment1["id"]) + "#" + str(segment2["id"]),
+                    "id1": segment1["id"],
+                    "id2": segment2["id"],
+                    "start": start,
+                    "stop": stop
+                })
             # end if
         # end for
     # end for
     return timeline
+# end def
+
+def intersect_many_timelines (timelines):
+    """
+    Method to obtain the timeline intersecting all the timelines in the received list
+    PRE: the segments of the timelines are ordered in time (by the start value)
+
+    :param timelines: list of timelines
+    :type timelines: list
+
+    :return: timeline
+    :rtype: timeline with the intersected segments in all timelines
+
+    """
+    intersected_timeline = []
+    i = 0
+    for timeline in timelines:
+        if i == 0:
+            intersected_timeline = timeline
+        else:
+            intersected_timeline = intersect_timelines(timeline, intersected_timeline)
+        # end if
+        i += 1
+    # end for
+
+    return intersected_timeline
 # end def
 
 def difference_timelines (timeline1, timeline2):
@@ -66,15 +112,23 @@ def difference_timelines (timeline1, timeline2):
     # end if
 
     while i1 < len(timeline1) or i2 < len(timeline2):
-        if use_i1:
+        if use_i1 and i1 < len(timeline1):
             start1 = timeline1[i1]["start"]
             stop1 = timeline1[i1]["stop"]
             id1 = timeline1[i1]["id"]
+        elif use_i1:
+            start1 = datetime.datetime.max
+            stop1 = datetime.datetime.max
+            id1 = ""
         # end if
-        if use_i2:
-            start2 = timeline1[i2]["start"]
-            stop2 = timeline1[i2]["stop"]
-            id2 = timeline1[i2]["id"]
+        if use_i2 and i2 < len(timeline2):
+            start2 = timeline2[i2]["start"]
+            stop2 = timeline2[i2]["stop"]
+            id2 = timeline2[i2]["id"]
+        elif use_i2:
+            start2 = datetime.datetime.max
+            stop2 = datetime.datetime.max
+            id2 = ""
         # end if
 
         create_difference_segment = True
@@ -99,9 +153,6 @@ def difference_timelines (timeline1, timeline2):
             if stop2 <= start1:
                 use_i2 = True
                 i2 += 1
-                start2 = timeline2[i2]["start"]
-                stop2 = timeline2[i2]["stop"]
-                id2 = timeline2[i2]["id"]
                 difference_stop = stop2
             else:
                 use_i2 = False
@@ -112,11 +163,13 @@ def difference_timelines (timeline1, timeline2):
             # start1 = start2
             if stop1 > stop2:
                 i2 += 1
+                use_i1 = False
                 use_i2 = True
                 start1 = stop2
             elif stop1 < stop2:
                 i1 += 1
                 use_i1 = True
+                use_i2 = False
                 start2 = stop1
             else:
                 i1 += 1

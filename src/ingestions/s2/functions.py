@@ -44,6 +44,28 @@ def convert_from_gps_to_utc(date):
 
 # Uncomment for debugging reasons
 #@debug
+def convert_from_datetime_gps_to_datetime_utc(date):
+    """
+    Method to convert a date in GPS precission to UTC
+    :param date: date in GPS precission and ISO format
+    :type date: str
+
+    :return: date coverted in ISO 8601
+    :rtype: str
+
+    """
+    
+    if date > datetime.datetime(2015, 6, 30, 23, 59, 59) and date <= datetime.datetime(2016, 12, 31, 23, 59, 59):
+        correction = -17
+    elif date > datetime.datetime(2016, 12, 31, 23, 59, 59):
+        correction = -18
+    else:
+        correction = -16
+
+    return date + datetime.timedelta(seconds=correction)
+
+# Uncomment for debugging reasons
+#@debug
 def get_vcid_mode(vcid):
     """
     Method to convert the VCID number into the storage mode
@@ -166,6 +188,77 @@ def get_band_detector(apid):
 
     return {"detector": str(detector), "band": str(band)}
 
+# Uncomment for debugging reasons
+#@debug
+def get_counter_threshold(band):
+    """
+    Method to obtain the counter threshold related to the band number
+        BAND     COUNTER THRESHOLD    METRES
+           1              23            60
+           2-4           143            10
+           5-7            71            20
+           8             143            10
+           8a             71            20
+           9-10           23            60
+           11-12          71            20    
+
+    :param band: band number
+    :type band: str
+
+    :return: counter_threshold
+    :rtype: int
+
+    """
+    
+    if band == "2" or band == "3" or band == "4" or band == "8":
+        counter_threshold = 143
+    elif band == "1" or band == "9" or band == "10":
+        counter_threshold = 23
+    else:
+        counter_threshold = 71
+    # end if
+    
+    return counter_threshold
+
+# Uncomment for debugging reasons
+#@debug
+def get_counter_threshold_from_apid(apid):
+    """
+    Method to obtain the counter threshold related to the apid number
+
+    :param apid: apid number
+    :type apid: str
+
+    :return: counter_threshold
+    :rtype: int
+
+    """
+
+    band_detector = get_band_detector(apid)
+    
+    return get_counter_threshold(band_detector["band"])
+
+def get_apid_numbers():
+    """
+    Method to obtain the APID numbers used
+
+    :return: list of APID numbers
+    :rtype: list
+
+    """
+    apids = []
+    for i in range(6):
+        for j in range (13):
+            apids.append(i*16 + j)
+        # end for
+    # end for
+    for i in range(6):
+        for j in range (13):
+            apids.append((i*16 + j) + 256)
+        # end for
+    # end for
+    return apids
+
 ###
 # Date helpers
 ###
@@ -182,7 +275,6 @@ def three_letter_to_iso_8601(date):
     :rtype: str
 
     """    
-
     month = {
         "JAN": "01",
         "FEB": "02",

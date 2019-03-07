@@ -82,7 +82,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         planned_playbacks = query.get_events(event_uuids = {"op": "in", "list": planned_playback_uuids})
     # end if
 
-    vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and @VCID = 2 or @VCID = 3 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]")
+    vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 2 or @VCID = 3 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
     for vcid in vcids:
         vcid_number = vcid.get("VCID")
         downlink_mode = functions.get_vcid_mode(vcid_number)
@@ -333,7 +333,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         "events": []
     }
 
-    vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]")
+    vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
     for vcid in vcids:
         # Iterator and timeline for the ISP gaps
         isp_gap_iterator = 0
@@ -689,10 +689,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         
         # If there are found planned imaging events, the MSI will be linked to the plan and its segment will be removed from the completeness
         if len(corrected_planned_imagings) > 0:
-            corrected_planned_imagings_sorted = sorted(corrected_planned_imagings, key=lambda event: event.start)
-            start_period = corrected_planned_imagings_sorted[0].start
-            stop_period = corrected_planned_imagings_sorted[-1].stop
-
             for corrected_planned_imaging in corrected_planned_imagings:
                 value = {
                     "name": "isp_completeness_began_channel_" + channel,
@@ -714,7 +710,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     isp_planning_completeness_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNED_IMAGING_COMPLETENESS_CHANNEL_" + channel,
+                            "name": "PLANNED_IMAGING_ISP_COMPLETENESS_CHANNEL_" + channel,
                             "system": satellite
                         },
                         "start": str(corrected_planned_imaging.start),
@@ -723,7 +719,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             {
                                 "link": str(planned_imaging_uuid),
                                 "link_mode": "by_uuid",
-                                "name": "COMPLETENESS",
+                                "name": "ISP_COMPLETENESS",
                                 "back_ref": "PLANNED_IMAGING"
                             }],
                         "values": planning_event_values
@@ -739,7 +735,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 # ISP validity event
                 isp_validity_event_link_ref = "ISP_VALIDITY_" + vcid_number + "_" + str(isp_validity_valid_segment["start"])
                 
-                isp_gaps_intersected = date_functions.intersect_timelines(isp_validity_valid_segment, merged_timeline_isp_gaps)
+                isp_gaps_intersected = date_functions.intersect_timelines([isp_validity_valid_segment], merged_timeline_isp_gaps)
 
                 isp_validity_status = "COMPLETE"
                 if len(isp_gaps_intersected) > 0:
@@ -748,19 +744,24 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
                 links = [
                     {
-                            "link": str(planned_imaging_uuid),
+                        "link": str(planned_imaging_uuid),
                         "link_mode": "by_uuid",
                         "name": "ISP-VALIDITY",
                         "back_ref": "PLANNED_IMAGING"
                     },{
-                            "link": str(isp_validity_valid_segment["id1"]),
+                        "link": str(isp_validity_valid_segment["id1"]),
                         "link_mode": "by_ref",
-                        "name": "RAW_ISP_VALIDITY",
-                        "back_ref": "ISP-VALIDITY"
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "RAW_ISP-VALIDITY"
+                    },{
+                        "link": "PLAYBACK_VALIDITY_" + vcid_number,
+                        "link_mode": "by_ref",
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "PLAYBACK-VALIDITY"
                     }]
 
                 for isp_gap_intersected in isp_gaps_intersected:
-                    for id in isp_gaps_intersected["id2"]:
+                    for id in isp_gap_intersected["id2"]:
                         links.append({
                             "link": id,
                             "link_mode": "by_ref",
@@ -823,14 +824,14 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "key": session_id + "_CHANNEL_" + channel,
                     "gauge": {
                         "insertion_type": "INSERT_and_ERASE_per_EVENT",
-                        "name": "PLANNED_IMAGING_COMPLETENESS_CHANNEL_" + channel,
+                        "name": "PLANNED_IMAGING_ISP_COMPLETENESS_CHANNEL_" + channel,
                         "system": satellite
                     },
                     "links": [
                         {
                             "link": str(planned_imaging_uuid),
                             "link_mode": "by_uuid",
-                            "name": "COMPLETENESS",
+                            "name": "ISP_COMPLETENESS",
                             "back_ref": "PLANNED_IMAGING"
                         },
                         {
@@ -925,7 +926,7 @@ def _generate_pass_information(xpath_xml, source, engine, query, list_of_annotat
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
-    # Associate the explicit reference to the group EDRS_SESSION_IDs
+    # Associate the explicit reference to the group
     explicit_reference = {
         "name": session_id,
         "group": "EDRS_LINK_SESSION_IDs"
@@ -1003,7 +1004,7 @@ def process_file(file_path, engine, query):
     satellite = file_name[0:3]
     generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
     # Set the validity start to be the first sensing received to avoid error ingesting
-    sensing_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[@VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]/ISP_Status/Status/SensStartTime")
+    sensing_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[@VCID = 2 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]/ISP_Status/Status/SensStartTime")
     sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
 
     # Sort list
