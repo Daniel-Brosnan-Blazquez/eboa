@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<Earth_Explorer_File xmlns:myData="http://wrox.com/namespaces/embeddedData" xmlns:myFunc="http://deimos-mpa.com" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3 .org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceschemaLocation="http://gs2.esa.int/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd file:///C:/Users/S2user/Desktop/svn.s2pdgs.fr.cr_en_cours/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd">
+   <Earth_Explorer_Header>
+      <Fixed_Header>
+         <File_Name>S2A_OPER_REP_OPDPC__SGS__20180721T001527_V20180721T001527_20180721T001527</File_Name>  
+         <File_Description>DPC_Operation_Report used for a data strip ID</File_Description>
+         
+         <Notes>datadriven</Notes>
+         <Mission>Sentinel-2A</Mission>
+         <File_Class>OPER</File_Class>
+         <File_Type>REP_OPDPC_</File_Type>
+         <Validity_Period>
+            <Validity_Start>UTC=2018-07-21T00:15:27</Validity_Start>
+            <Validity_Stop>UTC=2018-07-21T00:15:27</Validity_Stop>
+         </Validity_Period>
+         <File_Version>0001</File_Version>
+         <Source>
+            <System>SGS_</System>
+            <Creator>dpcoper</Creator>
+            <Creator_Version>0.1</Creator_Version>
+            <Creation_Date>UTC=2018-07-21T00:15:27</Creation_Date>
+         </Source>
+      </Fixed_Header>
+   </Earth_Explorer_Header>
+   <Data_Block>
+    
+   <SUP_WORKPLAN_REPORT>
+<HEADER>
+<SATELLITE>S2A</SATELLITE>
+<INTERFACE_SPECIFICATION>
+<SCHEMA_NAME/>
+<SCHEMA_VERSION>1.0</SCHEMA_VERSION>
+</INTERFACE_SPECIFICATION>
+<PRODUCTION_DATE>2018-07-21T00:13:40.057Z</PRODUCTION_DATE>
+<PROVIDER>DPC</PROVIDER>
+</HEADER>
+<SPECIFIC_HEADER>
+<SUPERVISION_INFO>
+<SUBSYSTEM>dam</SUBSYSTEM>
+<REQUEST_FILE_NAME>Generic_Archive_Request.xml_DT0_ing_2018-07-21T00-13-23-045</REQUEST_FILE_NAME>
+<REQUEST_TYPE>PRPR</REQUEST_TYPE>
+<LOG_FILE_NAME>ipu_logmsg_genericarchive_20180721_1.xml</LOG_FILE_NAME>
+<WORKPLAN_ID>genericarchive_20180721_1</WORKPLAN_ID>
+<FLOW_ID/>
+<PRIORITY_LEVEL>routine</PRIORITY_LEVEL>
+<EXECUTION_MODE>nominal</EXECUTION_MODE>
+<WORKPLAN_CURRENT_STATUS>COMPLETED</WORKPLAN_CURRENT_STATUS>
+<WORKPLAN_MESSAGE/>
+<OPERATOR_COMMENT>Launched by ing_2018-07-21T00-13-23-045</OPERATOR_COMMENT>
+<WORKPLAN_START_DATETIME>2018-07-21T00:13:48.509Z</WORKPLAN_START_DATETIME>
+<WORKPLAN_END_DATETIME>2018-07-21T00:15:27.379Z</WORKPLAN_END_DATETIME>
+        </SUPERVISION_INFO>
+<SYNTHESIS_INFO>
+<Product_Report>
+  <Output_Products_1>
+    <GRANULES_ID>S2A_OPER_PRD_HKTM___20180721T001320_20180721T001324_0001.SAFE</GRANULES_ID>
+  </Output_Products_1>
+  <List_Of_MRFs/>
+</Product_Report>
+</SYNTHESIS_INFO>
+</SPECIFIC_HEADER>
+<DATA>
+<STEP_INFO id="step_Archive_Generic">
+<NAME>archiving</NAME>
+<SUBSYSTEM>dam</SUBSYSTEM>
+<ACKNOWLEDGE_STATUS>ACCEPTED</ACKNOWLEDGE_STATUS>
+<MESSAGE/>
+<PROCESSING_START_DATETIME>2018-07-21T00:13:48.500Z</PROCESSING_START_DATETIME>
+<PROCESSING_END_DATETIME>2018-07-21T00:15:20.909Z</PROCESSING_END_DATETIME>
+<EXEC_STATUS>COMPLETED</EXEC_STATUS>
+<OPERATOR_INFO/>
+<SUBSYSTEM_INFO>
+<STEP_REPORT>
+<GENERAL_INFO>
+<PROCESSING_START_DATETIME>2018-07-21T00:13:48.680Z</PROCESSING_START_DATETIME>
+<PROCESSING_END_DATETIME>2018-07-21T00:15:20.837Z</PROCESSING_END_DATETIME>
+<REJECTION_CAUSE/>
+<EXEC_MODE>nominal</EXEC_MODE>
+</GENERAL_INFO>
+<SPECIFIC_INFO>
+<PRE>
+<EXEC_NAME>pre_command_file.bash</EXEC_NAME>
+<CR_EXEC>COMPLETED</CR_EXEC>
+</PRE>
+<PROC>
+<PARALLEL_GROUP>false</PARALLEL_GROUP>
+<GROUPS>
+<GROUP>
+<ID>1</ID>
+<ORDERED>false</ORDERED>
+<LAUNCHS>
+<LAUNCH>
+<ID>1</ID>
+<EXEC_NAME>proc_genericarchive.bash</EXEC_NAME>
+<EXEC_VERSION>dam</EXEC_VERSION>
+<CR_EXEC>COMPLETED</CR_EXEC>
+<RESOURCE>[OGS]</RESOURCE>
+<LT_INFO>
+
+</LT_INFO>
+</LAUNCH>
+</LAUNCHS>
+</GROUP>
+</GROUPS>
+</PROC>
+<POST>
+<EXEC_NAME>post_command_file.bash</EXEC_NAME>
+<CR_EXEC>COMPLETED</CR_EXEC>
+</POST>
+</SPECIFIC_INFO>
+</STEP_REPORT>
+</SUBSYSTEM_INFO>
+</STEP_INFO>
+</DATA>
+</SUP_WORKPLAN_REPORT>
+  </Data_Block>
+</Earth_Explorer_File>
