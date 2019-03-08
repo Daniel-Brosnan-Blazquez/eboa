@@ -20,6 +20,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="eboa"/>
 </schema>
 
+<extension name="postgis">
+</extension>
+
 <table name="events">
 	<schema name="eboa"/>
 	<role name="eboa"/>
