@@ -5,6 +5,7 @@ from dateutil import parser
 import datetime
 import json
 import sys
+import pdb
 from tempfile import mkstemp
 
 # Import xml parser
@@ -16,6 +17,7 @@ from eboa.engine.engine import Engine
 # Import ingestion helpers
 import eboa.engine.ingestion as ingestion
 import ingestions.s2.functions as functions
+import ingestions.functions.date_functions as date_functions
 import ingestions.s2.xpath_functions as xpath_functions
 
 # Import query
@@ -31,31 +33,6 @@ logging_module = Log()
 logger = logging_module.logger
 
 version = "1.0"
-
-@debug
-def get_planning_events(satellite, validity_start, validity_stop, list_of_events):
-    """
-    """
-    # Get planning events to correct their timings
-    query = Query()
-
-    planning_gauges = query.get_gauges_join(dim_signatures = {"list": ["NPPF_" + satellite], "op": "in"})
-
-    planning_events = query.get_events(gauge_uuids = {"list": [gauge.gauge_uuid for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
-
-    return planning_events
-
-def get_received_events(satellite, validity_start, validity_stop, list_of_events):
-    """
-    """
-    # Get planning events to correct their timings
-    query = Query()
-
-    planning_gauges = query.get_gauges_join(dim_signatures = {"list": ["RECEPTION_" + satellite], "op": "in"})
-
-    planning_events = query.get_events(gauge_uuids = {"list": [gauge.gauge_uuid for gauge in planning_gauges], "op": "in"}, start_filters = [{"date": validity_start, "op": ">"}], stop_filters = [{"date": validity_stop, "op": "<"}])
-
-    return planning_events
 
 def process_file(file_path, engine, query):
     """
@@ -82,8 +59,8 @@ def process_file(file_path, engine, query):
     list_of_explicit_references = []
     list_of_annotations = []
     list_of_events = []
-    granule_timeline = []
-
+    list_of_timelines = []
+    test = []
     satellite = file_name[0:3]
     system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
 
@@ -96,274 +73,13 @@ def process_file(file_path, engine, query):
     workplan_start_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_START_DATETIME")[0].text
     workplan_end_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_END_DATETIME")[0].text
 
-    ds_input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")[0].text
-    input_ds_sensing_aux =  xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")[0].text[42:57]
-    input_ds_sensing = input_ds_sensing_aux[:4] + "-" + input_ds_sensing_aux[4:6] + "-" + input_ds_sensing_aux[6:11] + ":" + input_ds_sensing_aux[11:13] + ":" + input_ds_sensing_aux[13:15]
-    granules_input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/GRANULES_ID")
-
-    outputs = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/child::*[contains(name(),'Output_Products')]")
-
+    output = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products')]/DATA_STRIP_ID")
+    if len(output) > 0:
+        ds_output = output[0].text
+    else:
+        ds_output = ""
     mrf_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF")
-    mrf_id =  xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF/Id")
-    mrf_validity_start = xpath_xml ("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF/ValidityStart")
-    mrf_validity_stop = xpath_xml ("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF/ValidityStop")
-
-    steps_id = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO/@id")
-    steps_start = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO/PROCESSING_START_DATETIME")
-    steps_stop = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO/PROCESSING_END_DATETIME")
-    exec_statuses = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO/EXEC_STATUS")
     steps_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO")
-
-    explicit_reference = {
-        "group": "SENSING-ID",
-        "links": [{
-            "back_ref": "true",
-            "link": "SENSING-DATASTRIP",
-            "name": input_ds_sensing
-            }
-        ],
-        "name": ds_input
-    }
-    list_of_explicit_references.append(explicit_reference)
-
-    #INPUT_PRODUCTS
-    for granule in granules_input:
-        granule_t = granule.text
-        #datetime format
-        SI_start= datetime.datetime(int(granule_t[42:46]),int(granule_t[46:48]),int(granule_t[48:50]),int(granule_t[51:53]),int(granule_t[53:55]),int(granule_t[55:57]))
-        SI_stop = SI_start + datetime.timedelta(0,5)
-        #change to ISO Format
-        SI_iso_start = SI_start.isoformat()
-        SI_iso_stop = SI_stop.isoformat()
-
-        detector = granule_t[59:61]
-
-        event_input_granule={
-            "explicit_reference": ds_input,
-            "gauge": {
-                "insertion_type": "SIMPLE_UPDATE",
-                "name": "INPUT-GRANULE",
-                "system": system
-            },
-            "start": SI_iso_start,
-            "stop": SI_iso_stop,
-            "links": "",
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [{
-                    "name": "detector",
-                    "type": "text",
-                    "value": detector
-                  },{
-                    "name": "id",
-                    "type": "text",
-                    "value": granule_t
-                  }]
-            }]}
-        list_of_events.append(event_input_granule)
-    #end for
-
-    #OUTPUT_PRODUCTS (and steps due to duplicity)
-    for output in outputs:
-        index = outputs.index(output)
-        ds_output = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/child::*[contains(name(),'Output_Products')]/DATA_STRIP_ID")[outputs.index(output)].text
-        output_sensing_date_aux = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/child::*[contains(name(),'Output_Products')]/DATA_STRIP_ID")[outputs.index(output)].text[42:57]
-        output_sensing_date = output_sensing_date_aux[:4] + "-" + output_sensing_date_aux[4:6] + "-" + output_sensing_date_aux[6:11] + ":" + output_sensing_date_aux[11:13] + ":" + output_sensing_date_aux[13:15]
-        baseline = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/child::*[contains(name(),'Output_Products')]/DATA_STRIP_ID")[outputs.index(output)].text[58:]
-        granules_output = output.findall('GRANULES_ID')
-
-        baseline_annotation = {
-            "explicit_reference": ds_output,
-            "annotation_cnf": {
-                "name": "PRODUCTION-BASELINE",
-                "system": system
-            },
-            "values": [{
-                "name": "baseline_information",
-                "type": "object",
-                "values": [
-                    {"name": "baseline",
-                     "type": "text",
-                     "value": baseline}
-                ]
-            }]
-        }
-        list_of_annotations.append(baseline_annotation)
-
-        for granule in granules_output:
-            granule_t = granule.text
-
-            if "GR" in granule_t[9:19]:
-                SI_start= datetime.datetime(int(granule_t[42:46]),int(granule_t[46:48]),int(granule_t[48:50]),int(granule_t[51:53]),int(granule_t[53:55]),int(granule_t[55:57]))
-                SI_stop = SI_start + datetime.timedelta(0,5)
-                #change to ISO Format
-                SI_iso_start = SI_start.isoformat()
-                SI_iso_stop = SI_stop.isoformat()
-
-                detector = granule_t[59:61]
-
-                granule_segment = {
-                    "start" = SI_start,
-                    "stop" = SI_stop,
-                    "id" = granule_t
-                }
-                granule_timeline.append(granule_segment)
-
-                event_output_granule={
-                    "explicit_reference": ds_output,
-                    "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
-                        "name": "OUTPUT-GRANULE",
-                        "system": system
-                    },
-                    "start": SI_iso_start,
-                    "stop": SI_iso_stop,
-                    "links": "",
-                    "values": [{
-                        "name": "details",
-                        "type": "object",
-                        "values": [{
-                            "name": "detector",
-                            "type": "text",
-                            "value": detector
-                          },{
-                            "name": "id",
-                            "type": "text",
-                            "value": granule_t
-                          }]
-                    }]
-                }
-            #end if
-            else:
-                tile_Id_x = granule_t[41:48]
-                tile_Id_y = granule_t[49:55]
-                event_output_granule={
-                    "explicit_reference": ds_output,
-                    "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
-                        "name": "OUTPUT-TILE",
-                        "system": system
-                    },
-                    "start": output_sensing_date,
-                    "stop": output_sensing_date,
-                    "links": "",
-                    "values": [{
-                        "name": "details",
-                        "type": "object",
-                        "values": [{
-                            "name": "id",
-                            "type": "text",
-                            "value": granule_t
-                          },{
-                            "name": "tile_id_x",
-                            "type": "text",
-                            "value": tile_Id_x
-                          },{
-                            "name": "tile_id_y",
-                            "type": "text",
-                            "value": tile_Id_y
-                          }]
-                    }]
-                }
-            #end else
-            list_of_events.append(event_output_granule)
-        #end for
-
-        #Steps
-        for step in steps_list:
-            if exec_statuses[steps_list.index(step)].text == 'COMPLETED':
-                #duplicate if product L1A & L1B
-                event_step = {
-                    "explicit_reference": ds_output,
-                    "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
-                        "name": "STEP-INFO",
-                        "system": system
-                    },
-                    "start": steps_start[steps_list.index(step)].text[:-1],
-                    "stop": steps_stop[steps_list.index(step)].text[:-1],
-                    "links": "",
-                    "values": [{
-                        "name": "details",
-                        "type": "object",
-                        "values": []
-                    }]
-                }
-                list_of_events.append(event_step)
-            #end if
-        #end for
-
-        explicit_reference = {
-            "group": "OUTPUT-PRODUCTS",
-            "links": [{
-                "back_ref": "true",
-                "link": "OUTPUT-DATASTRIP",
-                "name": ds_output
-                }
-            ],
-            "name": granule_t
-        }
-        list_of_explicit_references.append(explicit_reference)
-
-        explicit_reference = {
-            "group": "PRODUCTION-DS",
-            "links": [{
-                "back_ref": "true",
-                "link": "INPUT-OUTPUT",
-                "name": ds_output
-                }
-            ],
-            "name": ds_input
-        }
-        list_of_explicit_references.append(explicit_reference)
-
-        explicit_reference = {
-            "group": "SENSING-ID",
-            "links": [{
-                "back_ref": "true",
-                "link": "SENSING-DATASTRIP",
-                "name": output_sensing_date
-                }
-            ],
-            "name": ds_output
-        }
-        list_of_explicit_references.append(explicit_reference)
-    #end for
-
-    #MRF
-    for mrf in mrf_list:
-        event_mrf={
-            "explicit_reference": mrf_id[mrf_list.index(mrf)].text,
-            "gauge": {
-                "insertion_type": "SIMPLE_UPDATE",
-                "name": "MRF-VALIDITY",
-                "system": system
-            },
-            "start": mrf_validity_start[mrf_list.index(mrf)].text[:-1],
-            "stop": mrf_validity_stop[mrf_list.index(mrf)].text[:-1],
-            "links": "",
-            "values": []
-            }
-        list_of_events.append(event_mrf)
-
-        ##########################################################
-        #Duplicate if multiple outputs ??????????????????????????
-        ##########################################################
-
-        explicit_reference = {
-            "group": "MRFs",
-            "links": [{
-                "back_ref": "true",
-                "link": "MRF-DATASTRIP",
-                "name": ds_output
-                }
-            ],
-            "name": mrf_id[mrf_list.index(mrf)].text
-        }
-        list_of_explicit_references.append(explicit_reference)
-    #end for
-
     source = {
         "name": file_name,
         "generation_time": creation_date,
@@ -373,29 +89,296 @@ def process_file(file_path, engine, query):
 
     #COMPLETENESS
     # Completeness operations for the production completeness analysis of the plan
-    completeness_producing_operation = {
+    completeness_processing_operation = {
         "mode": "insert",
         "dim_signature": {
-            "name": "PRODUCTION" + satellite,
-            "exec": "planning_" + os.path.basename(__file__),
+            "name": "PROCESSING_" + system + "_" + satellite,
+            "exec": "processing_planning_" + os.path.basename(__file__),
             "version": version
         },
         "events": []
     }
 
-    no_detectors_timeline = functions.date_functions.merge_timeline(timeline)
+    #MSI_OUTPUTS (DATABLOCK)
 
-    record_type = downlink_mode
+    for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
+        granule_timeline = []
+        ds_output = output_msi.find("DATA_STRIP_ID").text
+        output_sensing_date = ds_output[41:57]
+        baseline = ds_output[58:]
+        level = ds_output[13:16]
 
-    corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": record_type, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")
+        if len(input) > 0:
+            ds_input = input[0].text
+
+        baseline_annotation = {
+        "explicit_reference": ds_output,
+        "annotation_cnf": {
+            "name": "PRODUCTION-BASELINE",
+            "system": system
+            },
+        "values": [{
+            "name": "baseline_information",
+            "type": "object",
+            "values": [
+                {"name": "baseline",
+                 "type": "text",
+                 "value": baseline
+                 }]
+            }]
+        }
+        list_of_annotations.append(baseline_annotation)
+
+        #RELATIONSHIPS
+        explicit_reference = {
+           "group": level + "_DS",
+           "links": [{
+               "back_ref": "OUTPUT-DATASTRIP",
+               "link": "INPUT-DATASTRIP",
+               #XPATH CAN BE USED
+               "name": ds_input
+               }
+           ],
+           "name": ds_output
+        }
+        list_of_explicit_references.append(explicit_reference)
+
+        for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_GR_')]"):
+
+            granule_t = granule.text
+            level_gr = granule_t[13:16]
+            level_gr.replace("_","")
+            output_sensing_date = granule_t[42:57]
+            SI_start= parser.parse(output_sensing_date)
+            SI_stop = SI_start + datetime.timedelta(seconds=5)
+            granule_segment = {
+                "start": SI_start,
+                "start_str": str(SI_start),
+                "stop": SI_stop,
+                "stop_str": str(SI_stop),
+                "id": granule_t
+            }
+            granule_timeline.append(granule_segment)
+
+            explicit_reference = {
+                "group": level_gr + "_GR",
+                "links": [{
+                    "back_ref": "DATASTRIP",
+                    "link": "GRANULE",
+                    "name": granule_t
+                    }
+                ],
+                "name": ds_output
+            }
+            list_of_explicit_references.append(explicit_reference)
+        #end for
+
+        # for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TL_')]"):
+        #
+        #     granule_t = granule.text
+        #     level_gr = granule_t[13:16]
+        #     level_gr,replace("_","")
+        #     SI_start= parser.parse(output_sensing_date[1:])
+        #     SI_stop = SI_start + datetime.timedelta(seconds=5)
+        # #end for
+        #
+        # for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TC_')]"):
+        #
+        #     granule_t = granule.text
+        #     level_gr = granule_t[13:16]
+        #     level_gr,replace("_","")
+        #     SI_start= parser.parse(output_sensing_date[1:])
+        #     SI_stop = SI_start + datetime.timedelta(seconds=5)
+        # #end_for
+        # #END RELATIONSHIPS
+        if(len(granule_timeline) > 0):
+            granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
+            corrected_planned_processing = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
+            gauge_systems = {"list": [satellite], "op": "in"},
+            start_filters = [{"date": granule_timeline_sorted[-1]["stop_str"], "op": "<"}],
+            stop_filters = [{"date": granule_timeline_sorted[0]["start_str"], "op": ">"}])
+
+            if len(corrected_planned_processing) > 0:
+                corrected_planned_processing_sorted = sorted(corrected_planned_processing, key=lambda event: event.start)
+                corrected_planned_processing_sorted_timeline = date_functions.convert_eboa_events_to_date_segments(corrected_planned_processing_sorted)
+                timeline_intersected = date_functions.intersect_timelines(granule_timeline_sorted,corrected_planned_processing_sorted_timeline)
+                start_period = corrected_planned_processing_sorted[0].start
+                stop_period = corrected_planned_processing_sorted[-1].stop
+
+                for corrected_planned_process in corrected_planned_processing:
+                    value = {
+                        "name": "processing_completeness_began",
+                        "type": "object",
+                        "values": []
+                    }
+                    exit_status = engine.insert_event_values(corrected_planned_process.event_uuid, value)
+
+                    if exit_status["inserted"] == True:
+                        planned_processing_uuid = [event_link.event_uuid_link for event_link in corrected_planned_process.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                        planning_event_values = corrected_planned_process.get_structured_values()
+                        planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
+                            {"name": "status",
+                             "type": "text",
+                             "value": "MISSING"}
+                        ]
+
+                        completeness_processing_operation["events"].append({
+                            "gauge": {
+                                    "insertion_type": "SIMPLE_UPDATE",
+                                "name": "PLANNED_PROCESSING_COMPLETENESS",
+                                "system": satellite
+                            },
+                            "start": str(corrected_planned_process.start),
+                            "stop": str(corrected_planned_process.stop),
+                            "links": [
+                                {
+                                    "link": str(planned_processing_uuid),
+                                    "link_mode": "by_uuid",
+                                    "name": "PLANNED_PROCESSING",
+                                    "back_ref": "COMPLETENESS"
+                                }],
+                            "values": planning_event_values
+                        })
+
+                    for segment_intersected in timeline_intersected:
+                        datablock_completeness_event = {
+                            "explicit_reference": ds_output,
+                            "gauge": {
+                                "insertion_type": "INSERT_and_ERASE_per_EVENT",
+                                "name": "PLANNED_PROCESSING_COMPLETENESS",
+                                "system": system
+                            },
+                            "links": [{
+                                     "link": str(planned_processing_uuid),
+                                     "link_mode": "by_uuid",
+                                     "name": "PLANNED_PROCESSING",
+                                     "back_ref": "COMPLETENESS"
+                                     }#, NEEDED?
+                                 # {
+                                 #     "link": event_link_ref,
+                                 #     "link_mode": "by_ref",
+                                 #     "name": "PRODUCTION-VALIDITY",
+                                 #     "back_ref": "COMPLETENESS"
+                                 #}
+                                 ],
+                             "start": str(segment_intersected["start"]),
+                             "stop": str(segment_intersected["stop"]),
+                             "values": [{
+                                 "name": "details",
+                                 "type": "object",
+                                 "values": []
+                             }]
+                        }
+                        list_of_events.append(datablock_completeness_event)
+                    #end for
+                #end if
+
+                     # Insert completeness operation for the completeness analysis of the plan
+                    if "source" in completeness_processing_operation:
+                        list_of_planning_operations.append(completeness_processing_operation)
+                     # end if
+
+                    #end if
 
 
 
+
+
+        #TIMELINESS
+        event_timeliness = {
+            "explicit_reference": ds_output,
+            "gauge": {
+                "insertion_type": "SIMPLE_UPDATE",
+                "name": "TIMELINESS",
+                "system": system
+            },
+            "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
+            "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1],
+            "links": "",
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": []
+            }]
+        }
+
+        #Steps
+        for step in steps_list:
+            if step.find("EXEC_STATUS").text == 'COMPLETED':
+                #duplicate if product L1A & L1B
+                event_step = {
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "SIMPLE_UPDATE",
+                        "name": "STEP-INFO",
+                        "system": system
+                    },
+                    "start": step.find("PROCESSING_START_DATETIME").text[:-1],
+                    "stop": step.find("PROCESSING_END_DATETIME").text[:-1],
+                    "links": "",
+                    "values": [{
+                        "name": "details",
+                        "type": "object",
+                        "values": [{
+                                   "name": "id",
+                                   "type": "text",
+                                   "value": step.get("id")
+                                   },{
+                                   "name": "exec_mode",
+                                   "type": "text",
+                                   "value": step.find("SUBSYSTEM_INFO/STEP_REPORT/GENERAL_INFO/EXEC_MODE").text
+                        }]
+                    }]
+                }
+                list_of_events.append(event_step)
+            #end if
+        #end for
+        #END TIMELINESS
+
+    #end for
+
+    #CONFIGURATION
+    for mrf in mrf_list:
+        explicit_reference = {
+            "group": "MISSION CONFIGURATION",
+            "links": [{
+                "back_ref": "DATASTRIP",
+                "link": "CONFIGURATION",
+                "name": mrf.find("Id").text
+                }
+            ],
+            "name": ds_output
+        }
+        list_of_explicit_references.append(explicit_reference)
+
+        mrfsDB = query.get_explicit_refs(explicit_ref_like = {"op": "like", "str": mrf.find("Id").text})
+        if len(mrfsDB) is 0:
+            event_mrf={
+                "key":mrf.find("Id").text,
+                "explicit_reference": mrf.find("Id").text,
+                "gauge": {
+                    "insertion_type": "EVENT_KEYS",
+                    "name": "MRF-VALIDITY",
+                    "system": system
+                },
+                "start": mrf.find("ValidityStart").text[:-1],
+                "stop": mrf.find("ValidityStop").text[:-1],
+                "links": "",
+                "values": [{
+                          "name": "generation_time",
+                          "type": "date",
+                          "value": mrf.find("Id").text.split("_")[6]
+                          }]
+                }
+            list_of_events.append(event_mrf)
+    #end for
+    #END CONFIGURATION
 
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
-              "name": "DPC-OPERATION_" + system + "_"+ satellite,
+              "name": "PROCESSING_" + system + "_" + satellite,
               "exec": os.path.basename(__file__),
               "version": version
         },
@@ -404,8 +387,8 @@ def process_file(file_path, engine, query):
         "explicit_references": list_of_explicit_references,
         "events": list_of_events,
         },
-        completeness_producing_operation]}
-
+        completeness_processing_operation],
+        "test":test}
     return data
 
 def insert_data_into_DDBB(data, filename, engine):
