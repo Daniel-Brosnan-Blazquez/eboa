@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<Earth_Explorer_File xmlns:myData="http://wrox.com/namespaces/embeddedData" xmlns:myFunc="http://deimos-mpa.com" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3 .org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceschemaLocation="http://gs2.esa.int/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd file:///C:/Users/S2user/Desktop/svn.s2pdgs.fr.cr_en_cours/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd">
+<Earth_Explorer_File xmlns:myData="http://wrox.com/namespaces/embeddedData" xmlns:myFunc="http://deimos-mpa.com" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceschemaLocation="http://gs2.esa.int/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd file:///C:/Users/S2user/Desktop/svn.s2pdgs.fr.cr_en_cours/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd">
    <Earth_Explorer_Header>
       <Fixed_Header>
          <File_Name>S2A_OPER_REP_OPDPC__SGS__20180721T034639_V20180721T021635_20180721T022206</File_Name>  

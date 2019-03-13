@@ -12,6 +12,7 @@ from tempfile import mkstemp
 from lxml import etree
 
 # Import engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 
 # Import ingestion helpers
@@ -264,22 +265,23 @@ def process_file(file_path, engine, query):
                                  ],
                              "start": str(segment_intersected["start"]),
                              "stop": str(segment_intersected["stop"]),
-                             "values": [{
-                                 "name": "details",
-                                 "type": "object",
-                                 "values": []
-                             }]
+                             "values": []
                         }
                         list_of_events.append(datablock_completeness_event)
                     #end for
                 #end if
+            if len(completeness_processing_operation["events"]) > 0:
+                completeness_event_starts = [event["start"] for event in completeness_processing_operation["events"]]
+                completeness_event_starts.sort()
+                completeness_event_stops = [event["stop"] for event in completeness_processing_operation["events"]]
+                completeness_event_stops.sort()
 
-                     # Insert completeness operation for the completeness analysis of the plan
-                    if "source" in completeness_processing_operation:
-                        list_of_planning_operations.append(completeness_processing_operation)
-                     # end if
-
-                    #end if
+                completeness_processing_operation["source"] = {
+                    "name": source["name"],
+                    "generation_time": source["generation_time"],
+                    "validity_start": str(completeness_event_starts[0]),
+                    "validity_stop": str(completeness_event_stops[-1])
+                }
 
 
 
@@ -295,13 +297,10 @@ def process_file(file_path, engine, query):
             },
             "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
             "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1],
-            "links": "",
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": []
-            }]
+            "links": [],
+            "values": []
         }
+        list_of_events.append(event_timeliness)
 
         #Steps
         for step in steps_list:
@@ -316,7 +315,7 @@ def process_file(file_path, engine, query):
                     },
                     "start": step.find("PROCESSING_START_DATETIME").text[:-1],
                     "stop": step.find("PROCESSING_END_DATETIME").text[:-1],
-                    "links": "",
+                    "links": [],
                     "values": [{
                         "name": "details",
                         "type": "object",
@@ -364,11 +363,11 @@ def process_file(file_path, engine, query):
                 },
                 "start": mrf.find("ValidityStart").text[:-1],
                 "stop": mrf.find("ValidityStop").text[:-1],
-                "links": "",
+                "links": [],
                 "values": [{
                           "name": "generation_time",
-                          "type": "date",
-                          "value": mrf.find("Id").text.split("_")[6]
+                          "type": "timestamp",
+                          "value": mrf.find("Id").text[25:40]
                           }]
                 }
             list_of_events.append(event_mrf)
@@ -387,14 +386,13 @@ def process_file(file_path, engine, query):
         "explicit_references": list_of_explicit_references,
         "events": list_of_events,
         },
-        completeness_processing_operation],
-        "test":test}
+        completeness_processing_operation]}
     return data
 
 def insert_data_into_DDBB(data, filename, engine):
     # Treat data
     returned_value = engine.treat_data(data, filename)
-    if returned_value == engine.exit_codes["FILE_NOT_VALID"]["status"]:
+    if returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
         logger.error("The file {} could not be validated".format(filename))
     # end if
 

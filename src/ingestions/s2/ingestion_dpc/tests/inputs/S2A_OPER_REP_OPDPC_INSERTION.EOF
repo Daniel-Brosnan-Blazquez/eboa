@@ -2,9 +2,9 @@
 <Earth_Explorer_File xmlns:myData="http://wrox.com/namespaces/embeddedData" xmlns:myFunc="http://deimos-mpa.com" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceschemaLocation="http://gs2.esa.int/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd file:///C:/Users/S2user/Desktop/svn.s2pdgs.fr.cr_en_cours/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd">
    <Earth_Explorer_Header>
       <Fixed_Header>
-         <File_Name>S2A_OPER_REP_OPDPC__EPAE_20180721T022101_V20180721T001610_20180721T002149</File_Name>  
+         <File_Name>S2A_OPER_REP_OPDPC__EPAE_20180721T022101_V20180721T001610_20180721T002149</File_Name>
          <File_Description>DPC_Operation_Report used for a data strip ID</File_Description>
-         
+
          <Notes>datadriven</Notes>
          <Mission>Sentinel-2A</Mission>
          <File_Class>OPER</File_Class>
@@ -23,7 +23,7 @@
       </Fixed_Header>
    </Earth_Explorer_Header>
    <Data_Block>
-    
+
    <SUP_WORKPLAN_REPORT>
 <HEADER>
 <SATELLITE>S2A</SATELLITE>
