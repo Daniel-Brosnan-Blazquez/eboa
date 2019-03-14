@@ -2,7 +2,7 @@
 <Earth_Explorer_File>
 <Earth_Explorer_Header>
   <Fixed_Header>
-    <File_Name>NPPF_DATATAKE_CUT_BY_RECORDS</File_Name>
+    <File_Name>S2A_NPPF_DATATAKE_CUT_BY_RECORDS</File_Name>
     <File_Description/>
     <Notes/>
     <Mission>Sentinel2A</Mission>

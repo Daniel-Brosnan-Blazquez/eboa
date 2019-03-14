@@ -5,6 +5,7 @@ Written by DEIMOS Space S.L. (dibb)
 
 module eboa
 """
+import pdb
 # Import python utilities
 import os
 import argparse
@@ -115,17 +116,21 @@ def _generate_record_events(xpath_xml, source, list_of_events):
 
         record_type = record_types[record_operation.xpath("RQ/RQ_Name")[0].text]
 
-        following_imaging_operation = record_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS' or RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP'][1]")[0]
-        if following_imaging_operation.xpath("RQ[RQ_Name='MPMSIMID' or RQ_Name='MPMSIDSB' or RQ_Name='MPMMRSTP']"):
+        following_imaging_operation = record_operation.xpath("following-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS' or RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP' or RQ/RQ_Name='MPMMRNRT' or RQ/RQ_Name='MPMMRNOM'][1]")[0]
+        if following_imaging_operation.xpath("RQ[RQ_Name='MPMSIMID' or RQ_Name='MPMSIDSB' or RQ_Name='MPMMRSTP' or RQ_Name='MPMMRNRT' or RQ_Name='MPMMRNOM']"):
+            # The start of the cut imaging is the record operation because the imaging operation was going before this recording
+            # The stop of the cut imaging is the start of the following imaging or the stop of this imaging or the stop of this recording
             cut_imaging_start_operation = record_operation
             cut_imaging_stop_operation = following_imaging_operation
             imaging_start_operation = record_operation.xpath("preceding-sibling::EVRQ[RQ/RQ_Name='MPMSSCAL' or RQ/RQ_Name='MPMSDASC' or RQ/RQ_Name='MPMSDCLO' or RQ/RQ_Name='MPMSIVIC' or RQ/RQ_Name='MPMSNOBS' or RQ/RQ_Name='MPMSIRAW' or RQ/RQ_Name='MPMSIDTS'][1]")[0]
             imaging_start = imaging_start_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
             cut_imaging_start_request = imaging_start_operation.xpath("RQ/RQ_Name")[0].text
         else:
+            # The start of the cut imaging is the start of the current imaging
+            # The stop of the cut imaging is the stop of the current imaging or the stop of this recording
             cut_imaging_start_operation = following_imaging_operation
             cut_imaging_start_request = cut_imaging_start_operation.xpath("RQ/RQ_Name")[0].text
-            cut_imaging_stop_operation = record_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP')][1]")[0]
+            cut_imaging_stop_operation = record_operation.xpath("following-sibling::EVRQ[(RQ/RQ_Name='MPMSIMID' or RQ/RQ_Name='MPMSIDSB' or RQ/RQ_Name='MPMMRSTP' or RQ/RQ_Name='MPMMRNRT' or RQ/RQ_Name='MPMMRNOM')][1]")[0]
             imaging_start = following_imaging_operation.xpath("RQ/RQ_Execution_Time")[0].text.split("=")[1]
         # end if
 
@@ -223,14 +228,14 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                 {
                     "link": record_link_id,
                     "link_mode": "by_ref",
-                    "name": "PLANNED_RECORD_OPERATION",
-                    "back_ref": "PLANNED_IMAGING_OPERATION"
+                    "name": "PLANNED_IMAGING_OPERATION",
+                    "back_ref": "PLANNED_RECORD_OPERATION"
                 },
                 {
                     "link": imaging_link_id,
                     "link_mode": "by_ref",
-                    "name": "PLANNED_COMPLETE_IMAGING_OPERATION",
-                    "back_ref": "PLANNED_CUT_IMAGING_OPERATION"
+                    "name": "PLANNED_CUT_IMAGING_OPERATION",
+                    "back_ref": "PLANNED_COMPLETE_IMAGING_OPERATION"
                 }
             ],
             "values": [{
@@ -462,7 +467,7 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
     PB MEAN EVENT 2                         |------------OCP----------
     PB TY EVS LINKED                                    |--NOM--||SAD|
 
-    PB MEAN events and PB TY events are linked by PLAYBACK_OPERATION link (with back_ref)
+    PB MEAN events and PB TY events are linked
     """
 
     satellite = source["name"][0:3]
@@ -578,8 +583,8 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                 {
                     "link": playback_mean_link_id,
                     "link_mode": "by_ref",
-                    "name": "PLANNED_PLAYBACK_MEAN",
-                    "back_ref": "PLANNED_PLAYBACK_TYPE"
+                    "name": "PLANNED_PLAYBACK_TYPE",
+                    "back_ref": "PLANNED_PLAYBACK_MEAN"
                 }
             ],
             "values": [{
@@ -726,12 +731,14 @@ def process_file(file_path):
 
 def insert_data_into_DDBB(data, filename, engine):
     # Treat data
-    returned_value = engine.treat_data(data, filename)
-    if returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
-        logger.error("The file {} could not be validated".format(filename))
-    # end if
+    returned_statuses = engine.treat_data(data, filename)
+    for returned_status in returned_statuses:
+        if returned_status["status"] == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
+            logger.error("The file {} could not be validated".format(filename))
+        # end if
+    # end for
 
-    return returned_value
+    return returned_statuses
 
 def command_process_file(file_path, output_path = None):
     # Process file

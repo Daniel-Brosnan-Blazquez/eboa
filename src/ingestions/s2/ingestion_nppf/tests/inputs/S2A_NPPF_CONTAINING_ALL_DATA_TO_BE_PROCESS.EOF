@@ -2,7 +2,7 @@
 <Earth_Explorer_File>
 <Earth_Explorer_Header>
   <Fixed_Header>
-    <File_Name>NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS</File_Name>
+    <File_Name>S2A_NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS</File_Name>
     <File_Description/>
     <Notes/>
     <Mission>Sentinel2A</Mission>
@@ -1049,6 +1049,14 @@
           <RQ_Parameter>
             <RQ_Parameter_Name>MEM_FREE</RQ_Parameter_Name>
             <RQ_Parameter_Description>Memory freed flag</RQ_Parameter_Description>
+            <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
+            <RQ_Parameter_Radix/>
+            <RQ_Parameter_Unit/>
+            <RQ_Parameter_Value>1</RQ_Parameter_Value>
+          </RQ_Parameter>
+          <RQ_Parameter>
+            <RQ_Parameter_Name>SCN_DUP</RQ_Parameter_Name>
+            <RQ_Parameter_Description>Scene duplication flag</RQ_Parameter_Description>
             <RQ_Parameter_Representation>Raw</RQ_Parameter_Representation>
             <RQ_Parameter_Radix/>
             <RQ_Parameter_Unit/>
