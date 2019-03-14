@@ -164,7 +164,15 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         matching_status = "NO_MATCHED_PLANNED_PLAYBACK"
         links = []
         if len(planned_playbacks) > 0:
-            associated_planned_playbacks = [planned_playback for planned_playback in planned_playbacks if planned_playback.gauge.name == "PLANNED_PLAYBACK_TYPE_" + downlink_mode]
+            if downlink_mode in ["NOMINAL", "NRT"]:
+                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode, "PLANNED_PLAYBACK_TYPE_REGULAR"]
+            elif downlink_mode in ["SAD", "HKTM"]:
+                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode, "PLANNED_PLAYBACK_TYPE_HKTM_SAD"]
+            else:
+                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode]
+            # end if
+
+            associated_planned_playbacks = [planned_playback for planned_playback in planned_playbacks if planned_playback.gauge.name in planned_playback_gauge_names]
 
             if len(associated_planned_playbacks) > 0:
                 matching_status = "MATCHED_PLANNED_PLAYBACK"
@@ -186,21 +194,21 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                     "key": session_id + "_CHANNEL_" + channel,
                     "gauge": {
                         "insertion_type": "EVENT_KEYS",
-                        "name": "PLANNED_ACQUISITION_COMPLETENESS_CHANNEL_" + channel,
+                        "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + channel,
                         "system": satellite
                     },
                     "links": [
                         {
                             "link": str(planned_playback.event_uuid),
                             "link_mode": "by_uuid",
-                            "name": "COMPLETENESS",
+                            "name": "PLAYBACK_COMPLETENESS",
                             "back_ref": "PLANNED_PLAYBACK"
                         },
                         {
                             "link": playback_validity_event_link_ref,
                             "link_mode": "by_ref",
-                            "name": "COMPLETENESS",
-                            "back_ref": "PLAYBACK-VALIDITY"
+                            "name": "PLAYBACK_COMPLETENESS",
+                            "back_ref": "PLAYBACK_VALIDITY"
                         }],
                     "start": str(planned_playback.start),
                     "stop": str(planned_playback.stop),
