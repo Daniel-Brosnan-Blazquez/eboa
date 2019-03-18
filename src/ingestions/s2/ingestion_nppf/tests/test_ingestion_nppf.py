@@ -48,7 +48,9 @@ class TestEngine(unittest.TestCase):
         filename = "S2A_NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
-        ingestion.command_process_file(file_path)
+        returned_value = ingestion.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
         # Check that events before the queue deletion are not inserted
         events_before_validity_period = self.session.query(Event).filter(Event.stop < "2018-07-20T13:40:00.000").all()
