@@ -703,9 +703,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "type": "object",
                     "values": []
                 }
-                exit_status = engine.insert_event_values(corrected_planned_imaging.event_uuid, value)
+                planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                exit_status = engine.insert_event_values(planned_imaging_uuid, value)
                 if exit_status["inserted"] == True:
-                    planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
                     # Insert the linked COMPLETENESS event for the automatic completeness check
                     planning_event_values = corrected_planned_imaging.get_structured_values()
@@ -739,6 +739,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             for isp_validity_valid_segment in isp_validity_valid_segments:
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == isp_validity_valid_segment["id2"]][0]
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+
+                sensing_orbit_values = query.get_event_values_interface(value_type="double", values_names_type=[{"op": "in", "names": ["start_orbit"], "type": "double"}], event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                sensing_orbit = str(sensing_orbit_values[0].value)
 
                 # ISP validity event
                 isp_validity_event_link_ref = "ISP_VALIDITY_" + vcid_number + "_" + str(isp_validity_valid_segment["start"])
@@ -815,7 +818,10 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                              "value": vcid_number},
                             {"name": "downlink_mode",
                              "type": "text",
-                             "value": downlink_mode}
+                             "value": downlink_mode},
+                            {"name": "sensing_orbit",
+                             "type": "text",
+                             "value": sensing_orbit}
                         ]
                     }]
                 }
