@@ -72,13 +72,10 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
     # Obtain link session ID
     session_id = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/File_Type")[0].text + "_" + xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("UTC=",1)[1]
 
-    # Obtain channel
-    channel = xpath_xml("/Earth_Explorer_File/Data_Block/child::*[contains(name(),'data_')]")[0].tag[6:7]
-
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
-    # Completeness operation for the isp completeness analysis of the plan
+    # Completeness operation for the playback completeness analysis of the plan
     playback_planning_completeness_operation = {
         "mode": "insert",
         "dim_signature": {
@@ -91,6 +88,10 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 2 or @VCID = 3 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
     for vcid in vcids:
+        # Obtain channel
+        channel = vcid.xpath("..")[0].tag[6:7]
+        print(channel)
+    
         vcid_number = vcid.get("VCID")
         downlink_mode = functions.get_vcid_mode(vcid_number)
         # Acquisition segment
@@ -202,9 +203,9 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 "name": "PLAYBACK_COMPLETENESS",
                 "back_ref": "PLANNED_PLAYBACK"
             })
-            for channel in ["1","2"]:
+            for data_channel in ["1","2"]:
                 value = {
-                    "name": "playback_completeness_began_channel_" + channel,
+                    "name": "playback_completeness_began_channel_" + data_channel,
                     "type": "object",
                     "values": []
                 }
@@ -223,7 +224,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                     playback_planning_completeness_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + channel,
+                            "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + data_channel,
                             "system": satellite
                         },
                         "start": str(corrected_planned_playback.start),
@@ -363,9 +364,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
     # Obtain link session ID
     session_id = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/File_Type")[0].text + "_" + xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("UTC=",1)[1]
 
-    # Obtain channel
-    channel = xpath_xml("/Earth_Explorer_File/Data_Block/child::*[contains(name(),'data_')]")[0].tag[6:7]
-
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
@@ -382,6 +380,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[number(NumFrames) > 0 and (@VCID = 4 or @VCID = 5 or @VCID = 6)]")
     for vcid in vcids:
+
         # Iterator and timeline for the ISP gaps
         isp_gap_iterator = 0
         timeline_isp_gaps = []
@@ -493,9 +492,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             {"name": "reception_station",
                              "type": "text",
                              "value": station},
-                            {"name": "channel",
-                             "type": "double",
-                             "value": channel},
                             {"name": "vcid",
                              "type": "double",
                              "value": vcid_number},
@@ -572,9 +568,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         {"name": "reception_station",
                          "type": "text",
                          "value": station},
-                        {"name": "channel",
-                         "type": "double",
-                         "value": channel},
                         {"name": "vcid",
                          "type": "double",
                          "value": vcid_number},
@@ -659,9 +652,6 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         {"name": "reception_station",
                          "type": "text",
                          "value": station},
-                        {"name": "channel",
-                         "type": "double",
-                         "value": channel},
                         {"name": "vcid",
                          "type": "double",
                          "value": vcid_number},
@@ -713,9 +703,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "type": "object",
                     "values": []
                 }
-                exit_status = engine.insert_event_values(corrected_planned_imaging.event_uuid, value)
+                planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                exit_status = engine.insert_event_values(planned_imaging_uuid, value)
                 if exit_status["inserted"] == True:
-                    planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
                     # Insert the linked COMPLETENESS event for the automatic completeness check
                     planning_event_values = corrected_planned_imaging.get_structured_values()
@@ -748,6 +738,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
         # Create the ISP_VALIDITY events
         for received_datablock in received_datablocks:
+            sensing_orbit = ""
             links_isp_validity = []
             links_isp_completeness = []
             intersected_planned_imagings_segments = date_functions.intersect_timelines([received_datablock], corrected_planned_imagings_segments)
@@ -757,6 +748,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 intersected_planned_imagings_segment = intersected_planned_imagings_segments[0]
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == intersected_planned_imagings_segment["id2"]][0]
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                sensing_orbit_values = query.get_event_values_interface(value_type="double", values_names_type=[{"op": "in", "names": ["start_orbit"], "type": "double"}], event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                sensing_orbit = str(sensing_orbit_values[0].value)
                 links_isp_validity.append({
                     "link": str(planned_imaging_uuid),
                     "link_mode": "by_uuid",
@@ -832,7 +825,10 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                          "value": downlink_mode},
                         {"name": "matching_plan_status",
                          "type": "text",
-                         "value": matching_status}
+                         "value": matching_status},
+                        {"name": "sensing_orbit",
+                         "type": "text",
+                         "value": sensing_orbit}
                     ]
                 }]
             }
@@ -882,6 +878,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             {"name": "downlink_mode",
                              "type": "text",
                              "value": downlink_mode},
+                            {"name": "sensing_orbit",
+                             "type": "text",
+                             "value": sensing_orbit}
                         ]
                     }]
                 }
