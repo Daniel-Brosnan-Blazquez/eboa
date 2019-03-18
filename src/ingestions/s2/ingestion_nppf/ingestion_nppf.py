@@ -5,7 +5,6 @@ Written by DEIMOS Space S.L. (dibb)
 
 module eboa
 """
-import pdb
 # Import python utilities
 import os
 import argparse
@@ -191,9 +190,18 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             }]
         }
 
+        if len(record_start_scn_dup) == 1 or len(record_stop_scn_dup) == 1:
+            parameters = []
+            record_event["values"][0]["values"].append(
+                {"name": "parameters",
+                 "type": "object",
+                 "values": parameters},
+            )
+        # end if
+
         # Include parameters
         if len(record_start_scn_dup) == 1:
-            record_event["values"][0]["values"].append(
+            parameters.append(
                     {"name": "start_scn_dup",
                      "type": "double",
                      "value": record_start_scn_dup[0].text},
@@ -201,7 +209,7 @@ def _generate_record_events(xpath_xml, source, list_of_events):
         # end if
 
         if len(record_stop_scn_dup) == 1:
-            record_event["values"][0]["values"].append(
+            parameters.append(
                     {"name": "stop_scn_dup",
                      "type": "double",
                      "value": record_stop_scn_dup[0].text}
@@ -432,10 +440,7 @@ def _generate_idle_events(xpath_xml, source, list_of_events):
             "values": [{
                 "name": "values",
                 "type": "object",
-                "values": values},
-                {"name": "satellite",
-                 "type": "text",
-                 "value": satellite}]
+                "values": values}]
         }
 
         # Insert idle_event
