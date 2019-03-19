@@ -5,6 +5,7 @@ Written by DEIMOS Space S.L. (dibb)
 
 module ingestions
 """
+import pdb
 # Import python utilities
 import os
 import sys
@@ -47,7 +48,9 @@ class TestEngine(unittest.TestCase):
         filename = "S2A_NPPF_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
-        ingestion.command_process_file(file_path)
+        returned_value = ingestion.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
         # Check that events before the queue deletion are not inserted
         events_before_validity_period = self.session.query(Event).filter(Event.stop < "2018-07-20T13:40:00.000").all()
@@ -76,6 +79,52 @@ class TestEngine(unittest.TestCase):
                                                                                  Event.stop == "2018-07-20T14:14:57.748").all()
 
         assert len(specific_xband_operation1) == 1
+
+        assert specific_xband_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "values": [
+                        {
+                            "value": "MPXBSBOP",
+                            "name": "start_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "MPXBOPSB",
+                            "name": "stop_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "start_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "70.9228",
+                            "name": "start_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "stop_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "116.4033",
+                            "name": "stop_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "S2A",
+                            "name": "satellite",
+                            "type": "text"
+                        }
+                    ],
+                    "name": "values",
+                    "type": "object"
+                }
+            ]
+        }]
 
         specific_xband_operation2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_MEAN_XBAND",
                                                                                  Event.start == "2018-07-20T15:41:28.723",
@@ -106,6 +155,73 @@ class TestEngine(unittest.TestCase):
                                                                                            Event.stop == "2018-07-20T14:14:14.748").all()
 
         assert len(specific_playback_nominal_operation1) == 1
+
+        assert specific_playback_nominal_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "values": [
+                        {
+                            "value": "MPMMPNOM",
+                            "name": "start_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "MPMMPSTP",
+                            "name": "stop_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "start_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "72.4021",
+                            "name": "start_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "stop_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "113.8555",
+                            "name": "stop_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "S2A",
+                            "name": "satellite",
+                            "type": "text"
+                        },
+                        {
+                            "values": [
+                                {
+                                    "value": "1.0",
+                                    "name": "MEM_FREE",
+                                    "type": "double"
+                                },
+                                {
+                                    "value": "0.0",
+                                    "name": "SCN_DUP",
+                                    "type": "double"
+                                },
+                                {
+                                    "value": "1.0",
+                                    "name": "SCN_RWD",
+                                    "type": "double"
+                                }
+                            ],
+                            "name": "parameters",
+                            "type": "object"
+                        }
+                    ],
+                    "name": "values",
+                    "type": "object"
+                }
+            ]
+        }]
 
         # Check nrt playback operations
         playback_nrt_operations = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_TYPE_NRT").all()
@@ -246,6 +362,63 @@ class TestEngine(unittest.TestCase):
 
         assert len(specific_record_nominal_operation1) == 1
 
+        assert specific_record_nominal_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "values": [
+                        {
+                            "value": "MPMMRNOM",
+                            "name": "start_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "MPMMRSTP",
+                            "name": "stop_request",
+                            "type": "text"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "start_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "89.667",
+                            "name": "start_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "16066.0",
+                            "name": "stop_orbit",
+                            "type": "double"
+                        },
+                        {
+                            "value": "95.1028",
+                            "name": "stop_angle",
+                            "type": "double"
+                        },
+                        {
+                            "value": "S2A",
+                            "name": "satellite",
+                            "type": "text"
+                        },
+                        {
+                            "type": "object",
+                            "values": [
+                                {
+                                    "value": "0.0",
+                                    "type": "double",
+                                    "name": "start_scn_dup"
+                                }
+                            ],
+                            "name": "parameters"
+                        }
+                    ],
+                    "name": "values",
+                "type": "object"
+                }
+            ]
+        }]
+
         specific_record_nominal_operation2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_RECORD_NOMINAL",
                                                                                            Event.start == "2018-07-20T14:27:43.768",
                                                                                            Event.stop == "2018-07-20T14:47:59.686").all()
@@ -300,12 +473,109 @@ class TestEngine(unittest.TestCase):
 
         assert len(specific_cut_imaging_nominal_operation1) == 1
 
+        assert specific_cut_imaging_nominal_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "type": "object",
+                    "values": [
+                        {
+                        "value": "MPMSNOBS",
+                            "type": "text",
+                            "name": "start_request"
+                        },
+                        {
+                            "value": "MPMSIMID",
+                            "type": "text",
+                            "name": "stop_request"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "start_orbit"
+                        },
+                        {
+                            "value": "89.7852",
+                            "type": "double",
+                            "name": "start_angle"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "stop_orbit"
+                        },
+                        {
+                            "value": "94.8369",
+                            "type": "double",
+                            "name": "stop_angle"
+                        },
+                        {
+                            "value": "S2A",
+                            "type": "text",
+                            "name": "satellite"
+                        },
+                        {
+                            "value": "NOMINAL",
+                            "type": "text",
+                            "name": "record_type"
+                        }
+                    ],
+                    "name": "values"
+                }
+            ]
+        }]
+        
         specific_imaging_nominal_operation1 = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_IMAGING_NOMINAL"),
                                                                                            Event.start == "2018-07-20T14:07:27.734",
                                                                                            Event.stop == "2018-07-20T14:08:53.218").all()
-
+        
         assert len(specific_imaging_nominal_operation1) == 1
-
+        
+        assert specific_imaging_nominal_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "type": "object",
+                    "values": [
+                        {
+                            "value": "MPMSNOBS",
+                            "type": "text",
+                            "name": "start_request"
+                        },
+                        {
+                            "value": "MPMSIMID",
+                            "type": "text",
+                            "name": "stop_request"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "start_orbit"
+                        },
+                        {
+                            "value": "89.7852",
+                            "type": "double",
+                            "name": "start_angle"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "stop_orbit"
+                        },
+                        {
+                            "value": "94.8369",
+                            "type": "double",
+                            "name": "stop_angle"
+                        },
+                        {
+                            "value": "S2A",
+                            "type": "text",
+                            "name": "satellite"
+                        }
+                    ],
+                    "name": "values"
+                }
+            ]
+        }]
+        
         # Check SUN_CAL imaging operations
         imaging_suncal_operations = self.session.query(Event).join(Gauge).filter(Gauge.name.like("%IMAGING_SUN_CAL")).all()
 
@@ -511,6 +781,52 @@ class TestEngine(unittest.TestCase):
 
         assert len(specific_idle_operation1) == 1
 
+        assert specific_idle_operation1[0].get_structured_values() == [{
+            "values": [
+                {
+                    "values": [
+                        {
+                            "value": "MPMSSBID",
+                            "type": "text",
+                            "name": "start_request"
+                        },
+                        {
+                            "value": "MPMSNOBS",
+                            "type": "text",
+                            "name": "stop_request"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "start_orbit"
+                        },
+                        {
+                            "value": "72.3453",
+                            "type": "double",
+                            "name": "start_angle"
+                        },
+                        {
+                            "value": "16066.0",
+                            "type": "double",
+                            "name": "stop_orbit"
+                        },
+                        {
+                            "value": "89.7852",
+                            "type": "double",
+                            "name": "stop_angle"
+                        },
+                        {
+                            "value": "S2A",
+                            "type": "text",
+                            "name": "satellite"
+                        }
+                    ],
+                    "type": "object",
+                    "name": "values"
+                }
+            ]
+        }]
+        
         specific_idle_operation2 = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_IDLE"),
                                                                                            Event.start == "2018-07-20T14:08:53.218",
                                                                                            Event.stop == "2018-07-20T14:09:57.673").all()

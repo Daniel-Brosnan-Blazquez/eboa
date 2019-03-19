@@ -49,9 +49,9 @@ class Event(Base):
             values += eval("self." + values_relation)
         # end for
 
-        json_values = []
+        json_values = [{"values": []}]
         if len(values) > 0:
-            export.build_values_structure(values, json_values)
+            export.build_values_structure(values, json_values[0]["values"])
         # end if
 
         return json_values
