@@ -1,3 +1,11 @@
+"""
+Ingestion module for the DPC files of Sentinel-2
+
+Written by DEIMOS Space S.L. (femd)
+
+module eboa
+"""
+
 # Import python utilities
 import os
 import argparse
@@ -61,7 +69,9 @@ def process_file(file_path, engine, query):
     list_of_annotations = []
     list_of_events = []
     list_of_timelines = []
-    test = []
+    list_of_configuration_events = []
+    list_of_configuration_explicit_references = []
+    list_of_operations = []
     satellite = file_name[0:3]
     system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
 
@@ -74,11 +84,6 @@ def process_file(file_path, engine, query):
     workplan_start_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_START_DATETIME")[0].text
     workplan_end_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_END_DATETIME")[0].text
 
-    output = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products')]/DATA_STRIP_ID")
-    if len(output) > 0:
-        ds_output = output[0].text
-    else:
-        ds_output = ""
     mrf_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF")
     steps_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO")
     source = {
@@ -90,10 +95,10 @@ def process_file(file_path, engine, query):
 
     #COMPLETENESS
     # Completeness operations for the production completeness analysis of the plan
-    completeness_processing_operation = {
+    processing_planning_completeness_operation = {
         "mode": "insert",
         "dim_signature": {
-            "name": "PROCESSING_" + system + "_" + satellite,
+            "name": "PROCESSING_" + satellite,
             "exec": "processing_planning_" + os.path.basename(__file__),
             "version": version
         },
@@ -101,8 +106,9 @@ def process_file(file_path, engine, query):
     }
 
     #MSI_OUTPUTS (DATABLOCK)
-
+    ##Use outputs filtered by datastrip
     for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
+        granule_timeline_per_detector = {}
         granule_timeline = []
         ds_output = output_msi.find("DATA_STRIP_ID").text
         output_sensing_date = ds_output[41:57]
@@ -135,9 +141,8 @@ def process_file(file_path, engine, query):
         explicit_reference = {
            "group": level + "_DS",
            "links": [{
-               "back_ref": "OUTPUT-DATASTRIP",
-               "link": "INPUT-DATASTRIP",
-               #XPATH CAN BE USED
+               "back_ref": "INPUT-DATASTRIP",
+               "link": "OUTPUT-DATASTRIP",
                "name": ds_input
                }
            ],
@@ -148,29 +153,30 @@ def process_file(file_path, engine, query):
         for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_GR_')]"):
 
             granule_t = granule.text
-            level_gr = granule_t[13:16]
-            level_gr.replace("_","")
-            output_sensing_date = granule_t[42:57]
-            SI_start= parser.parse(output_sensing_date)
-            SI_stop = SI_start + datetime.timedelta(seconds=5)
+            level_gr = granule_t[13:16].replace("_","")
+            granule_sensing_date = granule_t[42:57]
+            detector = granule_t[59:61]
+            start= parser.parse(granule_sensing_date)
+            stop = start + datetime.timedelta(seconds=5)
             granule_segment = {
-                "start": SI_start,
-                "start_str": str(SI_start),
-                "stop": SI_stop,
-                "stop_str": str(SI_stop),
+                "start": start,
+                "stop": stop,
                 "id": granule_t
             }
             granule_timeline.append(granule_segment)
-
+            if detector not in granule_timeline_per_detector:
+                granule_timeline_per_detector[detector] = []
+            #end if
+            granule_timeline_per_detector[detector].append(granule_segment)
             explicit_reference = {
                 "group": level_gr + "_GR",
                 "links": [{
                     "back_ref": "DATASTRIP",
                     "link": "GRANULE",
-                    "name": granule_t
+                    "name": ds_output
                     }
                 ],
-                "name": ds_output
+                "name": granule_t
             }
             list_of_explicit_references.append(explicit_reference)
         #end for
@@ -195,94 +201,142 @@ def process_file(file_path, engine, query):
         # #END RELATIONSHIPS
         if(len(granule_timeline) > 0):
             granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
-            corrected_planned_processing = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
+            for detector in granule_timeline_per_detector:
+                granule_timeline_per_detector[detector] = date_functions.sort_timeline_by_start(granule_timeline_per_detector[detector])
+                granule_timeline_per_detector[detector] = date_functions.merge_timeline(granule_timeline_per_detector[detector])
+            #print(granule_timeline_per_detector)
+            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
             gauge_systems = {"list": [satellite], "op": "in"},
-            start_filters = [{"date": granule_timeline_sorted[-1]["stop_str"], "op": "<"}],
-            stop_filters = [{"date": granule_timeline_sorted[0]["start_str"], "op": ">"}])
+            start_filters = [{"date": str(granule_timeline_sorted[-1]["stop"]), "op": "<"}],
+            stop_filters = [{"date": str(granule_timeline_sorted[0]["start"]), "op": ">"}])
 
-            if len(corrected_planned_processing) > 0:
-                corrected_planned_processing_sorted = sorted(corrected_planned_processing, key=lambda event: event.start)
-                corrected_planned_processing_sorted_timeline = date_functions.convert_eboa_events_to_date_segments(corrected_planned_processing_sorted)
-                timeline_intersected = date_functions.intersect_timelines(granule_timeline_sorted,corrected_planned_processing_sorted_timeline)
-                start_period = corrected_planned_processing_sorted[0].start
-                stop_period = corrected_planned_processing_sorted[-1].stop
+            if len(corrected_planned_imagings) > 0:
+                corrected_planned_imagings_sorted = sorted(corrected_planned_imagings, key=lambda event: event.start)
+                corrected_planned_imagings_sorted_timeline = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings_sorted)
+                datablocks = date_functions.merge_timeline(granule_timeline_sorted)
+                timeline_intersected = date_functions.intersect_timelines(datablocks,corrected_planned_imagings_sorted_timeline)
+                start_period = corrected_planned_imagings_sorted[0].start
+                stop_period = corrected_planned_imagings_sorted[-1].stop
 
-                for corrected_planned_process in corrected_planned_processing:
+                for corrected_planned_imaging in corrected_planned_imagings:
                     value = {
                         "name": "processing_completeness_began",
                         "type": "object",
-                        "values": []
+                        "values": [{
+                            "name": "details",
+                            "type": "object",
+                            "values": []
+                        }]
                     }
-                    exit_status = engine.insert_event_values(corrected_planned_process.event_uuid, value)
+                    planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                    exit_status = engine.insert_event_values(planned_imaging_uuid, value)
 
                     if exit_status["inserted"] == True:
-                        planned_processing_uuid = [event_link.event_uuid_link for event_link in corrected_planned_process.eventLinks if event_link.name == "PLANNED_EVENT"][0]
-                        planning_event_values = corrected_planned_process.get_structured_values()
+                        planning_event_values = corrected_planned_imaging.get_structured_values()
                         planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
                             {"name": "status",
                              "type": "text",
                              "value": "MISSING"}
                         ]
 
-                        completeness_processing_operation["events"].append({
+                        processing_planning_completeness_operation["events"].append({
                             "gauge": {
                                     "insertion_type": "SIMPLE_UPDATE",
-                                "name": "PLANNED_PROCESSING_COMPLETENESS",
+                                "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
                                 "system": satellite
                             },
-                            "start": str(corrected_planned_process.start),
-                            "stop": str(corrected_planned_process.stop),
+                            "start": str(corrected_planned_imaging.start),
+                            "stop": str(corrected_planned_imaging.stop),
                             "links": [
                                 {
-                                    "link": str(planned_processing_uuid),
+                                    "link": str(planned_imaging_uuid),
                                     "link_mode": "by_uuid",
                                     "name": "PLANNED_PROCESSING",
                                     "back_ref": "COMPLETENESS"
                                 }],
                             "values": planning_event_values
                         })
-
-                    for segment_intersected in timeline_intersected:
+                    status = "todo"
+                    for datablock in datablocks:
+                        event_link_ref = "DATABLOCK_COMPLETENESS_" + datablock["start"].isoformat() + "_" + datablock["stop"].isoformat()
                         datablock_completeness_event = {
+                            "link_ref": event_link_ref,
                             "explicit_reference": ds_output,
                             "gauge": {
                                 "insertion_type": "INSERT_and_ERASE_per_EVENT",
-                                "name": "PLANNED_PROCESSING_COMPLETENESS",
+                                "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
                                 "system": system
                             },
                             "links": [{
-                                     "link": str(planned_processing_uuid),
+                                     "link": str(planned_imaging_uuid),
                                      "link_mode": "by_uuid",
-                                     "name": "PLANNED_PROCESSING",
-                                     "back_ref": "COMPLETENESS"
-                                     }#, NEEDED?
-                                 # {
-                                 #     "link": event_link_ref,
-                                 #     "link_mode": "by_ref",
-                                 #     "name": "PRODUCTION-VALIDITY",
-                                 #     "back_ref": "COMPLETENESS"
-                                 #}
+                                     "name": "PROCESSING_VALIDITY",
+                                     "back_ref": "PLANNED_IMAGING"
+                                     }
                                  ],
-                             "start": str(segment_intersected["start"]),
-                             "stop": str(segment_intersected["stop"]),
-                             "values": []
+                             "start": str(datablock["start"]),
+                             "stop": str(datablock["stop"]),
+                             "values": [{
+                                 "name": "details",
+                                 "type": "object",
+                                 "values": [{
+                                    "type": "text",
+                                    "value": status,
+                                    "name": "status"
+                                 }]
+                             }]
                         }
                         list_of_events.append(datablock_completeness_event)
+                        datablock_event = {
+                            "explicit_reference": ds_output,
+                            "gauge": {
+                                "insertion_type": "SIMPLE_UPDATE",
+                                "name": "DATABLOCK_" + level,
+                                "system": system
+                            },
+                            "links": [{
+                                     "link": str(planned_imaging_uuid),
+                                     "link_mode": "by_uuid",
+                                     "name": "PROCESSING_COMPLETENESS",
+                                     "back_ref": "PLANNED_IMAGING"
+                                     },
+                                 {
+                                     "link": event_link_ref,
+                                     "link_mode": "by_ref",
+                                     "name": "PROCESSING_VALIDITY",
+                                     "back_ref": "COMPLETENESS"
+                                 }
+                                 ],
+                             "start": str(datablock["start"]),
+                             "stop": str(datablock["stop"]),
+                             "values": [{
+                                 "name": "details",
+                                 "type": "object",
+                                 "values": [{
+                                    "type": "text",
+                                    "value": status,
+                                    "name": "status"
+                                 }],
+                             }]
+                        }
+                        #print("\n")
+                        list_of_events.append(datablock_event)
                     #end for
                 #end if
-            if len(completeness_processing_operation["events"]) > 0:
-                completeness_event_starts = [event["start"] for event in completeness_processing_operation["events"]]
+            if len(processing_planning_completeness_operation["events"]) > 0:
+                completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]
                 completeness_event_starts.sort()
-                completeness_event_stops = [event["stop"] for event in completeness_processing_operation["events"]]
+                completeness_event_stops = [event["stop"] for event in processing_planning_completeness_operation["events"]]
                 completeness_event_stops.sort()
 
-                completeness_processing_operation["source"] = {
+                processing_planning_completeness_operation["source"] = {
                     "name": source["name"],
                     "generation_time": source["generation_time"],
                     "validity_start": str(completeness_event_starts[0]),
                     "validity_stop": str(completeness_event_stops[-1])
                 }
 
+                list_of_operations.append(processing_planning_completeness_operation)
 
 
 
@@ -298,7 +352,11 @@ def process_file(file_path, engine, query):
             "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
             "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1],
             "links": [],
-            "values": []
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": []
+            }]
         }
         list_of_events.append(event_timeliness)
 
@@ -333,26 +391,33 @@ def process_file(file_path, engine, query):
                 list_of_events.append(event_step)
             #end if
         #end for
+
+        for mrf in mrf_list:
+            explicit_reference = {
+                "group": "MISSION_CONFIGURATION",
+                "links": [{
+                    "back_ref": "DATASTRIP",
+                    "link": "CONFIGURATION",
+                    "name": ds_output
+                    }
+                ],
+                "name": mrf.find("Id").text
+            }
+            list_of_configuration_explicit_references.append(explicit_reference)
+        #end for
         #END TIMELINESS
 
     #end for
 
     #CONFIGURATION
     for mrf in mrf_list:
-        explicit_reference = {
-            "group": "MISSION CONFIGURATION",
-            "links": [{
-                "back_ref": "DATASTRIP",
-                "link": "CONFIGURATION",
-                "name": mrf.find("Id").text
-                }
-            ],
-            "name": ds_output
-        }
-        list_of_explicit_references.append(explicit_reference)
-
+        ## Change query to use the query for events
         mrfsDB = query.get_explicit_refs(explicit_ref_like = {"op": "like", "str": mrf.find("Id").text})
         if len(mrfsDB) is 0:
+            try:
+                stop = str(parser.parse(mrf.find("ValidityStop").text[:-1]))
+            except:
+                stop = str(datetime.datetime.max)
             event_mrf={
                 "key":mrf.find("Id").text,
                 "explicit_reference": mrf.find("Id").text,
@@ -362,22 +427,36 @@ def process_file(file_path, engine, query):
                     "system": system
                 },
                 "start": mrf.find("ValidityStart").text[:-1],
-                "stop": mrf.find("ValidityStop").text[:-1],
+                "stop": stop,
                 "links": [],
                 "values": [{
+                    "name": "details",
+                    "type": "object",
+                    "values": [{
                           "name": "generation_time",
                           "type": "timestamp",
                           "value": mrf.find("Id").text[25:40]
                           }]
+                    }]
                 }
-            list_of_events.append(event_mrf)
+            list_of_configuration_events.append(event_mrf)
     #end for
     #END CONFIGURATION
 
-    data = {"operations": [{
+    if len(list_of_events) > 0:
+        event_starts = [event["start"] for event in list_of_events]
+        event_starts.sort()
+        if source["validity_start"] > event_starts[0]:
+            source["validity_start"] = event_starts[0]
+        event_stops = [event["stop"] for event in list_of_events]
+        event_stops.sort()
+        if source["validity_stop"] < event_stops[-1]:
+            source["validity_stop"] = event_stops[-1]
+
+    list_of_operations.append({
         "mode": "insert",
         "dim_signature": {
-              "name": "PROCESSING_" + system + "_" + satellite,
+              "name": "PROCESSING_" + satellite,
               "exec": os.path.basename(__file__),
               "version": version
         },
@@ -385,8 +464,26 @@ def process_file(file_path, engine, query):
         "annotations": list_of_annotations,
         "explicit_references": list_of_explicit_references,
         "events": list_of_events,
+        })
+    list_of_operations.append({
+        "mode": "insert",
+        "dim_signature": {
+              "name": "PROCESSING_"  + satellite,
+              "exec": "configuration_" + os.path.basename(__file__),
+              "version": version
         },
-        completeness_processing_operation]}
+        "source": {
+            "name": file_name,
+            "generation_time": creation_date,
+            "validity_start": str(datetime.datetime.min),
+            "validity_stop": str(datetime.datetime.max)
+        },
+        "explicit_references": list_of_configuration_explicit_references,
+        "events": list_of_configuration_events,
+    })
+
+    data = {"operations": list_of_operations}
+            #"granule_timeline_per_detector": granule_timeline_per_detector}
     return data
 
 def insert_data_into_DDBB(data, filename, engine):
