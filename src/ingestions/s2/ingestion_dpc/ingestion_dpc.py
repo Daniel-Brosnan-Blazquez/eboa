@@ -202,14 +202,41 @@ def process_file(file_path, engine, query):
         # #END RELATIONSHIPS
         if(len(granule_timeline) > 0):
             granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
+            datablocks = date_functions.merge_timeline(granule_timeline_sorted)
+            data_gaps = {}
             for detector in granule_timeline_per_detector:
                 granule_timeline_per_detector[detector] = date_functions.sort_timeline_by_start(granule_timeline_per_detector[detector])
                 granule_timeline_per_detector[detector] = date_functions.merge_timeline(granule_timeline_per_detector[detector])
+                if detector not in data_gaps:
+                    data_gaps[detector] = {}
+                #end if
+                data_gaps[detector] = date_functions.difference_timelines(granule_timeline_per_detector[detector],datablocks)
             #end for
-            datablocks = date_functions.merge_timeline(granule_timeline_sorted)
 
-            status = "todo"
+
+            # print("Datablock: " + str(datablocks[0]["start"]) + "-" +  str(datablocks[0]["stop"]))
+            # for detector in data_gaps:
+            #     for i in range(len(granule_timeline_per_detector[detector])):
+            #         print("Granules " + detector + ": " +  str(granule_timeline_per_detector[detector][i]["start"]) + "-" + str(granule_timeline_per_detector[detector][i]["stop"]))
+            #     for i in range(len(data_gaps[detector])):
+            #         print("Gap " + detector +": " +  str(data_gaps[detector][i]["start"]) + "-" + str(data_gaps[detector][i]["stop"]))
+
+
             for datablock in datablocks:
+                db_tl = []
+                db_tl.append(datablock)
+                status = "COMPLETE"
+                gaps_datablock = {}
+
+                for detector in data_gaps:
+                    if detector not in gaps_datablock:
+                        gaps_datablock[detector] = {}
+                    #end if
+                    gaps_datablock[detector] = date_functions.intersect_timelines(data_gaps[detector],datablocks)
+                    if(len(gaps_datablock[detector]) > 0):
+                        status="INCOMPLETE"
+                    #end if
+                #end for
 
                 planned_imaging = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
                 gauge_systems = {"list": [satellite], "op": "in"},
@@ -217,8 +244,7 @@ def process_file(file_path, engine, query):
                 stop_filters = [{"date": str(datablock["start"]), "op": ">"}],
                 link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
                 return_prime_events = False)["linked_events"]
-
-                if planned_imaging is not None:
+                if len(planned_imaging) is not 0:
                     planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_imaging)
                     start_period = planned_imaging[0].start
                     stop_period = planned_imaging[0].stop
@@ -251,15 +277,53 @@ def process_file(file_path, engine, query):
                                 {
                                     "link": str(planned_imaging_uuid),
                                     "link_mode": "by_uuid",
-                                    "name": "PLANNED_PROCESSING",
-                                    "back_ref": "COMPLETENESS"
+                                    "name": "PROCESSING_COMPLETENESS",
+                                    "back_ref": "PLANNED_IMAGING"
                                 }],
                             "values": planning_event_values
                         })
 
-                        event_link_ref = "DATABLOCK_COMPLETENESS_" + datablock["start"].isoformat() + "_" + datablock["stop"].isoformat()
+                        event_link_ref = "PROCESSING_VALIDITY_" + datablock["start"].isoformat()
+
+                        for detector in data_gaps:
+                            for gap in gaps_datablock[detector]:
+
+                                event_gap = {
+                                    "explicit_reference": ds_output,
+                                    "gauge": {
+                                        "insertion_type": "SIMPLE_UPDATE",
+                                        "name": "PROCESSING_GAP_" + level,
+                                        "system": system
+                                    },
+                                    "links": [{
+                                             "link": str(planned_imaging_uuid),
+                                             "link_mode": "by_uuid",
+                                             "name": "PROCESSING_GAP",
+                                             "back_ref": "PLANNED_IMAGING"
+                                             },{
+                                             "link": event_link_ref,
+                                             "link_mode": "by_ref",
+                                             "name": "PROCESSING_GAP",
+                                             "back_ref": "PROCESSING_VALIDITY"
+                                             }
+                                         ],
+                                     "start": str(gap["start"]),
+                                     "stop": str(gap["stop"]),
+                                     "values": [{
+                                         "name": "details",
+                                         "type": "object",
+                                         "values": [{
+                                            "type": "text",
+                                            "value": detector,
+                                            "name": "detector"
+                                         }]
+                                     }]
+                                }
+                                list_of_events.append(event_gap)
+                            #end for
+                        #end for
+
                         datablock_completeness_event = {
-                            "link_ref": event_link_ref,
                             "explicit_reference": ds_output,
                             "gauge": {
                                 "insertion_type": "INSERT_and_ERASE_per_EVENT",
@@ -267,10 +331,16 @@ def process_file(file_path, engine, query):
                                 "system": system
                             },
                             "links": [{
-                                     "link": str(planned_imaging_uuid),
-                                     "link_mode": "by_uuid",
-                                     "name": "PROCESSING_VALIDITY",
-                                     "back_ref": "PLANNED_IMAGING"
+                                         "link": str(planned_imaging_uuid),
+                                         "link_mode": "by_uuid",
+                                         "name": "PROCESSING_COMPLETENESS",
+                                         "back_ref": "PLANNED_IMAGING"
+                                     },
+                                     {
+                                         "link": event_link_ref,
+                                         "link_mode": "by_ref",
+                                         "name": "COMPLETENESS",
+                                         "back_ref": "PROCESSING_VALIDITY"
                                      }
                                  ],
                              "start": str(datablock["start"]),
@@ -286,26 +356,21 @@ def process_file(file_path, engine, query):
                              }]
                         }
                         list_of_events.append(datablock_completeness_event)
-                        datablock_event = {
+
+                        validity_event = {
+                            "link_ref": event_link_ref,
                             "explicit_reference": ds_output,
                             "gauge": {
                                 "insertion_type": "SIMPLE_UPDATE",
-                                "name": "DATABLOCK_" + level,
+                                "name": "PROCESSING_VALIDITY_" + level,
                                 "system": system
                             },
-                            "links": [{
+                            "links": {
                                      "link": str(planned_imaging_uuid),
                                      "link_mode": "by_uuid",
-                                     "name": "PROCESSING_COMPLETENESS",
+                                     "name": "PROCESSING_VALIDITY",
                                      "back_ref": "PLANNED_IMAGING"
                                      },
-                                 {
-                                     "link": event_link_ref,
-                                     "link_mode": "by_ref",
-                                     "name": "PROCESSING_VALIDITY",
-                                     "back_ref": "COMPLETENESS"
-                                 }
-                                 ],
                              "start": str(datablock["start"]),
                              "stop": str(datablock["stop"]),
                              "values": [{
@@ -318,7 +383,9 @@ def process_file(file_path, engine, query):
                                  }],
                              }]
                         }
-                        list_of_events.append(datablock_event)
+                        list_of_events.append(validity_event)
+
+
                     #end if
                 #end if
             #end for
