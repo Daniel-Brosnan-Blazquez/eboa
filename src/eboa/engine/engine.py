@@ -1957,7 +1957,7 @@ class Engine():
                                                                                                                     Source.generation_time <= max_generation_time,
                                                                                                                     EventKey.event_key == key,
                                                                                                                     Source.dim_signature_uuid == dim_signature_uuid)
-            self.session.query(Event).filter(Event.event_uuid == events_uuids_to_delete).delete(synchronize_session=False)
+            self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_delete)).delete(synchronize_session=False)
 
             # Make events visible
             events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.source_uuid == event_max_generation_time.source_uuid,

@@ -446,8 +446,16 @@ def validate_values(data):
             validate_values(value["values"])
         # end if
 
-        if "value" in value and not type(value["value"]) == str:
-            raise ErrorParsingDictionary("The tag value inside values structure has to be of type string")
+        if "value" in value and value["type"] in ["text", "timestamp", "boolean", "geometry", "object"] and not type(value["value"]) == str:
+            raise ErrorParsingDictionary("The tag value (" + str(value["value"]) + ") inside values structure has to be of type string")
+        # end if
+
+        if "value" in value and value["type"] == "double":
+            try:
+                float(value["value"])
+            except ValueError:
+                raise ErrorParsingDictionary("The tag value (" + str(value["value"]) + ") inside values structure has to be convertable to float")
+            # end try
         # end if
 
     # end for
