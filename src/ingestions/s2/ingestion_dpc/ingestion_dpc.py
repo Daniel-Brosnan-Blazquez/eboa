@@ -118,6 +118,7 @@ def process_file(file_path, engine, query):
         input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")
         if len(input) > 0:
             ds_input = input[0].text
+        #end if
 
         baseline_annotation = {
         "explicit_reference": ds_output,
@@ -204,35 +205,34 @@ def process_file(file_path, engine, query):
             for detector in granule_timeline_per_detector:
                 granule_timeline_per_detector[detector] = date_functions.sort_timeline_by_start(granule_timeline_per_detector[detector])
                 granule_timeline_per_detector[detector] = date_functions.merge_timeline(granule_timeline_per_detector[detector])
-            #print(granule_timeline_per_detector)
-            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
-            gauge_systems = {"list": [satellite], "op": "in"},
-            start_filters = [{"date": str(granule_timeline_sorted[-1]["stop"]), "op": "<"}],
-            stop_filters = [{"date": str(granule_timeline_sorted[0]["start"]), "op": ">"}])
+            #end for
+            datablocks = date_functions.merge_timeline(granule_timeline_sorted)
 
-            if len(corrected_planned_imagings) > 0:
-                corrected_planned_imagings_sorted = sorted(corrected_planned_imagings, key=lambda event: event.start)
-                corrected_planned_imagings_sorted_timeline = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings_sorted)
-                datablocks = date_functions.merge_timeline(granule_timeline_sorted)
-                timeline_intersected = date_functions.intersect_timelines(datablocks,corrected_planned_imagings_sorted_timeline)
-                start_period = corrected_planned_imagings_sorted[0].start
-                stop_period = corrected_planned_imagings_sorted[-1].stop
+            status = "todo"
+            for datablock in datablocks:
 
-                for corrected_planned_imaging in corrected_planned_imagings:
+                planned_imaging = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
+                gauge_systems = {"list": [satellite], "op": "in"},
+                start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
+                stop_filters = [{"date": str(datablock["start"]), "op": ">"}],
+                link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
+                return_prime_events = False)["linked_events"]
+
+                if planned_imaging is not None:
+                    planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_imaging)
+                    start_period = planned_imaging[0].start
+                    stop_period = planned_imaging[0].stop
+
                     value = {
                         "name": "processing_completeness_began",
                         "type": "object",
-                        "values": [{
-                            "name": "details",
-                            "type": "object",
-                            "values": []
-                        }]
+                        "values": []
                     }
-                    planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
+                    planned_imaging_uuid = planned_imaging[0].event_uuid
                     exit_status = engine.insert_event_values(planned_imaging_uuid, value)
 
                     if exit_status["inserted"] == True:
-                        planning_event_values = corrected_planned_imaging.get_structured_values()
+                        planning_event_values = planned_imaging[0].get_structured_values()
                         planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
                             {"name": "status",
                              "type": "text",
@@ -245,8 +245,8 @@ def process_file(file_path, engine, query):
                                 "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
                                 "system": satellite
                             },
-                            "start": str(corrected_planned_imaging.start),
-                            "stop": str(corrected_planned_imaging.stop),
+                            "start": str(planned_imaging[0].start),
+                            "stop": str(planned_imaging[0].stop),
                             "links": [
                                 {
                                     "link": str(planned_imaging_uuid),
@@ -256,8 +256,7 @@ def process_file(file_path, engine, query):
                                 }],
                             "values": planning_event_values
                         })
-                    status = "todo"
-                    for datablock in datablocks:
+
                         event_link_ref = "DATABLOCK_COMPLETENESS_" + datablock["start"].isoformat() + "_" + datablock["stop"].isoformat()
                         datablock_completeness_event = {
                             "link_ref": event_link_ref,
@@ -319,27 +318,27 @@ def process_file(file_path, engine, query):
                                  }],
                              }]
                         }
-                        #print("\n")
                         list_of_events.append(datablock_event)
-                    #end for
+                    #end if
                 #end if
-            if len(processing_planning_completeness_operation["events"]) > 0:
-                completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]
-                completeness_event_starts.sort()
-                completeness_event_stops = [event["stop"] for event in processing_planning_completeness_operation["events"]]
-                completeness_event_stops.sort()
+            #end for
+        #end if
 
-                processing_planning_completeness_operation["source"] = {
-                    "name": source["name"],
-                    "generation_time": source["generation_time"],
-                    "validity_start": str(completeness_event_starts[0]),
-                    "validity_stop": str(completeness_event_stops[-1])
-                }
+        if len(processing_planning_completeness_operation["events"]) > 0:
+            completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]
+            completeness_event_starts.sort()
+            completeness_event_stops = [event["stop"] for event in processing_planning_completeness_operation["events"]]
+            completeness_event_stops.sort()
 
-                list_of_operations.append(processing_planning_completeness_operation)
+            processing_planning_completeness_operation["source"] = {
+                "name": source["name"],
+                "generation_time": source["generation_time"],
+                "validity_start": str(completeness_event_starts[0]),
+                "validity_stop": str(completeness_event_stops[-1])
+            }
 
-
-
+            list_of_operations.append(processing_planning_completeness_operation)
+        #end if
 
         #TIMELINESS
         event_timeliness = {
@@ -448,10 +447,13 @@ def process_file(file_path, engine, query):
         event_starts.sort()
         if source["validity_start"] > event_starts[0]:
             source["validity_start"] = event_starts[0]
+        #end if
         event_stops = [event["stop"] for event in list_of_events]
         event_stops.sort()
         if source["validity_stop"] < event_stops[-1]:
             source["validity_stop"] = event_stops[-1]
+        #end if
+     #end if
 
     list_of_operations.append({
         "mode": "insert",
