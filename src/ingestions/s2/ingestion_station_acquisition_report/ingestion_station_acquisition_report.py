@@ -1,7 +1,7 @@
 """
 Ingestion module for the Station Acquisition Report files
 
-Written by DEIMOS Space S.L. (dibb)
+Written by DEIMOS Space S.L. (femd)
 
 module eboa
 """
