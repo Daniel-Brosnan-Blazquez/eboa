@@ -118,3 +118,14 @@ class InputError(Error):
 
     def __init__(self, message):
         self.message = message
+
+
+class DuplicatedValues(Error):
+    """Exception raised when the specified there are values duplicated.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

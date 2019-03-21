@@ -4598,3 +4598,47 @@ class TestEngine(unittest.TestCase):
         event_values = self.query_eboa.get_event_values(event_uuids=[event_uuid2])
 
         assert len(event_values) == 2
+
+    def test_insert_duplicated_values_inside_event(self):
+        """
+        Method to test the insertion of duplicated values inside an event
+        """
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36"
+                    },
+                       {"gauge": {"name": "GAUGE_NAME",
+                                  "system": "GAUGE_SYSTEM",
+                                  "insertion_type": "SIMPLE_UPDATE"},
+                        "start": "2018-06-05T02:07:03",
+                        "stop": "2018-06-05T08:07:36",
+                        "values": [{
+                            "name": "values",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"}
+                            ]
+                        }]
+                    }]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["DUPLICATED_VALUES"]["status"]

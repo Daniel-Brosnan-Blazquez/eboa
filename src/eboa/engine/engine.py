@@ -25,7 +25,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues
 
 # Import datamodel
 from eboa.datamodel.base import Session
@@ -113,6 +113,10 @@ exit_codes = {
     "LINKS_INCONSISTENCY": {
         "status": 12,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
+    },
+    "DUPLICATED_VALUES": {
+        "status": 13,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines duplicated values inside the same entity. The exception raised has been the following: {}"
     }
 }
 
@@ -625,6 +629,15 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["WRONG_GEOMETRY"]["status"]
+        except DuplicatedValues as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error_message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
         # Insert annotations
@@ -657,6 +670,15 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["WRONG_GEOMETRY"]["status"]
+        except DuplicatedValues as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error_message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
         # Review the inserted events and annotations for removing the
@@ -1153,34 +1175,40 @@ class Engine():
                 list_event_link_refs[event["link_ref"]] = id
             # end if
         # end for
+
         # Bulk insert events
         self.session.bulk_insert_mappings(Event, list_events)
         # Bulk insert keys
         self.session.bulk_insert_mappings(EventKey, list_keys)
 
         # Bulk insert values
-        if "objects" in list_values:
-            self.session.bulk_insert_mappings(EventObject, list_values["objects"])
-        # end if
-        if "booleans" in list_values:
-            self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
-        # end if
-        if "texts" in list_values:
-            self.session.bulk_insert_mappings(EventText, list_values["texts"])
-        # end if
-        if "doubles" in list_values:
-            self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
-        # end if
-        if "timestamps" in list_values:
-            self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
-        # end if
-        if "geometries" in list_values:
-            try:
-                self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
-            except InternalError as e:
-                self.session.rollback()
-                raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
-        # end if
+        try:
+            if "objects" in list_values:
+                self.session.bulk_insert_mappings(EventObject, list_values["objects"])
+            # end if
+            if "booleans" in list_values:
+                self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
+            # end if
+            if "texts" in list_values:
+                self.session.bulk_insert_mappings(EventText, list_values["texts"])
+            # end if
+            if "doubles" in list_values:
+                self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
+            # end if
+            if "timestamps" in list_values:
+                self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
+            # end if
+            if "geometries" in list_values:
+                try:
+                    self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+                except InternalError as e:
+                    self.session.rollback()
+                    raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            # end if
+        except IntegrityError as e:
+            self.session.rollback()
+            raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+        # end try
 
         # Insert links by reference
         list_event_links_by_ref_ddbb = []
@@ -1203,7 +1231,7 @@ class Engine():
                 # end if
             # end for
         # end for
-        
+
         # Bulk insert links
         list_event_links_ddbb = list_event_links_by_ref_ddbb + list_event_links_by_uuid_ddbb
         try:
@@ -1212,7 +1240,6 @@ class Engine():
             self.session.rollback()
             raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
-
 
         # Commit data
         self.session.commit()
@@ -1382,28 +1409,33 @@ class Engine():
         self.session.bulk_insert_mappings(Annotation, list_annotations)
 
         # Bulk insert values
-        if "objects" in list_values:
-            self.session.bulk_insert_mappings(AnnotationObject, list_values["objects"])
-        # end if
-        if "booleans" in list_values:
-            self.session.bulk_insert_mappings(AnnotationBoolean, list_values["booleans"])
-        # end if
-        if "texts" in list_values:
-            self.session.bulk_insert_mappings(AnnotationText, list_values["texts"])
-        # end if
-        if "doubles" in list_values:
-            self.session.bulk_insert_mappings(AnnotationDouble, list_values["doubles"])
-        # end if
-        if "timestamps" in list_values:
-            self.session.bulk_insert_mappings(AnnotationTimestamp, list_values["timestamps"])
-        # end if
-        if "geometries" in list_values:
-            try:
-                self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
-            except InternalError as e:
-                self.session.rollback()
-                raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
-        # end if
+        try:
+            if "objects" in list_values:
+                self.session.bulk_insert_mappings(AnnotationObject, list_values["objects"])
+            # end if
+            if "booleans" in list_values:
+                self.session.bulk_insert_mappings(AnnotationBoolean, list_values["booleans"])
+            # end if
+            if "texts" in list_values:
+                self.session.bulk_insert_mappings(AnnotationText, list_values["texts"])
+            # end if
+            if "doubles" in list_values:
+                self.session.bulk_insert_mappings(AnnotationDouble, list_values["doubles"])
+            # end if
+            if "timestamps" in list_values:
+                self.session.bulk_insert_mappings(AnnotationTimestamp, list_values["timestamps"])
+            # end if
+            if "geometries" in list_values:
+                try:
+                    self.session.bulk_insert_mappings(AnnotationGeometry, list_values["geometries"])
+                except InternalError as e:
+                    self.session.rollback()
+                    raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            # end if
+        except IntegrityError as e:
+            self.session.rollback()
+            raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+        # end try
 
         return
 
@@ -2086,30 +2118,35 @@ class Engine():
                     self.session.rollback()
                 # end try
             # end if
-            if "booleans" in list_values and continue_with_values_ingestion:
-                self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
-            # end if
-            if "texts" in list_values and continue_with_values_ingestion:
-                self.session.bulk_insert_mappings(EventText, list_values["texts"])
-            # end if
-            if "doubles" in list_values and continue_with_values_ingestion:
-                self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
-            # end if
-            if "timestamps" in list_values and continue_with_values_ingestion:
-                self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
-            # end if
-            if "geometries" in list_values and continue_with_values_ingestion:
-                try:
-                    self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
-                except InternalError as e:
-                    self.session.rollback()
-                    logger.error(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
-                    exit_status = {
-                        "error": True,
-                        "inserted": False,
-                    }
-                    return exit_status
-            # end if
+            try:
+                if "booleans" in list_values and continue_with_values_ingestion:
+                    self.session.bulk_insert_mappings(EventBoolean, list_values["booleans"])
+                # end if
+                if "texts" in list_values and continue_with_values_ingestion:
+                    self.session.bulk_insert_mappings(EventText, list_values["texts"])
+                # end if
+                if "doubles" in list_values and continue_with_values_ingestion:
+                    self.session.bulk_insert_mappings(EventDouble, list_values["doubles"])
+                # end if
+                if "timestamps" in list_values and continue_with_values_ingestion:
+                    self.session.bulk_insert_mappings(EventTimestamp, list_values["timestamps"])
+                # end if
+                if "geometries" in list_values and continue_with_values_ingestion:
+                    try:
+                        self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
+                    except InternalError as e:
+                        self.session.rollback()
+                        logger.error(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                        exit_status = {
+                            "error": True,
+                            "inserted": False,
+                        }
+                        return exit_status
+                # end if
+            except IntegrityError as e:
+                self.session.rollback()
+                raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            # end try
 
             if continue_with_values_ingestion:
                 self.session.commit()
