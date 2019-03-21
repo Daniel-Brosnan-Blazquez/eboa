@@ -1997,7 +1997,7 @@ class Engine():
                                                                                Source.generation_time <= max_generation_time,
                                                                                AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
                                                                                ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
-            self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_delete).delete(synchronize_session=False)
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_delete)).delete(synchronize_session=False)
 
             # Make annotations visible
             annotations_uuids_to_update = self.session.query(Annotation.annotation_uuid) \
@@ -2007,7 +2007,7 @@ class Engine():
                                                                                 Source.generation_time <= max_generation_time,
                                                                                 AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
                                                                                 ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
-            self.session.query(Annotation).filter(Annotation.annotation_uuid == annotations_uuids_to_update).update({"visible": True}, synchronize_session=False)
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_update)).update({"visible": True}, synchronize_session=False)
         # end for
 
         return
