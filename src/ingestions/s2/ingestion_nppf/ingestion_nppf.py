@@ -165,6 +165,9 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                 "name": "values",
                 "type": "object",
                 "values": [
+                    {"name": "record_type",
+                     "type": "text",
+                     "value": record_type},
                     {"name": "start_request",
                      "type": "text",
                      "value": record_start_request},
@@ -273,7 +276,10 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": satellite},
                     {"name": "record_type",
                      "type": "text",
-                     "value": record_type}
+                     "value": record_type},
+                    {"name": "imaging_mode",
+                     "type": "text",
+                     "value": cut_imaging_mode}
                 ]
             }]
         }
@@ -341,7 +347,10 @@ def _generate_record_events(xpath_xml, source, list_of_events):
                      "value": imaging_stop_angle},
                     {"name": "satellite",
                      "type": "text",
-                     "value": satellite}
+                     "value": satellite},
+                    {"name": "imaging_mode",
+                     "type": "text",
+                     "value": imaging_mode}
                 ]
             }]
         }
@@ -536,7 +545,10 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                      "value": playback_stop_angle},
                     {"name": "satellite",
                      "type": "text",
-                     "value": satellite}
+                     "value": satellite},
+                    {"name": "playback_mean",
+                     "type": "text",
+                     "value": playback_mean}
                 ]
             }]
         }
@@ -616,7 +628,13 @@ def _generate_playback_events(xpath_xml, source, list_of_events):
                      "value": playback_type_stop_angle},
                     {"name": "satellite",
                      "type": "text",
-                     "value": satellite}
+                     "value": satellite},
+                    {"name": "playback_mean",
+                     "type": "text",
+                     "value": playback_mean},
+                    {"name": "playback_type",
+                     "type": "text",
+                     "value": playback_type}
                 ]
             }]
         }
