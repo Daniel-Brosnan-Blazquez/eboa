@@ -156,10 +156,10 @@ class TestEngine(unittest.TestCase):
         ingestion.command_process_file(file_path)
 
         #Check that the source validity times are correctly taken
-        source = self.session.query(Source).filter(Source.name == "S2A_OPER_REP_OPDPC_INSERTION.EOF",
-                                                    Source.generation_time == "2018-07-21T02:21:01",
-                                                    Source.validity_start == "2018-07-21 00:16:12",
-                                                    Source.validity_stop == "2018-07-21T02:20:48.220").all()
+        source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_INSERTION.EOF',
+                                                    Source.generation_time == '2018-07-21 02:21:01',
+                                                    Source.validity_start == '2018-07-21 00:16:12',
+                                                    Source.validity_stop == '2018-07-21 02:20:48.22').all()
 
         assert len(source) == 1
 
@@ -170,18 +170,22 @@ class TestEngine(unittest.TestCase):
         assert len(sources) == 3
 
         #Check the missing segment is correctly taken
-        missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_PROCESSING_COMPLETENESS",
-                                                                               Event.start == "2018-07-21 00:16:07.812351",
-                                                                               Event.stop == "2018-07-21 00:21:49.500390",
+        missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
+                                                                               Event.start == "2018-07-21 00:16:02.341000",
+                                                                               Event.stop == "2018-07-21 00:21:43.993000",
                                                                                EventText.name == "status",
                                                                                EventText.value == "MISSING").all()
 
         assert len(missing_event) == 1
 
         #Check datablock_completeness_event is correctly taken
-        datablock_event = self.session.query(EventLink).join(Event,Gauge).filter(Gauge.name == "PLANNED_PROCESSING_COMPLETENESS",
-                                                                       Event.start == "2018-07-21 00:16:12",
-                                                                       EventLink.name == "PROCESSING_COMPLETENESS").all()
+        datablock_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
+                                                                                 Event.start == "2018-07-21 00:16:12",
+                                                                                 EventText.name == "status",
+                                                                                 #Incomplete due to alignment not corrected
+                                                                                 EventText.value == "INCOMPLETE").all()
+
+        assert len(datablock_event) == 1
 
     def test_insert_dpc_report_aux(self):
         filename = "S2A_OPER_REP_OPDPC_SAD.EOF"
@@ -266,3 +270,21 @@ class TestEngine(unittest.TestCase):
                                                    Source.validity_stop == "2018-07-21T02:02:06.244").all()
 
         assert len(source) == 1
+
+    def test_gaps(self):
+        filename = "S2A_OPER_REP_OPDPC_GAPS.EOF"
+        orbpre_filename = "S2A_ORBPRE.EOF"
+        nppf_filename = "S2A_NPPF.EOF"
+
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
+        ingestion_nppf.command_process_file(nppf_file_path)
+
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        ingestion_orbpre.command_process_file(orbpre_file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        ingestion.command_process_file(file_path)
+
+        gaps = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_GAP_L1B").all()
+
+        assert len(gaps) == 16

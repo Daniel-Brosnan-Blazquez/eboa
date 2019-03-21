@@ -201,6 +201,7 @@ def process_file(file_path, engine, query):
         # #end_for
         # #END RELATIONSHIPS
         if(len(granule_timeline) > 0):
+            print("granule_timeline_if")
             granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
             datablocks = date_functions.merge_timeline(granule_timeline_sorted)
             data_gaps = {}
@@ -246,9 +247,9 @@ def process_file(file_path, engine, query):
                 return_prime_events = False)["linked_events"]
                 if len(planned_imaging) is not 0:
                     planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_imaging)
+                    print(planned_imaging_timeline)
                     start_period = planned_imaging[0].start
                     stop_period = planned_imaging[0].stop
-
                     value = {
                         "name": "processing_completeness_began",
                         "type": "object",
@@ -256,8 +257,11 @@ def process_file(file_path, engine, query):
                     }
                     planned_imaging_uuid = planned_imaging[0].event_uuid
                     exit_status = engine.insert_event_values(planned_imaging_uuid, value)
+                    print(planned_imaging_uuid)
+                    print(exit_status)
 
                     if exit_status["inserted"] == True:
+                        print("exit_status_if")
                         planning_event_values = planned_imaging[0].get_structured_values()
                         planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
                             {"name": "status",
@@ -355,6 +359,7 @@ def process_file(file_path, engine, query):
                                  }]
                              }]
                         }
+                        print(datablock_completeness_event)
                         list_of_events.append(datablock_completeness_event)
 
                         validity_event = {
@@ -365,12 +370,12 @@ def process_file(file_path, engine, query):
                                 "name": "PROCESSING_VALIDITY_" + level,
                                 "system": system
                             },
-                            "links": {
+                            "links": [{
                                      "link": str(planned_imaging_uuid),
                                      "link_mode": "by_uuid",
                                      "name": "PROCESSING_VALIDITY",
                                      "back_ref": "PLANNED_IMAGING"
-                                     },
+                                     }],
                              "start": str(datablock["start"]),
                              "stop": str(datablock["stop"]),
                              "values": [{
@@ -429,7 +434,6 @@ def process_file(file_path, engine, query):
         #Steps
         for step in steps_list:
             if step.find("EXEC_STATUS").text == 'COMPLETED':
-                #duplicate if product L1A & L1B
                 event_step = {
                     "explicit_reference": ds_output,
                     "gauge": {
@@ -513,12 +517,12 @@ def process_file(file_path, engine, query):
         event_starts = [event["start"] for event in list_of_events]
         event_starts.sort()
         if source["validity_start"] > event_starts[0]:
-            source["validity_start"] = event_starts[0]
+            source["validity_start"] = parser.parse(event_starts[0]).isoformat()
         #end if
         event_stops = [event["stop"] for event in list_of_events]
         event_stops.sort()
         if source["validity_stop"] < event_stops[-1]:
-            source["validity_stop"] = event_stops[-1]
+            source["validity_stop"] = parser.parse(event_stops[-1]).isoformat()
         #end if
      #end if
 
@@ -553,6 +557,9 @@ def process_file(file_path, engine, query):
 
     data = {"operations": list_of_operations}
             #"granule_timeline_per_detector": granule_timeline_per_detector}
+    for operation in data["operations"]:
+        print(operation["dim_signature"])
+        print(operation["source"])
     return data
 
 def insert_data_into_DDBB(data, filename, engine):
