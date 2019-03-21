@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
 from eboa.datamodel.base import Base
+import eboa.engine.export as export
 
 class Annotation(Base):
     __tablename__ = 'annotations'
@@ -33,6 +34,23 @@ class Annotation(Base):
         self.annotationCnf = annotation_cnf
         self.explicitRef = explicit_ref
         self.source = source
+
+    def get_structured_values(self):
+        """
+        Method to obtain the structure of values in a python dictionary format
+        """
+
+        values = []
+        for values_relation in ["annotationTexts", "annotationDoubles", "annotationObjects", "annotationGeometries", "annotationBooleans", "annotationTimestamps"]:
+            values += eval("self." + values_relation)
+        # end for
+
+        json_values = []
+        if len(values) > 0:
+            export.build_values_structure(values, json_values)
+        # end if
+
+        return json_values
 
 class AnnotationCnf(Base):
     __tablename__ = 'annotation_cnfs'
@@ -68,7 +86,7 @@ class AnnotationBoolean(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotBooleans")
+    annotation = relationship("Annotation", backref="annotationBooleans")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -100,7 +118,7 @@ class AnnotationText(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotTexts")
+    annotation = relationship("Annotation", backref="annotationTexts")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -132,7 +150,7 @@ class AnnotationDouble(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotDoubles")
+    annotation = relationship("Annotation", backref="annotationDoubles")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -164,7 +182,7 @@ class AnnotationTimestamp(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotTimestamps")
+    annotation = relationship("Annotation", backref="annotationTimestamps")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -195,7 +213,7 @@ class AnnotationObject(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotObjects")
+    annotation = relationship("Annotation", backref="annotationObjects")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
@@ -226,7 +244,7 @@ class AnnotationGeometry(Base):
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     annotation_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('annotations.annotation_uuid'))
-    annotation = relationship("Annotation", backref="annotGeometries")
+    annotation = relationship("Annotation", backref="annotationGeometries")
     __mapper_args__ = {
         'primary_key':[name, level_position, parent_level, parent_position, annotation_uuid]
     }
