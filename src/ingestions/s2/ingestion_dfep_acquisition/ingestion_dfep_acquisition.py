@@ -86,11 +86,12 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         "events": []
     }
 
+    playback_planning_completeness_generation_times = []
+
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 2 or @VCID = 3 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
     for vcid in vcids:
         # Obtain channel
         channel = vcid.xpath("..")[0].tag[6:7]
-        print(channel)
     
         vcid_number = vcid.get("VCID")
         downlink_mode = functions.get_vcid_mode(vcid_number)
@@ -99,7 +100,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         acquisition_stop = functions.three_letter_to_iso_8601(vcid.xpath("AcqStopTime")[0].text)
 
         # Reference to the playback validity event
-        playback_validity_event_link_ref = "PLAYBACK_VALIDITY_" + vcid_number
+        playback_validity_event_link_ref = "PLAYBACK_" + downlink_mode + "_VALIDITY_" + vcid_number
 
         status = "COMPLETE"
 
@@ -117,7 +118,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "PLAYBACK_GAP",
+                    "name": "PLAYBACK_" + downlink_mode + "_GAP",
                     "system": station
                 },
                 "start": start,
@@ -191,6 +192,9 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
             planned_playback_uuid = [event_link.event_uuid_link for event_link in corrected_planned_playback.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
+            planned_playback_event = query.get_events(event_uuids = {"op": "in", "list": [planned_playback_uuid]})
+            playback_planning_completeness_generation_times.append(planned_playback_event[0].source.generation_time)
+
             links_playback_validity.append({
                 "link": str(planned_playback_uuid),
                 "link_mode": "by_uuid",
@@ -203,7 +207,15 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 "name": "PLAYBACK_COMPLETENESS",
                 "back_ref": "PLANNED_PLAYBACK"
             })
-            for data_channel in ["1","2"]:
+            if downlink_mode == "SAD":
+                channels = ["2"]
+            elif downlink_mode == "HKTM":
+                # HKTM
+                channels = ["1"]
+            else:
+                channels = ["1","2"]
+            # end if
+            for data_channel in channels:
                 value = {
                     "name": "playback_completeness_began_channel_" + data_channel,
                     "type": "object",
@@ -221,14 +233,29 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                          "value": "MISSING"}
                     ]
 
+                    if downlink_mode == "SAD":
+                        start = corrected_planned_playback.start + datetime.timedelta(seconds=3)
+                        stop = start + datetime.timedelta(seconds=2)
+                    elif downlink_mode == "HKTM":
+                        # HKTM
+                        channels = ["1"]
+                        start = corrected_planned_playback.start + datetime.timedelta(seconds=2)
+                        stop = start
+                    else:
+                        channels = ["1","2"]
+                        start = corrected_planned_playback.start + datetime.timedelta(seconds=3)
+                        stop = corrected_planned_playback.stop - datetime.timedelta(seconds=3)
+                    # end if
+                    
+
                     playback_planning_completeness_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + data_channel,
+                            "name": "PLANNED_PLAYBACK_" + downlink_mode + "_COMPLETENESS_CHANNEL_" + data_channel,
                             "system": satellite
                         },
-                        "start": str(corrected_planned_playback.start),
-                        "stop": str(corrected_planned_playback.stop),
+                        "start": str(start),
+                        "stop": str(stop),
                         "links": [
                             {
                                 "link": str(planned_playback_uuid),
@@ -248,7 +275,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "key": session_id,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
-                "name": "PLAYBACK_VALIDITY_" + vcid_number,
+                "name": "PLAYBACK_" + downlink_mode + "_VALIDITY_" + vcid_number,
                 "system": station
             },
             "links": links_playback_validity,
@@ -298,7 +325,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "key": session_id + "_CHANNEL_" + channel,
             "gauge": {
                 "insertion_type": "INSERT_and_ERASE_per_EVENT",
-                "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + channel,
+                "name": "PLANNED_PLAYBACK_" + downlink_mode + "_COMPLETENESS_CHANNEL_" + channel,
                 "system": satellite
             },
             "links": links_playback_completeness,
@@ -330,6 +357,26 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         # Insert playback_completeness_event
         list_of_events.append(playback_completeness_event)
     # end for
+
+    # Insert completeness operation for the completeness analysis of the plan
+    if len(playback_planning_completeness_operation["events"]) > 0:
+        playback_planning_completeness_event_starts = [event["start"] for event in playback_planning_completeness_operation["events"]]
+        playback_planning_completeness_event_starts.sort()
+        playback_planning_completeness_event_stops = [event["stop"] for event in playback_planning_completeness_operation["events"]]
+        playback_planning_completeness_event_stops.sort()
+
+        playback_planning_completeness_generation_times.sort()
+        generation_time = playback_planning_completeness_generation_times[0]
+
+        playback_planning_completeness_operation["source"] = {
+            "name": source["name"],
+            "generation_time": str(generation_time),
+            "validity_start": str(playback_planning_completeness_event_starts[0]),
+            "validity_stop": str(playback_planning_completeness_event_stops[-1])
+        }
+
+        list_of_planning_operations.append(playback_planning_completeness_operation)
+    # end if
 
     return general_status
 
@@ -377,6 +424,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         },
         "events": []
     }
+
+    isp_planning_completeness_generation_times = []
 
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[number(NumFrames) > 0 and (@VCID = 4 or @VCID = 5 or @VCID = 6)]")
     for vcid in vcids:
@@ -522,7 +571,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Create ISP gaps for gaps at the beginning of the APIDs (StartCounter != 0)
         apids_with_gaps_at_the_beginning = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[number(@VCID) = $vcid_number or number(@VCID) = $corresponding_vcid_number]/ISP_Status/Status[NumPackets > 0 and not(StartCounter = 0)]", vcid_number = int(vcid_number), corresponding_vcid_number = int(vcid_number) + 16)
         for apid in apids_with_gaps_at_the_beginning:
-            
+            apid_number = apid.get("APID")            
             status = "INCOMPLETE"
             band_detector = functions.get_band_detector(apid_number)
 
@@ -552,7 +601,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "values": [
                         {"name": "impact",
                          "type": "text",
-                         "value": "GAPS_AT_BEGINNING"},
+                         "value": "AT_BEGINNING"},
                         {"name": "band",
                          "type": "text",
                          "value": band_detector["band"]},
@@ -608,7 +657,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             counter_threshold = functions.get_counter_threshold(band_detector["band"])
             scene_start = parser.parse(functions.convert_from_gps_to_utc(functions.three_letter_to_iso_8601(gap.xpath("string(PreSensTime)"))))
 
-            counter_start = int(gap.xpath("string(PreCounter)"))
+            counter_start_value = int(gap.xpath("string(PreCounter)"))
+            counter_start = counter_start_value
+            if counter_start == counter_threshold:
+                counter_start = -1
+            # end if
+
             counter_stop = int(gap.xpath("string(PostCounter)"))
 
             missing_packets = counter_stop - counter_start
@@ -636,7 +690,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "values": [
                         {"name": "impact",
                          "type": "text",
-                         "value": "GAPS_AT_BEGINNING"},
+                         "value": "SMALLER_THAN_A_SCENE"},
                         {"name": "band",
                          "type": "text",
                          "value": band_detector["band"]},
@@ -663,7 +717,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                          "value": apid_number},
                         {"name": "counter_start",
                          "type": "double",
-                         "value": counter_start},
+                         "value": counter_start_value},
                         {"name": "counter_stop",
                          "type": "double",
                          "value": counter_stop},
@@ -691,7 +745,11 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         merged_timeline_isp_gaps = date_functions.merge_timeline(date_functions.sort_timeline_by_start(timeline_isp_gaps))
 
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
-        corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": downlink_mode, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        if downlink_mode != "RT":
+            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": downlink_mode, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        else:
+            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        # end if
 
         corrected_planned_imagings_segments = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings)
 
@@ -707,6 +765,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 exit_status = engine.insert_event_values(planned_imaging_uuid, value)
                 if exit_status["inserted"] == True:
 
+                    planned_imaging_event = query.get_events(event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                    isp_planning_completeness_generation_times.append(planned_imaging_event[0].source.generation_time)
+                    
                     # Insert the linked COMPLETENESS event for the automatic completeness check
                     planning_event_values = corrected_planned_imaging.get_structured_values()
                     planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
@@ -715,14 +776,17 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                          "value": "MISSING"}
                     ]
 
+                    start = corrected_planned_imaging.start + datetime.timedelta(seconds=4)
+                    stop = corrected_planned_imaging.stop - datetime.timedelta(seconds=4)
+
                     isp_planning_completeness_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
                             "name": "PLANNED_IMAGING_ISP_COMPLETENESS_CHANNEL_" + channel,
                             "system": satellite
                         },
-                        "start": str(corrected_planned_imaging.start),
-                        "stop": str(corrected_planned_imaging.stop),
+                        "start": str(start),
+                        "stop": str(stop),
                         "links": [
                             {
                                 "link": str(planned_imaging_uuid),
@@ -775,7 +839,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             # end if
 
             links_isp_validity.append({
-                "link": "PLAYBACK_VALIDITY_" + vcid_number,
+                "link": "PLAYBACK_" + downlink_mode + "_VALIDITY_" + vcid_number,
                 "link_mode": "by_ref",
                 "name": "ISP_VALIDITY",
                 "back_ref": "PLAYBACK-VALIDITY"
@@ -900,9 +964,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         isp_planning_completeness_event_stops = [event["stop"] for event in isp_planning_completeness_operation["events"]]
         isp_planning_completeness_event_stops.sort()
 
+        isp_planning_completeness_generation_times.sort()
+        generation_time = isp_planning_completeness_generation_times[0]
+
         isp_planning_completeness_operation["source"] = {
             "name": source["name"],
-            "generation_time": source["generation_time"],
+            "generation_time": str(generation_time),
             "validity_start": str(isp_planning_completeness_event_starts[0]),
             "validity_stop": str(isp_planning_completeness_event_stops[-1])
         }
@@ -952,7 +1019,7 @@ def _generate_pass_information(xpath_xml, source, engine, query, list_of_annotat
     link_details_annotation = {
         "explicit_reference": session_id,
         "annotation_cnf": {
-            "name": "LINK-DETAILS",
+            "name": "LINK_DETAILS",
             "system": station
         },
         "values": [{
@@ -982,6 +1049,7 @@ def _generate_pass_information(xpath_xml, source, engine, query, list_of_annotat
 
     return
 
+@debug
 def process_file(file_path, engine, query):
     """
     Function to process the file and insert its relevant information
@@ -1018,30 +1086,39 @@ def process_file(file_path, engine, query):
     generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
     # Set the validity start to be the first sensing received to avoid error ingesting
     sensing_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[@VCID = 2 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]/ISP_Status/Status/SensStartTime")
+
+    acquisition_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/AcqStartTime")
+
     if len(sensing_starts) > 0:
+        # Set the validity start to be the first sensing timing acquired to avoid error ingesting
         sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
 
         # Sort list
         sensing_starts_in_iso_8601.sort()
         corrected_sensing_start = functions.convert_from_gps_to_utc(sensing_starts_in_iso_8601[0])
         validity_start = corrected_sensing_start
-    else:
-        # Set the validity stop to be the last acquisition timing registered to avoid error ingesting
-        acquisition_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/AcqStartTime")
+    elif len(acquisition_starts) > 0:
+        # Set the validity start to be the first acquisition timing registered to avoid error ingesting
         acquisition_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_start.text) for acquisition_start in acquisition_starts]
 
         # Sort list
         acquisition_starts_in_iso_8601.sort()
-        validity_start = acquisition_starts_in_iso_8601[-1]        
+        validity_start = acquisition_starts_in_iso_8601[0]
+    else:
+        validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
     # end if
 
-    # Set the validity stop to be the last acquisition timing registered to avoid error ingesting
     acquisition_stops = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/AcqStopTime")
-    acquisition_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_stop.text) for acquisition_stop in acquisition_stops]
+    if len(acquisition_stops) > 0:
+        # Set the validity stop to be the last acquisition timing registered to avoid error ingesting
+        acquisition_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_stop.text) for acquisition_stop in acquisition_stops]
 
-    # Sort list
-    acquisition_stops_in_iso_8601.sort()
-    validity_stop = acquisition_stops_in_iso_8601[-1]
+        # Sort list
+        acquisition_stops_in_iso_8601.sort()
+        validity_stop = acquisition_stops_in_iso_8601[-1]
+    else:
+        validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
+    # end if
 
     source = {
         "name": file_name,
