@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<Earth_Explorer_File>
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S2A_REP_PASS_CONTAINING_ALL_DATA_TO_BE_PROCESS</File_Name>
+      <File_Description>Acquisition Report</File_Description>
+      <Notes/>
+      <Mission>Sentinel-2A</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>REP_PASS_2</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2018-07-21T10:35:27</Validity_Start>
+        <Validity_Stop>UTC=2018-07-21T10:37:39</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>MPS_</System>
+        <Creator>dfep</Creator>
+        <Creator_Version>1.3.11</Creator_Version>
+        <Creation_Date>UTC=2018-07-21T10:40:55</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header>
+      <Data_Block>XML</Data_Block>
+      <Downlink_Orbit>16078</Downlink_Orbit>
+      <Format_Reference>GMES-GSEG-EOPG-TN-10-0103</Format_Reference>
+    </Variable_Header>
+  </Earth_Explorer_Header>
+  <Data_Block type="xml">
+  </Data_Block>
+</Earth_Explorer_File>
