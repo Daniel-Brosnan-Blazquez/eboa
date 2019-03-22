@@ -289,130 +289,132 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
     gaps = []
     planned_imagings = []
     planned_cut_imagings = []
-    processing_validity_event = processing_validity_events["prime_events"][0]
-    for event in processing_validity_events["linked_events"]:
-        if event.gauge.name.startswith("PROCESSING_GAP"):
-            gaps.append(event)
-        #end if
-        elif event.gauge.name.startswith("PLANNED_IMAGING"):
-            planned_imagings.append(event)
-        #end elif
-        elif event.gauge.name.startswith("PLANNED_CUT_IMAGING"):
-            planned_cut_imagings.append(event)
-        #end elif
-    #end for
+    if len(processing_validity_events["prime_events"]) > 0:
+        processing_validity_event = processing_validity_events["prime_events"][0]
 
-    if len(planned_cut_imagings) is not 0:
-        planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_cut_imagings)
-        start_period = planned_cut_imagings[0].start
-        stop_period = planned_cut_imagings[0].stop
-        value = {
-            "name": "processing_completeness_began",
-            "type": "object",
-            "values": []
-        }
-        planned_imaging_uuid = planned_cut_imagings[0].event_uuid
-        exit_status = engine.insert_event_values(planned_imaging_uuid, value)
+        for event in processing_validity_events["linked_events"]:
+            if event.gauge.name.startswith("PROCESSING_GAP"):
+                gaps.append(event)
+            #end if
+            elif event.gauge.name.startswith("PLANNED_IMAGING"):
+                planned_imagings.append(event)
+            #end elif
+            elif event.gauge.name.startswith("PLANNED_CUT_IMAGING"):
+                planned_cut_imagings.append(event)
+            #end elif
+        #end for
 
-        if exit_status["inserted"] == True:
-            planning_event_values = planned_cut_imagings[0].get_structured_values()
-            planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
-                {"name": "status",
-                 "type": "text",
-                 "value": "MISSING"}
-            ]
+        if len(planned_cut_imagings) is not 0:
+            planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_cut_imagings)
+            start_period = planned_cut_imagings[0].start
+            stop_period = planned_cut_imagings[0].stop
+            value = {
+                "name": "processing_completeness_began",
+                "type": "object",
+                "values": []
+            }
+            planned_imaging_uuid = planned_cut_imagings[0].event_uuid
+            exit_status = engine.insert_event_values(planned_imaging_uuid, value)
+            if exit_status["inserted"] == True:
+                planning_event_values = planned_cut_imagings[0].get_structured_values()
+                planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
+                    {"name": "status",
+                     "type": "text",
+                     "value": "MISSING"}
+                ]
 
-            processing_planning_completeness_operation["events"].append({
-                "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
-                    "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
-                    "system": satellite
-                },
-                "start": str(planned_cut_imagings[0].start),
-                "stop": str(planned_cut_imagings[0].stop),
-                "links": [
-                    {
-                        "link": str(planned_imaging_uuid),
-                        "link_mode": "by_uuid",
-                        "name": "PROCESSING_COMPLETENESS",
-                        "back_ref": "PLANNED_IMAGING"
-                    }],
-                "values": planning_event_values
-            })
+                processing_planning_completeness_operation["events"].append({
+                    "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                        "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": satellite
+                    },
+                    "start": str(planned_cut_imagings[0].start),
+                    "stop": str(planned_cut_imagings[0].stop),
+                    "links": [
+                        {
+                            "link": str(planned_imaging_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "PROCESSING_COMPLETENESS",
+                            "back_ref": "PLANNED_IMAGING"
+                        }],
+                    "values": planning_event_values
+                })
 
-            event_link_ref = "PROCESSING_VALIDITY_" + processing_validity_event.start.isoformat()
+                event_link_ref = "PROCESSING_VALIDITY_" + processing_validity_event.start.isoformat()
 
-            for gap in gaps:
-                event_gap = {
+                for gap in gaps:
+                    event_gap = {
+                        "explicit_reference": ds_output,
+                        "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                            "name": "PROCESSING_GAP_" + level,
+                            "system": system
+                        },
+                        "links": [{
+                                 "link": str(planned_imaging_uuid),
+                                 "link_mode": "by_uuid",
+                                 "name": "PROCESSING_GAP",
+                                 "back_ref": "PLANNED_IMAGING"
+                                 },{
+                                 "link": event_link_ref,
+                                 "link_mode": "by_ref",
+                                 "name": "PROCESSING_GAP",
+                                 "back_ref": "PROCESSING_VALIDITY"
+                                 }
+                             ],
+                         "start": str(gap.start),
+                         "stop": str(gap.start),
+                         "values": gap.get_structured_values()
+                    }
+                    list_of_events.append(event_gap)
+                #end for
+                datablock_completeness_event = {
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "INSERT_and_ERASE_per_EVENT",
+                        "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": system
+                    },
+                    "links": [{
+                                 "link": str(planned_imaging_uuid),
+                                 "link_mode": "by_uuid",
+                                 "name": "PROCESSING_COMPLETENESS",
+                                 "back_ref": "PLANNED_IMAGING"
+                             },
+                             {
+                                 "link": event_link_ref,
+                                 "link_mode": "by_ref",
+                                 "name": "COMPLETENESS",
+                                 "back_ref": "PROCESSING_VALIDITY"
+                             }
+                         ],
+                     "start": processing_validity_event.start.isoformat(),
+                     "stop": processing_validity_event.stop.isoformat(),
+                     "values": planned_cut_imagings[0].get_structured_values()
+                }
+                list_of_events.append(datablock_completeness_event)
+
+                validity_event = {
+                    "link_ref": event_link_ref,
                     "explicit_reference": ds_output,
                     "gauge": {
                         "insertion_type": "SIMPLE_UPDATE",
-                        "name": "PROCESSING_GAP_" + level,
+                        "name": "PROCESSING_VALIDITY_" + level,
                         "system": system
                     },
                     "links": [{
                              "link": str(planned_imaging_uuid),
                              "link_mode": "by_uuid",
-                             "name": "PROCESSING_GAP",
+                             "name": "PROCESSING_VALIDITY",
                              "back_ref": "PLANNED_IMAGING"
-                             },{
-                             "link": event_link_ref,
-                             "link_mode": "by_ref",
-                             "name": "PROCESSING_GAP",
-                             "back_ref": "PROCESSING_VALIDITY"
-                             }
-                         ],
-                     "start": str(gap.start),
-                     "stop": str(gap.start),
-                     "values": gap.get_structured_values()
+                             }],
+                    "start": processing_validity_event.start.isoformat(),
+                    "stop": processing_validity_event.stop.isoformat(),
+                     "values": planned_cut_imagings[0].get_structured_values()
                 }
-                list_of_events.append(event_gap)
-            #end for
-            datablock_completeness_event = {
-                "explicit_reference": ds_output,
-                "gauge": {
-                    "insertion_type": "INSERT_and_ERASE_per_EVENT",
-                    "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
-                    "system": system
-                },
-                "links": [{
-                             "link": str(planned_imaging_uuid),
-                             "link_mode": "by_uuid",
-                             "name": "PROCESSING_COMPLETENESS",
-                             "back_ref": "PLANNED_IMAGING"
-                         },
-                         {
-                             "link": event_link_ref,
-                             "link_mode": "by_ref",
-                             "name": "COMPLETENESS",
-                             "back_ref": "PROCESSING_VALIDITY"
-                         }
-                     ],
-                 "start": processing_validity_event.start.isoformat(),
-                 "stop": processing_validity_event.stop.isoformat(),
-                 "values": planned_cut_imagings[0].get_structured_values()
-            }
-            list_of_events.append(datablock_completeness_event)
-
-            validity_event = {
-                "link_ref": event_link_ref,
-                "explicit_reference": ds_output,
-                "gauge": {
-                    "insertion_type": "SIMPLE_UPDATE",
-                    "name": "PROCESSING_VALIDITY_" + level,
-                    "system": system
-                },
-                "links": [{
-                         "link": str(planned_imaging_uuid),
-                         "link_mode": "by_uuid",
-                         "name": "PROCESSING_VALIDITY",
-                         "back_ref": "PLANNED_IMAGING"
-                         }],
-                "start": processing_validity_event.start.isoformat(),
-                "stop": processing_validity_event.stop.isoformat(),
-                 "values": planned_cut_imagings[0].get_structured_values()
-            }
-            list_of_events.append(validity_event)
+                list_of_events.append(validity_event)
+            #end if
         #end if
     #end if
 
@@ -613,7 +615,6 @@ def process_file(file_path, engine, query):
         elif (level == "L1C" or level == "L2A") and flag_query is False:
             flag_query = True
             L1C_L2A_processing(satellite, source, engine, query, list_of_events, processing_validity_events, ds_output, processing_planning_completeness_operation, level, system)
-
 
         if len(processing_planning_completeness_operation["events"]) > 0:
             completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]

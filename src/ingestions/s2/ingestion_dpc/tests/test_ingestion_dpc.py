@@ -47,7 +47,7 @@ class TestEngine(unittest.TestCase):
             engine.execute(table.delete())
 
 
-    def test_insert_dpc_report_only(self):
+    def test_dpc_report_only(self):
         filename = "S2A_OPER_REP_OPDPC_INSERTION.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
         ingestion.command_process_file(file_path)
@@ -141,7 +141,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(definite_mrf_event_key) == 1
 
-    def test_insert_dpc_report_with_extra_files(self):
+    def test_dpc_report_L0_L1B_with_plan(self):
         filename = "S2A_OPER_REP_OPDPC_INSERTION.EOF"
         orbpre_filename = "S2A_ORBPRE.EOF"
         nppf_filename = "S2A_NPPF.EOF"
@@ -186,6 +186,110 @@ class TestEngine(unittest.TestCase):
                                                                                  EventText.value == "INCOMPLETE").all()
 
         assert len(datablock_event) == 1
+
+        datablock_event_links = self.session.query(EventLink).join(Event,EventText,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
+                                                                                 Event.start == "2018-07-21 00:16:12",
+                                                                                 EventText.name == "status",
+                                                                                 #Incomplete due to alignment not corrected
+                                                                                 EventText.value == "INCOMPLETE").all()
+
+        assert len(datablock_event_links) == 2
+
+    def test_dpc_report_L1B_L1C_with_plan_no_previous_reports(self):
+        filename = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
+        orbpre_filename = "S2A_ORBPRE.EOF"
+        nppf_filename = "S2A_NPPF.EOF"
+
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
+        ingestion_nppf.command_process_file(nppf_file_path)
+
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        ingestion_orbpre.command_process_file(orbpre_file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        ingestion.command_process_file(file_path)
+
+        #Check the source is correctly taken
+
+        source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
+                                                    Source.generation_time == '2018-07-21T02:30:37',
+                                                    Source.validity_start == '2018-07-21T00:16:10',
+                                                    Source.validity_stop == '2018-07-21T02:26:47.244000').all()
+
+        assert len(source) == 1
+
+        #Check the validity event is not created
+
+        validity = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
+
+        assert len(validity) == 0
+
+    def test_dpc_report_L1B_L1C_with_plan_and_previous_reports(self):
+        filename_1 = "S2A_OPER_REP_OPDPC_L0_L1B.EOF"
+        filename_2 = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
+        orbpre_filename = "S2A_ORBPRE.EOF"
+        nppf_filename = "S2A_NPPF.EOF"
+
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
+        ingestion_nppf.command_process_file(nppf_file_path)
+
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        ingestion_orbpre.command_process_file(orbpre_file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_1
+        ingestion.command_process_file(file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_2
+        ingestion.command_process_file(file_path)
+
+        #Check the source is correctly taken
+
+        source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
+                                                    Source.generation_time == '2018-07-21T02:30:37',
+                                                    Source.validity_start == '2018-07-21T00:16:10',
+                                                    Source.validity_stop == '2018-07-21T02:26:47.244000').all()
+
+        assert len(source) == 1
+
+        #Check that the sources is correctly taken
+        sources = self.session.query(Source).filter(Source.generation_time == "2018-07-21T02:30:37",
+                                                            Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF').all()
+
+        assert len(sources) == 3
+
+        #Check the validity event is correctly taken
+
+        validity = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
+
+        assert len(validity) == 1
+
+        #Check the missing segment is correctly taken
+        missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
+                                                                               #Event.start == "2018-07-21 00:16:02.341000",
+                                                                               #Event.stop == "2018-07-21 00:21:43.993000",
+                                                                               EventText.name == "status",
+                                                                               EventText.value == "MISSING").all()
+
+        assert len(missing_event) == 1
+
+        #Check completeness_event is correctly taken
+        datablock_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
+                                                                                 #Event.start == "2018-07-21 00:16:12",
+                                                                                 EventText.name == "status",
+                                                                                 #Incomplete due to alignment not corrected
+                                                                                 EventText.value == "INCOMPLETE").all()
+
+        assert len(datablock_event) == 1
+
+        #Check the completeness links are correctly taken
+        datablock_event_links = self.session.query(EventLink).join(Event,EventText,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
+                                                                                 #Event.start == "2018-07-21 00:16:12",
+                                                                                 EventText.name == "status",
+                                                                                 #Incomplete due to alignment not corrected
+                                                                                 EventText.value == "INCOMPLETE").all()
+
+        assert len(datablock_event_links) == 2
+
 
     def test_insert_dpc_report_aux(self):
         filename = "S2A_OPER_REP_OPDPC_SAD.EOF"
