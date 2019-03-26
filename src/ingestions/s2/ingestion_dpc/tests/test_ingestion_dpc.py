@@ -172,7 +172,7 @@ class TestEngine(unittest.TestCase):
         #Check the missing segment is correctly taken
         missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
                                                                                Event.start == "2018-07-21 00:16:02.341000",
-                                                                               Event.stop == "2018-07-21 00:21:43.993000",
+                                                                               #Event.stop == "2018-07-21 00:21:43.993000",
                                                                                EventText.name == "status",
                                                                                EventText.value == "MISSING").all()
 
@@ -180,7 +180,6 @@ class TestEngine(unittest.TestCase):
 
         #Check datablock_completeness_event is correctly taken
         datablock_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
-                                                                                 Event.start == "2018-07-21 00:16:12",
                                                                                  EventText.name == "status",
                                                                                  #Incomplete due to alignment not corrected
                                                                                  EventText.value == "INCOMPLETE").all()
@@ -246,7 +245,7 @@ class TestEngine(unittest.TestCase):
 
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
                                                     Source.generation_time == '2018-07-21T02:30:37',
-                                                    Source.validity_start == '2018-07-21T00:16:10',
+                                                    Source.validity_start == '2018-07-21 00:16:12',
                                                     Source.validity_stop == '2018-07-21T02:26:47.244000').all()
 
         assert len(source) == 1
@@ -265,7 +264,7 @@ class TestEngine(unittest.TestCase):
 
         #Check the missing segment is correctly taken
         missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
-                                                                               #Event.start == "2018-07-21 00:16:02.341000",
+                                                                               Event.start == "2018-07-21 00:16:02.341000",
                                                                                #Event.stop == "2018-07-21 00:21:43.993000",
                                                                                EventText.name == "status",
                                                                                EventText.value == "MISSING").all()

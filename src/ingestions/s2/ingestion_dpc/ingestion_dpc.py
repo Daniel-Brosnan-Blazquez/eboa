@@ -120,7 +120,7 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
             start_period = planned_imaging[0].start
             stop_period = planned_imaging[0].stop
             value = {
-                "name": "processing_completeness_began",
+                "name": "processing_completeness_" + level+ "_began",
                 "type": "object",
                 "values": []
             }
@@ -139,7 +139,7 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
                     "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
                         "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
-                        "system": satellite
+                        "system": system
                     },
                     "start": str(planned_imaging[0].start),
                     "stop": str(planned_imaging[0].stop),
@@ -289,6 +289,7 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
     gaps = []
     planned_imagings = []
     planned_cut_imagings = []
+    status = "COMPLETE"
     if len(processing_validity_events["prime_events"]) > 0:
         processing_validity_event = processing_validity_events["prime_events"][0]
 
@@ -304,12 +305,15 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
             #end elif
         #end for
 
+        if len(gaps) > 0:
+            status = "INCOMPLETE"
+
         if len(planned_cut_imagings) is not 0:
             planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_cut_imagings)
             start_period = planned_cut_imagings[0].start
             stop_period = planned_cut_imagings[0].stop
             value = {
-                "name": "processing_completeness_began",
+                "name": "processing_completeness_" + level + "_began",
                 "type": "object",
                 "values": []
             }
@@ -327,7 +331,7 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
                     "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
                         "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
-                        "system": satellite
+                        "system": system
                     },
                     "start": str(planned_cut_imagings[0].start),
                     "stop": str(planned_cut_imagings[0].stop),
@@ -391,7 +395,15 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
                          ],
                      "start": processing_validity_event.start.isoformat(),
                      "stop": processing_validity_event.stop.isoformat(),
-                     "values": planned_cut_imagings[0].get_structured_values()
+                     "values": [{
+                         "name": "details",
+                         "type": "object",
+                         "values": [{
+                            "type": "text",
+                            "value": status,
+                            "name": "status"
+                         }]
+                    }]
                 }
                 list_of_events.append(datablock_completeness_event)
 
