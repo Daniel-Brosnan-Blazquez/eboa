@@ -172,7 +172,6 @@ class TestEngine(unittest.TestCase):
         #Check the missing segment is correctly taken
         missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1B_COMPLETENESS",
                                                                                Event.start == "2018-07-21 00:16:02.341000",
-                                                                               #Event.stop == "2018-07-21 00:21:43.993000",
                                                                                EventText.name == "status",
                                                                                EventText.value == "MISSING").all()
 
@@ -194,6 +193,10 @@ class TestEngine(unittest.TestCase):
 
         assert len(datablock_event_links) == 2
 
+    #Pending of a scenario with REP_PASS
+    def test_dpc_report_L0_L1B_with_REP_PASS(self):
+        assert True
+
     def test_dpc_report_L1B_L1C_with_plan_no_previous_reports(self):
         filename = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
         orbpre_filename = "S2A_ORBPRE.EOF"
@@ -209,7 +212,6 @@ class TestEngine(unittest.TestCase):
         ingestion.command_process_file(file_path)
 
         #Check the source is correctly taken
-
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
                                                     Source.generation_time == '2018-07-21T02:30:37',
                                                     Source.validity_start == '2018-07-21T00:16:10',
@@ -218,7 +220,6 @@ class TestEngine(unittest.TestCase):
         assert len(source) == 1
 
         #Check the validity event is not created
-
         validity = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
 
         assert len(validity) == 0
@@ -242,7 +243,6 @@ class TestEngine(unittest.TestCase):
         ingestion.command_process_file(file_path)
 
         #Check the source is correctly taken
-
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
                                                     Source.generation_time == '2018-07-21T02:30:37',
                                                     Source.validity_start == '2018-07-21 00:16:12',
@@ -257,7 +257,6 @@ class TestEngine(unittest.TestCase):
         assert len(sources) == 3
 
         #Check the validity event is correctly taken
-
         validity = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
 
         assert len(validity) == 1
@@ -265,7 +264,6 @@ class TestEngine(unittest.TestCase):
         #Check the missing segment is correctly taken
         missing_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
                                                                                Event.start == "2018-07-21 00:16:02.341000",
-                                                                               #Event.stop == "2018-07-21 00:21:43.993000",
                                                                                EventText.name == "status",
                                                                                EventText.value == "MISSING").all()
 
@@ -273,7 +271,6 @@ class TestEngine(unittest.TestCase):
 
         #Check completeness_event is correctly taken
         datablock_event = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
-                                                                                 #Event.start == "2018-07-21 00:16:12",
                                                                                  EventText.name == "status",
                                                                                  #Incomplete due to alignment not corrected
                                                                                  EventText.value == "INCOMPLETE").all()
@@ -282,13 +279,15 @@ class TestEngine(unittest.TestCase):
 
         #Check the completeness links are correctly taken
         datablock_event_links = self.session.query(EventLink).join(Event,EventText,Gauge).filter(Gauge.name == "PLANNED_IMAGING_L1C_COMPLETENESS",
-                                                                                 #Event.start == "2018-07-21 00:16:12",
                                                                                  EventText.name == "status",
                                                                                  #Incomplete due to alignment not corrected
                                                                                  EventText.value == "INCOMPLETE").all()
 
         assert len(datablock_event_links) == 2
 
+    #Pending of a scenario with REP_PASS
+    def test_dpc_report_L1B_L1C_with_REP_PASS(self):
+        assert True
 
     def test_insert_dpc_report_aux(self):
         filename = "S2A_OPER_REP_OPDPC_SAD.EOF"
