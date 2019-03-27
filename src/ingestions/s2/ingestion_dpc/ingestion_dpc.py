@@ -84,20 +84,32 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
         data_gaps[detector] = date_functions.difference_timelines(granule_timeline_per_detector[detector],datablocks)
     #end for
 
+    isp_gaps = query.get_linked_events_join(gauge_name_like = {"str": "ISP_GAP", "op": "like"},
+    gauge_systems = {"list": [satellite], "op": "in"},
+    start_filters = [{"date": str(datablocks[-1]["stop"]), "op": "<"}],
+    stop_filters = [{"date": str(datablocks[0]["start"]), "op": ">"}],
+    link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
+    return_prime_events = False)["linked_events"]
+    data_isp_gaps = {}
+    for gap in isp_gaps:
+        print("gap")
+        if gap.detector not in data_isp_gaps:
+            data_isp_gaps[gap.detector] = {}
+        #end if
+        data_isp_gaps[gap.detector].append(gap)
+    #end for
 
-    # print("Datablock: " + str(datablocks[0]["start"]) + "-" +  str(datablocks[0]["stop"]))
-    # for detector in data_gaps:
-    #     for i in range(len(granule_timeline_per_detector[detector])):
-    #         print("Granules " + detector + ": " +  str(granule_timeline_per_detector[detector][i]["start"]) + "-" + str(granule_timeline_per_detector[detector][i]["stop"]))
-    #     for i in range(len(data_gaps[detector])):
-    #         print("Gap " + detector +": " +  str(data_gaps[detector][i]["start"]) + "-" + str(data_gaps[detector][i]["stop"]))
-
+    for detector in data_isp_gaps:
+        data_isp_gaps[detector] = date_functions.convert_eboa_events_to_date_segments(data_isp_gaps[detector])
+        data_isp_gaps[detector] = date_functions.merge_timeline(data_isp_gaps[detector])
+    #end for
 
     for datablock in datablocks:
         db_tl = []
         db_tl.append(datablock)
         status = "COMPLETE"
         gaps_datablock = {}
+        isp_gaps_datablock = {}
 
         for detector in data_gaps:
             if detector not in gaps_datablock:
@@ -109,12 +121,22 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
             #end if
         #end for
 
+        for detector in data_isp_gaps:
+            if detector not in isp_gaps_datablock:
+                isp_gaps_datablock = {}
+            #end if
+            isp_gaps_datablock[detector] = date_functions.intersect_timelines(data_isp_gaps[detector],datablock)
+        #end for
+
+
+
         planned_imaging = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
         gauge_systems = {"list": [satellite], "op": "in"},
         start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
         stop_filters = [{"date": str(datablock["start"]), "op": ">"}],
         link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
         return_prime_events = False)["linked_events"]
+
         if len(planned_imaging) is not 0:
             planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_imaging)
             start_period = planned_imaging[0].start
@@ -157,6 +179,10 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
 
                 for detector in data_gaps:
                     for gap in gaps_datablock[detector]:
+                        gap_source = "processing"
+                        if detector in isp_gaps_datablock and gap in date_functions.intersect_timelines(gaps_datablock[detector],isp_gaps_datablock[detector]):
+                            gap_source = "reception"
+                        #end if
 
                         event_gap = {
                             "explicit_reference": ds_output,
@@ -186,7 +212,11 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
                                     "type": "text",
                                     "value": detector,
                                     "name": "detector"
-                                 }]
+                                    },{
+                                    "type": "text",
+                                    "value": gap_source,
+                                    "name": "source"
+                                }]
                              }]
                         }
                         list_of_events.append(event_gap)
@@ -256,12 +286,121 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
                 list_of_events.append(validity_event)
             #end if
         #end if
+
+        received_imaging = query.get_events_join(gauge_name_like = {"str":"ISP_VALIDITY", "op":"like"},
+        gauge_systems = {"list": [satellite], "op": "in"},
+        start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
+        stop_filters = [{"date": str(datablock["start"]), "op": ">"}])
+
+        if len(received_imaging) is not 0:
+            received_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(received_imaging)
+            start_period =received_imaging[0].start
+            stop_period = received_imaging[0].stop
+            value = {
+                "name": "received_imaging_completeness_" + level+ "_began",
+                "type": "object",
+                "values": []
+            }
+            received_imaging_uuid = received_imaging[0].event_uuid
+            exit_status = engine.insert_event_values(received_imaging_uuid, value)
+
+            if exit_status["inserted"] == True:
+                received_event_values = received_imaging[0].get_structured_values()
+                received_event_values[0]["values"] = received_event_values[0]["values"] + [
+                    {"name": "status",
+                     "type": "text",
+                     "value": "MISSING"}
+                ]
+
+                processing_received_completeness_operation["events"].append({
+                    "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                        "name": "RECEIVED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": system
+                    },
+                    "start": str(planned_imaging[0].start),
+                    "stop": str(planned_imaging[0].stop),
+                    "links": [
+                        {
+                            "link": str(planned_imaging_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "PROCESSING_COMPLETENESS",
+                            "back_ref": "RECEIVED_IMAGING"
+                        }],
+                    "values": planning_event_values
+                })
+
+                event_link_ref = "PROCESSING_VALIDITY_" + datablock["start"].isoformat()
+
+                datablock_completeness_event = {
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "INSERT_and_ERASE_per_EVENT",
+                        "name": "RECEIVED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": system
+                    },
+                    "links": [{
+                                 "link": str(planned_imaging_uuid),
+                                 "link_mode": "by_uuid",
+                                 "name": "PROCESSING_COMPLETENESS",
+                                 "back_ref": "RECEIVED_IMAGING"
+                             },
+                             {
+                                 "link": event_link_ref,
+                                 "link_mode": "by_ref",
+                                 "name": "COMPLETENESS",
+                                 "back_ref": "PROCESSING_VALIDITY"
+                             }
+                         ],
+                     "start": str(datablock["start"]),
+                     "stop": str(datablock["stop"]),
+                     "values": [{
+                         "name": "details",
+                         "type": "object",
+                         "values": [{
+                            "type": "text",
+                            "value": status,
+                            "name": "status"
+                         }]
+                     }]
+                }
+                list_of_events.append(datablock_completeness_event)
+
+                validity_event = {
+                    "link_ref": event_link_ref,
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "SIMPLE_UPDATE",
+                        "name": "PROCESSING_VALIDITY_" + level,
+                        "system": system
+                    },
+                    "links": [{
+                             "link": str(planned_imaging_uuid),
+                             "link_mode": "by_uuid",
+                             "name": "PROCESSING_VALIDITY",
+                             "back_ref": "RECEIVED_IMAGING"
+                             }],
+                     "start": str(datablock["start"]),
+                     "stop": str(datablock["stop"]),
+                     "values": [{
+                         "name": "details",
+                         "type": "object",
+                         "values": [{
+                            "type": "text",
+                            "value": status,
+                            "name": "status"
+                         }],
+                     }]
+                }
+                list_of_events.append(validity_event)
+            #end if
+        #end if
     #end for
 #end if
 
 def L1C_L2A_processing(satellite, source, engine, query, list_of_events, processing_validity_events,ds_output, processing_planning_completeness_operation, level, system):
     """
-    Method to generate the events for the levels L0 and L1B
+    Method to generate the events for the levels L1C and L2A
     :param satellite: corresponding satellite
     :type source: str
     :param source: information of the source
@@ -289,7 +428,9 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
     gaps = []
     planned_imagings = []
     planned_cut_imagings = []
+    received_imagings = []
     status = "COMPLETE"
+
     if len(processing_validity_events["prime_events"]) > 0:
         processing_validity_event = processing_validity_events["prime_events"][0]
 
@@ -303,10 +444,13 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
             elif event.gauge.name.startswith("PLANNED_CUT_IMAGING"):
                 planned_cut_imagings.append(event)
             #end elif
+            elif event.gauge.name.startswith("RECEIVED_IMAGING"):
+                received_imagings.append(event)
         #end for
 
         if len(gaps) > 0:
             status = "INCOMPLETE"
+        #end if
 
         if len(planned_cut_imagings) is not 0:
             planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_cut_imagings)
@@ -428,6 +572,102 @@ def L1C_L2A_processing(satellite, source, engine, query, list_of_events, process
                 list_of_events.append(validity_event)
             #end if
         #end if
+
+        if len(received_imagings) is not 0:
+            received_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(received_imagings)
+            start_period = received_imagings[0].start
+            stop_period = received_imagings[0].stop
+            value = {
+                "name": "received_completeness_" + level + "_began",
+                "type": "object",
+                "values": []
+            }
+            received_imaging_uuid = received_imagings[0].event_uuid
+            exit_status = engine.insert_event_values(received_imaging_uuid, value)
+            if exit_status["inserted"] == True:
+                received_event_values = received_imagings[0].get_structured_values()
+                received_event_values[0]["values"] = received_event_values[0]["values"] + [
+                    {"name": "status",
+                     "type": "text",
+                     "value": "MISSING"}
+                ]
+
+                processing_received_completeness_operation["events"].append({
+                    "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                        "name": "RECEIVED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": system
+                    },
+                    "start": str(received_imagings[0].start),
+                    "stop": str(received_imagings[0].stop),
+                    "links": [
+                        {
+                            "link": str(received_imaging_uuid),
+                            "link_mode": "by_uuid",
+                            "name": "PROCESSING_COMPLETENESS",
+                            "back_ref": "PLANNED_IMAGING"
+                        }],
+                    "values": received_event_values
+                })
+
+                event_link_ref = "PROCESSING_VALIDITY_" + processing_validity_event.start.isoformat()
+
+                isp_completeness_event = {
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "INSERT_and_ERASE_per_EVENT",
+                        "name": "RECEIVED_IMAGING_" + level + "_COMPLETENESS",
+                        "system": system
+                    },
+                    "links": [{
+                                 "link": str(received_imaging_uuid),
+                                 "link_mode": "by_uuid",
+                                 "name": "PROCESSING_COMPLETENESS",
+                                 "back_ref": "RECEIVED_IMAGING"
+                             },
+                             {
+                                 "link": event_link_ref,
+                                 "link_mode": "by_ref",
+                                 "name": "COMPLETENESS",
+                                 "back_ref": "PROCESSING_VALIDITY"
+                             }
+                         ],
+                     "start": processing_validity_event.start.isoformat(),
+                     "stop": processing_validity_event.stop.isoformat(),
+                     "values": [{
+                         "name": "details",
+                         "type": "object",
+                         "values": [{
+                            "type": "text",
+                            "value": status,
+                            "name": "status"
+                         }]
+                    }]
+                }
+                list_of_events.append(isp_completeness_event)
+
+                validity_event = {
+                    "link_ref": event_link_ref,
+                    "explicit_reference": ds_output,
+                    "gauge": {
+                        "insertion_type": "SIMPLE_UPDATE",
+                        "name": "PROCESSING_VALIDITY_" + level,
+                        "system": system
+                    },
+                    "links": [{
+                             "link": str(planned_imaging_uuid),
+                             "link_mode": "by_uuid",
+                             "name": "PROCESSING_VALIDITY",
+                             "back_ref": "RECEIVED_IMAGING"
+                             }],
+                    "start": processing_validity_event.start.isoformat(),
+                    "stop": processing_validity_event.stop.isoformat(),
+                     "values": received_imagings[0].get_structured_values()
+                }
+                list_of_events.append(validity_event)
+            #end if
+        #end if
+
     #end if
 
 
@@ -483,7 +723,7 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    #COMPLETENESS
+
     # Completeness operations for the production completeness analysis of the plan
     processing_planning_completeness_operation = {
         "mode": "insert",
@@ -495,7 +735,16 @@ def process_file(file_path, engine, query):
         "events": []
     }
 
-    #MSI_OUTPUTS (DATABLOCK)
+    processing_received_completeness_operation = {
+        "mode": "insert",
+        "dim_signature": {
+            "name": "PROCESSING_" + satellite,
+            "exec": "processing_received_" + os.path.basename(__file__),
+            "version": version
+        },
+        "events": []
+    }
+
     ##Use outputs filtered by datastrip
     for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
         granule_timeline_per_detector = {}
@@ -528,7 +777,6 @@ def process_file(file_path, engine, query):
         }
         list_of_annotations.append(baseline_annotation)
 
-        #RELATIONSHIPS
         explicit_reference = {
            "group": level + "_DS",
            "links": [{
@@ -590,7 +838,7 @@ def process_file(file_path, engine, query):
                 "name": tile_t
             }
             list_of_explicit_references.append(explicit_reference)
-        # #end for
+        #end for
 
         for true_color in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TC_')]"):
             true_color_t = true_color.text
@@ -610,7 +858,7 @@ def process_file(file_path, engine, query):
                 "name": true_color_t
             }
             list_of_explicit_references.append(explicit_reference)
-        # #end_for
+        #end_for
 
 
         if flag_query is False:
@@ -618,15 +866,15 @@ def process_file(file_path, engine, query):
             gauge_systems = {"list": [system], "op": "in"},
             explicit_ref_like = {"str": "%" + output_sensing_date + "%", "op": "like"},
             return_prime_events = True)
-
-
-        # #END RELATIONSHIPS
+        #end if
 
         if level == "L1B" or level == "L0":
             L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, processing_planning_completeness_operation, level, system)
+        #end if
         elif (level == "L1C" or level == "L2A") and flag_query is False:
             flag_query = True
             L1C_L2A_processing(satellite, source, engine, query, list_of_events, processing_validity_events, ds_output, processing_planning_completeness_operation, level, system)
+        #end elif
 
         if len(processing_planning_completeness_operation["events"]) > 0:
             completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]
@@ -635,16 +883,31 @@ def process_file(file_path, engine, query):
             completeness_event_stops.sort()
 
             processing_planning_completeness_operation["source"] = {
+            "name": source["name"],
+            "generation_time": source["generation_time"],
+            "validity_start": str(completeness_event_starts[0]),
+            "validity_stop": str(completeness_event_stops[-1])
+            }
+
+            list_of_operations.append(processing_planning_completeness_operation)
+        #end if
+
+        if len(processing_received_completeness_operation["events"]) > 0:
+            completeness_event_starts = [event["start"] for event in processing_received_completeness_operation["events"]]
+            completeness_event_starts.sort()
+            completeness_event_stops = [event["stop"] for event in processing_received_completeness_operation["events"]]
+            completeness_event_stops.sort()
+
+            processing_received_completeness_operation["source"] = {
                 "name": source["name"],
                 "generation_time": source["generation_time"],
                 "validity_start": str(completeness_event_starts[0]),
                 "validity_stop": str(completeness_event_stops[-1])
             }
 
-            list_of_operations.append(processing_planning_completeness_operation)
+            list_of_operations.append(processing_received_completeness_operation)
         #end if
 
-        #TIMELINESS
         event_timeliness = {
             "explicit_reference": ds_output,
             "gauge": {
@@ -707,19 +970,17 @@ def process_file(file_path, engine, query):
             }
             list_of_configuration_explicit_references.append(explicit_reference)
         #end for
-        #END TIMELINESS
-
     #end for
 
-    #CONFIGURATION
     for mrf in mrf_list:
-        ## Change query to use the query for events
-        mrfsDB = query.get_explicit_refs(explicit_ref_like = {"op": "like", "str": mrf.find("Id").text})
+        mrfsDB = query.get_events_join(explicit_ref_like = {"op": "like", "str": mrf.find("Id").text})
         if len(mrfsDB) is 0:
             try:
                 stop = str(parser.parse(mrf.find("ValidityStop").text[:-1]))
+            #end if
             except:
                 stop = str(datetime.datetime.max)
+            #end except
             event_mrf={
                 "key":mrf.find("Id").text,
                 "explicit_reference": mrf.find("Id").text,
@@ -741,9 +1002,10 @@ def process_file(file_path, engine, query):
                           }]
                     }]
                 }
+            print(event_mrf["explicit_reference"])
             list_of_configuration_events.append(event_mrf)
+        #end if
     #end for
-    #END CONFIGURATION
 
     if len(list_of_events) > 0:
         event_starts = [event["start"] for event in list_of_events]
