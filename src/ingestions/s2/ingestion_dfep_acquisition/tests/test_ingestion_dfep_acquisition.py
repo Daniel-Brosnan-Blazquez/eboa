@@ -36,7 +36,7 @@ import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion_nppf
 # Import ingestion orbpre
 import ingestions.s2.ingestion_orbpre.ingestion_orbpre as ingestion_orbpre
 
-class TestEngine(unittest.TestCase):
+class TestDfepIngestion(unittest.TestCase):
     def setUp(self):
         # Create the engine to manage the data
         self.engine_eboa = Engine()
@@ -46,8 +46,13 @@ class TestEngine(unittest.TestCase):
         self.session = Session()
 
         # Clear all tables before executing the test
-        for table in reversed(Base.metadata.sorted_tables):
-            engine.execute(table.delete())
+        self.query_eboa.clear_db()
+
+    def tearDown(self):
+        # Close connections to the DDBB
+        self.engine_eboa.close_session()
+        self.query_eboa.close_session()
+        self.session.close()
 
     def test_insert_rep_pass(self):
         filename = "S2A_REP_PASS_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
@@ -232,12 +237,12 @@ class TestEngine(unittest.TestCase):
         assert len(isp_completeness_event2) == 1
 
         # Check PLAYBACK_VALIDITY events
-        playback_validity_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLAYBACK_%_VALIDITY_%")).all()
+        playback_validity_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLAYBACK_VALIDITY_%")).all()
 
         assert len(playback_validity_events) == 3
 
         # Check specific PLAYBACK_VALIDITY
-        playback_validity_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_NOMINAL_VALIDITY_4",
+        playback_validity_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_4",
                                                                                  Event.start == "2018-07-21T10:35:33.728601",
                                                                                  Event.stop == "2018-07-21T10:37:14.719834").all()
 
@@ -290,25 +295,25 @@ class TestEngine(unittest.TestCase):
             "name": "values"
         }]
 
-        playback_validity_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_NOMINAL_VALIDITY_20",
+        playback_validity_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_20",
                                                                                  Event.start == "2018-07-21T10:35:33.760977",
                                                                                  Event.stop == "2018-07-21T10:37:14.753003").all()
 
         assert len(playback_validity_event2) == 1
 
-        playback_validity_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_SAD_VALIDITY_2",
+        playback_validity_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_2",
                                                                                  Event.start == "2018-07-21T10:37:20.858708",
                                                                                  Event.stop == "2018-07-21T10:37:26.355940").all()
 
         assert len(playback_validity_event3) == 1
 
         # Check PLANNED_PLAYBACK_COMPLETENESS_CHANNEL events
-        playback_completeness_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_PLAYBACK_%_COMPLETENESS_CHANNEL%")).all()
+        playback_completeness_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_PLAYBACK_COMPLETENESS_CHANNEL%")).all()
 
         assert len(playback_completeness_events) == 3
 
         # Check specific PLANNED_PLAYBACK_COMPLETENESS_CHANNEL
-        playback_completeness_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_NOMINAL_COMPLETENESS_CHANNEL_1",
+        playback_completeness_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_1",
                                                                                  Event.start == "2018-07-21T10:35:33.728601",
                                                                                  Event.stop == "2018-07-21T10:37:14.719834").all()
 
@@ -346,13 +351,13 @@ class TestEngine(unittest.TestCase):
             "name": "details"
         }]
 
-        playback_completeness_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_NOMINAL_COMPLETENESS_CHANNEL_2",
+        playback_completeness_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_2",
                                                                                  Event.start == "2018-07-21T10:35:33.760977",
                                                                                  Event.stop == "2018-07-21T10:37:14.753003").all()
 
         assert len(playback_completeness_event2) == 1
 
-        playback_completeness_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_SAD_COMPLETENESS_CHANNEL_2",
+        playback_completeness_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_2",
                                                                                  Event.start == "2018-07-21T10:37:20.858708",
                                                                                  Event.stop == "2018-07-21T10:37:26.355940").all()
 
@@ -569,48 +574,48 @@ class TestEngine(unittest.TestCase):
         }]
 
         # Check PLAYBACK_VALIDITY events
-        playback_validity_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLAYBACK_%_VALIDITY_%")).all()
+        playback_validity_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLAYBACK_VALIDITY_%")).all()
 
         assert len(playback_validity_events) == 3
 
         # Check specific PLAYBACK_VALIDITY
-        playback_validity_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_NOMINAL_VALIDITY_4",
+        playback_validity_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_4",
                                                                                  Event.start == "2018-07-21T10:35:33.728601",
                                                                                  Event.stop == "2018-07-21T10:37:14.719834").all()
 
         assert len(playback_validity_event1) == 1
 
-        playback_validity_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_NOMINAL_VALIDITY_20",
+        playback_validity_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_20",
                                                                                  Event.start == "2018-07-21T10:35:33.760977",
                                                                                  Event.stop == "2018-07-21T10:37:14.753003").all()
 
         assert len(playback_validity_event2) == 1
 
-        playback_validity_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_SAD_VALIDITY_2",
+        playback_validity_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_2",
                                                                                  Event.start == "2018-07-21T10:37:20.858708",
                                                                                  Event.stop == "2018-07-21T10:37:26.355940").all()
 
         assert len(playback_validity_event3) == 1
 
         # Check PLANNED_PLAYBACK_COMPLETENESS_CHANNEL events
-        playback_completeness_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_PLAYBACK_%_COMPLETENESS_CHANNEL%")).all()
+        playback_completeness_events = self.session.query(Event).join(Gauge).filter(Gauge.name.like("PLANNED_PLAYBACK_COMPLETENESS_CHANNEL%")).all()
 
         assert len(playback_completeness_events) == 3
 
         # Check specific PLANNED_PLAYBACK_COMPLETENESS_CHANNEL
-        playback_completeness_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_NOMINAL_COMPLETENESS_CHANNEL_1",
+        playback_completeness_event1 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_1",
                                                                                  Event.start == "2018-07-21T10:35:33.728601",
                                                                                  Event.stop == "2018-07-21T10:37:14.719834").all()
 
         assert len(playback_completeness_event1) == 1
 
-        playback_completeness_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_NOMINAL_COMPLETENESS_CHANNEL_2",
+        playback_completeness_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_2",
                                                                                  Event.start == "2018-07-21T10:35:33.760977",
                                                                                  Event.stop == "2018-07-21T10:37:14.753003").all()
 
         assert len(playback_completeness_event2) == 1
 
-        playback_completeness_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_SAD_COMPLETENESS_CHANNEL_2",
+        playback_completeness_event3 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_2",
                                                                                  Event.start == "2018-07-21T10:37:20.858708",
                                                                                  Event.stop == "2018-07-21T10:37:26.355940").all()
 
@@ -1135,7 +1140,7 @@ class TestEngine(unittest.TestCase):
         ]
 
         # Check specific PLAYBACK_GAP
-        playback_gap = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_NOMINAL_GAP",
+        playback_gap = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_GAP",
                                                                                  Event.start == "2018-07-21T10:36:12.525910",
                                                                                  Event.stop == "2018-07-21T10:36:12.585768").all()
 
