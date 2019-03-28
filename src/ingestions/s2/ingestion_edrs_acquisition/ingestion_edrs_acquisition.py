@@ -73,13 +73,15 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
     # Obtain downlink orbit
     downlink_orbit = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Variable_Header/Downlink_Orbit")[0].text
 
-    edrs_slots = query.get_events_join(explicit_ref_like = {"op": "like", "str": session_id}, gauge_name_like = {"op": "like", "str": "SLOT_REQUEST_EDRS"}, gauge_system_like = {"op": "like", "str": satellite})
+    edrs_slots = query.get_events(explicit_refs = {"op": "like", "filter": session_id},
+                                  gauge_names = {"op": "like", "filter": "SLOT_REQUEST_EDRS"},
+                                  gauge_systems = {"op": "like", "filter": satellite})
 
     planned_playbacks = []
     if len (edrs_slots) > 0:
         planned_playback_uuids = [link.event_uuid_link for link in edrs_slots[0].eventLinks if link.name == "PLANNED_PLAYBACK"]
 
-        planned_playbacks = query.get_events(event_uuids = {"op": "in", "list": planned_playback_uuids})
+        planned_playbacks = query.get_events(event_uuids = {"op": "in", "filter": planned_playback_uuids})
     # end if
 
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 2 or @VCID = 3 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
@@ -663,7 +665,11 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         merged_timeline_isp_gaps = date_functions.merge_timeline(date_functions.sort_timeline_by_start(timeline_isp_gaps))
 
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
-        corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": downlink_mode, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        corrected_planned_imagings = query.get_events_join(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                           gauge_systems = {"filter": [satellite], "op": "like"},
+                                                           value_filters = [{"name": {"op": "like", "str": "record_type"}, "type": "text", "value": {"op": "==", "value": downlink_mode}}],
+                                                           start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
+                                                           stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
 
         # Obtain the expected number of packets and the packet status
         raw_isp_validity_date_segments = date_functions.convert_input_events_to_date_segments([raw_isp_validity_event])
@@ -740,7 +746,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == isp_validity_valid_segment["id2"]][0]
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
-                sensing_orbit_values = query.get_event_values_interface(value_type="double", values_names_type=[{"op": "in", "names": ["start_orbit"], "type": "double"}], event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                sensing_orbit_values = query.get_event_values_interface(value_type="double",
+                                                                        value_filters=[{"name": {"op": "like", "str": "start_orbit"}, "type": "double"}],
+                                                                        event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
                 sensing_orbit = str(sensing_orbit_values[0].value)
 
                 # ISP validity event

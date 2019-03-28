@@ -101,10 +101,10 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    playbacks = query.get_linked_events_join(gauge_name_like = {"str":"PLANNED_PLAYBACK_TYPE_%_CORRECTION","op":"like"},
-                                         gauge_systems = {"list":[satellite],"op":"in"},
+    playbacks = query.get_linked_events(gauge_names = {"filter":"PLANNED_PLAYBACK_CORRECTION","op":"like"},
+                                         gauge_systems = {"filter":[satellite],"op":"in"},
                                          start_filters = [{"date":start,"op":">"}], stop_filters = [{"date":stop, "op":"<"}],
-                                         link_names = {"list":["TIME_CORRECTION"],"op":"in"},
+                                         link_names = {"filter":["TIME_CORRECTION"],"op":"in"},
                                          return_prime_events = False)
 
     links = []

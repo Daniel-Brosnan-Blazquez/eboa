@@ -1685,7 +1685,7 @@ class Engine():
         :param list_values_to_be_created: list of values to be stored later inside the DDBB
         :type list_values_to_be_created: list
         """
-        values = self.query.get_event_values([from_event_uuid])
+        values = self.query.get_event_values(event_uuids = [from_event_uuid])
         for value in values:
             if not type(value) in list_values_to_be_created:
                 list_values_to_be_created[type(value)] = []
@@ -1725,7 +1725,7 @@ class Engine():
         """
         for event_uuid in list_event_uuids_aliases:
             # Get links that point to it
-            links = self.query.get_event_links(event_uuids = {"list": [event_uuid], "op": "in"})
+            links = self.query.get_event_links(event_uuids = {"filter": [event_uuid], "op": "in"})
             for link in links:
                 for alias in list_event_uuids_aliases[event_uuid]:
                     if link.event_uuid_link in list_event_uuids_aliases:
@@ -1768,7 +1768,7 @@ class Engine():
         :param list_keys_to_be_created: list of keys to be stored later inside the DDBB
         :type list_keys_to_be_created: list
         """
-        keys = self.query.get_event_keys({"list": [from_event_uuid], "op": "in"})
+        keys = self.query.get_event_keys(event_uuids = {"filter": [from_event_uuid], "op": "in"})
         for key in keys:
             list_keys_to_be_created.append(dict(event_key = key.event_key,
                                                 event_uuid = to_event_uuid,
@@ -2094,7 +2094,7 @@ class Engine():
                 }
                 self._insert_values(new_structure_values, entity_uuid, list_values)
             else:
-                event_values = self.query.get_event_values([event_uuid])
+                event_values = self.query.get_event_values(event_uuids = [event_uuid])
                 event_values_first_level = [value for value in event_values if value.parent_level == 0 and value.parent_position == 0]
                 self._insert_values(values, entity_uuid, list_values, level_position = len(event_values_first_level), parent_level = 0, parent_level_position = 0)
             # end if

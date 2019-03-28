@@ -37,13 +37,16 @@ class TestEngine(unittest.TestCase):
         # Create the engine to manage the data
         self.engine_eboa = Engine()
         self.query_eboa = Query()
-
         # Create session to connectx to the database
         self.session = Session()
 
         # Clear all tables before executing the test
-        for table in reversed(Base.metadata.sorted_tables):
-            engine.execute(table.delete())
+        self.query_eboa.clear_db()
+
+    def tearDown(self):
+        # Close connections to the DDBB
+        self.engine_eboa.close_session()
+        self.session.close()
 
     def test_insert_station_acquisition_report(self):
         filename = "REPORT_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF"
@@ -206,7 +209,7 @@ class TestEngine(unittest.TestCase):
 
         #Check if a definite link exists
         linked_uuids = (link.event_uuid_link for link in total_links)
-        definite_linked_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK_TYPE_SAD",
+        definite_linked_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLANNED_PLAYBACK",
                                                                              Event.start == "2018-07-24 12:28:55.968000",
                                                                              Event.stop == "2018-07-24 12:28:55.968000").all()
 

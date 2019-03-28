@@ -21,6 +21,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </schema>
 
 <extension name="postgis">
+  <schema name="eboa"/>
 </extension>
 
 <table name="events">

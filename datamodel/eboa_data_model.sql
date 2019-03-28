@@ -31,6 +31,12 @@ ALTER SCHEMA eboa OWNER TO eboa;
 SET search_path TO pg_catalog,public,eboa;
 -- ddl-end --
 
+-- object: postgis | type: EXTENSION --
+-- DROP EXTENSION IF EXISTS postgis CASCADE;
+CREATE EXTENSION postgis
+      WITH SCHEMA eboa;
+-- ddl-end --
+
 -- object: eboa.events | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.events CASCADE;
 CREATE TABLE eboa.events(

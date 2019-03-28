@@ -51,8 +51,7 @@ class TestEngine(unittest.TestCase):
         self.session = Session()
 
         # Clear all tables before executing the test
-        for table in reversed(Base.metadata.sorted_tables):
-            engine.execute(table.delete())
+        self.query_eboa.clear_db()
 
     def tearDown(self):
         # Close connections to the DDBB
@@ -2793,19 +2792,19 @@ class TestEngine(unittest.TestCase):
         
         rest_of_event_uuids = [events_with_links[1].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[0].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"filter": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"filter": [events_with_links[0].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 3
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[2].event_uuid]
         
-        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[1].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"filter": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"filter": [events_with_links[1].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 2
 
         rest_of_event_uuids = [events_with_links[0].event_uuid, events_with_links[1].event_uuid]
         
-        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"list": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"list": [events_with_links[2].event_uuid], "op": "in"})
+        event_links_ddbb = self.query_eboa.get_event_links(event_uuids = {"filter": rest_of_event_uuids, "op": "in"}, event_uuid_links = {"filter": [events_with_links[2].event_uuid], "op": "in"})
 
         assert len(event_links_ddbb) == 1
 

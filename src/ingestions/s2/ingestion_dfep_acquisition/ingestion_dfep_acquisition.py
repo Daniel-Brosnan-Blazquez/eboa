@@ -118,7 +118,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "PLAYBACK_" + downlink_mode + "_GAP",
+                    "name": "PLAYBACK_GAP",
                     "system": station
                 },
                 "start": start,
@@ -176,15 +176,19 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         query_start = acquisition_start
         # Obtain planned playbacks
         if downlink_mode in ["NOMINAL", "NRT"]:
-            corrected_planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode + "_CORRECTION", "PLANNED_PLAYBACK_TYPE_REGULAR_CORRECTION"]
+            planned_playback_types = [downlink_mode, "REGULAR"]
         elif downlink_mode in ["SAD", "HKTM"]:
             # The SAD and HKTM playbacks have no duration because the duration is not set in the NPPF and can be modified, so in order to get the information from DDBB, the start value of the query is moved to start -11 seconds (correct margin as per mission specification there must be always 11 seconds between playbacks)
             query_start = str(parser.parse(acquisition_start) + datetime.timedelta(seconds=-11))
-            corrected_planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode + "_CORRECTION", "PLANNED_PLAYBACK_TYPE_HKTM_SAD_CORRECTION"]
+            planned_playback_types = [downlink_mode, "HKTM_SAD"]
         else:
-            corrected_planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode + "_CORRECTION"]
+            planned_playback_types = [downlink_mode]
         # end if
-        corrected_planned_playbacks = query.get_events_join(gauge_names = {"list": corrected_planned_playback_gauge_names, "op": "in"}, gauge_systems = {"list": [satellite], "op": "in"}, start_filters = [{"date": acquisition_stop, "op": "<"}], stop_filters = [{"date": query_start, "op": ">"}])
+        corrected_planned_playbacks = query.get_events(gauge_names = {"op": "like", "filter": "PLANNED_PLAYBACK_CORRECTION"},
+                                                       gauge_systems = {"op": "like", "filter": satellite},
+                                                       value_filters = [{"name": {"op": "like", "str": "playback_type"}, "type": "text", "value": {"op": "in", "value": planned_playback_types}}],
+                                                       start_filters = [{"date": acquisition_stop, "op": "<"}],
+                                                       stop_filters = [{"date": query_start, "op": ">"}])
 
         # Initialize the completeness
         for corrected_planned_playback in corrected_planned_playbacks:
@@ -192,7 +196,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
             planned_playback_uuid = [event_link.event_uuid_link for event_link in corrected_planned_playback.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
-            planned_playback_event = query.get_events(event_uuids = {"op": "in", "list": [planned_playback_uuid]})
+            planned_playback_event = query.get_events(event_uuids = {"op": "in", "filter": [planned_playback_uuid]})
             playback_planning_completeness_generation_times.append(planned_playback_event[0].source.generation_time)
 
             links_playback_validity.append({
@@ -238,11 +242,9 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                         stop = start + datetime.timedelta(seconds=2)
                     elif downlink_mode == "HKTM":
                         # HKTM
-                        channels = ["1"]
                         start = corrected_planned_playback.start + datetime.timedelta(seconds=2)
                         stop = start
                     else:
-                        channels = ["1","2"]
                         start = corrected_planned_playback.start + datetime.timedelta(seconds=3)
                         stop = corrected_planned_playback.stop - datetime.timedelta(seconds=3)
                     # end if
@@ -251,7 +253,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                     playback_planning_completeness_operation["events"].append({
                         "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                            "name": "PLANNED_PLAYBACK_" + downlink_mode + "_COMPLETENESS_CHANNEL_" + data_channel,
+                            "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + data_channel,
                             "system": satellite
                         },
                         "start": str(start),
@@ -275,7 +277,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "key": session_id,
             "gauge": {
                 "insertion_type": "EVENT_KEYS",
-                "name": "PLAYBACK_" + downlink_mode + "_VALIDITY_" + vcid_number,
+                "name": "PLAYBACK_VALIDITY_" + vcid_number,
                 "system": station
             },
             "links": links_playback_validity,
@@ -325,7 +327,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "key": session_id + "_CHANNEL_" + channel,
             "gauge": {
                 "insertion_type": "INSERT_and_ERASE_per_EVENT",
-                "name": "PLANNED_PLAYBACK_" + downlink_mode + "_COMPLETENESS_CHANNEL_" + channel,
+                "name": "PLANNED_PLAYBACK_COMPLETENESS_CHANNEL_" + channel,
                 "system": satellite
             },
             "links": links_playback_completeness,
@@ -746,9 +748,16 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
         if downlink_mode != "RT":
-            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, values_name_type_like = [{"name_like": "record_type", "type": "text", "op": "like"}], value_filters = [{"value": downlink_mode, "type": "text", "op": "=="}], start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+            corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                          gauge_systems = {"filter": [satellite], "op": "in"},
+                                                          value_filters = [{"name": {"op": "like", "str": "record_type"}, "type": "text", "value": {"op": "==", "value": downlink_mode}}],
+                                                          start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
+                                                          stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
         else:
-            corrected_planned_imagings = query.get_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"}, gauge_systems = {"list": [satellite], "op": "in"}, start_filters = [{"date": corrected_sensing_stop, "op": "<"}], stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+            corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                          gauge_systems = {"filter": [satellite], "op": "in"},
+                                                          start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
+                                                          stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
         # end if
 
         corrected_planned_imagings_segments = date_functions.convert_eboa_events_to_date_segments(corrected_planned_imagings)
@@ -765,7 +774,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 exit_status = engine.insert_event_values(planned_imaging_uuid, value)
                 if exit_status["inserted"] == True:
 
-                    planned_imaging_event = query.get_events(event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                    planned_imaging_event = query.get_events(event_uuids = {"op": "in", "filter": [planned_imaging_uuid]})
                     isp_planning_completeness_generation_times.append(planned_imaging_event[0].source.generation_time)
                     
                     # Insert the linked COMPLETENESS event for the automatic completeness check
@@ -812,7 +821,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 intersected_planned_imagings_segment = intersected_planned_imagings_segments[0]
                 corrected_planned_imaging = [event for event in corrected_planned_imagings if event.event_uuid == intersected_planned_imagings_segment["id2"]][0]
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
-                sensing_orbit_values = query.get_event_values_interface(value_type="double", values_names_type=[{"op": "in", "names": ["start_orbit"], "type": "double"}], event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                sensing_orbit_values = query.get_event_values_interface(value_type="double",
+                                                                        value_filters=[{"name": {"op": "like", "str": "start_orbit"}, "type": "double"}],
+                                                                        event_uuids = {"op": "in", "filter": [planned_imaging_uuid]})
                 sensing_orbit = str(sensing_orbit_values[0].value)
                 links_isp_validity.append({
                     "link": str(planned_imaging_uuid),
