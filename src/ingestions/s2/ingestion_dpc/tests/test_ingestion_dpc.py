@@ -32,6 +32,7 @@ from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 import ingestions.s2.ingestion_dpc.ingestion_dpc as ingestion
 import ingestions.s2.ingestion_orbpre.ingestion_orbpre as ingestion_orbpre
 import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion_nppf
+import ingestions.s2.ingestion_dfep_acquisition.ingestion_dfep_acquisition as ingestion_dfep_acquisition
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
@@ -193,9 +194,30 @@ class TestEngine(unittest.TestCase):
 
         assert len(datablock_event_links) == 2
 
-    #Pending of a scenario with REP_PASS
     def test_dpc_report_L0_L1B_with_REP_PASS(self):
-        assert True
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0_2.EOF"
+        rep_pass_filename = "S2A_REP_PASS_NO_GAPS.EOF"
+        orbpre_filename = "S2A_ORBPRE_2.EOF"
+        nppf_filename = "S2A_NPPF_2.EOF"
+
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
+        ingestion_nppf.command_process_file(nppf_file_path)
+
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        ingestion_orbpre.command_process_file(orbpre_file_path)
+
+        rep_pass_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + rep_pass_filename
+        ingestion_dfep_acquisition.command_process_file(rep_pass_file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        ingestion.command_process_file(file_path)
+
+        #Check the received_imaging_completeness comprehends the same period as the processing_validity
+        processing_validity_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L0").all()
+
+        received_imaging_completeness = self.session.query(Event).join(Gauge).filter(Gauge.name == "RECEIVED_IMAGING_L0_COMPLETENESS").all()
+
+        assert (processing_validity_event[0].start == received_imaging_completeness[0].start and processing_validity_event[0].stop == received_imaging_completeness[0].stop)
 
     def test_dpc_report_L1B_L1C_with_plan_no_previous_reports(self):
         filename = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
@@ -285,9 +307,34 @@ class TestEngine(unittest.TestCase):
 
         assert len(datablock_event_links) == 2
 
-    #Pending of a scenario with REP_PASS
     def test_dpc_report_L1B_L1C_with_REP_PASS(self):
-        assert True
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0_2.EOF"
+        filename_2 = "S2A_OPER_REP_OPDPC_L1B_L1C_2.EOF"
+        rep_pass_filename = "S2A_REP_PASS_NO_GAPS.EOF"
+        orbpre_filename = "S2A_ORBPRE_2.EOF"
+        nppf_filename = "S2A_NPPF_2.EOF"
+
+        nppf_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + nppf_filename
+        ingestion_nppf.command_process_file(nppf_file_path)
+
+        orbpre_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + orbpre_filename
+        ingestion_orbpre.command_process_file(orbpre_file_path)
+
+        rep_pass_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + rep_pass_filename
+        ingestion_dfep_acquisition.command_process_file(rep_pass_file_path)
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        ingestion.command_process_file(file_path)
+
+        file_path_2 = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_2
+        ingestion.command_process_file(file_path_2)
+
+        #Check the received_imaging_completeness comprehends the same period as the processing_validity
+        processing_validity_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
+
+        received_imaging_completeness = self.session.query(Event).join(Gauge).filter(Gauge.name == "RECEIVED_IMAGING_L1C_COMPLETENESS").all()
+
+        assert (processing_validity_event[0].start == received_imaging_completeness[0].start and processing_validity_event[0].stop == received_imaging_completeness[0].stop)
 
     def test_insert_dpc_report_aux(self):
         filename = "S2A_OPER_REP_OPDPC_SAD.EOF"
