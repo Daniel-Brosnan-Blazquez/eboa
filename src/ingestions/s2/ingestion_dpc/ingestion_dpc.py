@@ -77,26 +77,27 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
     granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
     datablocks = date_functions.merge_timeline(granule_timeline_sorted)
     #Obtain the gaps from the processing per detector
-    data_gaps = {}
+    processing_gaps = {}
+    granule_timeline_per_detector_sorted = {}
+    datablocks_per_detector = {}
     for detector in granule_timeline_per_detector:
-        granule_timeline_per_detector[detector] = date_functions.sort_timeline_by_start(granule_timeline_per_detector[detector])
-        granule_timeline_per_detector[detector] = date_functions.merge_timeline(granule_timeline_per_detector[detector])
-        if detector not in data_gaps:
-            data_gaps[detector] = {}
+        granule_timeline_per_detector_sorted[detector] = date_functions.sort_timeline_by_start(granule_timeline_per_detector[detector])
+        datablocks_per_detector[detector] = date_functions.merge_timeline(granule_timeline_per_detector_sorted[detector])
+        if detector not in processing_gaps:
+            processing_gaps[detector] = {}
         #end if
-        data_gaps[detector] = date_functions.difference_timelines(granule_timeline_per_detector[detector],datablocks)
+        processing_gaps[detector] = date_functions.difference_timelines(datablocks_per_detector[detector],datablocks)
     #end for
 
     #Obtain the gaps existing during the reception per detector
     if len(datablocks) > 0:
-        isp_gaps = query.get_linked_events_join(gauge_name_like = {"str": "ISP_GAP", "op": "like"},
-        gauge_systems = {"list": [satellite], "op": "in"},
-        start_filters = [{"date": str(datablocks[-1]["stop"]), "op": "<"}],
-        stop_filters = [{"date": str(datablocks[0]["start"]), "op": ">"}],
-        link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
-        return_prime_events = False)["linked_events"]
+        isp_gaps = query.get_events(gauge_names = {"filter": "ISP_GAP", "op": "like"},
+                                    value_filters = [{"name": {"str": "satellite", "op": "like"}, "type": "text", "value": {"op": "like", "value": satellite}}],
+                                    start_filters = [{"date": str(datablocks[-1]["stop"]), "op": "<"}],
+                                    stop_filters = [{"date": str(datablocks[0]["start"]), "op": ">"}])
         data_isp_gaps = {}
         for gap in isp_gaps:
+            detector = [value.value for value in gap.eventDoubles if value.name == "detector"][0]
             if gap.detector not in data_isp_gaps:
                 data_isp_gaps[gap.detector] = {}
             #end if
@@ -115,11 +116,11 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
             gaps_datablock = {}
             isp_gaps_datablock = {}
 
-            for detector in data_gaps:
+            for detector in processing_gaps:
                 if detector not in gaps_datablock:
                     gaps_datablock[detector] = {}
                 #end if
-                gaps_datablock[detector] = date_functions.intersect_timelines(data_gaps[detector],datablocks)
+                gaps_datablock[detector] = date_functions.intersect_timelines(processing_gaps[detector],datablocks)
                 #If gaps in the datablock, the status is incomplete
                 if(len(gaps_datablock[detector]) > 0):
                     status="INCOMPLETE"
@@ -135,12 +136,12 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
 
 
             #Obtain the planned imaging
-            planned_imaging = query.get_linked_events_join(gauge_name_like = {"str": "PLANNED_CUT_IMAGING_%_CORRECTION", "op": "like"},
-            gauge_systems = {"list": [satellite], "op": "in"},
-            start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
-            stop_filters = [{"date": str(datablock["start"]), "op": ">"}],
-            link_names = {"list": ["TIME_CORRECTION"], "op": "in"},
-            return_prime_events = False)["linked_events"]
+            planned_imaging = query.get_linked_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                      gauge_systems = {"filter": satellite, "op": "like"},
+                                                      start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
+                                                      stop_filters = [{"date": str(datablock["start"]), "op": ">"}],
+                                                      link_names = {"filter": "TIME_CORRECTION", "op": "like"},
+                                                      return_prime_events = False)["linked_events"]
             #Planning completeness
             if len(planned_imaging) is not 0:
                 planned_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(planned_imaging)
@@ -182,7 +183,7 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
 
                     event_link_ref = "PROCESSING_VALIDITY_" + datablock["start"].isoformat()
                     #Create gap events
-                    for detector in data_gaps:
+                    for detector in processing_gaps:
                         for gap in gaps_datablock[detector]:
                             gap_source = "processing"
                             #Check if the gap already existed in the received imaging
@@ -294,9 +295,9 @@ def L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of
             #end if
 
             #Obtain received imaging events
-            received_imaging = query.get_events_join(gauge_name_like = {"str":"ISP_VALIDITY", "op":"like"},
-            start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
-            stop_filters = [{"date": str(datablock["start"]), "op": ">"}])
+            received_imaging = query.get_events(gauge_names = {"filter":"ISP_VALIDITY", "op":"like"},
+                                                start_filters = [{"date": str(datablock["stop"]), "op": "<"}],
+                                                stop_filters = [{"date": str(datablock["start"]), "op": ">"}])
             #Received Imaging Completeness
             if len(received_imaging) is not 0:
                 received_imaging_timeline = date_functions.convert_eboa_events_to_date_segments(received_imaging)
@@ -664,31 +665,31 @@ def process_file(file_path, engine, query):
     list_of_configuration_events = []
     list_of_configuration_explicit_references = []
     list_of_operations = []
-    flag_query = False
+    query_upper_level = False
 
-    #Obtain the satellite
+    # Obtain the satellite
     satellite = file_name[0:3]
-    #Obtain the station
+    # Obtain the station
     system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
-    #Obtain the creation date
+    # Obtain the creation date
     creation_date = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
-    #Obtain the validity start
+    # Obtain the validity start
     validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
-    #Obtain the validity stop
+    # Obtain the validity stop
     validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
-    #Obtain the workplan current status
+    # Obtain the workplan current status
     workplan_current_status = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_CURRENT_STATUS")[0].text
-    #Obtain the workplan message
+    # Obtain the workplan message
     workplan_message = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_MESSAGE")[0].text
-    #Obtain the workplan start datetime
+    # Obtain the workplan start datetime
     workplan_start_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_START_DATETIME")[0].text
-    #Obtain the workplan end datetime
+    # Obtain the workplan end datetime
     workplan_end_datetime = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SUPERVISION_INFO/WORKPLAN_END_DATETIME")[0].text
-    #Obtain a list of the mrfs
+    # Obtain a list of the mrfs
     mrf_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/List_Of_MRFs/MRF")
-    #Obtain a list of the steps
+    # Obtain a list of the steps
     steps_list = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/DATA/STEP_INFO")
-    #Source for the main operation
+    # Source for the main operation
     source = {
         "name": file_name,
         "generation_time": creation_date,
@@ -718,34 +719,33 @@ def process_file(file_path, engine, query):
         "events": []
     }
 
-    ##Use outputs filtered by datastrip
-    #Loop through each output node that contains a datastrip (excluding the auxiliary data)
+    # Loop through each output node that contains a datastrip (excluding the auxiliary data)
     for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
         granule_timeline_per_detector = {}
         granule_timeline = []
-        #Obtain the datastrip
+        # Obtain the datastrip
         ds_output = output_msi.find("DATA_STRIP_ID").text
-        #Obtain the sensing date from the datastrip
-        output_sensing_date = ds_output[41:57]
-        #Obtain the baseline from the datastrip
+        # Obtain the sensing identifier from the datastrip
+        sensing_identifier = ds_output[40:57]
+        # Obtain the baseline from the datastrip
         baseline = ds_output[58:]
-        #Obtain the production level from the datastrip
+        # Obtain the production level from the datastrip
         level = ds_output[13:16].replace("_","")
 
-        #Obtain the input datastrip if exists
+        # Obtain the input datastrip if exists
         input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")
         if len(input) > 0:
             ds_input = input[0].text
-        #end if
+        # end if
 
         baseline_annotation = {
         "explicit_reference": ds_output,
         "annotation_cnf": {
-            "name": "PRODUCTION-BASELINE",
+            "name": "PRODUCTION_BASELINE",
             "system": system
             },
         "values": [{
-            "name": "baseline_information",
+            "name": "details",
             "type": "object",
             "values": [
                 {"name": "baseline",
@@ -756,11 +756,29 @@ def process_file(file_path, engine, query):
         }
         list_of_annotations.append(baseline_annotation)
 
+        sensing_identifier_annotation = {
+        "explicit_reference": ds_output,
+        "annotation_cnf": {
+            "name": "SENSING_IDENTIFIER",
+            "system": system
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "sensing_identifier",
+                 "type": "text",
+                 "value": sensing_identifier
+                }]
+            }]
+        }
+        list_of_annotations.append(sensing_identifier_annotation)
+
         explicit_reference = {
            "group": level + "_DS",
            "links": [{
-               "back_ref": "INPUT-DATASTRIP",
-               "link": "OUTPUT-DATASTRIP",
+               "back_ref": "INPUT_DATASTRIP",
+               "link": "OUTPUT_DATASTRIP",
                "name": ds_input
                }
            ],
@@ -768,15 +786,15 @@ def process_file(file_path, engine, query):
         }
         list_of_explicit_references.append(explicit_reference)
 
-        #Loop over each granule in the ouput
+        # Loop over each granule in the ouput
         for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_GR_')]"):
-            #Obtain the granule id
+            # Obtain the granule id
             granule_t = granule.text
             level_gr = granule_t[13:16].replace("_","")
             granule_sensing_date = granule_t[42:57]
             detector = granule_t[59:61]
 
-            #Create a segment for each granule with a margin calculated to get whole scenes
+            # Create a segment for each granule with a margin calculated to get whole scenes
             start= parser.parse(granule_sensing_date)
             stop = start + datetime.timedelta(seconds=5)
             granule_segment = {
@@ -785,11 +803,11 @@ def process_file(file_path, engine, query):
                 "id": granule_t
             }
 
-            #Create a dictionary containing all the granules for each detector
+            # Create a dictionary containing all the granules for each detector
             granule_timeline.append(granule_segment)
             if detector not in granule_timeline_per_detector:
                 granule_timeline_per_detector[detector] = []
-            #end if
+            # end if
             granule_timeline_per_detector[detector].append(granule_segment)
             explicit_reference = {
                 "group": level_gr + "_GR",
@@ -802,11 +820,11 @@ def process_file(file_path, engine, query):
                 "name": granule_t
             }
             list_of_explicit_references.append(explicit_reference)
-        #end for
+        # end for
 
-        #Loop over each tile in the output
+        # Loop over each tile in the output
         for tile in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TL_')]"):
-            #Obtain the tile id
+            # Obtain the tile id
             tile_t = tile.text
             level_tl = tile_t[13:16]
             level_tl.replace("_","")
@@ -815,18 +833,18 @@ def process_file(file_path, engine, query):
                 "group": level_tl + "_TL",
                 "links": [{
                     "back_ref": "DATASTRIP",
-                    "link": "GRANULE",
+                    "link": "TILE",
                     "name": ds_output
                     }
                 ],
                 "name": tile_t
             }
             list_of_explicit_references.append(explicit_reference)
-        #end for
+        # end for
 
-        #Loop over each TCI in the ouput
+        # Loop over each TCI in the ouput
         for true_color in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TC_')]"):
-            #Obtain the true color imaging id
+            # Obtain the true color imaging id
             true_color_t = true_color.text
             level_tc = true_color_t[13:16]
             level_tc.replace("_","")
@@ -835,29 +853,36 @@ def process_file(file_path, engine, query):
                 "group": level_tc + "_TC",
                 "links": [{
                     "back_ref": "DATASTRIP",
-                    "link": "GRANULE",
+                    "link": "TCI",
                     "name": ds_output
                     }
                 ],
                 "name": true_color_t
             }
             list_of_explicit_references.append(explicit_reference)
-        #end_for
+        # end_for
 
-        #If the query has not been executed yet
-        if flag_query is False:
-            processing_validity_events = query.get_linked_events_join(gauge_names = {"list": ["PROCESSING_VALIDITY_L1B","PROCESSING_VALIDITY_L0"], "op": "in"},
-            gauge_systems = {"list": [system], "op": "in"},
-            explicit_ref_like = {"str": "%" + output_sensing_date + "%", "op": "like"},
-            return_prime_events = True)
-        #end if
         if level == "L1B" or level == "L0":
             L0_L1B_processing(satellite, source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, processing_planning_completeness_operation, processing_received_completeness_operation, level, system)
-        #end if
-        elif (level == "L1C" or level == "L2A") and flag_query is False:
-            flag_query = True
-            L1C_L2A_processing(satellite, source, engine, query, list_of_events, processing_validity_events, ds_output, processing_planning_completeness_operation, processing_received_completeness_operation, level, system)
-        #end elif
+        elif (level == "L1C" or level == "L2A") and query_upper_level is False:
+            query_upper_level = True
+            upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
+                                                      groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
+                                                      event_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_identifier}}])
+            upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[1:3] == satellite]
+            upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L0_"]
+            if len(upper_level_er) == 0:
+                upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
+            # end if
+            if len(upper_level_er) > 0:
+                er = upper_level_er[0]
+                processing_validity_events = query.get_linked_events(gauge_names = {"filter": ["PROCESSING_VALIDITY_L1B","PROCESSING_VALIDITY_L0"], "op": "in"},
+                                                                     explicit_refs = {"filter": er, "op": "like"},
+                                                                     return_prime_events = True)
+
+                L1C_L2A_processing(satellite, source, engine, query, list_of_events, processing_validity_events, ds_output, processing_planning_completeness_operation, processing_received_completeness_operation, level, system)
+            # end if
+        # end if
 
         if len(processing_planning_completeness_operation["events"]) > 0:
             completeness_event_starts = [event["start"] for event in processing_planning_completeness_operation["events"]]
@@ -918,7 +943,7 @@ def process_file(file_path, engine, query):
                     "explicit_reference": ds_output,
                     "gauge": {
                         "insertion_type": "SIMPLE_UPDATE",
-                        "name": "STEP-INFO",
+                        "name": "STEP_INFO",
                         "system": system
                     },
                     "start": step.find("PROCESSING_START_DATETIME").text[:-1],
@@ -959,7 +984,7 @@ def process_file(file_path, engine, query):
 
     for mrf in mrf_list:
         #Only if the mrf does not exist in the DB
-        mrfsDB = query.get_events_join(explicit_ref_like = {"op": "like", "str": mrf.find("Id").text})
+        mrfsDB = query.get_events(explicit_refs = {"op": "like", "filter": mrf.find("Id").text})
         if len(mrfsDB) is 0:
             #If the date is correct, else the date is set to a maximum value
             try:
@@ -973,7 +998,7 @@ def process_file(file_path, engine, query):
                 "explicit_reference": mrf.find("Id").text,
                 "gauge": {
                     "insertion_type": "EVENT_KEYS",
-                    "name": "MRF-VALIDITY",
+                    "name": "MRF_VALIDITY",
                     "system": system
                 },
                 "start": mrf.find("ValidityStart").text[:-1],
@@ -1037,6 +1062,9 @@ def process_file(file_path, engine, query):
     })
 
     data = {"operations": list_of_operations}
+
+    os.remove(new_file_path)
+
     return data
 
 def insert_data_into_DDBB(data, filename, engine):

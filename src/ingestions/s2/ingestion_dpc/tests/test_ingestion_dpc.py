@@ -59,7 +59,7 @@ class TestEngine(unittest.TestCase):
         assert len(dim_signature) == 1
 
         #Check baseline annotation configuration is correctly taken
-        baseline_annotation_cnf = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == "PRODUCTION-BASELINE",
+        baseline_annotation_cnf = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == "PRODUCTION_BASELINE",
                                                                                             AnnotationCnf.system == "EPAE").all()
 
         assert len(baseline_annotation_cnf) == 1
@@ -70,7 +70,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(baseline_annotation_text) == 1
 
-        #Check input-output explicit_ref is correctly taken
+        #Check input_output explicit_ref is correctly taken
         definite_explicit_ref_1 = self.session.query(ExplicitRefGrp).join(ExplicitRef).filter(ExplicitRef.explicit_ref == "S2A_OPER_MSI_L1B_DS_EPAE_20180721T020145_S20180721T001610_N02.06",
                                                                                               ExplicitRefGrp.name == "L1B_DS").all()
 
@@ -95,32 +95,32 @@ class TestEngine(unittest.TestCase):
         assert len(definite_timeliness_event) == 1
 
         #Check all step events are correctly taken
-        steps_events = self.session.query(Event).join(Gauge).filter(Gauge.name == "STEP-INFO",
+        steps_events = self.session.query(Event).join(Gauge).filter(Gauge.name == "STEP_INFO",
                                                                     Gauge.system == "EPAE").all()
 
         assert len(steps_events) == 18
 
         #Check that the values from the steps are correctly taken
-        definite_step_values_id = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP-INFO",
+        definite_step_values_id = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP_INFO",
                                                                              EventText.name == "id",
                                                                              EventText.value == "step_Format_Image_L1B").all()
 
         assert len(definite_step_values_id) == 1
 
-        definite_step_values_exec_mode = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP-INFO",
+        definite_step_values_exec_mode = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP_INFO",
                                                                              EventText.name == "exec_mode",
                                                                              EventText.value == "nominal").all()
 
         assert len(definite_step_values_exec_mode) == 18
 
         #Check all mrf events are correctly taken
-        mrfs_events = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF-VALIDITY",
+        mrfs_events = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                             Gauge.system == "EPAE").all()
 
         assert len(mrfs_events) == 131
 
         #Check a definite mrf event is correctly taken
-        definite_mrf_event = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF-VALIDITY",
+        definite_mrf_event = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                          Gauge.system == "EPAE",
                                                                          EventKey.event_key == "S2A_OPER_GIP_PRDLOC_MPC__20180301T130000_V20180305T005000_21000101T000000_B00",
                                                                          Event.start == "2018-03-05T00:50:00.000",
@@ -129,7 +129,7 @@ class TestEngine(unittest.TestCase):
         assert len(definite_mrf_event) == 1
 
         #Check that a definite MRF values are correctly taken
-        definite_mrf_event_values = self.session.query(EventTimestamp).join(Event, Gauge).filter(Gauge.name == "MRF-VALIDITY",
+        definite_mrf_event_values = self.session.query(EventTimestamp).join(Event, Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                          Gauge.system == "EPAE",
                                                                          Event.start == "2018-03-05T00:50:00.000",
                                                                          Event.stop == "2100-01-01 00:00:00",
@@ -386,7 +386,7 @@ class TestEngine(unittest.TestCase):
         ingestion.command_process_file(file_path)
 
         #Check that the unfinished step is not taken
-        definite_step_values_id = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP-INFO",
+        definite_step_values_id = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP_INFO",
                                                                              EventText.name == "id",
                                                                              EventText.value == "step_Archive_Generic").all()
 
@@ -398,12 +398,12 @@ class TestEngine(unittest.TestCase):
         ingestion.command_process_file(file_path)
 
         #Check all mrf events are correctly taken
-        mrfs_events_before = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF-VALIDITY",
+        mrfs_events_before = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                             Gauge.system == "EPAE").all()
 
         ingestion.command_process_file(file_path)
 
-        mrfs_events_after = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF-VALIDITY",
+        mrfs_events_after = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                             Gauge.system == "EPAE").all()
 
         assert len(mrfs_events_before) == len(mrfs_events_after)
