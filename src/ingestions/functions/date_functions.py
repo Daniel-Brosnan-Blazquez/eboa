@@ -60,6 +60,23 @@ def intersect_timelines (timeline1, timeline2):
     return timeline
 # end def
 
+def get_intersected_timeline_with_idx (timeline, idx):
+    """
+    Method to obtain the segments of the timeline result of the intersection operation with id corresponding to the timeline 1 or timeline 2
+    PRE: the segments of the timeline have the structured returned by the intersect_timelines operation
+    """
+    
+    intersected_timeline_with_idx = []
+    for segment in timeline:
+        intersected_timeline_with_idx.append({
+            "id": segment["id" + str(idx)],
+            "start": segment["start"],
+            "stop": segment["stop"]
+        })
+
+    return intersected_timeline_with_idx
+# end def
+
 def intersect_many_timelines (timelines):
     """
     Method to obtain the timeline intersecting all the timelines in the received list
@@ -244,6 +261,22 @@ def get_timeline_duration(timeline):
 
     """
     return sum([(segment["stop"] - segment["start"]).total_seconds() for segment in timeline])
+
+def get_greater_segment(timeline):
+    """
+    Method to get the segment corresponding to the greater duration
+    Input: list of segments structured for the usage of this component
+    Output: segment with the greater duration
+
+    """
+    segments_duration = [{"id": segment["id"],
+                          "start": segment["start"],
+                          "stop": segment["stop"],
+                          "duration": (segment["stop"] - segment["start"]).total_seconds()} for segment in timeline]
+    
+    sorted_segments_by_duration = sorted(segments_duration, key=lambda segment: segment["duration"])
+
+    return sorted_segments_by_duration[-1]
 
 ###########
 # Functions using the timelines with the structure of data to be inserted into the EBOA
