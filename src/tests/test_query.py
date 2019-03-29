@@ -1387,6 +1387,110 @@ class TestQuery(unittest.TestCase):
 
         assert result == True
 
+
+    def test_query_linking_events(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "link_ref": "EVENT_LINK1",
+                    "links": [{
+                        "link": "EVENT_LINK2",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK1"
+                    }],
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                },
+                {
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "link_ref": "EVENT_LINK2",
+                    "links": [{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK2"
+                    }],
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T04:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            }]}
+        self.engine_eboa.treat_data(data)
+
+        events = self.query.get_linking_events()
+
+        assert len(events["linking_events"]) == 2
+        assert len(events["prime_events"]) == 2
+
+        source1 = self.query.get_sources()
+        explicit_ref1 = self.query.get_explicit_refs()
+        gauge1 = self.query.get_gauges()
+        event1 = self.query.get_events(start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
+        event2 = self.query.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
+
+
+        events = self.query.get_linking_events(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"},
+                                                   explicit_ref_uuids = {"filter": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                                   gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"},
+                                                   event_uuids = {"filter": [event1[0].event_uuid], "op": "in"},
+                                                   start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                                                   stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                                   link_names = {"filter": ["EVENT_LINK2"], "op": "in"})
+
+        assert len(events["linking_events"]) == 1
+        assert events["linking_events"][0].event_uuid == event2[0].event_uuid
+        assert len(events["prime_events"]) == 1
+
+        events = self.query.get_linking_events(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"},
+                                                   explicit_ref_uuids = {"filter": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
+                                                   gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"},
+                                                   event_uuids = {"filter": [event2[0].event_uuid], "op": "in"},
+                                                   start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                                   stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                                   link_names = {"filter": "EVENT_LINK%", "op": "like"})
+
+        assert len(events["linking_events"]) == 1
+        assert events["linking_events"][0].event_uuid == event1[0].event_uuid
+        assert len(events["prime_events"]) == 1
+
+        events = self.query.get_linking_events(event_uuids = {"filter": [event2[0].event_uuid], "op": "in"},
+                                              link_names = {"filter": ["EVENT_LINK1"], "op": "in"})
+
+        assert len(events["linking_events"]) == 1
+        assert events["linking_events"][0].event_uuid == event1[0].event_uuid
+        assert len(events["prime_events"]) == 1
+
+        events = self.query.get_linking_events(back_ref = True)
+
+        assert len(events["linked_events"]) == 2
+        assert len(events["prime_events"]) == 2
+        assert len(events["linking_events"]) == 2
+
+    def test_wrong_inputs_query_linking_events(self):
+        
+        result = False
+        try:
+            self.query.get_linking_events(event_uuids = "not_a_list")
+        except InputError:
+            result = True
+        # end try
+
+        assert result == True
+
     def test_query_annotation_cnf(self):
         data = {"operations": [{
                 "mode": "insert",
