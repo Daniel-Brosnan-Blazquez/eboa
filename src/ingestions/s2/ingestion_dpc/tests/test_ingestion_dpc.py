@@ -13,7 +13,7 @@ import datetime
 from dateutil import parser
 
 # Import engine of the DDBB
-import eboa.engine.engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 from eboa.engine.query import Query
 from eboa.datamodel.base import Session, engine, Base
@@ -29,10 +29,10 @@ from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRe
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import ingestion
-import ingestions.s2.ingestion_dpc.ingestion_dpc as ingestion
+import ingestions.s2.ingestion_dpc.ingestion_dpc as ingestion_dpc
 import ingestions.s2.ingestion_orbpre.ingestion_orbpre as ingestion_orbpre
 import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion_nppf
-import ingestions.s2.ingestion_dfep_acquisition.ingestion_dfep_acquisition as ingestion_dfep_acquisition
+import ingestions.s2.ingestion_dfep_acquisition.ingestion_dfep_acquisition as ingestion_dfep
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
@@ -51,7 +51,7 @@ class TestEngine(unittest.TestCase):
     def test_dpc_report_only(self):
         filename = "S2A_OPER_REP_OPDPC_INSERTION.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check a single dim_signature is correctly taken
         dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == "PROCESSING_S2A").all()
@@ -154,7 +154,7 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check that the source validity times are correctly taken
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_INSERTION.EOF',
@@ -207,10 +207,10 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         rep_pass_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + rep_pass_filename
-        ingestion_dfep_acquisition.command_process_file(rep_pass_file_path)
+        ingestion_dfep.command_process_file(rep_pass_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check the received_imaging_completeness comprehends the same period as the processing_validity
         processing_validity_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L0").all()
@@ -231,7 +231,7 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check the source is correctly taken
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
@@ -259,10 +259,10 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_1
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_2
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check the source is correctly taken
         source = self.session.query(Source).filter(Source.name == 'S2A_OPER_REP_OPDPC_L1B_L1C.EOF',
@@ -321,13 +321,13 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         rep_pass_file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + rep_pass_filename
-        ingestion_dfep_acquisition.command_process_file(rep_pass_file_path)
+        ingestion_dfep.command_process_file(rep_pass_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         file_path_2 = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename_2
-        ingestion.command_process_file(file_path_2)
+        ingestion_dpc.command_process_file(file_path_2)
 
         #Check the received_imaging_completeness comprehends the same period as the processing_validity
         processing_validity_event = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_VALIDITY_L1C").all()
@@ -339,7 +339,7 @@ class TestEngine(unittest.TestCase):
     def test_insert_dpc_report_aux(self):
         filename = "S2A_OPER_REP_OPDPC_SAD.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check a single dim_signature is correctly taken
         dim_signature = self.session.query(DimSignature).filter(DimSignature.dim_signature == "PROCESSING_S2A").all()
@@ -349,7 +349,7 @@ class TestEngine(unittest.TestCase):
     def test_insert_dpc_report_no_granules(self):
         filename = "S2A_OPER_REP_OPDPC_NO_GRANULES.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check input-output explicit_ref is correctly taken
         definite_explicit_ref_1 = self.session.query(ExplicitRefGrp).join(ExplicitRef).filter(ExplicitRef.explicit_ref == "S2A_OPER_MSI_L1B_DS_EPAE_20180721T020145_S20180721T001610_N02.06",
@@ -366,7 +366,7 @@ class TestEngine(unittest.TestCase):
     def test_insert_dpc_report_no_imagings(self):
         filename = "S2A_OPER_REP_OPDPC_NO_IMAGINGS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check that the sources are taken
         source = self.session.query(Source).filter(Source.name == "S2A_OPER_REP_OPDPC_NO_IMAGINGS.EOF").all()
@@ -383,7 +383,7 @@ class TestEngine(unittest.TestCase):
     def test_insert_dpc_report_steps_not_completed(self):
         filename = "S2A_OPER_REP_OPDPC_STEPS_NOT_COMPLETED.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check that the unfinished step is not taken
         definite_step_values_id = self.session.query(EventText).join(Event,Gauge).filter(Gauge.name == "STEP_INFO",
@@ -395,13 +395,13 @@ class TestEngine(unittest.TestCase):
     def test_insert_dpc_report_mrfs_already_ingested(self):
         filename = "S2A_OPER_REP_OPDPC_MRFs.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check all mrf events are correctly taken
         mrfs_events_before = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                             Gauge.system == "EPAE").all()
 
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         mrfs_events_after = self.session.query(EventKey).join(Event,Gauge).filter(Gauge.name == "MRF_VALIDITY",
                                                                             Gauge.system == "EPAE").all()
@@ -411,7 +411,7 @@ class TestEngine(unittest.TestCase):
     def test_correct_validity(self):
         filename = "S2A_OPER_REP_OPDPC_WRONG_VALIDITY.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         #Check that the sources have beem corrected
         source = self.session.query(Source).filter(Source.name == "S2A_OPER_REP_OPDPC_WRONG_VALIDITY.EOF",
@@ -432,8 +432,52 @@ class TestEngine(unittest.TestCase):
         ingestion_orbpre.command_process_file(orbpre_file_path)
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-        ingestion.command_process_file(file_path)
+        ingestion_dpc.command_process_file(file_path)
 
         gaps = self.session.query(Event).join(Gauge).filter(Gauge.name == "PROCESSING_GAP_L1B").all()
 
         assert len(gaps) == 16
+
+    def test_insert_dpc_L0_L1B_L1C_with_plan_and_rep_pass(self):
+
+        filename = "S2A_NPPF_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_nppf.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_ORBPRE_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_orbpre.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_REP_PASS_NO_GAPS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dfep.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0_L1B_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L1B_L1C_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
