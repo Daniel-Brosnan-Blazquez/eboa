@@ -78,7 +78,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert len(source) == 1
 
-        # Check LINK-DETAILS events
+        # Check LINK_DETAILS events
         link_details = self.session.query(Annotation).join(AnnotationCnf).filter(AnnotationCnf.name == "LINK_DETAILS").all()
 
         assert len(link_details) == 1
@@ -387,7 +387,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert len(source) == 1
 
-        # Check LINK-DETAILS events
+        # Check LINK_DETAILS events
         link_details = self.session.query(Annotation).join(AnnotationCnf).filter(AnnotationCnf.name == "LINK_DETAILS").all()
 
         assert len(link_details) == 1
@@ -925,7 +925,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert len(source) == 1
 
-        # Check LINK-DETAILS events
+        # Check LINK_DETAILS events
         link_details = self.session.query(Annotation).join(AnnotationCnf).filter(AnnotationCnf.name == "LINK_DETAILS").all()
 
         assert len(link_details) == 1
@@ -1037,7 +1037,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert len(source) == 1
 
-        # Check LINK-DETAILS events
+        # Check LINK_DETAILS events
         link_details = self.session.query(Annotation).join(AnnotationCnf).filter(AnnotationCnf.name == "LINK_DETAILS").all()
 
         assert len(link_details) == 1
@@ -1100,7 +1100,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert len(source) == 1
 
-        # Check LINK-DETAILS events
+        # Check LINK_DETAILS events
         link_details = self.session.query(Annotation).join(AnnotationCnf).filter(AnnotationCnf.name == "LINK_DETAILS").all()
 
         assert len(link_details) == 1

@@ -196,9 +196,6 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
             planned_playback_uuid = [event_link.event_uuid_link for event_link in corrected_planned_playback.eventLinks if event_link.name == "PLANNED_EVENT"][0]
 
-            planned_playback_event = query.get_events(event_uuids = {"op": "in", "filter": [planned_playback_uuid]})
-            playback_planning_completeness_generation_times.append(planned_playback_event[0].source.generation_time)
-
             links_playback_validity.append({
                 "link": str(planned_playback_uuid),
                 "link_mode": "by_uuid",
@@ -228,6 +225,9 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 exit_status = engine.insert_event_values(planned_playback_uuid, value)
 
                 if exit_status["inserted"] == True:
+
+                    planned_playback_event = query.get_events(event_uuids = {"op": "in", "filter": [planned_playback_uuid]})
+                    playback_planning_completeness_generation_times.append(planned_playback_event[0].source.generation_time)
 
                     # Insert the linked COMPLETENESS event for the automatic completeness check
                     planning_event_values = corrected_planned_playback.get_structured_values()
@@ -828,7 +828,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 links_isp_validity.append({
                     "link": str(planned_imaging_uuid),
                     "link_mode": "by_uuid",
-                    "name": "ISP-VALIDITY",
+                    "name": "ISP_VALIDITY",
                     "back_ref": "PLANNED_IMAGING"
                 })
                 links_isp_completeness.append({
@@ -853,7 +853,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "link": "PLAYBACK_" + downlink_mode + "_VALIDITY_" + vcid_number,
                 "link_mode": "by_ref",
                 "name": "ISP_VALIDITY",
-                "back_ref": "PLAYBACK-VALIDITY"
+                "back_ref": "PLAYBACK_VALIDITY"
             })
 
             for isp_gap_intersected in isp_gaps_intersected:
@@ -861,8 +861,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     links_isp_validity.append({
                         "link": id,
                         "link_mode": "by_ref",
-                        "name": "ISP-VALIDITY",
-                        "back_ref": "ISP-GAP"
+                        "name": "ISP_VALIDITY",
+                        "back_ref": "ISP_GAP"
                     })
                 # end for
             # end for
@@ -919,7 +919,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "link": isp_validity_event_link_ref,
                 "link_mode": "by_ref",
                 "name": "COMPLETENESS",
-                "back_ref": "ISP-VALIDITY"
+                "back_ref": "ISP_VALIDITY"
             })
 
             for channel in ["1","2"]:
@@ -1146,8 +1146,6 @@ def process_file(file_path, engine, query):
 
     # Extract the information of the pass
     _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, isp_status, acquisition_status)
-
-    
 
     # Build the xml
     data = {}
