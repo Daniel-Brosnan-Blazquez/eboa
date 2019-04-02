@@ -1263,7 +1263,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         isp_completeness_statuses = [event for event in isp_completeness_missing_left if len([value for value in event.eventTexts if value.name == "status" and value.value == "MISSING"]) > 0]
 
-        assert len(isp_completeness_missing_left) == 2
+        assert len(isp_completeness_statuses) == 2
 
         # Check number of annotations generated
         annotations = self.session.query(Annotation).join(Source).filter(Source.name == "S2A_REP_PASS_CONTAINING_ALL_DATA_TO_BE_PROCESS.EOF").all()
