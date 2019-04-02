@@ -42,7 +42,7 @@ logger = logging_module.logger
 
 version = "1.0"
 
-def L0_L1B_processing(source, engine, query, granule_timeline, list_of_events, ds_output, granule_timeline_per_detector, list_of_operations, system):
+def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_events, ds_output, granule_timeline_per_detector, list_of_operations, system):
     """
     Method to generate the events for the levels L0 and L1B
     :param source: information of the source
@@ -148,7 +148,9 @@ def L0_L1B_processing(source, engine, query, granule_timeline, list_of_events, d
             gaps_due_to_reception_issues = {}
             gaps_due_to_processing_issues = {}
             for detector in processing_gaps:
-                status="INCOMPLETE"
+                if len(processing_gaps[detector]) > 0:
+                    status="INCOMPLETE"
+                # end if
                 if detector in data_merged_isp_gaps:
                     gaps_due_to_reception_issues[detector] = date_functions.intersect_timelines(processing_gaps[detector], data_merged_isp_gaps[detector])
                     gaps_due_to_processing_issues[detector] = date_functions.difference_timelines(processing_gaps[detector], gaps_due_to_reception_issues[detector])
@@ -398,11 +400,11 @@ def L0_L1B_processing(source, engine, query, granule_timeline, list_of_events, d
                          "name": "satellite"
                      },{
                          "name": "sensing_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": sensing_orbit
                      },{
                          "name": "downlink_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": downlink_orbit
                      },{
                          "name": "processing_centre",
@@ -454,11 +456,11 @@ def L0_L1B_processing(source, engine, query, granule_timeline, list_of_events, d
                          "name": "satellite"
                      },{
                          "name": "sensing_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": sensing_orbit
                      },{
                          "name": "downlink_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": downlink_orbit
                      },{
                          "name": "processing_centre",
@@ -505,11 +507,11 @@ def L0_L1B_processing(source, engine, query, granule_timeline, list_of_events, d
                          "name": "satellite"
                      },{
                          "name": "sensing_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": sensing_orbit
                      },{
                          "name": "downlink_orbit",
-                         "type": "text",
+                         "type": "double",
                          "value": downlink_orbit
                      },{
                          "name": "processing_centre",
@@ -725,7 +727,7 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
                 planning_processing_completeness_operation["events"].append({
                     "gauge": {
                             "insertion_type": "SIMPLE_UPDATE",
-                        "name": "PLANNED_IMAGING_" + level + "_COMPLETENESS",
+                        "name": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_" + level + "",
                         "system": satellite
                     },
                     "start": start.isoformat(),
@@ -843,11 +845,11 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
                      "name": "satellite"
                  },{
                      "name": "sensing_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": sensing_orbit
                  },{
                      "name": "downlink_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": downlink_orbit
                  },{
                      "name": "processing_centre",
@@ -899,11 +901,11 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
                      "name": "satellite"
                  },{
                      "name": "sensing_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": sensing_orbit
                  },{
                      "name": "downlink_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": downlink_orbit
                  },{
                      "name": "processing_centre",
@@ -950,11 +952,11 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
                      "name": "satellite"
                  },{
                      "name": "sensing_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": sensing_orbit
                  },{
                      "name": "downlink_orbit",
-                     "type": "text",
+                     "type": "double",
                      "value": downlink_orbit
                  },{
                      "name": "processing_centre",
@@ -1044,7 +1046,7 @@ def process_file(file_path, engine, query):
     list_of_configuration_events = []
     list_of_configuration_explicit_references = []
     list_of_operations = []
-    query_upper_level = False
+    processed_datastrips = {}
 
     # Obtain the satellite
     satellite = file_name[0:3]
@@ -1078,6 +1080,7 @@ def process_file(file_path, engine, query):
 
     # Loop through each output node that contains a datastrip (excluding the auxiliary data)
     for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
+
         granule_timeline_per_detector = {}
         granule_timeline = []
         # Obtain the datastrip
@@ -1091,57 +1094,7 @@ def process_file(file_path, engine, query):
 
         # Obtain the input datastrip if exists
         input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")
-        if len(input) > 0:
-            ds_input = input[0].text
-        # end if
-
-        baseline_annotation = {
-        "explicit_reference": ds_output,
-        "annotation_cnf": {
-            "name": "PRODUCTION_BASELINE",
-            "system": system
-            },
-        "values": [{
-            "name": "details",
-            "type": "object",
-            "values": [
-                {"name": "baseline",
-                 "type": "text",
-                 "value": baseline
-                 }]
-            }]
-        }
-        list_of_annotations.append(baseline_annotation)
-
-        sensing_identifier_annotation = {
-        "explicit_reference": ds_output,
-        "annotation_cnf": {
-            "name": "SENSING_IDENTIFIER",
-            "system": system
-            },
-        "values": [{
-            "name": "details",
-            "type": "object",
-            "values": [
-                {"name": "sensing_identifier",
-                 "type": "text",
-                 "value": sensing_identifier
-                }]
-            }]
-        }
-        list_of_annotations.append(sensing_identifier_annotation)
-
-        explicit_reference = {
-           "group": level + "_DS",
-           "links": [{
-               "back_ref": "INPUT_DATASTRIP",
-               "link": "OUTPUT_DATASTRIP",
-               "name": ds_input
-               }
-           ],
-           "name": ds_output
-        }
-        list_of_explicit_references.append(explicit_reference)
+        ds_input = input[0].text
 
         # Loop over each granule in the ouput
         for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_GR_')]"):
@@ -1219,86 +1172,138 @@ def process_file(file_path, engine, query):
             list_of_explicit_references.append(explicit_reference)
         # end_for
 
-        if level == "L1B" or level == "L0":
-            L0_L1B_processing(source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, list_of_operations, system)
-        elif (level == "L1C" or level == "L2A") and query_upper_level is False:
-            query_upper_level = True
-            upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
-                                                      groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
-                                                      annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_identifier}}])
-            upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[0:3] == satellite]
-            upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
-            if len(upper_level_er) == 0:
-                upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L0_"]
-            # end if
-            if len(upper_level_er) > 0:
-                er = upper_level_er[0]
-
-                processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
-                                                                      explicit_refs = {"filter": er, "op": "like"},
-                                                                      value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
-                                                                      link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
-                                                                      return_prime_events = True)
-            
-                L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, ds_output, list_of_operations, system)
-            # end if
-        # end if
-
-        event_timeliness = {
+        if ds_output not in processed_datastrips:
+        
+            baseline_annotation = {
             "explicit_reference": ds_output,
-            "gauge": {
-                "insertion_type": "SIMPLE_UPDATE",
-                "name": "TIMELINESS",
+            "annotation_cnf": {
+                "name": "PRODUCTION_BASELINE",
                 "system": system
-            },
-            "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
-            "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1]
-        }
-        list_of_events.append(event_timeliness)
-
-        # Steps
-        for step in steps_list:
-            if step.find("EXEC_STATUS").text == 'COMPLETED':
-                event_step = {
-                    "explicit_reference": ds_output,
-                    "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
-                        "name": "STEP_INFO",
-                        "system": system
-                    },
-                    "start": step.find("PROCESSING_START_DATETIME").text[:-1],
-                    "stop": step.find("PROCESSING_END_DATETIME").text[:-1],
-                    "values": [{
-                        "name": "details",
-                        "type": "object",
-                        "values": [{
-                                   "name": "id",
-                                   "type": "text",
-                                   "value": step.get("id")
-                                   },{
-                                   "name": "exec_mode",
-                                   "type": "text",
-                                   "value": step.find("SUBSYSTEM_INFO/STEP_REPORT/GENERAL_INFO/EXEC_MODE").text
-                        }]
-                    }]
-                }
-                list_of_events.append(event_step)
-            # end if
-        # end for
-
-        for mrf in mrf_list:
-            explicit_reference = {
-                "group": "MISSION_CONFIGURATION",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "CONFIGURATION",
-                    "name": ds_output
-                    }
-                ],
-                "name": mrf.find("Id").text
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "baseline",
+                     "type": "text",
+                     "value": baseline
+                     }]
+                }]
             }
-            list_of_configuration_explicit_references.append(explicit_reference)
-        # end for
+            list_of_annotations.append(baseline_annotation)
+
+            sensing_identifier_annotation = {
+            "explicit_reference": ds_output,
+            "annotation_cnf": {
+                "name": "SENSING_IDENTIFIER",
+                "system": system
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "sensing_identifier",
+                     "type": "text",
+                     "value": sensing_identifier
+                    }]
+                }]
+            }
+            list_of_annotations.append(sensing_identifier_annotation)
+
+            explicit_reference = {
+               "group": level + "_DS",
+               "links": [{
+                   "back_ref": "INPUT_DATASTRIP",
+                   "link": "OUTPUT_DATASTRIP",
+                   "name": ds_input
+                   }
+               ],
+               "name": ds_output
+            }
+            list_of_explicit_references.append(explicit_reference)
+
+            if level == "L0" or level == "L1A" or level == "L1B":
+                L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, list_of_operations, system)
+            elif (level == "L1C" or level == "L2A"):
+                upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
+                                                          groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
+                                                          annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_identifier}}])
+                upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[0:3] == satellite]
+                upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
+                if len(upper_level_er) == 0:
+                    upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L0_"]
+                # end if
+                if len(upper_level_er) > 0:
+                    er = upper_level_er[0]
+
+                    processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
+                                                                          explicit_refs = {"filter": er, "op": "like"},
+                                                                          value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
+                                                                          link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
+                                                                          return_prime_events = True)
+
+                    L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, ds_output, list_of_operations, system)
+                # end if
+            # end if
+
+            event_timeliness = {
+                "explicit_reference": ds_output,
+                "gauge": {
+                    "insertion_type": "SIMPLE_UPDATE",
+                    "name": "TIMELINESS",
+                    "system": system
+                },
+                "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
+                "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1]
+            }
+            list_of_events.append(event_timeliness)
+
+            # Steps
+            for step in steps_list:
+                if step.find("EXEC_STATUS").text == 'COMPLETED':
+                    event_step = {
+                        "explicit_reference": ds_output,
+                        "gauge": {
+                            "insertion_type": "SIMPLE_UPDATE",
+                            "name": "STEP_INFO",
+                            "system": system
+                        },
+                        "start": step.find("PROCESSING_START_DATETIME").text[:-1],
+                        "stop": step.find("PROCESSING_END_DATETIME").text[:-1],
+                        "values": [{
+                            "name": "details",
+                            "type": "object",
+                            "values": [{
+                                       "name": "id",
+                                       "type": "text",
+                                       "value": step.get("id")
+                                       },{
+                                       "name": "exec_mode",
+                                       "type": "text",
+                                       "value": step.find("SUBSYSTEM_INFO/STEP_REPORT/GENERAL_INFO/EXEC_MODE").text
+                            }]
+                        }]
+                    }
+                    list_of_events.append(event_step)
+                # end if
+            # end for
+
+            for mrf in mrf_list:
+                explicit_reference = {
+                    "group": "MISSION_CONFIGURATION",
+                    "links": [{
+                        "back_ref": "DATASTRIP",
+                        "link": "CONFIGURATION",
+                        "name": ds_output
+                        }
+                    ],
+                    "name": mrf.find("Id").text
+                }
+                list_of_configuration_explicit_references.append(explicit_reference)
+            # end for
+        # end if
+        
+        processed_datastrips[ds_output] = None
     # end for
 
     for mrf in mrf_list:
