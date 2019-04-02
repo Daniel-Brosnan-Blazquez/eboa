@@ -166,9 +166,10 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
                     for gap in gaps[detector]:
                         gap_source = "processing"
                         gap_event = {
+                            "key": ds_output + "_" + "processing_validity",
                             "explicit_reference": ds_output,
                             "gauge": {
-                                "insertion_type": "SIMPLE_UPDATE",
+                                "insertion_type": "EVENT_KEYS",
                                 "name": "PROCESSING_GAP",
                                 "system": system
                             },
@@ -331,7 +332,7 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
                 }
                 exit_status = engine.insert_event_values(isp_validity_uuid, value)
                 if exit_status["inserted"] == True:
-                    
+
                     isp_validity_processing_completeness_generation_time = isp_validity.source.generation_time.isoformat()
 
                     # Insert the linked COMPLETENESS event for the automatic completeness check
@@ -480,10 +481,11 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
             list_of_events.append(processing_reception_completeness_event)
 
             processing_validity_event = {
+                "key": ds_output + "_" + "processing_validity",
                 "link_ref": processing_validity_link_ref,
                 "explicit_reference": ds_output,
                 "gauge": {
-                    "insertion_type": "SIMPLE_UPDATE",
+                    "insertion_type": "EVENT_KEYS",
                     "name": "PROCESSING_VALIDITY",
                     "system": system
                 },
@@ -648,9 +650,10 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
 
             for gap in gaps:
                 gap_event = {
+                    "key": ds_output + "_" + "processing_validity",
                     "explicit_reference": ds_output,
                     "gauge": {
-                        "insertion_type": "SIMPLE_UPDATE",
+                        "insertion_type": "EVENT_KEYS",
                         "name": "PROCESSING_GAP",
                         "system": system
                     },
@@ -925,10 +928,11 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
         list_of_events.append(processing_reception_completeness_event)
 
         processing_validity_event = {
+            "key": ds_output + "_" + "processing_validity",
             "link_ref": processing_validity_link_ref,
             "explicit_reference": ds_output,
             "gauge": {
-                "insertion_type": "SIMPLE_UPDATE",
+                "insertion_type": "EVENT_KEYS",
                 "name": "PROCESSING_VALIDITY",
                 "system": system
             },
@@ -1173,7 +1177,7 @@ def process_file(file_path, engine, query):
         # end_for
 
         if ds_output not in processed_datastrips:
-        
+
             baseline_annotation = {
             "explicit_reference": ds_output,
             "annotation_cnf": {
@@ -1302,7 +1306,7 @@ def process_file(file_path, engine, query):
                 list_of_configuration_explicit_references.append(explicit_reference)
             # end for
         # end if
-        
+
         processed_datastrips[ds_output] = None
     # end for
 
