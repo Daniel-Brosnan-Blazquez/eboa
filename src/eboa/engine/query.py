@@ -96,7 +96,7 @@ class Query():
         else:
             self.session = session
         # end if
-    
+
         return
 
     def clear_db(self):
@@ -117,7 +117,7 @@ class Query():
         :rtype: list
         """
         params = []
-        
+
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
@@ -335,7 +335,7 @@ class Query():
             params.append(filter(dim_signatures["filter"]))
             tables.append(DimSignature)
         # end if
-        
+
         query = self.session.query(Gauge).filter(*params)
         log_query(query)
         gauges = query.all()
@@ -357,7 +357,7 @@ class Query():
                 value_name = value_filter["name"]["str"]
                 op_name = eval("value_type.name." + text_operators[value_filter["name"]["op"]])
                 params.append(op_name(value_name))
-                
+
                 # Value
                 if "value" in value_filter:
                     value = value_filter["value"]
@@ -447,6 +447,7 @@ class Query():
             functions.is_valid_text_filter(keys)
             filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
             params.append(filter(keys["filter"]))
+            tables.append(EventKey)
         # end if
 
         # start filters
@@ -501,7 +502,7 @@ class Query():
         """
         """
         params = []
-        
+
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
@@ -558,8 +559,8 @@ class Query():
         return links
 
     def get_linked_events(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, value_filters = None, return_prime_events = True, keys = None, back_ref = False):
-        
-        # Obtain prime events 
+
+        # Obtain prime events
         prime_events = self.get_events(event_uuids = event_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters)
 
         prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
@@ -576,7 +577,7 @@ class Query():
         if len(linked_event_uuids) > 0:
             linked_events = self.get_events(event_uuids = {"filter": linked_event_uuids, "op": "in"})
         # end if
-        
+
         events = {}
         if return_prime_events:
             events["prime_events"] = prime_events
@@ -624,7 +625,7 @@ class Query():
             events["linked_events"].append({"link_name": link_name,
                                             "event": event})
         # end for
-        
+
         if back_ref:
             # Obtain the events linking the prime events
             links = self.get_event_links(event_uuids = {"filter": [event_uuid], "op": "in"})
@@ -645,8 +646,8 @@ class Query():
         return events
 
     def get_linking_events(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, value_filters = None, return_prime_events = True, keys = None, back_ref = False):
-        
-        # Obtain prime events 
+
+        # Obtain prime events
         prime_events = self.get_events(event_uuids = event_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters)
 
         prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
@@ -663,7 +664,7 @@ class Query():
         if len(event_linking_uuids) > 0:
             events_linking = self.get_events(event_uuids = {"filter": event_linking_uuids, "op": "in"})
         # end if
-        
+
         events = {}
         if return_prime_events:
             events["prime_events"] = prime_events
@@ -723,7 +724,7 @@ class Query():
             filter = eval('AnnotationCnf.system.' + text_operators[systems["op"]])
             params.append(filter(systems["filter"]))
         # end if
-        
+
         query = self.session.query(AnnotationCnf).filter(*params)
         log_query(query)
         annotation_cnfs = query.all()
@@ -891,8 +892,8 @@ class Query():
         return links
 
     def get_linked_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, ingestion_time_filters = None, link_names = None, groups = None, return_prime_explicit_refs = True, back_ref = False):
-        
-        # Obtain prime explicit_refs 
+
+        # Obtain prime explicit_refs
         prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, groups = groups, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_ingestion_time_filters = ingestion_time_filters)
 
         prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
@@ -909,7 +910,7 @@ class Query():
         if len(linked_explicit_ref_uuids) > 0:
             linked_explicit_refs = self.get_explicit_refs(explicit_ref_uuids = {"filter": linked_explicit_ref_uuids, "op": "in"})
         # end if
-        
+
         explicit_refs = {}
         if return_prime_explicit_refs:
             explicit_refs["prime_explicit_refs"] = prime_explicit_refs
@@ -957,7 +958,7 @@ class Query():
             explicit_refs["linked_explicit_refs"].append({"link_name": link_name,
                                             "explicit_ref": explicit_ref})
         # end for
-        
+
         if back_ref:
             # Obtain the explicit_refs linking the prime explicit_refs
             links = self.get_explicit_ref_links(explicit_ref_uuids = {"filter": [explicit_ref_uuid], "op": "in"})
@@ -994,7 +995,7 @@ class Query():
             filter = eval('ExplicitRefGrp.name.' + text_operators[names["op"]])
             params.append(filter(names["filter"]))
         # end if
-        
+
         query = self.session.query(ExplicitRefGrp).filter(*params)
         log_query(query)
         expl_groups = query.all()
@@ -1016,7 +1017,7 @@ class Query():
             # end if
         # end for
         return [value for values_per_class in values for value in values_per_class]
-        
+
     def get_event_values_type(self, value_class, event_uuids = None):
         """
         """
@@ -1067,7 +1068,7 @@ class Query():
             # end if
         # end for
         return [value for values_per_class in values for value in values_per_class]
-        
+
     def get_annotation_values_type(self, value_class, annotation_uuids = None):
         """
         """

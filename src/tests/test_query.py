@@ -76,7 +76,7 @@ class TestQuery(unittest.TestCase):
         assert len(dim_signature5) == 1
 
     def test_wrong_inputs_query_dim_signature(self):
-        
+
         result = False
         try:
             self.query.get_dim_signatures(dim_signature_uuids = "not_a_dict")
@@ -305,7 +305,7 @@ class TestQuery(unittest.TestCase):
         assert len(source) == 0
 
     def test_wrong_inputs_query_source(self):
-        
+
         result = False
         try:
             self.query.get_sources(dim_signature_uuids = "not_a_dict")
@@ -549,7 +549,7 @@ class TestQuery(unittest.TestCase):
                     },
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36"
-                    
+
                 }]
             }]}
         self.engine_eboa.treat_data(data)
@@ -600,7 +600,7 @@ class TestQuery(unittest.TestCase):
         assert len(gauge) == 1
 
     def test_wrong_inputs_query_gauge(self):
-        
+
         result = False
         try:
             self.query.get_gauges(dim_signature_uuids = "not_a_list")
@@ -664,7 +664,7 @@ class TestQuery(unittest.TestCase):
                 "source": {"name": "source.xml",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"},
+                           "validity_stop": "2018-06-06T08:07:36"},
                 "events": [{
                     "key": "EVENT_KEY",
                     "explicit_reference": "EXPLICIT_REFERENCE",
@@ -687,7 +687,16 @@ class TestQuery(unittest.TestCase):
                                     {"type": "boolean",
                                      "name": "BOOLEAN",
                                      "value": "true"}]}]
-                }]
+                },{
+                    "explicit_reference": "EXPLICIT_REFERENCE2",
+                    "gauge": {
+                        "name": "GAUGE2",
+                        "system": "SYSTEM2",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-06T02:07:03",
+                    "stop": "2018-06-06T08:07:36"
+                    }]
             }]}
         self.engine_eboa.treat_data(data)
 
@@ -695,15 +704,15 @@ class TestQuery(unittest.TestCase):
 
         event = self.query.get_events(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"})
 
-        assert len(event) == 1
+        assert len(event) == 2
 
-        explicit_ref1 = self.query.get_explicit_refs()
+        explicit_ref1 = self.query.get_explicit_refs(explicit_refs = {"filter": "EXPLICIT_REFERENCE", "op": "like"})
 
         event = self.query.get_events(explicit_ref_uuids = {"filter": [explicit_ref1[0].explicit_ref_uuid], "op": "in"})
 
         assert len(event) == 1
 
-        gauge1 = self.query.get_gauges()
+        gauge1 = self.query.get_gauges(names = {"filter": "GAUGE", "op": "like"})
 
         event = self.query.get_events(gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"})
 
@@ -711,7 +720,7 @@ class TestQuery(unittest.TestCase):
 
         event1 = self.query.get_events()
 
-        assert len(event1) == 1
+        assert len(event1) == 2
 
         event = self.query.get_events(event_uuids = {"filter": [event1[0].event_uuid], "op": "in"})
 
@@ -727,16 +736,16 @@ class TestQuery(unittest.TestCase):
 
         event = self.query.get_events(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
 
-        assert len(event) == 1
+        assert len(event) == 2
 
         event = self.query.get_events(sources = {"filter": [data["operations"][0]["source"]["name"]], "op": "in"})
 
-        assert len(event) == 1
+        assert len(event) == 2
 
         explicit_ref_name = data["operations"][0]["events"][0]["explicit_reference"][0:4] + "%"
         event = self.query.get_events(explicit_refs = {"filter": explicit_ref_name, "op": "like"})
 
-        assert len(event) == 1
+        assert len(event) == 2
 
         gauge_name = data["operations"][0]["events"][0]["gauge"]["name"]
         event = self.query.get_events(gauge_names = {"filter": [gauge_name], "op": "in"})
@@ -746,7 +755,7 @@ class TestQuery(unittest.TestCase):
         gauge_system = data["operations"][0]["events"][0]["gauge"]["system"][0:4] + "%"
         event = self.query.get_events(gauge_systems = {"filter": gauge_system, "op": "like"})
 
-        assert len(event) == 1
+        assert len(event) == 2
 
         event = self.query.get_events(keys = {"filter": "EVENT_KEY", "op": "like"})
 
@@ -755,11 +764,11 @@ class TestQuery(unittest.TestCase):
         event = self.query.get_events(value_filters = [{"name": {
             "op": "like",
             "str": "TEXT"},
-                                                        "type": "text", 
+                                                        "type": "text",
                                                         "value": {
                                                             "op": "in",
                                                             "value": ["TEXT", "TEXT2"]}
-                                                    }, 
+                                                    },
                                                        {"name": {
                                                            "op": "like",
                                                            "str": "BOOLEAN"},
@@ -786,11 +795,11 @@ class TestQuery(unittest.TestCase):
                                       value_filters = [{"name": {
                                           "op": "like",
                                           "str": "TEXT"},
-                                                        "type": "text", 
+                                                        "type": "text",
                                                         "value": {
                                                             "op": "in",
                                                             "value": ["TEXT", "TEXT2"]}
-                                                    }, 
+                                                    },
                                                        {"name": {
                                                            "op": "like",
                                                            "str": "BOOLEAN"},
@@ -799,11 +808,11 @@ class TestQuery(unittest.TestCase):
                                                             "op": "==",
                                                             "value": "true"}
                                                        }])
-        
+
         assert len(event) == 1
 
     def test_wrong_inputs_query_event(self):
-        
+
         result = False
         try:
             self.query.get_events(source_uuids = "not_a_list")
@@ -949,7 +958,7 @@ class TestQuery(unittest.TestCase):
                     },
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36"
-                    
+
                 }]
             }]}
         self.engine_eboa.treat_data(data)
@@ -984,7 +993,7 @@ class TestQuery(unittest.TestCase):
         assert len(event_key) == 1
 
     def test_wrong_inputs_query_event_key(self):
-        
+
         result = False
         try:
             self.query.get_event_keys(dim_signature_uuids = "not_a_list")
@@ -1103,7 +1112,7 @@ class TestQuery(unittest.TestCase):
         assert len(event_link) == 1
 
     def test_wrong_inputs_query_event_link(self):
-        
+
         result = False
         try:
             self.query.get_event_links(event_uuids = "not_a_list")
@@ -1229,7 +1238,7 @@ class TestQuery(unittest.TestCase):
         assert len(events["events_linking"]) == 2
 
     def test_wrong_inputs_query_linked_events(self):
-        
+
         result = False
         try:
             self.query.get_linked_events(event_uuids = "not_a_list")
@@ -1362,7 +1371,7 @@ class TestQuery(unittest.TestCase):
                 }]
             }]}
         self.engine_eboa.treat_data(data)
-        
+
         event1 = self.query.get_events(explicit_refs = {"filter": ["EXPLICIT_REFERENCE1"], "op": "in"})
 
         events = self.query.get_linked_events_details(event_uuid = event1[0].event_uuid, back_ref = True)
@@ -1481,7 +1490,7 @@ class TestQuery(unittest.TestCase):
         assert len(events["linking_events"]) == 2
 
     def test_wrong_inputs_query_linking_events(self):
-        
+
         result = False
         try:
             self.query.get_linking_events(event_uuids = "not_a_list")
@@ -1617,11 +1626,11 @@ class TestQuery(unittest.TestCase):
         annotation = self.query.get_annotations(value_filters = [{"name": {
             "op": "like",
             "str": "TEXT"},
-                                                        "type": "text", 
+                                                        "type": "text",
                                                         "value": {
                                                             "op": "in",
                                                             "value": ["TEXT", "TEXT2"]}
-                                                    }, 
+                                                    },
                                                        {"name": {
                                                            "op": "like",
                                                            "str": "BOOLEAN"},
@@ -1634,7 +1643,7 @@ class TestQuery(unittest.TestCase):
         assert len(annotation) == 1
 
         annotation = self.query.get_annotations(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"},
-                                                sources = {"filter": source_name, "op": "like"},                                           
+                                                sources = {"filter": source_name, "op": "like"},
                                                 explicit_refs = {"filter": [data["operations"][0]["annotations"][0]["explicit_reference"]], "op": "in"},
                                       explicit_ref_uuids = {"filter": [explicit_ref1[0].explicit_ref_uuid], "op": "in"},
                                       annotation_cnf_uuids = {"filter": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"},
@@ -1643,11 +1652,11 @@ class TestQuery(unittest.TestCase):
                                       value_filters = [{"name": {
                                           "op": "like",
                                           "str": "TEXT"},
-                                                        "type": "text", 
+                                                        "type": "text",
                                                         "value": {
                                                             "op": "in",
                                                             "value": ["TEXT", "TEXT2"]}
-                                                    }, 
+                                                    },
                                                        {"name": {
                                                            "op": "like",
                                                            "str": "BOOLEAN"},
@@ -1759,11 +1768,11 @@ class TestQuery(unittest.TestCase):
                                                                       event_value_filters = [{"name": {
                                                                           "op": "like",
                                                                           "str": "TEXT"},
-                                                                                              "type": "text", 
+                                                                                              "type": "text",
                                                                                               "value": {
                                                                                                   "op": "in",
                                                                                                   "value": ["TEXT", "TEXT2"]}
-                                                                                          }, 
+                                                                                          },
                                                                                              {"name": {
                                                                                                  "op": "like",
                                                                                                  "str": "BOOLEAN"},
@@ -1775,11 +1784,11 @@ class TestQuery(unittest.TestCase):
                                                                       annotation_value_filters = [{"name": {
                                                                           "op": "like",
                                                                           "str": "TEXT"},
-                                                                                                   "type": "text", 
+                                                                                                   "type": "text",
                                                                                                    "value": {
                                                                                                        "op": "in",
                                                                                                        "value": ["TEXT", "TEXT2"]}
-                                                                                               }, 
+                                                                                               },
                                                                                                   {"name": {
                                                                                                       "op": "like",
                                                                                                       "str": "BOOLEAN"},
@@ -1938,7 +1947,7 @@ class TestQuery(unittest.TestCase):
                 }]
             }]}
         self.engine_eboa.treat_data(data)
-        
+
         explicit_ref1 = self.query.get_explicit_refs(explicit_refs = {"filter": ["EXPLICIT_REFERENCE"], "op": "in"})
 
         explicit_refs = self.query.get_linked_explicit_refs_details(explicit_ref_uuid = explicit_ref1[0].explicit_ref_uuid, back_ref = True)
@@ -2236,7 +2245,7 @@ class TestQuery(unittest.TestCase):
                     },
                     "start": "2018-06-05T02:07:03",
                     "stop": "2018-06-05T08:07:36"
-                    
+
                 }]
             }]}
         self.engine_eboa.treat_data(data)
