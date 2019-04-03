@@ -1581,16 +1581,43 @@ class TestQuery(unittest.TestCase):
                                             "value": "true"}]
                                     }]
                 }]
-            }]}
+        }]}
         self.engine_eboa.treat_data(data)
 
-        source1 = self.query.get_sources()
+        data2 = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION2",
+                    "annotation_cnf": {"name": "NAME2",
+                                       "system": "SYSTEM2"},
+                            "values": [{"name": "VALUES2",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT2",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN2",
+                                            "value": "true"}]
+                                    }]
+                }]
+        }]}
+        self.engine_eboa.treat_data(data2)
+
+        source1 = self.query.get_sources(names = {"filter": "source.xml", "op": "like"})
 
         annotation = self.query.get_annotations(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
-        source_name = data["operations"][0]["source"]["name"][0:4] + "%"
+        source_name = "source.%"
         annotation = self.query.get_annotations(sources = {"filter": source_name, "op": "like"})
 
         assert len(annotation) == 1
@@ -1599,19 +1626,19 @@ class TestQuery(unittest.TestCase):
 
         assert len(annotation) == 1
 
-        explicit_ref1 = self.query.get_explicit_refs()
+        explicit_ref1 = self.query.get_explicit_refs(explicit_refs = {"filter": "EXPLICIT_REFERENCE_ANNOTATION", "op": "like"})
 
         annotation = self.query.get_annotations(explicit_ref_uuids = {"filter": [explicit_ref1[0].explicit_ref_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
-        annotation_cnf1 = self.query.get_annotation_cnfs()
+        annotation_cnf1 = self.query.get_annotation_cnfs(names = {"filter": "NAME", "op": "like"})
 
         annotation = self.query.get_annotations(annotation_cnf_uuids = {"filter": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"})
 
         assert len(annotation) == 1
 
-        annotation1 = self.query.get_annotations()
+        annotation1 = self.query.get_annotations(explicit_refs = {"filter": "EXPLICIT_REFERENCE_ANNOTATION", "op": "like"})
 
         assert len(annotation1) == 1
 
@@ -1621,7 +1648,7 @@ class TestQuery(unittest.TestCase):
 
         annotation = self.query.get_annotations(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
 
-        assert len(annotation) == 1
+        assert len(annotation) == 2
 
         annotation = self.query.get_annotations(value_filters = [{"name": {
             "op": "like",

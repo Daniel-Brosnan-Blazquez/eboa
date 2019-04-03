@@ -485,8 +485,6 @@ class Query():
             query = query.join(table)
         # end for
 
-        logger.debug(tables)
-
         query = query.filter(*params)
 
         if limit != None:
@@ -776,10 +774,48 @@ class Query():
             # end for
         # end if
 
+        # Sources
+        if sources != None:
+            functions.is_valid_text_filter(sources)
+            filter = eval('Source.name.' + text_operators[sources["op"]])
+            params.append(filter(sources["filter"]))
+            tables.append(Source)
+        # end if
+
+        # Explicit references
+        if explicit_refs != None:
+            functions.is_valid_text_filter(explicit_refs)
+            filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
+            params.append(filter(explicit_refs["filter"]))
+            tables.append(ExplicitRef)
+        # end if
+
+        # Annotation configuration names
+        if annotation_cnf_names != None:
+            functions.is_valid_text_filter(annotation_cnf_names)
+            filter = eval('AnnotationCnf.name.' + text_operators[annotation_cnf_names["op"]])
+            params.append(filter(annotation_cnf_names["filter"]))
+            tables.append(AnnotationCnf)
+        # end if
+
+        # Annotation configuration systems
+        if annotation_cnf_systems != None:
+            functions.is_valid_text_filter(annotation_cnf_systems)
+            filter = eval('AnnotationCnf.system.' + text_operators[annotation_cnf_systems["op"]])
+            params.append(filter(annotation_cnf_systems["filter"]))
+            tables.append(AnnotationCnf)
+        # end if
+
         # value filters
         self.prepare_query_values(value_filters, annotation_value_entities, params, tables)
 
-        query = self.session.query(Annotation).filter(*params)
+        query = self.session.query(Annotation)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+
         log_query(query)
         annotations = query.all()
 
