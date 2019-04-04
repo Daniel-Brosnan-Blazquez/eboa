@@ -34,7 +34,7 @@ import ingestions.s2.ingestion_orbpre.ingestion_orbpre as ingestion_orbpre
 import ingestions.s2.ingestion_nppf.ingestion_nppf as ingestion_nppf
 import ingestions.s2.ingestion_dfep_acquisition.ingestion_dfep_acquisition as ingestion_dfep
 
-class TestEngine(unittest.TestCase):
+class TestDpcIngestion(unittest.TestCase):
     def setUp(self):
         # Create the engine to manage the data
         self.engine_eboa = Engine()
@@ -1001,6 +1001,145 @@ class TestEngine(unittest.TestCase):
             "type": "object"
         }]
 
+    def test_dpc_report_L1C_with_L0_rep_pass(self):
+
+        filename = "S2A_REP_PASS_NO_GAPS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dfep.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        # Check sources
+        # L0
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:35.993268", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:12.226646", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T10:40:55", "op": "=="}],
+                                             processors = {"filter": "processing_received_ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T10:43:26.741000", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
+                                             processors = {"filter": "ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2000-12-10 23:51:34", "op": "=="}],
+                                             validity_stop_filters = [{"date": "9999-01-01T00:00:00", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
+                                             processors = {"filter": "configuration_ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        # L1C
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:35.993268", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:12.226646", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T10:40:55", "op": "=="}],
+                                             processors = {"filter": "processing_received_ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L1B_L1C.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T11:00:38.066000", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T11:00:45", "op": "=="}],
+                                             processors = {"filter": "ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L1B_L1C.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "1983-01-01T00:00:00", "op": "=="}],
+                                             validity_stop_filters = [{"date": "9999-01-01T00:00:00", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21T11:00:45", "op": "=="}],
+                                             processors = {"filter": "configuration_ingestion_dpc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_OPDPC_L1B_L1C.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        isp_validity = self.query_eboa.get_events(gauge_names = {"filter": "ISP_VALIDITY", "op": "like"})[0]
+
+        processing_validities = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_VALIDITY", "op": "like"},
+                                             start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
+                                             stop_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}])
+
+        assert len(processing_validities) == 1
+        processing_validity_l1c = processing_validities[0]
+
+        # Check links with PROCESSING VALIDITY
+        link_to_isp_validity = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l1c.event_uuid)], "op": "in"},
+                                                    event_uuids = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
+
+        assert len(link_to_isp_validity) == 1
+
+        link_from_isp_validity = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l1c.event_uuid)], "op": "in"},
+                                                    event_uuid_links = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "ISP_VALIDITY", "op": "like"})
+
+        assert len(link_from_isp_validity) == 1
+
+        assert processing_validity_l1c.get_structured_values() == [{
+            "values": [
+                {
+                    "value": "COMPLETE",
+                    "name": "status",
+                    "type": "text"
+                },
+                {
+                    "value": "L1C",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                },
+                {
+                    "value": "MPS_",
+                    "name": "processing_centre",
+                    "type": "text"
+                },
+                {
+                    "value": "NO_MATCHED_PLANNED_IMAGING",
+                    "name": "matching_plan_status",
+                    "type": "text"
+                },
+                {
+                    "value": "MATCHED_ISP_VALIDITY",
+                    "name": "matching_reception_status",
+                    "type": "text"
+                },
+                {
+                    "value": "16078.0",
+                    "name": "downlink_orbit",
+                    "type": "double"
+                }
+            ],
+            "name": "details",
+            "type": "object"
+        }]
+
 
     def test_insert_dpc_L0_L1B_L1C_with_plan_and_rep_pass(self):
 
@@ -1668,6 +1807,11 @@ class TestEngine(unittest.TestCase):
         }]
 
         processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_GAP", "op": "like"})
+
+        assert len(processing_gaps) == 3
+
+        processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
                                                            gauge_names = {"filter": "PROCESSING_GAP", "op": "like"},
                                              start_filters = [{"date": "2018-07-21T08:52:35", "op": "=="}],
                                              stop_filters = [{"date": "2018-07-21T08:52:37.209040", "op": "=="}])
@@ -1763,6 +1907,58 @@ class TestEngine(unittest.TestCase):
             "type": "object"
         }]
 
+        processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_GAP", "op": "like"},
+                                                     value_filters = [{"name": {"str": "detector", "op": "like"}, "type": "double", "value": {"value": "1", "op": "=="}}],
+                                                     start_filters = [{"date": "2018-07-21T08:52:42", "op": "=="}],
+                                             stop_filters = [{"date": "2018-07-21T08:52:44", "op": "=="}])
+
+        assert len(processing_gaps) == 1
+        third_processing_gap_l0 = processing_gaps[0]
+
+        # Check links with PROCESSING VALIDITY
+        link_to_gap = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+                                                    event_uuids = {"filter": [str(third_processing_gap_l0.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
+
+        assert len(link_to_gap) == 1
+
+        link_from_gap = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+                                                    event_uuid_links = {"filter": [str(third_processing_gap_l0.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_GAP", "op": "like"})
+
+        assert third_processing_gap_l0.get_structured_values() == [{
+            "values": [
+                {
+                    "value": "1.0",
+                    "name": "detector",
+                    "type": "double"
+                },
+                {
+                    "value": "processing",
+                    "name": "source",
+                    "type": "text"
+                },
+                {
+                    "value": "L0",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                }
+            ],
+            "name": "details",
+            "type": "object"
+        }]
+
+        processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_GAP", "op": "like"})
+
+        assert len(processing_gaps) == 3
+
 
         processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
                                                            gauge_names = {"filter": "PROCESSING_GAP", "op": "like"},
@@ -1835,6 +2031,53 @@ class TestEngine(unittest.TestCase):
             "values": [
                 {
                     "value": "12.0",
+                    "name": "detector",
+                    "type": "double"
+                },
+                {
+                    "value": "processing",
+                    "name": "source",
+                    "type": "text"
+                },
+                {
+                    "value": "L1C",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                }
+            ],
+            "name": "details",
+            "type": "object"
+        }]
+
+        processing_gaps = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_GAP", "op": "like"},
+                                                     value_filters = [{"name": {"str": "detector", "op": "like"}, "type": "double", "value": {"value": "1", "op": "=="}}],
+                                                     start_filters = [{"date": "2018-07-21T08:52:42", "op": "=="}],
+                                             stop_filters = [{"date": "2018-07-21T08:52:44", "op": "=="}])
+
+        assert len(processing_gaps) == 1
+        third_processing_gap_l1c = processing_gaps[0]
+
+        # Check links with PROCESSING VALIDITY
+        link_to_gap = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l1c.event_uuid)], "op": "in"},
+                                                    event_uuids = {"filter": [str(third_processing_gap_l1c.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
+
+        assert len(link_to_gap) == 1
+
+        link_from_gap = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l1c.event_uuid)], "op": "in"},
+                                                    event_uuid_links = {"filter": [str(third_processing_gap_l1c.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_GAP", "op": "like"})
+
+        assert third_processing_gap_l1c.get_structured_values() == [{
+            "values": [
+                {
+                    "value": "1.0",
                     "name": "detector",
                     "type": "double"
                 },

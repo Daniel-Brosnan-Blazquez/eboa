@@ -150,9 +150,7 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
         gaps_due_to_reception_issues = {}
         gaps_due_to_processing_issues = {}
         for detector in processing_gaps:
-            if len(processing_gaps[detector]) > 0:
-                status="INCOMPLETE"
-            # end if
+            status="INCOMPLETE"
             if detector in data_merged_isp_gaps:
                 gaps_due_to_reception_issues[detector] = date_functions.intersect_timelines(processing_gaps[detector], data_merged_isp_gaps[detector])
                 gaps_due_to_processing_issues[detector] = date_functions.difference_timelines(processing_gaps[detector], gaps_due_to_reception_issues[detector])
@@ -656,10 +654,10 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
             if event.gauge.name.startswith("PROCESSING_GAP"):
                 gaps.append(event)
             # end if
-            elif event.gauge.name.startswith("PLANNED_CUT_IMAGING"):
+            if event.gauge.name.startswith("PLANNED_CUT_IMAGING"):
                 planned_cut_imagings.append(event)
             # end elif
-            elif event.gauge.name.startswith("ISP_VALIDITY"):
+            if event.gauge.name.startswith("ISP_VALIDITY"):
                 isp_validities.append(event)
         # end for
 
