@@ -2163,3 +2163,17 @@ class Engine():
         """
         self.session.close()
         return
+
+    def geometries_to_wkt(self, geometries):
+        """
+        Method to return the WKT values of the received geometries
+        """
+        returned_geometries = []
+        for geometry in geometries:
+            returned_geometries.append({
+                "value": to_shape(geometry.value).to_wkt(),
+                "name": geometry.name
+            })
+        # end for
+
+        return returned_geometries
