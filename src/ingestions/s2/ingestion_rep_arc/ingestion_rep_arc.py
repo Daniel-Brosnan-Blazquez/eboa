@@ -1062,6 +1062,18 @@ def process_file(file_path, engine, query):
     validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
     # Obtain the validity stop
     validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
+    # Obtain the datastrip
+    datastrip_info = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata[Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_Type[contains(text(),'_DS')]]")[0]
+    #Obtain the datastrip ID
+    datastrip_id = datastrip_info.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
+    #Obtain the datatake ID
+    datatake_id = datastrip_info.xpath("CentralIndex/Datatake-id")[0].text
+    #Obtain the baseline
+    baseline = datastrip_id[58:]
+    # Obtain the production level from the datastrip
+    level = datastrip_id[13:16].replace("_","")
+    #Obtain the sensing identifier
+    sensing_id = datastrip_id[41:57]
     # Source for the main operation
     source = {
         "name": file_name,
@@ -1070,27 +1082,258 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    # Obtain the datastrip
-    datastrip_info = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata/Catalogues/S2CatalogueReport/S2EarthObservation[Inventory_Metadata/File_Type = 'MSI_L0__DS']")[0]
-    datastrip = datastrip_info.xpath("Inventory_Metadata/File_ID")[0].text
-    footprint = datastrip_info.xpath("Product_Metadata/Footprint/EXT_POS_LIST")[0].text
-    footprint_annotation = {
-    "explicit_reference": datastrip,
-    "annotation_cnf": {
-        "name": "FOOTPRINT",
-        "system": system
-        },
-    "values": [{
-        "name": "details",
-        "type": "object",
-        "values": [
-            {"name": "footprint",
-             "type": "geometry",
-             "value": footprint
-             }]
-        }]
-    }
-    list_of_annotations.append(footprint_annotation)
+    processing_validityDB = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
+                                             gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
+
+    processing_validity_exists = len(processing_validityDB) > 0
+
+    #General file
+    #ANNOTATIONS
+
+
+    #end if
+
+    #Insert the datatake_annotation if it doesn't already exist
+    datatakeDB = query.get_annotations(explicit_refs = {"op": "like", "filter": datastrip_id},
+                                       annotation_cnf_names = {"op": "like", "filter": "DATATAKE"})
+    if len(datatakeDB) is 0:
+        datatake_annotation = {
+        "explicit_reference": datastrip_id,
+        "annotation_cnf": {
+            "name": "DATATAKE",
+            "system": satellite
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "datatake_identifier",
+                 "type": "text",
+                 "value": datatake_id
+                 }]
+            }]
+        }
+        list_of_annotations.append(datatake_annotation)
+    #end if
+
+    #Insert the baseline_annotation if it doesn't already exist
+
+    if not processing_validity_exists:
+        baseline_annotation = {
+        "explicit_reference": datastrip_id,
+        "annotation_cnf": {
+            "name": "BASELINE",
+            "system": system
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "baseline",
+                 "type": "text",
+                 "value": baseline
+                 }]
+            }]
+        }
+        list_of_annotations.append(baseline_annotation)
+    #end if
+    #END OF ANNOTATIONS
+
+    #EXPLICIT REFS
+
+    if not processing_validity_exists:
+        datastrip_sensing_explicit_ref= {
+            "group": level + "_DS",
+            "links": [{
+                "back_ref": "SENSING_ID",
+                "link": "DATASTRIP",
+                "name": sensing_id
+                }
+            ],
+            "name": datastrip_id
+        }
+        list_of_explicit_references.append(datastrip_sensing_explicit_ref)
+    #end if
+
+    #Loop over all the ItemMetadata
+    for item in xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata"):
+
+        item_id = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
+        data_size = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/Data_Size")[0].text
+        cloud_percentage = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/CloudPercentage")[0].text
+        physical_url = item.xpath("CentralIndex/PDIPhysicalUrl")[0].text
+        #Obtain the footprint values
+        footprint = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Product_Metadata/Footprint/EXT_POS_LIST")[0].text
+
+        if not processing_validity_exists:
+            #Create_params for create processing_validity
+            True
+
+        #Insert the footprint_annotation if it doesn't already exist
+        footprintDB = query.get_annotations(explicit_refs = {"op": "like", "filter": datastrip_id},
+                                           annotation_cnf_names = {"op": "like", "filter": "FOOTPRINT"})
+
+        if len(footprintDB) is 0:
+            footprint_annotation = {
+            "explicit_reference": item_id,
+            "annotation_cnf": {
+                "name": "FOOTPRINT",
+                "system": satellite
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "footprint",
+                     "type": "geometry",
+                     "value": footprint
+                     }]
+                }]
+            }
+            list_of_annotations.append(footprint_annotation)
+
+        #Insert the data_size_annotation per datastrip if it doesn't already exist
+        data_sizeDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
+                                           annotation_cnf_names = {"op": "like", "filter": "DATA_SIZE"})
+        if len(data_sizeDB) is 0:
+            data_size_annotation = {
+            "explicit_reference": item_id,
+            "annotation_cnf": {
+                "name": "SIZE",
+                "system": satellite
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "size",
+                     "type": "double",
+                     "value": data_size
+                     }]
+                }]
+            }
+            list_of_annotations.append(data_size_annotation)
+        #end if
+
+        #Insert the data_size_annotation per datastrip if it doesn't already exist
+        cloud_percentageDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
+                                           annotation_cnf_names = {"op": "like", "filter": "CLOUD_PERCENTAGE"})
+        if len(cloud_percentageDB) is 0:
+            cloud_percentage_annotation = {
+            "explicit_reference": item_id,
+            "annotation_cnf": {
+                "name": "CLOUD_PERCENTAGE",
+                "system": satellite
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "cloud_percentage",
+                     "type": "double",
+                     "value": cloud_percentage
+                     }]
+                }]
+            }
+            list_of_annotations.append(cloud_percentage_annotation)
+        #end if
+
+        #Insert the data_size_annotation per datastrip if it doesn't already exist
+        physical_urlDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
+                                           annotation_cnf_names = {"op": "like", "filter": "PHYSICAL_URL"})
+        if len(physical_urlDB) is 0:
+            physical_url_annotation = {
+            "explicit_reference": item_id,
+            "annotation_cnf": {
+                "name": "PHYSICAL_URL",
+                "system": satellite
+                },
+            "values": [{
+                "name": "details",
+                "type": "object",
+                "values": [
+                    {"name": "physical_url",
+                     "type": "text",
+                     "value": physical_url
+                     }]
+                }]
+            }
+            list_of_annotations.append(physical_url_annotation)
+        #end if
+
+        if '_GR' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
+            #Insert the granule explicit reference if it doesn't already exist
+            granule_er = query.get_explicit_refs(groups = {"filter": level + "_GR", "op": "like"},
+                                                          explicit_refs = {"op": "like", "filter": item_id})
+            if len(granule_er) is 0:
+                granule_explicit_reference = {
+                    "group": level + "_GR",
+                    "links": [{
+                        "back_ref": "DATASTRIP",
+                        "link": "GRANULE",
+                        "name": datastrip_id
+                        }
+                    ],
+                    "name": item_id
+                }
+                list_of_explicit_references.append(granule_explicit_reference)
+            #end if
+        #end if
+
+        if '_TL' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
+        #Insert the tile explicit reference if it doesn't already exist
+            tile_er = query.get_explicit_refs(groups = {"filter": level + "_TL", "op": "like"},
+                                                          explicit_refs = {"op": "like", "filter": item_id})
+            if len(tile_er) is 0:
+                tile_explicit_reference = {
+                    "group": level + "_TL",
+                    "links": [{
+                        "back_ref": "DATASTRIP",
+                        "link": "TILE",
+                        "name": datastrip_id
+                        }
+                    ],
+                    "name": item_id
+                }
+                list_of_explicit_references.append(tile_explicit_reference)
+            #end if
+
+            # #Modify the item_id to obtain a TC id
+            # tc_id = item_id.replace('TL','TC')
+            # #Insert the tc explicit reference if it doesn't already exist
+            # tc_er = query.get_explicit_refs(groups = {"filter": level + "_TC", "op": "like"},
+            #                                               explicit_refs = {"op": "like", "filter": tc_id})
+            # if len(tc_er) is 0:
+            #     tc_explicit_reference = {
+            #         "group": level + "_TC",
+            #         "links": [{
+            #             "back_ref": "DATASTRIP",
+            #             "link": "TCI",
+            #             "name": datastrip_id
+            #             }
+            #         ],
+            #         "name": item_id
+            #     }
+            #     list_of_explicit_references.append(tc_explicit_reference)
+            # #end if
+        #end if
+
+    # completeness_planDB = query
+    # if len(completeness_planDB) is 0:
+    #     if level == "L0" or level == "L1A" or level == "L1B":
+    #         create_completeness_plan_L0_L1A_L1B()
+    #     elif level == "L1C" or level == "L2A":
+    #         create_completeness_received_L1C_L2A()
+    #
+    # completeness_receivedDB = query
+    # if len(completeness_receivedDB) is 0:
+    #     if level == "L0" or level == "L1A" or level == "L1B":
+    #         create_completeness_received_L0_L1A_L1B()
+    #     elif level == "L1C" or level == "L2A":
+    #         create_completeness_received_L1C_L2A()
+
+    #Adjust sources / operations
+    source_indexing = source
 
     list_of_operations.append({
         "mode": "insert",
@@ -1099,333 +1342,10 @@ def process_file(file_path, engine, query):
               "exec": os.path.basename(__file__),
               "version": version
         },
-        "source": source,
+        "source": source_indexing,
         "annotations": list_of_annotations,
-        "explicit_references": list_of_explicit_references,
-        "events": list_of_events,
+        "explicit_references": list_of_explicit_references
         })
-    data = {"operations": list_of_operations}
-
-    os.remove(new_file_path)
-
-    return data
-    # Loop through each output node that contains a datastrip (excluding the auxiliary data)
-    for output_msi in xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/*[contains(name(),'Output_Products') and boolean(child::DATA_STRIP_ID)]") :
-
-        granule_timeline_per_detector = {}
-        granule_timeline = []
-        # Obtain the datastrip
-        ds_output = output_msi.find("DATA_STRIP_ID").text
-        # Obtain the sensing identifier from the datastrip
-        sensing_identifier = ds_output[41:57]
-        # Obtain the baseline from the datastrip
-        baseline = ds_output[58:]
-        # Obtain the production level from the datastrip
-        level = ds_output[13:16].replace("_","")
-
-        # Obtain the input datastrip if exists
-        input = xpath_xml("/Earth_Explorer_File/Data_Block/SUP_WORKPLAN_REPORT/SPECIFIC_HEADER/SYNTHESIS_INFO/Product_Report/Input_Products/DATA_STRIP_ID")
-        ds_input = input[0].text
-
-        # Loop over each granule in the ouput
-        for granule in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_GR_')]"):
-            # Obtain the granule id
-            granule_t = granule.text
-            level_gr = granule_t[13:16].replace("_","")
-            granule_sensing_date = granule_t[42:57]
-            detector = granule_t[59:61]
-
-            # Create a segment for each granule with a margin calculated to get whole scenes
-            start= parser.parse(granule_sensing_date)
-            stop = start + datetime.timedelta(seconds=5)
-            granule_segment = {
-                "start": start,
-                "stop": stop,
-                "id": granule_t
-            }
-
-            # Create a dictionary containing all the granules for each detector
-            granule_timeline.append(granule_segment)
-            if detector not in granule_timeline_per_detector:
-                granule_timeline_per_detector[detector] = []
-            # end if
-            granule_timeline_per_detector[detector].append(granule_segment)
-            explicit_reference = {
-                "group": level_gr + "_GR",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "GRANULE",
-                    "name": ds_output
-                    }
-                ],
-                "name": granule_t
-            }
-            list_of_explicit_references.append(explicit_reference)
-        # end for
-
-        # Loop over each tile in the output
-        for tile in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TL_')]"):
-            # Obtain the tile id
-            tile_t = tile.text
-            level_tl = tile_t[13:16]
-            level_tl.replace("_","")
-
-            explicit_reference = {
-                "group": level_tl + "_TL",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "TILE",
-                    "name": ds_output
-                    }
-                ],
-                "name": tile_t
-            }
-            list_of_explicit_references.append(explicit_reference)
-        # end for
-
-        # Loop over each TCI in the ouput
-        for true_color in output_msi.xpath("*[name() = 'GRANULES_ID' and contains(text(),'_TC_')]"):
-            # Obtain the true color imaging id
-            true_color_t = true_color.text
-            level_tc = true_color_t[13:16]
-            level_tc.replace("_","")
-
-            explicit_reference = {
-                "group": level_tc + "_TC",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "TCI",
-                    "name": ds_output
-                    }
-                ],
-                "name": true_color_t
-            }
-            list_of_explicit_references.append(explicit_reference)
-        # end_for
-
-        if ds_output not in processed_datastrips:
-
-            baseline_annotation = {
-            "explicit_reference": ds_output,
-            "annotation_cnf": {
-                "name": "PRODUCTION_BASELINE",
-                "system": system
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "baseline",
-                     "type": "text",
-                     "value": baseline
-                     }]
-                }]
-            }
-            list_of_annotations.append(baseline_annotation)
-
-            sensing_identifier_annotation = {
-            "explicit_reference": ds_output,
-            "annotation_cnf": {
-                "name": "SENSING_IDENTIFIER",
-                "system": system
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "sensing_identifier",
-                     "type": "text",
-                     "value": sensing_identifier
-                    }]
-                }]
-            }
-            list_of_annotations.append(sensing_identifier_annotation)
-
-            explicit_reference = {
-               "group": level + "_DS",
-               "links": [{
-                   "back_ref": "INPUT_DATASTRIP",
-                   "link": "OUTPUT_DATASTRIP",
-                   "name": ds_input
-                   }
-               ],
-               "name": ds_output
-            }
-            list_of_explicit_references.append(explicit_reference)
-
-            if level == "L0" or level == "L1A" or level == "L1B":
-                L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, list_of_operations, system)
-            elif (level == "L1C" or level == "L2A"):
-                upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
-                                                          groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
-                                                          annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_identifier}}])
-                upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[0:3] == satellite]
-                upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
-                if len(upper_level_er) == 0:
-                    upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L0_"]
-                # end if
-                if len(upper_level_er) > 0:
-                    er = upper_level_er[0]
-
-                    processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
-                                                                          explicit_refs = {"filter": er, "op": "like"},
-                                                                          value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
-                                                                          link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
-                                                                          return_prime_events = True)
-
-                    L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, ds_output, list_of_operations, system)
-                # end if
-            # end if
-
-            event_timeliness = {
-                "explicit_reference": ds_output,
-                "gauge": {
-                    "insertion_type": "SIMPLE_UPDATE",
-                    "name": "TIMELINESS",
-                    "system": system
-                },
-                "start": steps_list[0].find("PROCESSING_START_DATETIME").text[:-1],
-                "stop": steps_list[-1].find("PROCESSING_END_DATETIME").text[:-1]
-            }
-            list_of_events.append(event_timeliness)
-
-            # Steps
-            for step in steps_list:
-                if step.find("EXEC_STATUS").text == 'COMPLETED':
-                    event_step = {
-                        "explicit_reference": ds_output,
-                        "gauge": {
-                            "insertion_type": "SIMPLE_UPDATE",
-                            "name": "STEP_INFO",
-                            "system": system
-                        },
-                        "start": step.find("PROCESSING_START_DATETIME").text[:-1],
-                        "stop": step.find("PROCESSING_END_DATETIME").text[:-1],
-                        "values": [{
-                            "name": "details",
-                            "type": "object",
-                            "values": [{
-                                       "name": "id",
-                                       "type": "text",
-                                       "value": step.get("id")
-                                       },{
-                                       "name": "exec_mode",
-                                       "type": "text",
-                                       "value": step.find("SUBSYSTEM_INFO/STEP_REPORT/GENERAL_INFO/EXEC_MODE").text
-                            }]
-                        }]
-                    }
-                    list_of_events.append(event_step)
-                # end if
-            # end for
-
-            for mrf in mrf_list:
-                explicit_reference = {
-                    "group": "MISSION_CONFIGURATION",
-                    "links": [{
-                        "back_ref": "DATASTRIP",
-                        "link": "CONFIGURATION",
-                        "name": ds_output
-                        }
-                    ],
-                    "name": mrf.find("Id").text
-                }
-                list_of_configuration_explicit_references.append(explicit_reference)
-            # end for
-        # end if
-
-        processed_datastrips[ds_output] = None
-    # end for
-
-    for mrf in mrf_list:
-        # Only if the mrf does not exist in the DB
-        mrfsDB = query.get_events(explicit_refs = {"op": "like", "filter": mrf.find("Id").text})
-        if len(mrfsDB) is 0:
-            # If the date is correct, else the date is set to a maximum value
-            try:
-                stop = str(parser.parse(mrf.find("ValidityStop").text[:-1]))
-            # end if
-            except:
-                stop = str(datetime.datetime.max)
-            # end except
-            event_mrf={
-                "key":mrf.find("Id").text,
-                "explicit_reference": mrf.find("Id").text,
-                "gauge": {
-                    "insertion_type": "EVENT_KEYS",
-                    "name": "MRF_VALIDITY",
-                    "system": system
-                },
-                "start": mrf.find("ValidityStart").text[:-1],
-                "stop": stop,
-                "values": [{
-                    "name": "details",
-                    "type": "object",
-                    "values": [{
-                          "name": "generation_time",
-                          "type": "timestamp",
-                          "value": mrf.find("Id").text[25:40]
-                          }]
-                    }]
-                }
-            list_of_configuration_events.append(event_mrf)
-        # end if
-    # end for
-
-    # Adjust the validity period to the events in the operation
-    if len(list_of_events) > 0:
-        event_starts = [event["start"] for event in list_of_events]
-        event_starts.sort()
-        if source["validity_start"] > event_starts[0]:
-            source["validity_start"] = event_starts[0]
-        # end if
-        event_stops = [event["stop"] for event in list_of_events]
-        event_stops.sort()
-        if source["validity_stop"] < event_stops[-1]:
-            source["validity_stop"] = event_stops[-1]
-        # end if
-        list_of_operations.append({
-            "mode": "insert",
-            "dim_signature": {
-                  "name": "PROCESSING_" + satellite,
-                  "exec": os.path.basename(__file__),
-                  "version": version
-            },
-            "source": source,
-            "annotations": list_of_annotations,
-            "explicit_references": list_of_explicit_references,
-            "events": list_of_events,
-            })
-
-     # end if
-
-    # Adjust the validity period to the events in the operation
-    if len(list_of_configuration_events) > 0:
-        source = {
-            "name": file_name,
-            "generation_time": creation_date
-        }
-
-        event_starts = [event["start"] for event in list_of_configuration_events]
-        event_starts.sort()
-        source["validity_start"] = event_starts[0]
-        event_stops = [event["stop"] for event in list_of_configuration_events]
-        event_stops.sort()
-        source["validity_stop"] = event_stops[-1]
-        list_of_operations.append({
-            "mode": "insert",
-            "dim_signature": {
-                  "name": "PROCESSING_"  + satellite,
-                  "exec": "configuration_" + os.path.basename(__file__),
-                  "version": version
-            },
-            "source": source,
-            "explicit_references": list_of_configuration_explicit_references,
-            "events": list_of_configuration_events,
-        })
-
-     # end if
-
     data = {"operations": list_of_operations}
 
     os.remove(new_file_path)
