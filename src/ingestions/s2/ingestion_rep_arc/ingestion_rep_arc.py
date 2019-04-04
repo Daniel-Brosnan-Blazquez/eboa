@@ -180,7 +180,12 @@ def process_file(file_path, engine, query):
             True
 
         # Insert the footprint_annotation
-        corrected_footprint = ingestion_helpers.prepare_geometry(footprint)
+        list_of_lat_long_coordinates = footprint.split(" ")
+        if "" in list_of_lat_long_coordinates:
+            list_of_lat_long_coordinates.remove("")
+        # end if
+        corrected_list_of_coordinates = list(reversed(ingestion_helpers.correct_list_of_coordinates(list_of_lat_long_coordinates)))
+        corrected_footprint = ingestion_helpers.list_of_coordinates_to_str_geometry(corrected_list_of_coordinates)
         if corrected_footprint != "":
             footprint_annotation = {
             "explicit_reference": item_id,
