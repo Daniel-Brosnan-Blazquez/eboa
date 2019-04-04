@@ -1064,15 +1064,15 @@ def process_file(file_path, engine, query):
     validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
     # Obtain the datastrip
     datastrip_info = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata[Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_Type[contains(text(),'_DS')]]")[0]
-    #Obtain the datastrip ID
+    # Obtain the datastrip ID
     datastrip_id = datastrip_info.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
-    #Obtain the datatake ID
+    # Obtain the datatake ID
     datatake_id = datastrip_info.xpath("CentralIndex/Datatake-id")[0].text
-    #Obtain the baseline
+    # Obtain the baseline
     baseline = datastrip_id[58:]
     # Obtain the production level from the datastrip
     level = datastrip_id[13:16].replace("_","")
-    #Obtain the sensing identifier
+    # Obtain the sensing identifier
     sensing_id = datastrip_id[41:57]
     # Source for the main operation
     source = {
@@ -1082,42 +1082,33 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    processing_validityDB = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
+    processing_validity_db = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
                                              gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
 
-    processing_validity_exists = len(processing_validityDB) > 0
+    processing_validity_exists = len(processing_validity_db) > 0
 
-    #General file
-    #ANNOTATIONS
+    # General file
 
+    # Insert the datatake_annotation
+    datatake_annotation = {
+    "explicit_reference": datastrip_id,
+    "annotation_cnf": {
+        "name": "DATATAKE",
+        "system": satellite
+        },
+    "values": [{
+        "name": "details",
+        "type": "object",
+        "values": [
+            {"name": "datatake_identifier",
+             "type": "text",
+             "value": datatake_id
+             }]
+        }]
+    }
+    list_of_annotations.append(datatake_annotation)
 
-    #end if
-
-    #Insert the datatake_annotation if it doesn't already exist
-    datatakeDB = query.get_annotations(explicit_refs = {"op": "like", "filter": datastrip_id},
-                                       annotation_cnf_names = {"op": "like", "filter": "DATATAKE"})
-    if len(datatakeDB) is 0:
-        datatake_annotation = {
-        "explicit_reference": datastrip_id,
-        "annotation_cnf": {
-            "name": "DATATAKE",
-            "system": satellite
-            },
-        "values": [{
-            "name": "details",
-            "type": "object",
-            "values": [
-                {"name": "datatake_identifier",
-                 "type": "text",
-                 "value": datatake_id
-                 }]
-            }]
-        }
-        list_of_annotations.append(datatake_annotation)
-    #end if
-
-    #Insert the baseline_annotation if it doesn't already exist
-
+    # Insert the baseline_annotation
     if not processing_validity_exists:
         baseline_annotation = {
         "explicit_reference": datastrip_id,
@@ -1136,10 +1127,7 @@ def process_file(file_path, engine, query):
             }]
         }
         list_of_annotations.append(baseline_annotation)
-    #end if
-    #END OF ANNOTATIONS
-
-    #EXPLICIT REFS
+    # end if
 
     if not processing_validity_exists:
         datastrip_sensing_explicit_ref= {
@@ -1153,150 +1141,127 @@ def process_file(file_path, engine, query):
             "name": datastrip_id
         }
         list_of_explicit_references.append(datastrip_sensing_explicit_ref)
-    #end if
+    # end if
 
-    #Loop over all the ItemMetadata
+    # Loop over all the ItemMetadata
     for item in xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata"):
 
         item_id = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
         data_size = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/Data_Size")[0].text
         cloud_percentage = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/CloudPercentage")[0].text
         physical_url = item.xpath("CentralIndex/PDIPhysicalUrl")[0].text
-        #Obtain the footprint values
+        # Obtain the footprint values
         footprint = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Product_Metadata/Footprint/EXT_POS_LIST")[0].text
 
         if not processing_validity_exists:
-            #Create_params for create processing_validity
+            # Create_params for create processing_validity
             True
 
-        #Insert the footprint_annotation if it doesn't already exist
-        footprintDB = query.get_annotations(explicit_refs = {"op": "like", "filter": datastrip_id},
-                                           annotation_cnf_names = {"op": "like", "filter": "FOOTPRINT"})
+        # # Insert the footprint_annotation
+        # footprint_annotation = {
+        # "explicit_reference": item_id,
+        # "annotation_cnf": {
+        #     "name": "FOOTPRINT",
+        #     "system": satellite
+        #     },
+        # "values": [{
+        #     "name": "details",
+        #     "type": "object",
+        #     "values": [
+        #         {"name": "footprint",
+        #          "type": "geometry",
+        #          "value": footprint
+        #          }]
+        #     }]
+        # }
+        # list_of_annotations.append(footprint_annotation)
 
-        if len(footprintDB) is 0:
-            footprint_annotation = {
-            "explicit_reference": item_id,
-            "annotation_cnf": {
-                "name": "FOOTPRINT",
-                "system": satellite
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "footprint",
-                     "type": "geometry",
-                     "value": footprint
-                     }]
-                }]
-            }
-            list_of_annotations.append(footprint_annotation)
+        # Insert the data_size_annotation per datastrip
+        data_size_annotation = {
+        "explicit_reference": item_id,
+        "annotation_cnf": {
+            "name": "SIZE",
+            "system": satellite
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "size",
+                 "type": "double",
+                 "value": data_size
+                 }]
+            }]
+        }
+        list_of_annotations.append(data_size_annotation)
 
-        #Insert the data_size_annotation per datastrip if it doesn't already exist
-        data_sizeDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
-                                           annotation_cnf_names = {"op": "like", "filter": "DATA_SIZE"})
-        if len(data_sizeDB) is 0:
-            data_size_annotation = {
-            "explicit_reference": item_id,
-            "annotation_cnf": {
-                "name": "SIZE",
-                "system": satellite
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "size",
-                     "type": "double",
-                     "value": data_size
-                     }]
-                }]
-            }
-            list_of_annotations.append(data_size_annotation)
-        #end if
+        # Insert the data_size_annotation per datastrip
+        cloud_percentage_annotation = {
+        "explicit_reference": item_id,
+        "annotation_cnf": {
+            "name": "CLOUD_PERCENTAGE",
+            "system": satellite
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "cloud_percentage",
+                 "type": "double",
+                 "value": cloud_percentage
+                 }]
+            }]
+        }
+        list_of_annotations.append(cloud_percentage_annotation)
+        # end if
 
-        #Insert the data_size_annotation per datastrip if it doesn't already exist
-        cloud_percentageDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
-                                           annotation_cnf_names = {"op": "like", "filter": "CLOUD_PERCENTAGE"})
-        if len(cloud_percentageDB) is 0:
-            cloud_percentage_annotation = {
-            "explicit_reference": item_id,
-            "annotation_cnf": {
-                "name": "CLOUD_PERCENTAGE",
-                "system": satellite
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "cloud_percentage",
-                     "type": "double",
-                     "value": cloud_percentage
-                     }]
-                }]
-            }
-            list_of_annotations.append(cloud_percentage_annotation)
-        #end if
-
-        #Insert the data_size_annotation per datastrip if it doesn't already exist
-        physical_urlDB = query.get_annotations(explicit_refs = {"op": "like", "filter": item_id},
-                                           annotation_cnf_names = {"op": "like", "filter": "PHYSICAL_URL"})
-        if len(physical_urlDB) is 0:
-            physical_url_annotation = {
-            "explicit_reference": item_id,
-            "annotation_cnf": {
-                "name": "PHYSICAL_URL",
-                "system": satellite
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "physical_url",
-                     "type": "text",
-                     "value": physical_url
-                     }]
-                }]
-            }
-            list_of_annotations.append(physical_url_annotation)
-        #end if
+        # Insert the data_size_annotation per datastrip
+        physical_url_annotation = {
+        "explicit_reference": item_id,
+        "annotation_cnf": {
+            "name": "PHYSICAL_URL",
+            "system": satellite
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "physical_url",
+                 "type": "text",
+                 "value": physical_url
+                 }]
+            }]
+        }
+        list_of_annotations.append(physical_url_annotation)
 
         if '_GR' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
-            #Insert the granule explicit reference if it doesn't already exist
-            granule_er = query.get_explicit_refs(groups = {"filter": level + "_GR", "op": "like"},
-                                                          explicit_refs = {"op": "like", "filter": item_id})
-            if len(granule_er) is 0:
-                granule_explicit_reference = {
-                    "group": level + "_GR",
-                    "links": [{
-                        "back_ref": "DATASTRIP",
-                        "link": "GRANULE",
-                        "name": datastrip_id
-                        }
-                    ],
-                    "name": item_id
-                }
-                list_of_explicit_references.append(granule_explicit_reference)
-            #end if
-        #end if
+            # Insert the granule explicit reference
+            granule_explicit_reference = {
+                "group": level + "_GR",
+                "links": [{
+                    "back_ref": "DATASTRIP",
+                    "link": "GRANULE",
+                    "name": datastrip_id
+                    }
+                ],
+                "name": item_id
+            }
+            list_of_explicit_references.append(granule_explicit_reference)
+        # end if
 
         if '_TL' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
-        #Insert the tile explicit reference if it doesn't already exist
-            tile_er = query.get_explicit_refs(groups = {"filter": level + "_TL", "op": "like"},
-                                                          explicit_refs = {"op": "like", "filter": item_id})
-            if len(tile_er) is 0:
-                tile_explicit_reference = {
-                    "group": level + "_TL",
-                    "links": [{
-                        "back_ref": "DATASTRIP",
-                        "link": "TILE",
-                        "name": datastrip_id
-                        }
-                    ],
-                    "name": item_id
-                }
-                list_of_explicit_references.append(tile_explicit_reference)
-            #end if
+        # Insert the tile explicit reference
+            tile_explicit_reference = {
+                "group": level + "_TL",
+                "links": [{
+                    "back_ref": "DATASTRIP",
+                    "link": "TILE",
+                    "name": datastrip_id
+                    }
+                ],
+                "name": item_id
+            }
+            list_of_explicit_references.append(tile_explicit_reference)
 
             # #Modify the item_id to obtain a TC id
             # tc_id = item_id.replace('TL','TC')
@@ -1315,24 +1280,24 @@ def process_file(file_path, engine, query):
             #         "name": item_id
             #     }
             #     list_of_explicit_references.append(tc_explicit_reference)
-            # #end if
-        #end if
+            # # end if
+        # end if
 
-    # completeness_planDB = query
-    # if len(completeness_planDB) is 0:
+    # completeness_plan_db = query
+    # if len(completeness_plan_db) is 0:
     #     if level == "L0" or level == "L1A" or level == "L1B":
     #         create_completeness_plan_L0_L1A_L1B()
     #     elif level == "L1C" or level == "L2A":
     #         create_completeness_received_L1C_L2A()
     #
-    # completeness_receivedDB = query
-    # if len(completeness_receivedDB) is 0:
+    # completeness_received_db = query
+    # if len(completeness_received_db) is 0:
     #     if level == "L0" or level == "L1A" or level == "L1B":
     #         create_completeness_received_L0_L1A_L1B()
     #     elif level == "L1C" or level == "L2A":
     #         create_completeness_received_L1C_L2A()
 
-    #Adjust sources / operations
+    # Adjust sources / operations
     source_indexing = source
 
     list_of_operations.append({
