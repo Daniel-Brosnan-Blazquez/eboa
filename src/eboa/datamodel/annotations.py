@@ -199,7 +199,7 @@ class AnnotationTimestamp(Base):
         return {
             "type": "timestamp",
             "name": self.name,
-            "value": self.value,
+            "value": self.value.isoformat(),
             "level_position": self.level_position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,

@@ -5,7 +5,7 @@ Written by DEIMOS Space S.L. (dibb)
 
 module eboa
 """
-
+from geoalchemy2.shape import to_shape
 from sqlalchemy import Column, Integer, Table, DateTime, ForeignKey, Text, Float, Boolean
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
@@ -231,7 +231,7 @@ class EventTimestamp(Base):
         return {
             "type": "timestamp",
             "name": self.name,
-            "value": self.value,
+            "value": self.value.isoformat(),
             "level_position": self.level_position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
@@ -293,7 +293,7 @@ class EventGeometry(Base):
         return {
             "type": "geometry",
             "name": self.name,
-            "value": self.value,
+            "value": to_shape(self.value).to_wkt(),
             "level_position": self.level_position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
