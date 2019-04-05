@@ -47,8 +47,7 @@ class TestEngine(unittest.TestCase):
         # Clear all tables before executing the test
         self.query_eboa.clear_db()
 
-
-    def test_dpc_report_L0_only(self):
+    def test_rep_arc_L0_only(self):
 
         filename = "S2A_OPER_REP_ARC_L0.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename

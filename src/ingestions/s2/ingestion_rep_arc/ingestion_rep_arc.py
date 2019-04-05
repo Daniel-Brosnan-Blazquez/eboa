@@ -73,6 +73,8 @@ def process_file(file_path, engine, query):
     list_of_configuration_explicit_references = []
     list_of_operations = []
     processed_datastrips = {}
+    granule_timeline_per_detector = {}
+    granule_timeline = []
 
     # Obtain the satellite
     satellite = file_name[0:3]
@@ -105,10 +107,9 @@ def process_file(file_path, engine, query):
     }
 
     processing_validity_db = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
-                                             gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
+                                              gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
 
     processing_validity_exists = len(processing_validity_db) > 0
-
     # General file
 
     # Insert the datatake_annotation
@@ -175,16 +176,17 @@ def process_file(file_path, engine, query):
         # Obtain the footprint values
         footprint = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Product_Metadata/Footprint/EXT_POS_LIST")[0].text
 
-        if not processing_validity_exists:
-            # Create_params for create processing_validity
-            True
-
         # Insert the footprint_annotation
         list_of_lat_long_coordinates = footprint.split(" ")
         if "" in list_of_lat_long_coordinates:
             list_of_lat_long_coordinates.remove("")
         # end if
-        corrected_list_of_coordinates = list(reversed(ingestion_helpers.correct_list_of_coordinates(list_of_lat_long_coordinates)))
+        if "_DS_" in item_id:
+            corrected_list_of_coordinates = list(reversed(ingestion_helpers.correct_list_of_coordinates_for_ds(list_of_lat_long_coordinates)))
+        else:
+            corrected_list_of_coordinates = list(reversed(ingestion_helpers.correct_list_of_coordinates_for_gr_tl(list_of_lat_long_coordinates)))
+        # end if
+
         corrected_footprint = ingestion_helpers.list_of_coordinates_to_str_geometry(corrected_list_of_coordinates)
         if corrected_footprint != "":
             footprint_annotation = {
@@ -265,6 +267,29 @@ def process_file(file_path, engine, query):
         list_of_annotations.append(physical_url_annotation)
 
         if '_GR' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
+            if not processing_validity_exists:
+                # Obtain the granule id
+                granule_t = item_id
+                level_gr = granule_t[13:16].replace("_","")
+                granule_sensing_date = granule_t[42:57]
+                detector = granule_t[59:61]
+
+                # Create a segment for each granule with a margin calculated to get whole scenes
+                start= parser.parse(granule_sensing_date)
+                stop = start + datetime.timedelta(seconds=5)
+                granule_segment = {
+                    "start": start,
+                    "stop": stop,
+                    "id": granule_t
+                }
+
+                # Create a dictionary containing all the granules for each detector
+                granule_timeline.append(granule_segment)
+                if detector not in granule_timeline_per_detector:
+                    granule_timeline_per_detector[detector] = []
+                # end if
+                granule_timeline_per_detector[detector].append(granule_segment)
+
             # Insert the granule explicit reference
             granule_explicit_reference = {
                 "group": level + "_GR",
@@ -313,19 +338,31 @@ def process_file(file_path, engine, query):
             # # end if
         # end if
 
-    # completeness_plan_db = query
-    # if len(completeness_plan_db) is 0:
-    #     if level == "L0" or level == "L1A" or level == "L1B":
-    #         create_completeness_plan_L0_L1A_L1B()
-    #     elif level == "L1C" or level == "L2A":
-    #         create_completeness_received_L1C_L2A()
-    #
-    # completeness_received_db = query
-    # if len(completeness_received_db) is 0:
-    #     if level == "L0" or level == "L1A" or level == "L1B":
-    #         create_completeness_received_L0_L1A_L1B()
-    #     elif level == "L1C" or level == "L2A":
-    #         create_completeness_received_L1C_L2A()
+    completeness_plan_db = query.get_events(gauge_names = {"filter": " 	PLANNED_IMAGING_PROCESSING_COMPLETENESS_" + level, "op": "like"})
+    if len(completeness_plan_db) is 0:
+        if level == "L0" or level == "L1A" or level == "L1B":
+            functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,datastrip_id,granule_timeline_per_detector, list_of_operations, system, version, file_name)
+        elif (level == "L1C" or level == "L2A"):
+            upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
+                                                      groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
+                                                      annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_id}}])
+            upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[0:3] == satellite]
+            upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
+            if len(upper_level_er) == 0:
+                upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L0_"]
+            # end if
+            if len(upper_level_er) > 0:
+                er = upper_level_er[0]
+
+                processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
+                                                                      explicit_refs = {"filter": er, "op": "like"},
+                                                                      value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
+                                                                      link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
+                                                                      return_prime_events = True)
+
+                functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip_id, list_of_operations, system, version, file_name)
+            # end if
+        # end if
 
     # Adjust sources / operations
     source_indexing = source

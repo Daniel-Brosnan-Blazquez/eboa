@@ -9,9 +9,9 @@ module eboa
 ###########
 # Functions for helping with geometries
 ###########
-def correct_list_of_coordinates (list_of_coordinates):
+def correct_list_of_coordinates_for_ds (list_of_coordinates):
     """
-    Method to correct the format of a given list of coordinates
+    Method to correct the format of a given list of coordinates for a datastrip
     :param list_of_coordinates: list with coordinates
     :type list_of_coordinates: list
 
@@ -36,6 +36,44 @@ def correct_list_of_coordinates (list_of_coordinates):
                 break
             elif ((i*2) + 1) < len(list_of_coordinates):
                 latitude = list_of_coordinates[(i*2) + 1]
+                result_list_of_coordinates.append(longitude)
+                result_list_of_coordinates.append(latitude)
+            # end if
+            i += 1
+        # end while
+        result_list_of_coordinates.append(first_longitude)
+        result_list_of_coordinates.append(first_latitude)
+    # end if
+        
+    return result_list_of_coordinates
+
+def correct_list_of_coordinates_for_gr_tl (list_of_coordinates):
+    """
+    Method to correct the format of a given list of coordinates for a granule or a tile
+    :param list_of_coordinates: list with coordinates
+    :type list_of_coordinates: list
+
+    :return: list_of_coordinates
+    :rtype: str
+
+    """
+    if type(list_of_coordinates) != list:
+        raise
+    # end if
+    result_list_of_coordinates = []
+    # Minimum accpeted number of coordinates is 2
+    if len(list_of_coordinates) > 1:
+        first_longitude = list_of_coordinates[0]
+        first_latitude = list_of_coordinates[1]
+        result_list_of_coordinates.append(first_longitude)
+        result_list_of_coordinates.append(first_latitude)
+        i = 1
+        while i < len(list_of_coordinates)/2:
+            longitude = list_of_coordinates[i*3]
+            if longitude == first_longitude:
+                break
+            elif ((i*3) + 1) < len(list_of_coordinates):
+                latitude = list_of_coordinates[(i*3) + 1]
                 result_list_of_coordinates.append(longitude)
                 result_list_of_coordinates.append(latitude)
             # end if
