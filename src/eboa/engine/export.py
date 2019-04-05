@@ -34,12 +34,12 @@ def build_values_structure(values, structure, level_position = 0, parent_level =
             value_type = "text"
         # end if
 
-        value_content = str(value.value)
-        if value_type == "geometry":
-            value_content = to_shape(value.value).to_wkt()
-        # end if
-
         if value_type != "object":
+            value_content = str(value.value)
+            if value_type == "geometry":
+                value_content = to_shape(value.value).to_wkt()
+            # end if
+
             object_entity_structure["values"].append({"name": value.name,
                                                       "type": value_type,
                                                       "value": value_content
