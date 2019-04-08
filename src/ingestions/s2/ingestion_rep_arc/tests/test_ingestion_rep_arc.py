@@ -47,6 +47,36 @@ class TestEngine(unittest.TestCase):
         # Clear all tables before executing the test
         self.query_eboa.clear_db()
 
+    def test_beta(self):
+        filename = "S2A_NPPF.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_nppf.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_ORBPRE.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_orbpre.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        # filename = "S2A_OPER_REP_OPDPC_L0U_L0_WITH_GAPS.EOF"
+        # file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+        #
+        # returned_value = ingestion_dpc.command_process_file(file_path)
+        #
+        # assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_ARC_L0_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_rep_arc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+
     def test_rep_arc_L0_only(self):
 
         filename = "S2A_OPER_REP_ARC_L0.EOF"
@@ -79,11 +109,11 @@ class TestEngine(unittest.TestCase):
 
         assert len(baseline) == 1
 
-        # Check footprints
-        # footprints = self.query_eboa.get_annotations(explicit_refs = {"op": "like", "filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06"},
-        #                                    annotation_cnf_names = {"op": "like", "filter": "FOOTPRINT"})
-        #
-        # assert len(footprints) == 361
+        #Check footprints
+        footprints = self.query_eboa.get_annotations(explicit_refs = {"op": "like", "filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06"},
+                                           annotation_cnf_names = {"op": "like", "filter": "FOOTPRINT"})
+
+        assert len(footprints) == 361
 
         # Check data sizes
         data_sizes = self.query_eboa.get_annotations(annotation_cnf_names = {"op": "like", "filter": "SIZE"})
@@ -119,189 +149,175 @@ class TestEngine(unittest.TestCase):
 
 
 
-    # def test_dpc_report_L0_plan(self):
-    #
-    #     filename = "S2A_NPPF.EOF"
-    #     file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-    #
-    #     returned_value = ingestion_nppf.command_process_file(file_path)
-    #
-    #     assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
-    #
-    #     filename = "S2A_ORBPRE.EOF"
-    #     file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-    #
-    #     returned_value = ingestion_orbpre.command_process_file(file_path)
-    #
-    #     assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
-    #
-    #     filename = "S2A_OPER_REP_OPDPC_L0U_L0.EOF"
-    #     file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
-    #
-    #     returned_value = ingestion_dpc.command_process_file(file_path)
-    #
-    #     assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
-    #     # Check sources
-    #     # L0
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-16T11:41:50", "op": "=="}],
-    #                                          processors = {"filter": "planning_processing_ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "2018-07-21T10:43:26.741000", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
-    #                                          processors = {"filter": "ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2000-12-10 23:51:34", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "9999-01-01T00:00:00", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
-    #                                          processors = {"filter": "configuration_ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     imaging_plan = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING", "op": "like"})[0]
-    #     # Check processing validities
-    #     processing_validities = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
-    #                                                        gauge_names = {"filter": "PROCESSING_VALIDITY", "op": "like"},
-    #                                                        start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-    #                                                        stop_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}])
-    #
-    #     assert len(processing_validities) == 1
-    #
-    #     assert len(processing_validities) == 1
-    #     processing_validity_l0 = processing_validities[0]
-    #
-    #     # Check links with PROCESSING VALIDITY
-    #     link_to_plan = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
-    #                                                 event_uuids = {"filter": [str(imaging_plan.event_uuid)], "op": "in"},
-    #                                                 link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
-    #
-    #     assert len(link_to_plan) == 1
-    #
-    #     link_from_plan = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
-    #                                                 event_uuid_links = {"filter": [str(imaging_plan.event_uuid)], "op": "in"},
-    #                                                 link_names = {"filter": "PLANNED_IMAGING", "op": "like"})
-    #
-    #     assert len(link_from_plan) == 1
-    #
-    #     assert processing_validity_l0.get_structured_values() == [{
-    #        "values": [
-    #             {
-    #                 "value": "COMPLETE",
-    #                 "name": "status",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "L0",
-    #                 "name": "level",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "S2A",
-    #                 "name": "satellite",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "MPS_",
-    #                 "type": "text",
-    #                 "name": "processing_centre"
-    #             },
-    #             {
-    #                 "value": "MATCHED_PLANNED_IMAGING",
-    #                 "type": "text",
-    #                 "name": "matching_plan_status"
-    #             },
-    #             {
-    #                 "value": "NO_MATCHED_ISP_VALIDITY",
-    #                 "type": "text",
-    #                 "name": "matching_reception_status"
-    #             },
-    #             {
-    #                 "value": "16077.0",
-    #                 "type": "double",
-    #                 "name": "sensing_orbit"
-    #             }
-    #         ],
-    #         "type": "object",
-    #         "name": "details"
-    #     }]
-    #
-    #     # Check planning completeness
-    #     planning_completeness = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
-    #                                                        gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
-    #                                                        start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-    #                                                        stop_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}])
-    #
-    #     assert len(planning_completeness) == 1
-    #     planning_completeness_l0 = planning_completeness[0]
-    #
-    #     assert planning_completeness_l0.get_structured_values() == [{
-    #         "name": "details",
-    #         "values": [
-    #             {
-    #                 "name": "status",
-    #                 "value": "COMPLETE",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "level",
-    #                 "value": "L0",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "satellite",
-    #                 "value": "S2A",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "processing_centre",
-    #                 "value": "MPS_",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "matching_plan_status",
-    #                 "value": "MATCHED_PLANNED_IMAGING",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "matching_reception_status",
-    #                 "value": "NO_MATCHED_ISP_VALIDITY",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "name": "sensing_orbit",
-    #                 "value": "16077.0",
-    #                 "type": "double"
-    #             }
-    #         ],
-    #         "type": "object"
-    #     }]
-    #
-    #     missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
-    #                                                        start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
-    #                                                        stop_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}])
-    #
-    #     assert len(missing_planning_completeness) == 1
-    #
-    #     missing_planning_completeness_statuses = [event for event in missing_planning_completeness if len([value for value in event.eventTexts if value.name == "status" and value.value == "MISSING"]) > 0]
-    #
-    #     assert len(missing_planning_completeness_statuses) == 1
-    #
-    #     missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
-    #                                                        start_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}],
-    #                                                        stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}])
-    #
-    #     assert len(missing_planning_completeness) == 1
+    def test_rep_arc_L0_plan(self):
 
-    # def test_dpc_report_L0_with_rep_pass(self):
+        filename = "S2A_NPPF.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_nppf.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_ORBPRE.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_orbpre.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_ARC_L0.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_rep_arc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        # Check sources
+        # L0
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:36:02.255634", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21 09:08:56.195941", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-16 11:41:50", "op": "=="}],
+                                             processors = {"filter": "planning_processing_ingestion_rep_arc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_ARC_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                             processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
+                                             names = {"filter": "S2A_OPER_REP_ARC_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        imaging_plan = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING", "op": "like"})[0]
+        # Check processing validities
+        processing_validities = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PROCESSING_VALIDITY", "op": "like"},
+                                                           start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                                           stop_filters = [{"date":  "2018-07-21 08:54:19", "op": "=="}])
+
+        assert len(processing_validities) == 1
+
+        processing_validity_l0 = processing_validities[0]
+
+        # Check links with PROCESSING VALIDITY
+        link_to_plan = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+                                                    event_uuids = {"filter": [str(imaging_plan.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
+
+        assert len(link_to_plan) == 1
+
+        link_from_plan = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+                                                    event_uuid_links = {"filter": [str(imaging_plan.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PLANNED_IMAGING", "op": "like"})
+
+        assert len(link_from_plan) == 1
+
+        assert processing_validity_l0.get_structured_values() == [{
+           "values": [
+                {
+                    "value": "COMPLETE",
+                    "name": "status",
+                    "type": "text"
+                },
+                {
+                    "value": "L0",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                },
+                {
+                    "value": "EPA_",
+                    "type": "text",
+                    "name": "processing_centre"
+                },
+                {
+                    "value": "MATCHED_PLANNED_IMAGING",
+                    "type": "text",
+                    "name": "matching_plan_status"
+                },
+                {
+                    "value": "NO_MATCHED_ISP_VALIDITY",
+                    "type": "text",
+                    "name": "matching_reception_status"
+                },
+                {
+                    "value": "16077.0",
+                    "type": "double",
+                    "name": "sensing_orbit"
+                }
+            ],
+            "type": "object",
+            "name": "details"
+        }]
+
+        # Check planning completeness
+        planning_completeness = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                           start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                                           stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}])
+
+        assert len(planning_completeness) == 1
+        planning_completeness_l0 = planning_completeness[0]
+
+        assert planning_completeness_l0.get_structured_values() == [{
+            "name": "details",
+            "values": [
+                {
+                    "name": "status",
+                    "value": "COMPLETE",
+                    "type": "text"
+                },
+                {
+                    "name": "level",
+                    "value": "L0",
+                    "type": "text"
+                },
+                {
+                    "name": "satellite",
+                    "value": "S2A",
+                    "type": "text"
+                },
+                {
+                    "name": "processing_centre",
+                    "value": "EPA_",
+                    "type": "text"
+                },
+                {
+                    "name": "matching_plan_status",
+                    "value": "MATCHED_PLANNED_IMAGING",
+                    "type": "text"
+                },
+                {
+                    "name": "matching_reception_status",
+                    "value": "NO_MATCHED_ISP_VALIDITY",
+                    "type": "text"
+                },
+                {
+                    "name": "sensing_orbit",
+                    "value": "16077.0",
+                    "type": "double"
+                }
+            ],
+            "type": "object"
+        }]
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                           start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                           stop_filters = [{"date": "2018-07-21 09:08:56.195941", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_statuses = [event for event in missing_planning_completeness if len([value for value in event.eventTexts if value.name == "status" and value.value == "MISSING"]) > 0]
+
+        assert len(missing_planning_completeness_statuses) == 1
+
+    #NOT WORKING 
+    # def test_rep_arc_L0_with_rep_pass(self):
     #
     #     filename = "S2A_REP_PASS_NO_GAPS.EOF"
     #     file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
@@ -310,107 +326,99 @@ class TestEngine(unittest.TestCase):
     #
     #     assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
     #
-    #     filename = "S2A_OPER_REP_OPDPC_L0U_L0.EOF"
+    #     filename = "S2A_OPER_REP_ARC_L0.EOF"
     #     file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
     #
-    #     returned_value = ingestion_dpc.command_process_file(file_path)
+    #     returned_value = ingestion_rep_arc.command_process_file(file_path)
     #
     #     assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
-    #
-    #     # Check sources
-    #     # L0
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:35.993268", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "2018-07-21T08:54:12.226646", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-21T10:40:55", "op": "=="}],
-    #                                          processors = {"filter": "processing_received_ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "2018-07-21T10:43:26.741000", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
-    #                                          processors = {"filter": "ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2000-12-10 23:51:34", "op": "=="}],
-    #                                          validity_stop_filters = [{"date": "9999-01-01T00:00:00", "op": "=="}],
-    #                                           generation_time_filters = [{"date": "2018-07-21T10:43:34", "op": "=="}],
-    #                                          processors = {"filter": "configuration_ingestion_dpc.py", "op": "like"},
-    #                                          names = {"filter": "S2A_OPER_REP_OPDPC_L0U_L0.EOF", "op": "like"})
-    #
-    #     assert len(sources) == 1
-    #
-    #     isp_validity = self.query_eboa.get_events(gauge_names = {"filter": "ISP_VALIDITY", "op": "like"})[0]
-    #
-    #     # Check processing validities
-    #     processing_validities = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
-    #                                                        gauge_names = {"filter": "PROCESSING_VALIDITY", "op": "like"},
-    #                                                        start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-    #                                                        stop_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}])
-    #
-    #     assert len(processing_validities) == 1
-    #     processing_validity_l0 = processing_validities[0]
-    #
-    #     # Check links with PROCESSING VALIDITY
-    #     link_to_isp_validity = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
-    #                                                 event_uuids = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
-    #                                                 link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
-    #
-    #     assert len(link_to_isp_validity) == 1
-    #
-    #     link_from_isp_validity = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
-    #                                                 event_uuid_links = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
-    #                                                 link_names = {"filter": "ISP_VALIDITY", "op": "like"})
-    #
-    #     assert len(link_from_isp_validity) == 1
-    #
-    #     assert processing_validity_l0.get_structured_values() == [{
-    #        "values": [
-    #             {
-    #                 "value": "COMPLETE",
-    #                 "name": "status",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "L0",
-    #                 "name": "level",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "S2A",
-    #                 "name": "satellite",
-    #                 "type": "text"
-    #             },
-    #             {
-    #                 "value": "MPS_",
-    #                 "type": "text",
-    #                 "name": "processing_centre"
-    #             },
-    #             {
-    #                 "value": "NO_MATCHED_PLANNED_IMAGING",
-    #                 "type": "text",
-    #                 "name": "matching_plan_status"
-    #             },
-    #             {
-    #                 "value": "MATCHED_ISP_VALIDITY",
-    #                 "type": "text",
-    #                 "name": "matching_reception_status"
-    #             },
-    #             {
-    #                 "value": "16078.0",
-    #                 "type": "double",
-    #                 "name": "downlink_orbit"
-    #             }
-    #         ],
-    #         "type": "object",
-    #         "name": "details"
-    #     }]
+
+        # # Check sources
+        # # L0
+        # sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:35.993268", "op": "=="}],
+        #                                      validity_stop_filters = [{"date": "2018-07-21 08:54:12.226646", "op": "=="}],
+        #                                       generation_time_filters = [{"date": "2018-07-21 10:40:55", "op": "=="}],
+        #                                      processors = {"filter": "processing_received_ingestion_rep_arc.py", "op": "like"},
+        #                                      names = {"filter": "S2A_OPER_REP_ARC_L0.EOF", "op": "like"})
+        #
+        # assert len(sources) == 1
+        #
+        # sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+        #                                      validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
+        #                                       generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+        #                                      processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
+        #                                      names = {"filter": "S2A_OPER_REP_ARC_L0.EOF", "op": "like"})
+        #
+        # assert len(sources) == 1
+        #
+        # isp_validity = self.query_eboa.get_events(gauge_names = {"filter": "ISP_VALIDITY", "op": "like"})[0]
+        #
+        # # Check processing validities
+        # processing_validities = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L0__DS_MPS__20180721T103920_S20180721T085229_N02.06", "op": "like"},
+        #                                                    gauge_names = {"filter": "PROCESSING_VALIDITY", "op": "like"},
+        #                                                    start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+        #                                                    stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}])
+        #
+        # assert len(processing_validities) == 1
+        # processing_validity_l0 = processing_validities[0]
+        #
+        # # Check links with PROCESSING VALIDITY
+        # link_to_isp_validity = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+        #                                             event_uuids = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
+        #                                             link_names = {"filter": "PROCESSING_VALIDITY", "op": "like"})
+        #
+        # assert len(link_to_isp_validity) == 1
+        #
+        # link_from_isp_validity = self.query_eboa.get_event_links(event_uuids = {"filter": [str(processing_validity_l0.event_uuid)], "op": "in"},
+        #                                             event_uuid_links = {"filter": [str(isp_validity.event_uuid)], "op": "in"},
+        #                                             link_names = {"filter": "ISP_VALIDITY", "op": "like"})
+        #
+        # assert len(link_from_isp_validity) == 1
+        #
+        # assert processing_validity_l0.get_structured_values() == [{
+        #    "values": [
+        #         {
+        #             "value": "COMPLETE",
+        #             "name": "status",
+        #             "type": "text"
+        #         },
+        #         {
+        #             "value": "L0",
+        #             "name": "level",
+        #             "type": "text"
+        #         },
+        #         {
+        #             "value": "S2A",
+        #             "name": "satellite",
+        #             "type": "text"
+        #         },
+        #         {
+        #             "value": "EPA_",
+        #             "type": "text",
+        #             "name": "processing_centre"
+        #         },
+        #         {
+        #             "value": "NO_MATCHED_PLANNED_IMAGING",
+        #             "type": "text",
+        #             "name": "matching_plan_status"
+        #         },
+        #         {
+        #             "value": "MATCHED_ISP_VALIDITY",
+        #             "type": "text",
+        #             "name": "matching_reception_status"
+        #         },
+        #         {
+        #             "value": "16078.0",
+        #             "type": "double",
+        #             "name": "downlink_orbit"
+        #         }
+        #     ],
+        #     "type": "object",
+        #     "name": "details"
+        # }]
 
 
-    def test_dpc_report_L1C_only(self):
+    def test_rep_arc_L1C_only(self):
 
         filename = "S2A_OPER_REP_ARC_L1C.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
@@ -436,7 +444,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(processing_validities) == 0
 
-    def test_dpc_report_L1C_with_L0(self):
+    def test_rep_arc_L1C_with_L0(self):
 
         filename = "S2A_OPER_REP_ARC_L0.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
@@ -454,18 +462,18 @@ class TestEngine(unittest.TestCase):
 
         # Check sources
         # L0
-        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29.000000", "op": "=="}],
-                                                 validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
-                                                  generation_time_filters = [{"date": "2018-07-21T10:39:20.000000", "op": "=="}],
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                                 validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
+                                                  generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
                                                  processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                                  names = {"filter": "S2A_OPER_REP_ARC_L0.EOF", "op": "like"})
 
         assert len(sources) == 1
 
         #L1C
-        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29.000000", "op": "=="}],
-                                         validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
-                                          generation_time_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
+                                         validity_stop_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+                                          generation_time_filters = [{"date": "2019-04-08 11:47:43.167914", "op": "=="}],
                                          processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                          names = {"filter": "S2A_OPER_REP_ARC_L1C.EOF", "op": "like"})
 
@@ -474,91 +482,91 @@ class TestEngine(unittest.TestCase):
         processing_validities = self.query_eboa.get_events(explicit_refs = {"op": "like", "filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06"},
                                                  gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
 
-        assert len(processing_validities) == 0
-        #processing_validity_l1c = processing_validities[0]
+        assert len(processing_validities) == 1
+        processing_validity_l1c = processing_validities[0]
 
-        # assert processing_validity_l1c.get_structured_values() == [{
-        #     "values": [
-        #         {
-        #             "value": "COMPLETE",
-        #             "name": "status",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "value": "L1C",
-        #             "name": "level",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "value": "S2A",
-        #             "name": "satellite",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "value": "MPS_",
-        #             "name": "processing_centre",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "value": "NO_MATCHED_PLANNED_IMAGING",
-        #             "name": "matching_plan_status",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "value": "NO_MATCHED_ISP_VALIDITY",
-        #             "name": "matching_reception_status",
-        #             "type": "text"
-        #         }
-        #     ],
-        #     "name": "details",
-        #     "type": "object"
-        # }]
-        #
-        # # Check planning completeness
-        # planning_completeness = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
-        #                                                    gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
-        #                                      start_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}],
-        #                                      stop_filters = [{"date": "2018-07-21T08:54:19", "op": "=="}])
-        #
-        # assert len(planning_completeness) == 1
-        # planning_completeness_l1c = planning_completeness[0]
-        #
-        # assert planning_completeness_l1c.get_structured_values() == [{
-        #     "name": "details",
-        #     "values": [
-        #         {
-        #             "name": "status",
-        #             "value": "COMPLETE",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "name": "level",
-        #             "value": "L1C",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "name": "satellite",
-        #             "value": "S2A",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "name": "processing_centre",
-        #             "value": "MPS_",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "name": "matching_plan_status",
-        #             "value": "NO_MATCHED_PLANNED_IMAGING",
-        #             "type": "text"
-        #         },
-        #         {
-        #             "name": "matching_reception_status",
-        #             "value": "NO_MATCHED_ISP_VALIDITY",
-        #             "type": "text"
-        #         }
-        #     ],
-        #     "type": "object"
-        # }]
+        assert processing_validity_l1c.get_structured_values() == [{
+            "values": [
+                {
+                    "value": "COMPLETE",
+                    "name": "status",
+                    "type": "text"
+                },
+                {
+                    "value": "L1C",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                },
+                {
+                    "value": "EPA_",
+                    "name": "processing_centre",
+                    "type": "text"
+                },
+                {
+                    "value": "NO_MATCHED_PLANNED_IMAGING",
+                    "name": "matching_plan_status",
+                    "type": "text"
+                },
+                {
+                    "value": "NO_MATCHED_ISP_VALIDITY",
+                    "name": "matching_reception_status",
+                    "type": "text"
+                }
+            ],
+            "name": "details",
+            "type": "object"
+        }]
+
+        # Check planning completeness
+        planning_completeness = self.query_eboa.get_events(explicit_refs = {"filter": "S2A_OPER_MSI_L1C_DS_MPS__20180721T104253_S20180721T085229_N02.06", "op": "like"},
+                                                           gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
+                                             start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                             stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}])
+
+        assert len(planning_completeness) == 1
+        planning_completeness_l1c = planning_completeness[0]
+
+        assert planning_completeness_l1c.get_structured_values() == [{
+            "name": "details",
+            "values": [
+                {
+                    "name": "status",
+                    "value": "COMPLETE",
+                    "type": "text"
+                },
+                {
+                    "name": "level",
+                    "value": "L1C",
+                    "type": "text"
+                },
+                {
+                    "name": "satellite",
+                    "value": "S2A",
+                    "type": "text"
+                },
+                {
+                    "name": "processing_centre",
+                    "value": "EPA_",
+                    "type": "text"
+                },
+                {
+                    "name": "matching_plan_status",
+                    "value": "NO_MATCHED_PLANNED_IMAGING",
+                    "type": "text"
+                },
+                {
+                    "name": "matching_reception_status",
+                    "value": "NO_MATCHED_ISP_VALIDITY",
+                    "type": "text"
+                }
+            ],
+            "type": "object"
+        }]
 
     def test_dpc_report_L1C_with_L0_plan(self):
         filename = "S2A_NPPF.EOF"

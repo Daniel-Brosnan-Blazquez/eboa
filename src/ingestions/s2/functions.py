@@ -754,7 +754,6 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
         # end if
 
         list_of_events.append(processing_reception_completeness_event)
-
         processing_validity_event = {
             "key": datastrip + "_" + "processing_validity",
             "link_ref": processing_validity_link_ref,

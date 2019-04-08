@@ -150,9 +150,7 @@ def process_file(file_path, engine, query):
             }]
         }
         list_of_annotations.append(baseline_annotation)
-    # end if
 
-    if not processing_validity_exists:
         datastrip_sensing_explicit_ref= {
             "group": level + "_DS",
             "links": [{
@@ -267,28 +265,27 @@ def process_file(file_path, engine, query):
         list_of_annotations.append(physical_url_annotation)
 
         if '_GR' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
-            if not processing_validity_exists:
-                # Obtain the granule id
-                granule_t = item_id
-                level_gr = granule_t[13:16].replace("_","")
-                granule_sensing_date = granule_t[42:57]
-                detector = granule_t[59:61]
+            # Obtain the granule id
+            granule_t = item_id
+            level_gr = granule_t[13:16].replace("_","")
+            granule_sensing_date = granule_t[42:57]
+            detector = granule_t[59:61]
 
-                # Create a segment for each granule with a margin calculated to get whole scenes
-                start= parser.parse(granule_sensing_date)
-                stop = start + datetime.timedelta(seconds=5)
-                granule_segment = {
-                    "start": start,
-                    "stop": stop,
-                    "id": granule_t
-                }
+            # Create a segment for each granule with a margin calculated to get whole scenes
+            start= parser.parse(granule_sensing_date)
+            stop = start + datetime.timedelta(seconds=5)
+            granule_segment = {
+                "start": start,
+                "stop": stop,
+                "id": granule_t
+            }
 
-                # Create a dictionary containing all the granules for each detector
-                granule_timeline.append(granule_segment)
-                if detector not in granule_timeline_per_detector:
-                    granule_timeline_per_detector[detector] = []
-                # end if
-                granule_timeline_per_detector[detector].append(granule_segment)
+            # Create a dictionary containing all the granules for each detector
+            granule_timeline.append(granule_segment)
+            if detector not in granule_timeline_per_detector:
+                granule_timeline_per_detector[detector] = []
+            # end if
+            granule_timeline_per_detector[detector].append(granule_segment)
 
             # Insert the granule explicit reference
             granule_explicit_reference = {
@@ -341,7 +338,7 @@ def process_file(file_path, engine, query):
     completeness_plan_db = query.get_events(gauge_names = {"filter": " 	PLANNED_IMAGING_PROCESSING_COMPLETENESS_" + level, "op": "like"})
     if len(completeness_plan_db) is 0:
         if level == "L0" or level == "L1A" or level == "L1B":
-            functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,datastrip_id,granule_timeline_per_detector, list_of_operations, system, version, file_name)
+            functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,datastrip_id,granule_timeline_per_detector, list_of_operations, system, version, os.path.basename(__file__))
         elif (level == "L1C" or level == "L2A"):
             upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
                                                       groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
@@ -354,18 +351,31 @@ def process_file(file_path, engine, query):
             if len(upper_level_er) > 0:
                 er = upper_level_er[0]
 
-                processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
-                                                                      explicit_refs = {"filter": er, "op": "like"},
-                                                                      value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
-                                                                      link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
-                                                                      return_prime_events = True)
+                # processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
+                #                                                       explicit_refs = {"filter": er, "op": "like"},
+                #                                                       value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
+                #                                                       link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
+                #                                                       return_prime_events = True)
 
-                functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip_id, list_of_operations, system, version, file_name)
+                processing_validity_events = query.get_events(gauge_names = {"filter": ["PROCESSING_VALIDITY"], "op": "in"},
+                                                                    explicit_refs = {"filter": er, "op": "like"})
+
+                functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip_id, list_of_operations, system, version, os.path.basename(__file__))
             # end if
         # end if
 
     # Adjust sources / operations
     source_indexing = source
+    if len(list_of_events) > 0:
+        event_starts = [event["start"] for event in list_of_events]
+        event_starts.sort()
+        if source_indexing["validity_start"] > event_starts[0]:
+            source_indexing["validity_start"] = event_starts[0]
+        # end if
+        event_stops = [event["stop"] for event in list_of_events]
+        event_stops.sort()
+        if source_indexing["validity_stop"] < event_stops[-1]:
+            source_indexing["validity_stop"] = event_stops[-1]
 
     list_of_operations.append({
         "mode": "insert",
@@ -376,7 +386,8 @@ def process_file(file_path, engine, query):
         },
         "source": source_indexing,
         "annotations": list_of_annotations,
-        "explicit_references": list_of_explicit_references
+        "explicit_references": list_of_explicit_references,
+        "events": list_of_events
         })
     data = {"operations": list_of_operations}
 
