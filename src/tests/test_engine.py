@@ -2127,6 +2127,35 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
+    def test_discarded_repeated_annotation(self):
+
+        self.engine_eboa._initialize_context_insert_data()
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
+                "annotation_cnf": {"name": "NAME",
+                                   "system": "SYSTEM"}
+            },{
+                "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
+                "annotation_cnf": {"name": "NAME",
+                                   "system": "SYSTEM"}
+            }]
+        }]}
+        self.engine_eboa.data = data
+        self.engine_eboa.treat_data()
+
+        annotations_ddbb = self.session.query(Annotation).all()
+
+        assert len(annotations_ddbb) == 1
+
     def test_remove_deprecated_event_keys(self):
 
         self.engine_eboa._initialize_context_insert_data()

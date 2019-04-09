@@ -505,6 +505,7 @@ class Engine():
         self.insert_and_erase_gauges = {}
         self.insert_and_erase_per_event_gauges = {}
         self.annotation_cnfs_explicit_refs = []
+        self.annotations = {}
         self.keys_events = {}
 
         return
@@ -1385,22 +1386,26 @@ class Engine():
             annotation_cnf = self.annotation_cnfs[(annotation_cnf_info.get("name"), annotation_cnf_info.get("system"))]
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
-            self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
-                                                       "annotation_cnf": annotation_cnf
-                                                   })
+            if not (explicit_ref, annotation_cnf.annotation_cnf_uuid) in self.annotations:
+                self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
+                                                           "annotation_cnf": annotation_cnf
+                                                       })
 
-            # Insert the annotation into the list for bulk ingestion
-            list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
-                                         annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
-                                         explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
-                                         source_uuid = self.source.source_uuid,
-                                         visible = False))
-            # Insert values
-            if "values" in annotation:
-                entity_uuid = {"name": "annotation_uuid",
-                               "id": id
-                }
-                self._insert_values(annotation.get("values")[0], entity_uuid, list_values)
+                # Insert the annotation into the list for bulk ingestion
+                list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
+                                             annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
+                                             explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
+                                             source_uuid = self.source.source_uuid,
+                                             visible = False))
+                # Insert values
+                if "values" in annotation:
+                    entity_uuid = {"name": "annotation_uuid",
+                                   "id": id
+                    }
+                    self._insert_values(annotation.get("values")[0], entity_uuid, list_values)
+                # end if
+
+                self.annotations[(explicit_ref, annotation_cnf.annotation_cnf_uuid)] = None
             # end if
 
         # end for
@@ -2005,6 +2010,8 @@ class Engine():
         """
         Method to remove annotations that were overwritten by other annotations
         """
+        annotations_uuids_to_delete = []
+        annotations_uuids_to_update = []
         for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs:
             annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
             explicit_ref = annotation_cnf_explicit_ref["explicit_ref"]
@@ -2022,25 +2029,30 @@ class Engine():
                                                                                    ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
 
             # Delete deprecated annotations
-            annotations_uuids_to_delete = self.session.query(Annotation.annotation_uuid) \
+            annotations_uuids_to_delete = annotations_uuids_to_delete + self.session.query(Annotation.annotation_uuid) \
                                                       .join(Source) \
                                                       .join(AnnotationCnf). \
                                                       join(ExplicitRef).filter(Annotation.source_uuid != annotation_max_generation_time.source_uuid,
                                                                                Source.generation_time <= max_generation_time,
                                                                                AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
-            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_delete)).delete(synchronize_session=False)
+                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).all()
 
             # Make annotations visible
-            annotations_uuids_to_update = self.session.query(Annotation.annotation_uuid) \
+            annotations_uuids_to_update = annotations_uuids_to_update + self.session.query(Annotation.annotation_uuid) \
                                                       .join(Source) \
                                                       .join(AnnotationCnf) \
                                                       .join(ExplicitRef).filter(Annotation.source_uuid == annotation_max_generation_time.source_uuid,
-                                                                                Source.generation_time <= max_generation_time,
                                                                                 AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                                ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
-            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+                                                                                ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).all()
         # end for
+
+        if len(annotations_uuids_to_delete) > 0:
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_delete)).delete(synchronize_session=False)
+        # end if
+
+        if len(annotations_uuids_to_update) > 0:
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+        # end if
 
         return
 
