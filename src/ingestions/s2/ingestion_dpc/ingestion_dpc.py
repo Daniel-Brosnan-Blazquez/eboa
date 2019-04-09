@@ -236,19 +236,22 @@ def process_file(file_path, engine, query):
             list_of_annotations.append(sensing_identifier_annotation)
 
             explicit_reference = {
-               "group": level + "_DS",
-               "links": [{
-                   "back_ref": "INPUT_DATASTRIP",
-                   "link": "OUTPUT_DATASTRIP",
-                   "name": ds_input
-                   }
-               ],
-               "name": ds_output
+                "group": level + "_DS",
+                "links": [{
+                    "back_ref": "INPUT_DATASTRIP",
+                    "link": "OUTPUT_DATASTRIP",
+                    "name": ds_input
+                },{
+                    "back_ref": "SENSING_IDENTIFIER",
+                    "link": "DATASTRIP",
+                    "name": sensing_identifier
+                }],
+                "name": ds_output
             }
             list_of_explicit_references.append(explicit_reference)
 
             if level == "L0" or level == "L1A" or level == "L1B":
-                functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, list_of_operations, system, version, os.path.basename(__file__))
+                functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,ds_output,granule_timeline_per_detector, list_of_operations, system, version, os.path.basename(__file__), satellite)
             elif (level == "L1C" or level == "L2A"):
                 upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
                                                           groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
@@ -264,7 +267,7 @@ def process_file(file_path, engine, query):
                     processing_validity_events = query.get_events(gauge_names = {"filter": ["PROCESSING_VALIDITY"], "op": "in"},
                                                                           explicit_refs = {"filter": er, "op": "like"})
 
-                    functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, ds_output, list_of_operations, system, version, os.path.basename(__file__))
+                    functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, ds_output, list_of_operations, system, version, os.path.basename(__file__), satellite)
                 # end if
             # end if
 
