@@ -2015,35 +2015,24 @@ class Engine():
         for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs:
             annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
             explicit_ref = annotation_cnf_explicit_ref["explicit_ref"]
-            max_generation_time = self.session.query(func.max(Source.generation_time)) \
-                                              .join(Annotation) \
-                                              .join(AnnotationCnf) \
-                                              .join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                        ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
 
-            annotation_max_generation_time = self.session.query(Annotation) \
-                                                         .join(Source) \
-                                                         .join(AnnotationCnf) \
-                                                         .join(ExplicitRef).filter(Source.generation_time == max_generation_time,
-                                                                                   AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                                   ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
+            annotations = self.session.query(Annotation) \
+                                      .join(AnnotationCnf). \
+                                      join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).all()
 
-            # Delete deprecated annotations
-            annotations_uuids_to_delete = annotations_uuids_to_delete + self.session.query(Annotation.annotation_uuid) \
-                                                      .join(Source) \
-                                                      .join(AnnotationCnf). \
-                                                      join(ExplicitRef).filter(Annotation.source_uuid != annotation_max_generation_time.source_uuid,
-                                                                               Source.generation_time <= max_generation_time,
-                                                                               AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).all()
+            if len(annotations) > 1:
+                generation_times = [annotation.source.generation_time for annotation in annotations]
+                generation_times.sort()
+                max_generation_time = generation_times[-1]
 
-            # Make annotations visible
-            annotations_uuids_to_update = annotations_uuids_to_update + self.session.query(Annotation.annotation_uuid) \
-                                                      .join(Source) \
-                                                      .join(AnnotationCnf) \
-                                                      .join(ExplicitRef).filter(Annotation.source_uuid == annotation_max_generation_time.source_uuid,
-                                                                                AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                                ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).all()
+                annotations_uuids_to_update = annotations_uuids_to_update + [annotation.annotation_uuid for annotation in annotations if annotation.source.generation_time == max_generation_time]
+
+                annotations_uuids_to_delete = annotations_uuids_to_delete + [annotation.annotation_uuid for annotation in annotations if annotation.source.generation_time != max_generation_time]
+            else:
+                annotations_uuids_to_update = annotations_uuids_to_update + [annotations[0].annotation_uuid]
+            # end if
+
         # end for
 
         if len(annotations_uuids_to_delete) > 0:
