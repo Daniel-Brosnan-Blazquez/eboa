@@ -301,7 +301,7 @@ def three_letter_to_iso_8601(date):
 
     return year + "-" + month + "-" + day + "T" + hours + ":" + minutes + ":" + seconds + "." + microseconds
 
-def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_events, datastrip, granule_timeline_per_detector, list_of_operations, system, version, filename):
+def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_events, datastrip, granule_timeline_per_detector, list_of_operations, system, version, filename, satellite):
     """
     Method to generate the events for the levels L0 and L1B
     :param source: information of the source
@@ -335,8 +335,6 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
     general_status = "COMPLETE"
     granule_timeline_sorted = date_functions.sort_timeline_by_start(granule_timeline)
     datablocks = date_functions.merge_timeline(granule_timeline_sorted)
-    # Obtain the satellite
-    satellite = source["name"][0:3]
 
     # Obtain the production level from the datastrip
     level = datastrip[13:16].replace("_","")
@@ -853,7 +851,7 @@ def L0_L1A_L1B_processing(source, engine, query, granule_timeline, list_of_event
     return general_status
 # end def
 
-def L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip, list_of_operations, system, version, filename):
+def L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip, list_of_operations, system, version, filename, satellite):
     """
     Method to generate the events for the levels L1C and L2A
     :param source: information of the source
@@ -884,9 +882,6 @@ def L1C_L2A_processing(source, engine, query, list_of_events, processing_validit
     planned_cut_imagings = []
     isp_validities = []
     general_status = "COMPLETE"
-
-    # Obtain the satellite
-    satellite = source["name"][0:3]
 
     # Obtain the production level from the datastrip
     level = datastrip[13:16].replace("_","")

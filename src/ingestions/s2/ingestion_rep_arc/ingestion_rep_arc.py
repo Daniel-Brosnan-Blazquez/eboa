@@ -5,7 +5,6 @@ Written by DEIMOS Space S.L. (femd)
 
 module eboa
 """
-
 # Import python utilities
 import os
 import argparse
@@ -66,22 +65,19 @@ def process_file(file_path, engine, query):
     xpath_xml = etree.XPathEvaluator(parsed_xml)
 
     list_of_explicit_references = []
+    list_of_explicit_references_for_processing = []
     list_of_annotations = []
-    list_of_events = []
+    list_of_annotations_for_processing = []
+    list_of_events_for_processing = []
     list_of_timelines = []
-    list_of_configuration_events = []
-    list_of_configuration_explicit_references = []
     list_of_operations = []
-    processed_datastrips = {}
     granule_timeline_per_detector = {}
     granule_timeline = []
 
-    # Obtain the satellite
-    satellite = file_name[0:3]
     # Obtain the station
     system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
-    # Obtain the creation date
-    creation_date = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
+    # Obtain the creation date from the file name as the annotation creation date is not always correct
+    creation_date = file_name[25:40]
     # Obtain the validity start
     validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
     # Obtain the validity stop
@@ -90,6 +86,8 @@ def process_file(file_path, engine, query):
     datastrip_info = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata[Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_Type[contains(text(),'_DS')]]")[0]
     # Obtain the datastrip ID
     datastrip_id = datastrip_info.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
+    # Obtain the satellite
+    satellite = datastrip_id[0:3]
     # Obtain the datatake ID
     datatake_id = datastrip_info.xpath("CentralIndex/Datatake-id")[0].text
     # Obtain the baseline
@@ -97,20 +95,20 @@ def process_file(file_path, engine, query):
     # Obtain the production level from the datastrip
     level = datastrip_id[13:16].replace("_","")
     # Obtain the sensing identifier
-    sensing_id = datastrip_id[41:57]
+    sensing_identifier = datastrip_id[41:57]
     # Source for the main operation
-    source = {
+    source_indexing = {
         "name": file_name,
         "generation_time": creation_date,
         "validity_start": validity_start,
         "validity_stop": validity_stop
     }
-
-    processing_validity_db = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
-                                              gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
-
-    processing_validity_exists = len(processing_validity_db) > 0
-    # General file
+    source_processing = {
+        "name": file_name,
+        "generation_time": creation_date,
+        "validity_start": validity_start,
+        "validity_stop": validity_stop
+    }
 
     # Insert the datatake_annotation
     datatake_annotation = {
@@ -130,39 +128,6 @@ def process_file(file_path, engine, query):
         }]
     }
     list_of_annotations.append(datatake_annotation)
-
-    # Insert the baseline_annotation
-    if not processing_validity_exists:
-        baseline_annotation = {
-        "explicit_reference": datastrip_id,
-        "annotation_cnf": {
-            "name": "BASELINE",
-            "system": system
-            },
-        "values": [{
-            "name": "details",
-            "type": "object",
-            "values": [
-                {"name": "baseline",
-                 "type": "text",
-                 "value": baseline
-                 }]
-            }]
-        }
-        list_of_annotations.append(baseline_annotation)
-
-        datastrip_sensing_explicit_ref= {
-            "group": level + "_DS",
-            "links": [{
-                "back_ref": "SENSING_ID",
-                "link": "DATASTRIP",
-                "name": sensing_id
-                }
-            ],
-            "name": datastrip_id
-        }
-        list_of_explicit_references.append(datastrip_sensing_explicit_ref)
-    # end if
 
     # Loop over all the ItemMetadata
     for item in xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata"):
@@ -263,86 +228,122 @@ def process_file(file_path, engine, query):
             }]
         }
         list_of_annotations.append(physical_url_annotation)
+    # end for
 
-        if '_GR' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
-            # Obtain the granule id
-            granule_t = item_id
-            level_gr = granule_t[13:16].replace("_","")
-            granule_sensing_date = granule_t[42:57]
-            detector = granule_t[59:61]
+    processing_validity_db = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
+                                              gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
 
-            # Create a segment for each granule with a margin calculated to get whole scenes
-            start= parser.parse(granule_sensing_date)
-            stop = start + datetime.timedelta(seconds=5)
-            granule_segment = {
-                "start": start,
-                "stop": stop,
-                "id": granule_t
-            }
+    # Execute processing completeness if not done before
+    if len(processing_validity_db) < 1:
+        baseline_annotation = {
+        "explicit_reference": datastrip_id,
+        "annotation_cnf": {
+            "name": "BASELINE",
+            "system": system
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "baseline",
+                 "type": "text",
+                 "value": baseline
+                 }]
+            }]
+        }
+        list_of_annotations_for_processing.append(baseline_annotation)
 
-            # Create a dictionary containing all the granules for each detector
-            granule_timeline.append(granule_segment)
-            if detector not in granule_timeline_per_detector:
-                granule_timeline_per_detector[detector] = []
+        datastrip_sensing_explicit_ref= {
+            "group": level + "_DS",
+            "links": [{
+                "back_ref": "SENSING_IDENTIFIER",
+                "link": "DATASTRIP",
+                "name": sensing_identifier
+                }
+            ],
+            "name": datastrip_id
+        }
+        list_of_explicit_references_for_processing.append(datastrip_sensing_explicit_ref)
+
+        sensing_identifier_annotation = {
+        "explicit_reference": datastrip_id,
+        "annotation_cnf": {
+            "name": "SENSING_IDENTIFIER",
+            "system": system
+            },
+        "values": [{
+            "name": "details",
+            "type": "object",
+            "values": [
+                {"name": "sensing_identifier",
+                 "type": "text",
+                 "value": sensing_identifier
+                }]
+            }]
+        }
+        list_of_annotations_for_processing.append(sensing_identifier_annotation)
+
+        for item in xpath_xml("/Earth_Explorer_File/Data_Block/List_of_ItemMetadata/ItemMetadata"):
+            if '_GR' in item.xpath("CentralIndex/FileType")[0].text:
+                item_id = item.xpath("Catalogues/S2CatalogueReport/S2EarthObservation/Inventory_Metadata/File_ID")[0].text
+                # Obtain the granule id
+                granule_t = item_id
+                level_gr = granule_t[13:16].replace("_","")
+                granule_sensing_date = granule_t[42:57]
+                detector = granule_t[59:61]
+
+                # Create a segment for each granule with a margin calculated to get whole scenes
+                start= parser.parse(granule_sensing_date)
+                stop = start + datetime.timedelta(seconds=5)
+                granule_segment = {
+                    "start": start,
+                    "stop": stop,
+                    "id": granule_t
+                }
+
+                # Create a dictionary containing all the granules for each detector
+                granule_timeline.append(granule_segment)
+                if detector not in granule_timeline_per_detector:
+                    granule_timeline_per_detector[detector] = []
+                # end if
+                granule_timeline_per_detector[detector].append(granule_segment)
+
+                # Insert the granule explicit reference
+                granule_explicit_reference = {
+                    "group": level + "_GR",
+                    "links": [{
+                        "back_ref": "DATASTRIP",
+                        "link": "GRANULE",
+                        "name": datastrip_id
+                        }
+                    ],
+                    "name": item_id
+                }
+                list_of_explicit_references_for_processing.append(granule_explicit_reference)
             # end if
-            granule_timeline_per_detector[detector].append(granule_segment)
 
-            # Insert the granule explicit reference
-            granule_explicit_reference = {
-                "group": level + "_GR",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "GRANULE",
-                    "name": datastrip_id
-                    }
-                ],
-                "name": item_id
-            }
-            list_of_explicit_references.append(granule_explicit_reference)
-        # end if
+            if '_TL' in item.xpath("CentralIndex/FileType")[0].text:
+                # Insert the tile explicit reference
+                tile_explicit_reference = {
+                    "group": level + "_TL",
+                    "links": [{
+                        "back_ref": "DATASTRIP",
+                        "link": "TILE",
+                        "name": datastrip_id
+                        }
+                    ],
+                    "name": item_id
+                }
+                list_of_explicit_references_for_processing.append(tile_explicit_reference)
+            # end if
+        # end for
 
-        if '_TL' in item.xpath("CentralIndex/FileType")[0].text and not processing_validity_exists:
-        # Insert the tile explicit reference
-            tile_explicit_reference = {
-                "group": level + "_TL",
-                "links": [{
-                    "back_ref": "DATASTRIP",
-                    "link": "TILE",
-                    "name": datastrip_id
-                    }
-                ],
-                "name": item_id
-            }
-            list_of_explicit_references.append(tile_explicit_reference)
-
-            # #Modify the item_id to obtain a TC id
-            # tc_id = item_id.replace('TL','TC')
-            # #Insert the tc explicit reference if it doesn't already exist
-            # tc_er = query.get_explicit_refs(groups = {"filter": level + "_TC", "op": "like"},
-            #                                               explicit_refs = {"op": "like", "filter": tc_id})
-            # if len(tc_er) is 0:
-            #     tc_explicit_reference = {
-            #         "group": level + "_TC",
-            #         "links": [{
-            #             "back_ref": "DATASTRIP",
-            #             "link": "TCI",
-            #             "name": datastrip_id
-            #             }
-            #         ],
-            #         "name": item_id
-            #     }
-            #     list_of_explicit_references.append(tc_explicit_reference)
-            # # end if
-        # end if
-
-    completeness_plan_db = query.get_events(gauge_names = {"filter": " 	PLANNED_IMAGING_PROCESSING_COMPLETENESS_" + level, "op": "like"})
-    if len(completeness_plan_db) is 0:
         if level == "L0" or level == "L1A" or level == "L1B":
-            functions.L0_L1A_L1B_processing(source, engine, query, granule_timeline,list_of_events,datastrip_id,granule_timeline_per_detector, list_of_operations, system, version, os.path.basename(__file__))
+            functions.L0_L1A_L1B_processing(source_processing, engine, query, granule_timeline,list_of_events_for_processing,datastrip_id,granule_timeline_per_detector, list_of_operations, system, version, os.path.basename(__file__), satellite)
         elif (level == "L1C" or level == "L2A"):
             upper_level_ers = query.get_explicit_refs(annotation_cnf_names = {"filter": "SENSING_IDENTIFIER", "op": "like"},
                                                       groups = {"filter": ["L0_DS", "L1B_DS"], "op": "in"},
-                                                      annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_id}}])
+                                                      annotation_value_filters = [{"name": {"str": "sensing_identifier", "op": "like"}, "type": "text", "value": {"op": "like", "value": sensing_identifier}}])
             upper_level_ers_same_satellite = [er.explicit_ref for er in upper_level_ers if er.explicit_ref[0:3] == satellite]
             upper_level_er = [er for er in upper_level_ers_same_satellite if er[13:16] == "L1B"]
             if len(upper_level_er) == 0:
@@ -351,31 +352,41 @@ def process_file(file_path, engine, query):
             if len(upper_level_er) > 0:
                 er = upper_level_er[0]
 
-                # processing_validity_events = query.get_linking_events(gauge_names = {"filter": ["PROCESSING_VALIDITY","PROCESSING_VALIDITY"], "op": "in"},
-                #                                                       explicit_refs = {"filter": er, "op": "like"},
-                #                                                       value_filters = [{"name": {"str": "level", "op": "like"}, "type": "text", "value": {"op": "in", "value": ["L0", "L1B"]}}],
-                #                                                       link_names = {"filter": ["PROCESSING_GAP", "PLANNED_IMAGING", "ISP_VALIDITY"], "op": "in"},
-                #                                                       return_prime_events = True)
-
                 processing_validity_events = query.get_events(gauge_names = {"filter": ["PROCESSING_VALIDITY"], "op": "in"},
                                                                     explicit_refs = {"filter": er, "op": "like"})
 
-                functions.L1C_L2A_processing(source, engine, query, list_of_events, processing_validity_events, datastrip_id, list_of_operations, system, version, os.path.basename(__file__))
+                functions.L1C_L2A_processing(source_processing, engine, query, list_of_events_for_processing, processing_validity_events, datastrip_id, list_of_operations, system, version, os.path.basename(__file__), satellite)
             # end if
         # end if
 
+    # end if
+
     # Adjust sources / operations
-    source_indexing = source
-    if len(list_of_events) > 0:
-        event_starts = [event["start"] for event in list_of_events]
+    if len(list_of_events_for_processing) > 0:
+        event_starts = [event["start"] for event in list_of_events_for_processing]
         event_starts.sort()
-        if source_indexing["validity_start"] > event_starts[0]:
-            source_indexing["validity_start"] = event_starts[0]
+        if source_processing["validity_start"] > event_starts[0]:
+            source_processing["validity_start"] = event_starts[0]
         # end if
-        event_stops = [event["stop"] for event in list_of_events]
+        event_stops = [event["stop"] for event in list_of_events_for_processing]
         event_stops.sort()
-        if source_indexing["validity_stop"] < event_stops[-1]:
-            source_indexing["validity_stop"] = event_stops[-1]
+        if source_processing["validity_stop"] < event_stops[-1]:
+            source_processing["validity_stop"] = event_stops[-1]
+        # end if
+
+        list_of_operations.append({
+            "mode": "insert",
+            "dim_signature": {
+                "name": "PROCESSING_" + satellite,
+                "exec": "processing_" + os.path.basename(__file__),
+                "version": version
+            },
+            "source": source_processing,
+            "annotations": list_of_annotations_for_processing,
+            "explicit_references": list_of_explicit_references_for_processing,
+            "events": list_of_events_for_processing
+        })
+    # end if
 
     list_of_operations.append({
         "mode": "insert",
@@ -386,8 +397,7 @@ def process_file(file_path, engine, query):
         },
         "source": source_indexing,
         "annotations": list_of_annotations,
-        "explicit_references": list_of_explicit_references,
-        "events": list_of_events
+        "explicit_references": list_of_explicit_references
         })
     data = {"operations": list_of_operations}
 
