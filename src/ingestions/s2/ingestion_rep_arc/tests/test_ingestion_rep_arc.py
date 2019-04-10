@@ -58,11 +58,11 @@ class TestEngine(unittest.TestCase):
 
         sources = self.query_eboa.get_sources()
 
-        assert len(sources) == 1
+        assert len(sources) == 2
 
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29   ", "op": "=="}],
-                                                 validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                                  generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                                 validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                                  generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
                                                  processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                                  names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
@@ -149,8 +149,8 @@ class TestEngine(unittest.TestCase):
         assert len(sources) == 1
 
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                             validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
                                              processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                              names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
@@ -275,6 +275,16 @@ class TestEngine(unittest.TestCase):
 
         missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
                                                            start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                           stop_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_statuses = [event for event in missing_planning_completeness if len([value for value in event.eventTexts if value.name == "status" and value.value == "MISSING"]) > 0]
+
+        assert len(missing_planning_completeness_statuses) == 1
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                           start_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
                                                            stop_filters = [{"date": "2018-07-21 09:08:56.195941", "op": "=="}])
 
         assert len(missing_planning_completeness) == 1
@@ -310,8 +320,8 @@ class TestEngine(unittest.TestCase):
         assert len(sources) == 1
 
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                             validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
                                              processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                              names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
@@ -384,7 +394,42 @@ class TestEngine(unittest.TestCase):
         }]
 
     def test_rep_arc_L0_dpc(self):
-        assert True
+        filename = "S2A_NPPF.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_nppf.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_ORBPRE.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_orbpre.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_rep_arc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.query_eboa.get_sources(names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
+
+        assert len(sources) == 1
+
+        sources = self.query_eboa.get_sources(processors = {"filter": ["planning_processing_ingestion_rep_arc.py", "processing_ingestion_rep_arc.py"], "op": "in"},
+                                                 names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
+
+        assert len(sources) == 0
 
     def test_rep_arc_L1C_only(self):
 
@@ -401,7 +446,7 @@ class TestEngine(unittest.TestCase):
 
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T08:52:29.000000", "op": "=="}],
                                              validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:11:24", "op": "=="}],
                                              processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                              names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T111124_L1C.EOF", "op": "like"})
 
@@ -431,8 +476,8 @@ class TestEngine(unittest.TestCase):
         # Check sources
         # L0
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29   ", "op": "=="}],
-                                                 validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                                  generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                                 validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                                  generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
                                                  processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                                  names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
@@ -440,8 +485,8 @@ class TestEngine(unittest.TestCase):
 
         #L1C
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                         validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                          generation_time_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+                                         validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                          generation_time_filters = [{"date": "2018-07-21 11:11:24", "op": "=="}],
                                          processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                          names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T111124_L1C.EOF", "op": "like"})
 
@@ -568,18 +613,18 @@ class TestEngine(unittest.TestCase):
 
         # Check sources
         #L0
-        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29   ", "op": "=="}],
-                                                 validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                                  generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
-                                                 processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
-                                                 names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
+                                             processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
+                                             names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
         assert len(sources) == 1
 
         #L1C
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                         validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                          generation_time_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+                                         validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                          generation_time_filters = [{"date": "2018-07-21 11:11:24", "op": "=="}],
                                          processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                          names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T111124_L1C.EOF", "op": "like"})
 
@@ -702,6 +747,16 @@ class TestEngine(unittest.TestCase):
 
         missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
                                                            start_filters = [{"date": "2018-07-21 08:36:02.255634", "op": "=="}],
+                                                           stop_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_statuses = [event for event in missing_planning_completeness if len([value for value in event.eventTexts if value.name == "status" and value.value == "MISSING"]) > 0]
+
+        assert len(missing_planning_completeness_statuses) == 1
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
+                                                           start_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
                                                            stop_filters = [{"date": "2018-07-21 09:08:56.195941", "op": "=="}])
 
         assert len(missing_planning_completeness) == 1
@@ -758,8 +813,8 @@ class TestEngine(unittest.TestCase):
         assert len(sources) == 1
 
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                             validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21 10:39:20", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21T08:54:14.000618", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:01:40", "op": "=="}],
                                              processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                              names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T110140_L0.EOF", "op": "like"})
 
@@ -767,8 +822,8 @@ class TestEngine(unittest.TestCase):
 
         # L1C
         sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21 08:52:29", "op": "=="}],
-                                             validity_stop_filters = [{"date": "2018-07-21 08:54:19", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21 10:42:53", "op": "=="}],
+                                             validity_stop_filters = [{"date": "2018-07-21 08:54:14.000618", "op": "=="}],
+                                              generation_time_filters = [{"date": "2018-07-21 11:11:24", "op": "=="}],
                                              processors = {"filter": "ingestion_rep_arc.py", "op": "like"},
                                              names = {"filter": "S2__OPER_REP_ARC____EPA__20180721T111124_L1C.EOF", "op": "like"})
 
@@ -865,9 +920,6 @@ class TestEngine(unittest.TestCase):
             "name": "details",
             "type": "object"
         }]
-
-    def test_rep_arc_L1C_with_L0_plan_rep_pass_dpc(self):
-        assert True
 
     def test_rep_arc_L0_L1B_L1C_with_plan_and_rep_pass(self):
 
@@ -1353,7 +1405,6 @@ class TestEngine(unittest.TestCase):
 
         assert len(missing_planning_completeness) == 1
 
-    #Modify gap periods
     def test_rep_arc_gaps_L1C_with_L0_plan_rep_pass(self):
 
         filename = "S2A_NPPF.EOF"
@@ -1377,17 +1428,17 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
-        filename = "S2A_OPER_REP_ARC_L0_WITH_GAPS.EOF"
+        filename = "S2__OPER_REP_ARC____EPA__20180721T110140_L0_WITH_GAPS.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
-        returned_value = ingestion_dpc.command_process_file(file_path)
+        returned_value = ingestion_rep_arc.command_process_file(file_path)
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
         filename = "S2__OPER_REP_ARC____EPA__20180721T111124_L1C.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
-        returned_value = ingestion_dpc.command_process_file(file_path)
+        returned_value = ingestion_rep_arc.command_process_file(file_path)
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
@@ -1692,6 +1743,3 @@ class TestEngine(unittest.TestCase):
             "name": "details",
             "type": "object"
         }]
-
-    def test_rep_arc_gaps_L1C_with_L0_plan_rep_pass_dpc(self):
-        assert True
