@@ -228,7 +228,28 @@ def process_file(file_path, engine, query):
             }]
         }
         list_of_annotations.append(physical_url_annotation)
+        
+        # Insert the data_size_annotation per datastrip
+        indexing_time_annotation = {
+        "explicit_reference": item_id,
+        "annotation_cnf": {
+        "name": "INDEXING_TIME",
+        "system": system
+        },
+        "values": [{
+        "name": "details",
+        "type": "object",
+        "values": [
+        {"name": "indexing_time",
+        "type": "timestamp",
+        "value": creation_date
+        }]
+        }]
+        }
+        list_of_annotations.append(indexing_time_annotation)
+        # end if
     # end for
+
 
     processing_validity_db = query.get_events(explicit_refs = {"op": "like", "filter": datastrip_id},
                                               gauge_names = {"op": "like", "filter": "PROCESSING_VALIDITY"})
