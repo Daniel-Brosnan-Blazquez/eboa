@@ -2,7 +2,7 @@
 <Earth_Explorer_File xmlns:myData="http://wrox.com/namespaces/embeddedData" xmlns:myFunc="http://deimos-mpa.com" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceschemaLocation="http://gs2.esa.int/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd file:///C:/Users/S2user/Desktop/svn.s2pdgs.fr.cr_en_cours/DATA_STRUCTURE/DPC_SupWorkplanReport.xsd">
    <Earth_Explorer_Header>
       <Fixed_Header>
-         <File_Name>S2A_OPER_REP_OPDPC__MPS__20180721T105547_V20180721T085229_20180721T085414</File_Name>  
+         <File_Name>S2A_OPER_REP_OPDPC_L0_L1B.EOF</File_Name>  
          <File_Description>DPC_Operation_Report used for a data strip ID</File_Description>
          
          <Notes>datadriven</Notes>

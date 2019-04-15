@@ -2100,3 +2100,158 @@ class TestDpcIngestion(unittest.TestCase):
             "name": "details",
             "type": "object"
         }]
+
+    def test_insert_2_dpc_L0_L1B_L1C_L2A_with_plan_and_rep_pass(self):
+
+        filename = "S2A_NPPF.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_nppf.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_ORBPRE.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_orbpre.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_REP_PASS_NO_GAPS.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dfep.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_REP_PASS_NO_GAPS_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dfep.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0_L1B.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L1B_L1C.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L1C_L2A.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0U_L0_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L0_L1B_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        filename = "S2A_OPER_REP_OPDPC_L1B_L1C_2.EOF"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
+
+        returned_value = ingestion_dpc.command_process_file(file_path)
+
+        assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                           value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}])
+
+        assert len(missing_planning_completeness) == 2
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T08:52:29", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_2 = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L0", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T09:06:46", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}])
+
+        assert len(missing_planning_completeness_2) == 1
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1B", "op": "like"},
+                                                           value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}])
+
+        assert len(missing_planning_completeness) == 2
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1B", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T08:52:31", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_2 = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1B", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T09:06:41", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}])
+
+        assert len(missing_planning_completeness_2) == 1
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
+                                                           value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}])
+
+        assert len(missing_planning_completeness) == 2
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T08:52:31", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_2 = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L1C", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T09:06:41", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}])
+
+        assert len(missing_planning_completeness_2) == 1
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L2A", "op": "like"},
+                                                           value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}])
+
+        assert len(missing_planning_completeness) == 2
+
+        missing_planning_completeness = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L2A", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T08:36:02.255634", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T08:52:31", "op": "=="}])
+
+        assert len(missing_planning_completeness) == 1
+
+        missing_planning_completeness_2 = self.query_eboa.get_events(gauge_names = {"filter": "PLANNED_IMAGING_PROCESSING_COMPLETENESS_L2A", "op": "like"},
+                                                                   value_filters = [{"name": {"str": "status", "op": "like"}, "type": "text", "value": {"value": "MISSING", "op": "=="}}],
+                                                                   start_filters = [{"date": "2018-07-21T08:54:14", "op": "=="}],
+                                                                   stop_filters = [{"date": "2018-07-21T09:08:56.195941", "op": "=="}])
+
+        assert len(missing_planning_completeness_2) == 1
