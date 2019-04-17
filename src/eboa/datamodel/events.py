@@ -39,7 +39,7 @@ class Event(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
-    def get_structured_values(self):
+    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
         """
         Method to obtain the structure of values in a python dictionary format
         """
@@ -51,9 +51,11 @@ class Event(Base):
 
         json_values = []
         if len(values) > 0:
-            export.build_values_structure(values, json_values)
+            export.build_values_structure(values, json_values,
+                                          position = position,
+                                          parent_level = parent_level,
+                                          parent_position = parent_position)
         # end if
-
         return json_values
 
     def get_values(self):
@@ -114,19 +116,19 @@ class EventBoolean(Base):
 
     name = Column(Text)
     value = Column(Boolean)
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventBooleans")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, parent_level, parent_position, event):
+    def __init__(self, name, value, position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -136,7 +138,7 @@ class EventBoolean(Base):
             "type": "boolean",
             "name": self.name,
             "value": self.value,
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
@@ -146,19 +148,19 @@ class EventText(Base):
 
     name = Column(Text)
     value = Column(Text)
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventTexts")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, parent_level, parent_position, event):
+    def __init__(self, name, value, position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -168,7 +170,7 @@ class EventText(Base):
             "type": "text",
             "name": self.name,
             "value": self.value,
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
@@ -178,19 +180,19 @@ class EventDouble(Base):
 
     name = Column(Text)
     value = Column(Float)
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventDoubles")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, parent_level, parent_position, event):
+    def __init__(self, name, value, position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -200,7 +202,7 @@ class EventDouble(Base):
             "type": "double",
             "name": self.name,
             "value": self.value,
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
@@ -210,19 +212,19 @@ class EventTimestamp(Base):
 
     name = Column(Text)
     value = Column(DateTime)
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventTimestamps")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, parent_level, parent_position, event):
+    def __init__(self, name, value, position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -232,7 +234,7 @@ class EventTimestamp(Base):
             "type": "timestamp",
             "name": self.name,
             "value": self.value.isoformat(),
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
@@ -241,18 +243,18 @@ class EventObject(Base):
     __tablename__ = 'event_objects'
 
     name = Column(Text)
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventObjects")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, level_position, parent_level, parent_position, event):
+    def __init__(self, name, position, parent_level, parent_position, event):
         self.name = name
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -262,7 +264,7 @@ class EventObject(Base):
             "type": "object",
             "name": self.name,
             "value": "",
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
@@ -272,19 +274,19 @@ class EventGeometry(Base):
 
     name = Column(Text)
     value = Column(Geometry('POLYGON'))
-    level_position = Column(Integer)
+    position = Column(Integer)
     parent_level = Column(Integer)
     parent_position = Column(Integer)
     event_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('events.event_uuid'))
     event = relationship("Event", backref="eventGeometries")
     __mapper_args__ = {
-        'primary_key':[name, level_position, parent_level, parent_position, event_uuid]
+        'primary_key':[name, position, parent_level, parent_position, event_uuid]
     }
 
-    def __init__(self, name, value, level_position, parent_level, parent_position, event):
+    def __init__(self, name, value, position, parent_level, parent_position, event):
         self.name = name
         self.value = value
-        self.level_position = level_position
+        self.position = position
         self.parent_level = parent_level
         self.parent_position = parent_position
         self.event = event
@@ -294,7 +296,7 @@ class EventGeometry(Base):
             "type": "geometry",
             "name": self.name,
             "value": to_shape(self.value).to_wkt(),
-            "level_position": self.level_position,
+            "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }

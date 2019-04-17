@@ -130,7 +130,7 @@ ALTER TABLE eboa.explicit_refs OWNER TO eboa;
 CREATE TABLE eboa.event_texts(
 	name text NOT NULL,
 	value text NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -144,7 +144,7 @@ ALTER TABLE eboa.event_texts OWNER TO eboa;
 CREATE TABLE eboa.event_doubles(
 	name text NOT NULL,
 	value double precision NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -157,7 +157,7 @@ ALTER TABLE eboa.event_doubles OWNER TO eboa;
 -- DROP TABLE IF EXISTS eboa.event_objects CASCADE;
 CREATE TABLE eboa.event_objects(
 	name text NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -171,7 +171,7 @@ ALTER TABLE eboa.event_objects OWNER TO eboa;
 CREATE TABLE eboa.event_geometries(
 	name text NOT NULL,
 	value geometry NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -202,7 +202,7 @@ ALTER TABLE eboa.annotations OWNER TO eboa;
 CREATE TABLE eboa.annotation_texts(
 	name text NOT NULL,
 	value text NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -216,7 +216,7 @@ ALTER TABLE eboa.annotation_texts OWNER TO eboa;
 CREATE TABLE eboa.annotation_doubles(
 	name text NOT NULL,
 	value double precision NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -229,7 +229,7 @@ ALTER TABLE eboa.annotation_doubles OWNER TO eboa;
 -- DROP TABLE IF EXISTS eboa.annotation_objects CASCADE;
 CREATE TABLE eboa.annotation_objects(
 	name text NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -243,7 +243,7 @@ ALTER TABLE eboa.annotation_objects OWNER TO eboa;
 CREATE TABLE eboa.annotation_geometries(
 	name text NOT NULL,
 	value geometry NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -321,7 +321,7 @@ ALTER TABLE eboa.source_statuses OWNER TO eboa;
 CREATE TABLE eboa.event_booleans(
 	name text NOT NULL,
 	value boolean NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -342,7 +342,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE TABLE eboa.annotation_booleans(
 	name text NOT NULL,
 	value boolean NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -356,7 +356,7 @@ ALTER TABLE eboa.annotation_booleans OWNER TO eboa;
 CREATE TABLE eboa.annotation_timestamps(
 	name text NOT NULL,
 	value timestamp NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	annotation_uuid uuid NOT NULL
@@ -424,7 +424,7 @@ ALTER TABLE eboa.event_keys OWNER TO eboa;
 CREATE TABLE eboa.event_timestamps(
 	name text NOT NULL,
 	value timestamp NOT NULL,
-	level_position integer NOT NULL,
+	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
 	event_uuid uuid NOT NULL
@@ -1358,62 +1358,62 @@ ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_annotation_ge
 
 -- object: unique_value_position_event_booleans | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_booleans DROP CONSTRAINT IF EXISTS unique_value_position_event_booleans CASCADE;
-ALTER TABLE eboa.event_booleans ADD CONSTRAINT unique_value_position_event_booleans UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_booleans ADD CONSTRAINT unique_value_position_event_booleans UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_event_texts | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_texts DROP CONSTRAINT IF EXISTS unique_value_position_event_texts CASCADE;
-ALTER TABLE eboa.event_texts ADD CONSTRAINT unique_value_position_event_texts UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_texts ADD CONSTRAINT unique_value_position_event_texts UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_event_doubles | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_doubles DROP CONSTRAINT IF EXISTS unique_value_position_event_doubles CASCADE;
-ALTER TABLE eboa.event_doubles ADD CONSTRAINT unique_value_position_event_doubles UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_doubles ADD CONSTRAINT unique_value_position_event_doubles UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_event_timestamps | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_event_timestamps CASCADE;
-ALTER TABLE eboa.event_timestamps ADD CONSTRAINT unique_value_position_event_timestamps UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_timestamps ADD CONSTRAINT unique_value_position_event_timestamps UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_event_objects | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_objects DROP CONSTRAINT IF EXISTS unique_value_position_event_objects CASCADE;
-ALTER TABLE eboa.event_objects ADD CONSTRAINT unique_value_position_event_objects UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_objects ADD CONSTRAINT unique_value_position_event_objects UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_event_geometries | type: CONSTRAINT --
 -- ALTER TABLE eboa.event_geometries DROP CONSTRAINT IF EXISTS unique_value_position_event_geometries CASCADE;
-ALTER TABLE eboa.event_geometries ADD CONSTRAINT unique_value_position_event_geometries UNIQUE (level_position,parent_level,parent_position,event_uuid);
+ALTER TABLE eboa.event_geometries ADD CONSTRAINT unique_value_position_event_geometries UNIQUE ("position",parent_level,parent_position,event_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_booleans | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_booleans DROP CONSTRAINT IF EXISTS unique_value_position_annotation_booleans CASCADE;
-ALTER TABLE eboa.annotation_booleans ADD CONSTRAINT unique_value_position_annotation_booleans UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_booleans ADD CONSTRAINT unique_value_position_annotation_booleans UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_texts | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_texts DROP CONSTRAINT IF EXISTS unique_value_position_annotation_texts CASCADE;
-ALTER TABLE eboa.annotation_texts ADD CONSTRAINT unique_value_position_annotation_texts UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_texts ADD CONSTRAINT unique_value_position_annotation_texts UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_doubles | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_doubles DROP CONSTRAINT IF EXISTS unique_value_position_annotation_doubles CASCADE;
-ALTER TABLE eboa.annotation_doubles ADD CONSTRAINT unique_value_position_annotation_doubles UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_doubles ADD CONSTRAINT unique_value_position_annotation_doubles UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_timestamps | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_annotation_timestamps CASCADE;
-ALTER TABLE eboa.annotation_timestamps ADD CONSTRAINT unique_value_position_annotation_timestamps UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_timestamps ADD CONSTRAINT unique_value_position_annotation_timestamps UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_objects | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_objects DROP CONSTRAINT IF EXISTS unique_value_position_annotation_objects CASCADE;
-ALTER TABLE eboa.annotation_objects ADD CONSTRAINT unique_value_position_annotation_objects UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_objects ADD CONSTRAINT unique_value_position_annotation_objects UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: unique_value_position_annotation_geometries | type: CONSTRAINT --
 -- ALTER TABLE eboa.annotation_geometries DROP CONSTRAINT IF EXISTS unique_value_position_annotation_geometries CASCADE;
-ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_position_annotation_geometries UNIQUE (level_position,parent_level,parent_position,annotation_uuid);
+ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_position_annotation_geometries UNIQUE ("position",parent_level,parent_position,annotation_uuid);
 -- ddl-end --
 
 -- object: eboa.event_alerts | type: TABLE --

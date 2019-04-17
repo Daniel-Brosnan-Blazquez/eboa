@@ -211,7 +211,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -240,7 +240,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="double precision" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -266,7 +266,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -295,7 +295,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="geometry" length="0"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -357,7 +357,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -386,7 +386,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="double precision" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -412,7 +412,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -441,7 +441,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="geometry" length="0"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -583,7 +583,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="boolean" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -622,7 +622,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="boolean" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -651,7 +651,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -770,7 +770,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="value" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
-	<column name="level_position" not-null="true">
+	<column name="position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
 	<column name="parent_level" not-null="true">
@@ -1702,51 +1702,51 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </constraint>
 
 <constraint name="unique_value_position_event_booleans" type="uq-constr" table="eboa.event_booleans">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_texts" type="uq-constr" table="eboa.event_texts">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_doubles" type="uq-constr" table="eboa.event_doubles">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_timestamps" type="uq-constr" table="eboa.event_timestamps">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_objects" type="uq-constr" table="eboa.event_objects">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_event_geometries" type="uq-constr" table="eboa.event_geometries">
-	<columns names="level_position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,event_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_booleans" type="uq-constr" table="eboa.annotation_booleans">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_texts" type="uq-constr" table="eboa.annotation_texts">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_doubles" type="uq-constr" table="eboa.annotation_doubles">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_timestamps" type="uq-constr" table="eboa.annotation_timestamps">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_objects" type="uq-constr" table="eboa.annotation_objects">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_position_annotation_geometries" type="uq-constr" table="eboa.annotation_geometries">
-	<columns names="level_position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
 <table name="event_alerts">

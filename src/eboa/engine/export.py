@@ -7,47 +7,58 @@ module eboa
 """
 from geoalchemy2.shape import to_shape
 
-def build_values_structure(values, structure, level_position = 0, parent_level = -1, parent_level_position = 0):
+import logging
+from eboa.logging import Log
+
+logging = Log()
+logger = logging.logger
+
+def build_values_structure(values, structure, position = 0, parent_level = -1, parent_position = 0):
     """
     """
-    object_entity = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_level_position and value.level_position == level_position][0]
+    object_entity_list = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position and value.position == position]
+    
+    if len(object_entity_list) > 0:
+        object_entity = object_entity_list[0]
+        if str(type(object_entity)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
+            object_entity_structure = {"name": object_entity.name,
+                                       "type": "object",
+                                       "values": []
+            }
 
-    object_entity_structure = {"name": object_entity.name,
-                               "type": "object",
-                               "values": []
-    }
+            child_values = sorted([value for value in values if value.parent_level == parent_level + 1 and value.parent_position == position], key=lambda x: x.position)
+            structure.append(object_entity_structure)
+            for value in child_values:
+                if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
+                    value_type = "boolean"
+                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
+                    value_type = "double"
+                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
+                    value_type = "timestamp"
+                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
+                    value_type = "geometry"
+                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
+                    value_type = "object"
+                else:
+                    value_type = "text"
+                # end if
 
-    child_values = sorted([value for value in values if value.parent_level == parent_level + 1 and value.parent_position == level_position], key=lambda x: x.level_position)
-    structure.append(object_entity_structure)
-    for value in child_values:
-        if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
-            value_type = "boolean"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
-            value_type = "double"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
-            value_type = "timestamp"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
-            value_type = "geometry"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
-            value_type = "object"
-        else:
-            value_type = "text"
+                if value_type != "object":
+                    value_content = str(value.value)
+                    if value_type == "geometry":
+                        value_content = to_shape(value.value).to_wkt()
+                    # end if
+
+                    object_entity_structure["values"].append({"name": value.name,
+                                                              "type": value_type,
+                                                              "value": value_content
+                                                          })
+                else:
+                    build_values_structure(values, object_entity_structure["values"], value.position, parent_level + 1, position)
+                # end if
+            # end for
         # end if
-
-        if value_type != "object":
-            value_content = str(value.value)
-            if value_type == "geometry":
-                value_content = to_shape(value.value).to_wkt()
-            # end if
-
-            object_entity_structure["values"].append({"name": value.name,
-                                                      "type": value_type,
-                                                      "value": value_content
-                                                  })
-        else:
-            build_values_structure(values, object_entity_structure["values"], value.level_position, parent_level + 1, level_position)
-        # end if
-    # end for
+    # end if
     return
 
     # def get_source(self, name):

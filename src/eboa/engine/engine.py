@@ -1247,7 +1247,7 @@ class Engine():
 
         return
 
-    def _insert_values(self, values, entity_uuid, list_values, level_position = 0, parent_level = -1, parent_level_position = 0, level_positions = None):
+    def _insert_values(self, values, entity_uuid, list_values, position = 0, parent_level = -1, parent_position = 0, positions = None):
         """
         Method to insert the values associated to events or annotations
 
@@ -1257,36 +1257,36 @@ class Engine():
         :type entity_uuid: uuid
         :param list_values: list with the inserted values for later bulk ingestion
         :type list_values: list
-        :param level_position: value position inside the structure of values
-        :type level_position: int
+        :param position: value position inside the structure of values
+        :type position: int
         :param parent_level: level of the parent value inside the structure of values
         :type parent_level: int
-        :param parent_level_position: position of the parent value inside the correspoding level of the structure of values
-        :type parent_level_position: int
-        :param level_positions: counter of the positions per level
-        :type level_positions: dict
+        :param parent_position: position of the parent value inside the correspoding level of the structure of values
+        :type parent_position: int
+        :param positions: counter of the positions per level
+        :type positions: dict
         """
-        if level_positions == None:
-            level_positions = {}
+        if positions == None:
+            positions = {}
         # end if
         if not "objects" in list_values:
             list_values["objects"] = []
         # end if
         list_values["objects"].append(dict([("name", values.get("name")),
-                                           ("level_position",  level_position),
+                                           ("position",  position),
                                            ("parent_level",  parent_level),
-                                           ("parent_position",  parent_level_position),
+                                           ("parent_position",  parent_position),
                                            (entity_uuid["name"], entity_uuid["id"])]
         ))
         parent_level += 1
-        parent_level_position = level_position
-        if not parent_level in level_positions:
+        parent_position = position
+        if not parent_level in positions:
             # List for keeping track of the positions occupied in the level (parent_level = level - 1)
-            level_positions[parent_level] = 0
+            positions[parent_level] = 0
         # end if
         for item in values["values"]:
             if item["type"] == "object":
-                self._insert_values(item, entity_uuid, list_values, level_positions[parent_level], parent_level, parent_level_position, level_positions)
+                self._insert_values(item, entity_uuid, list_values, positions[parent_level], parent_level, parent_position, positions)
             else:
                 value = bool(str(item.get("value")))
                 if item["type"] == "boolean":
@@ -1362,13 +1362,13 @@ class Engine():
                 # end if
                 list_to_use.append(dict([("name", item.get("name")),
                                          ("value", value),
-                                         ("level_position",  level_positions[parent_level]),
+                                         ("position",  positions[parent_level]),
                                          ("parent_level",  parent_level),
-                                         ("parent_position",  parent_level_position),
+                                         ("parent_position",  parent_position),
                                          (entity_uuid["name"], entity_uuid["id"])]
                                     ))
             # end if
-            level_positions[parent_level] += 1
+            positions[parent_level] += 1
         # end for
 
         return
@@ -1697,7 +1697,7 @@ class Engine():
             # end if
             value_to_insert = {"event_uuid": to_event_uuid,
                                "name": value.name,
-                               "level_position": value.level_position,
+                               "position": value.position,
                                "parent_level": value.parent_level,
                                "parent_position": value.parent_position
             }
@@ -2097,7 +2097,7 @@ class Engine():
             else:
                 event_values = self.query.get_event_values(event_uuids = [event_uuid])
                 event_values_first_level = [value for value in event_values if value.parent_level == 0 and value.parent_position == 0]
-                self._insert_values(values, entity_uuid, list_values, level_position = len(event_values_first_level), parent_level = 0, parent_level_position = 0)
+                self._insert_values(values, entity_uuid, list_values, position = len(event_values_first_level), parent_level = 0, parent_position = 0)
             # end if
 
             continue_with_values_ingestion = True
@@ -2115,7 +2115,7 @@ class Engine():
                     continue_with_values_ingestion = False
                     # The object has not been ingested because of two possible reasons:
                     # 1. The values with the same name have been inserted by another process
-                    # 2. The level_position specified has been taken by another process
+                    # 2. The position specified has been taken by another process
                     self.session.rollback()
                 # end try
             # end if
