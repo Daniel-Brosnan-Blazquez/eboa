@@ -4390,7 +4390,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_objects) == 1
 
-        event_objects = self.session.query(EventObject).filter(EventObject.level_position == 0, EventObject.parent_level == 0, EventObject.parent_position == 0).all()
+        event_objects = self.session.query(EventObject).filter(EventObject.position == 0, EventObject.parent_level == 0, EventObject.parent_position == 0).all()
 
         assert len(event_objects) == 1
 

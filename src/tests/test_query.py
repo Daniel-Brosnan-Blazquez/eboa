@@ -714,13 +714,13 @@ class TestQuery(unittest.TestCase):
 
         gauge1 = self.query.get_gauges(names = {"filter": "GAUGE", "op": "like"})
 
-        event = self.query.get_events(gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"})
+        event1 = self.query.get_events(gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"})
 
-        assert len(event) == 1
+        assert len(event1) == 1
 
-        event1 = self.query.get_events()
+        events = self.query.get_events()
 
-        assert len(event1) == 2
+        assert len(events) == 2
 
         event = self.query.get_events(event_uuids = {"filter": [event1[0].event_uuid], "op": "in"})
 

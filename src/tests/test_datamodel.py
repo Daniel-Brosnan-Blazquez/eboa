@@ -13,10 +13,16 @@ import datetime
 import uuid
 import random
 
+# Import engine of the DDBB
+import eboa.engine.engine as eboa_engine
+from eboa.engine.engine import Engine
+from eboa.engine.query import Query
+
 # Import datamodel
 import eboa.datamodel.base
 from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.alerts import Alert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -32,12 +38,21 @@ from sqlalchemy import func
 
 class TestDatamodel(unittest.TestCase):
     def setUp(self):
+        # Create the engine to manage the data
+        self.engine_eboa = Engine()
+        self.query_eboa = Query()
+
         # Create session to connect to the database
         self.session = Session()
 
         # Clear all tables before executing the test
-        for table in reversed(Base.metadata.sorted_tables):
-            engine.execute(table.delete())
+        self.query_eboa.clear_db()
+
+    def tearDown(self):
+        # Close connections to the DDBB
+        self.engine_eboa.close_session()
+        self.query_eboa.close_session()
+        self.session.close()
 
     def test_insert_data(self):
         """ Verify the insertion of data using the classes defined in the datamodel. """
@@ -151,39 +166,39 @@ class TestDatamodel(unittest.TestCase):
         self.session.add (EventText("TEXT_NAME", "TEXT_VALUE", 0, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventText).filter(EventText.event_uuid == event1_uuid, EventText.name == "TEXT_NAME", EventText.value == "TEXT_VALUE", EventText.level_position == 0, EventText.parent_level == 0, EventText.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventText).filter(EventText.event_uuid == event1_uuid, EventText.name == "TEXT_NAME", EventText.value == "TEXT_VALUE", EventText.position == 0, EventText.parent_level == 0, EventText.parent_position == 0).all()) == 1
 
         # Associate to an event a double value
         self.session.add (EventDouble("DOUBLE_NAME", 1.5, 1, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventDouble).filter(EventDouble.event_uuid == event1_uuid, EventDouble.name == "DOUBLE_NAME", EventDouble.value == 1.5, EventDouble.level_position == 1, EventDouble.parent_level == 0, EventDouble.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventDouble).filter(EventDouble.event_uuid == event1_uuid, EventDouble.name == "DOUBLE_NAME", EventDouble.value == 1.5, EventDouble.position == 1, EventDouble.parent_level == 0, EventDouble.parent_position == 0).all()) == 1
 
         # Associate to an event a boolean value
         self.session.add (EventBoolean("BOOLEAN_NAME", True, 2, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventBoolean).filter(EventBoolean.event_uuid == event1_uuid, EventBoolean.name == "BOOLEAN_NAME", EventBoolean.value == True, EventBoolean.level_position == 2, EventBoolean.parent_level == 0, EventBoolean.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventBoolean).filter(EventBoolean.event_uuid == event1_uuid, EventBoolean.name == "BOOLEAN_NAME", EventBoolean.value == True, EventBoolean.position == 2, EventBoolean.parent_level == 0, EventBoolean.parent_position == 0).all()) == 1
 
         # Associate to an event a timestamp value
         timestamp = datetime.datetime.now()        
         self.session.add (EventTimestamp("TIMESTAMP_NAME", timestamp, 3, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventTimestamp).filter(EventTimestamp.event_uuid == event1_uuid, EventTimestamp.name == "TIMESTAMP_NAME", EventTimestamp.value == timestamp, EventTimestamp.level_position == 3, EventTimestamp.parent_level == 0, EventTimestamp.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventTimestamp).filter(EventTimestamp.event_uuid == event1_uuid, EventTimestamp.name == "TIMESTAMP_NAME", EventTimestamp.value == timestamp, EventTimestamp.position == 3, EventTimestamp.parent_level == 0, EventTimestamp.parent_position == 0).all()) == 1
 
         # Associate to an event an object
         self.session.add (EventObject("OBJECT_NAME", 4, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventObject).filter(EventObject.event_uuid == event1_uuid, EventObject.name == "OBJECT_NAME", EventObject.level_position == 4, EventObject.parent_level == 0, EventObject.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventObject).filter(EventObject.event_uuid == event1_uuid, EventObject.name == "OBJECT_NAME", EventObject.position == 4, EventObject.parent_level == 0, EventObject.parent_position == 0).all()) == 1
 
         # Associate to an event a geometry
         polygon = "POLYGON((3 0,6 0,6 3,3 3,3 0))"
         self.session.add (EventGeometry("GEOMETRY_NAME", polygon, 5, 0, 0, event1))
         self.session.commit()
         
-        assert len (self.session.query(EventGeometry).filter(EventGeometry.event_uuid == event1_uuid, EventGeometry.name == "GEOMETRY_NAME", func.ST_AsText(EventGeometry.value) == polygon, EventGeometry.level_position == 5, EventGeometry.parent_level == 0, EventGeometry.parent_position == 0).all()) == 1
+        assert len (self.session.query(EventGeometry).filter(EventGeometry.event_uuid == event1_uuid, EventGeometry.name == "GEOMETRY_NAME", func.ST_AsText(EventGeometry.value) == polygon, EventGeometry.position == 5, EventGeometry.parent_level == 0, EventGeometry.parent_position == 0).all()) == 1
 
         # Insert annotation configuration
         annotation_cnf_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -207,36 +222,130 @@ class TestDatamodel(unittest.TestCase):
         self.session.add (AnnotationText("TEXT_NAME", "TEXT_VALUE", 0, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationText).filter(AnnotationText.annotation_uuid == annotation1_uuid, AnnotationText.name == "TEXT_NAME", AnnotationText.value == "TEXT_VALUE", AnnotationText.level_position == 0, AnnotationText.parent_level == 0, AnnotationText.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationText).filter(AnnotationText.annotation_uuid == annotation1_uuid, AnnotationText.name == "TEXT_NAME", AnnotationText.value == "TEXT_VALUE", AnnotationText.position == 0, AnnotationText.parent_level == 0, AnnotationText.parent_position == 0).all()) == 1
 
         # Associate to an annotation a double value
         self.session.add (AnnotationDouble("DOUBLE_NAME", 1.5, 1, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationDouble).filter(AnnotationDouble.annotation_uuid == annotation1_uuid, AnnotationDouble.name == "DOUBLE_NAME", AnnotationDouble.value == 1.5, AnnotationDouble.level_position == 1, AnnotationDouble.parent_level == 0, AnnotationDouble.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationDouble).filter(AnnotationDouble.annotation_uuid == annotation1_uuid, AnnotationDouble.name == "DOUBLE_NAME", AnnotationDouble.value == 1.5, AnnotationDouble.position == 1, AnnotationDouble.parent_level == 0, AnnotationDouble.parent_position == 0).all()) == 1
 
         # Associate to an annotation a boolean value
         self.session.add (AnnotationBoolean("BOOLEAN_NAME", True, 2, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationBoolean).filter(AnnotationBoolean.annotation_uuid == annotation1_uuid, AnnotationBoolean.name == "BOOLEAN_NAME", AnnotationBoolean.value == True, AnnotationBoolean.level_position == 2, AnnotationBoolean.parent_level == 0, AnnotationBoolean.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationBoolean).filter(AnnotationBoolean.annotation_uuid == annotation1_uuid, AnnotationBoolean.name == "BOOLEAN_NAME", AnnotationBoolean.value == True, AnnotationBoolean.position == 2, AnnotationBoolean.parent_level == 0, AnnotationBoolean.parent_position == 0).all()) == 1
 
         # Associate to an annotation a timestamp value
         timestamp = datetime.datetime.now()        
         self.session.add (AnnotationTimestamp("TIMESTAMP_NAME", timestamp, 3, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationTimestamp).filter(AnnotationTimestamp.annotation_uuid == annotation1_uuid, AnnotationTimestamp.name == "TIMESTAMP_NAME", AnnotationTimestamp.value == timestamp, AnnotationTimestamp.level_position == 3, AnnotationTimestamp.parent_level == 0, AnnotationTimestamp.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationTimestamp).filter(AnnotationTimestamp.annotation_uuid == annotation1_uuid, AnnotationTimestamp.name == "TIMESTAMP_NAME", AnnotationTimestamp.value == timestamp, AnnotationTimestamp.position == 3, AnnotationTimestamp.parent_level == 0, AnnotationTimestamp.parent_position == 0).all()) == 1
 
         # Associate to an annotation an object
         self.session.add (AnnotationObject("OBJECT_NAME", 4, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationObject).filter(AnnotationObject.annotation_uuid == annotation1_uuid, AnnotationObject.name == "OBJECT_NAME", AnnotationObject.level_position == 4, AnnotationObject.parent_level == 0, AnnotationObject.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationObject).filter(AnnotationObject.annotation_uuid == annotation1_uuid, AnnotationObject.name == "OBJECT_NAME", AnnotationObject.position == 4, AnnotationObject.parent_level == 0, AnnotationObject.parent_position == 0).all()) == 1
 
         # Associate to an annotation a geometry
         polygon = "POLYGON((3 0,6 0,6 3,3 3,3 0))"
         self.session.add (AnnotationGeometry("GEOMETRY_NAME", polygon, 5, 0, 0, annotation1))
         self.session.commit()
         
-        assert len (self.session.query(AnnotationGeometry).filter(AnnotationGeometry.annotation_uuid == annotation1_uuid, AnnotationGeometry.name == "GEOMETRY_NAME", func.ST_AsText(AnnotationGeometry.value) == polygon, AnnotationGeometry.level_position == 5, AnnotationGeometry.parent_level == 0, AnnotationGeometry.parent_position == 0).all()) == 1
+        assert len (self.session.query(AnnotationGeometry).filter(AnnotationGeometry.annotation_uuid == annotation1_uuid, AnnotationGeometry.name == "GEOMETRY_NAME", func.ST_AsText(AnnotationGeometry.value) == polygon, AnnotationGeometry.position == 5, AnnotationGeometry.parent_level == 0, AnnotationGeometry.parent_position == 0).all()) == 1
+
+    def test_event_get_structure_values(self):
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"name": "VALUES2",
+                                     "type": "object",
+                                     "values": [
+                                         {"type": "text",
+                                          "name": "TEXT",
+                                          "value": "TEXT"},
+                                         {"type": "boolean",
+                                          "name": "BOOLEAN",
+                                          "value": "true"}]}]
+                            }]
+                }]
+        }]}
+        self.engine_eboa.treat_data(data)
+
+        events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "like"})
+
+        assert len(events) == 1
+
+        event1 = events[0]
+
+        values = event1.get_structured_values()
+
+        assert values == [{
+            "name": "VALUES",
+            "type": "object",
+            "values": [
+                {"type": "text",
+                 "name": "TEXT",
+                 "value": "TEXT"},
+                {"type": "boolean",
+                 "name": "BOOLEAN",
+                 "value": "True"},
+                {"name": "VALUES2",
+                 "type": "object",
+                 "values": [
+                     {"type": "text",
+                      "name": "TEXT",
+                      "value": "TEXT"},
+                     {"type": "boolean",
+                      "name": "BOOLEAN",
+                      "value": "True"}]}]
+        }]
+
+
+        # Test that if the coordinates are related to a non object the returned list is empty
+        values = event1.get_structured_values(position = 0, parent_level = 0, parent_position = 0)
+
+        assert values == []
+
+        # Test that the export returns inner objects
+        values = event1.get_structured_values(position = 2, parent_level = 0, parent_position = 0)
+
+        assert values == [{
+            "name": "VALUES2",
+            "type": "object",
+            "values": [
+                {"type": "text",
+                 "name": "TEXT",
+                 "value": "TEXT"},
+                {"type": "boolean",
+                 "name": "BOOLEAN",
+                 "value": "True"}]
+        }]
+
+        
+
