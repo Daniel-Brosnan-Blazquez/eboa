@@ -284,6 +284,14 @@ def _generate_record_events(xpath_xml, source, list_of_events):
             }]
         }
 
+        if len(record_start_scn_dup) == 1 or len(record_stop_scn_dup) == 1:
+            cut_imaging_event["values"][0]["values"].append(
+                {"name": "parameters",
+                 "type": "object",
+                 "values": parameters},
+            )
+        # end if
+
         # Insert imaging_event
         ingestion.insert_event_for_ingestion(cut_imaging_event, source, list_of_events)
 

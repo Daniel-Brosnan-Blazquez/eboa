@@ -559,6 +559,17 @@ class TestEngine(unittest.TestCase):
                     "value": "NOMINAL",
                     "type": "text",
                     "name": "imaging_mode"
+                },
+                {
+                    "type": "object",
+                    "values": [
+                        {
+                            "value": "0.0",
+                            "type": "double",
+                            "name": "start_scn_dup"
+                        }
+                    ],
+                    "name": "parameters"
                 }
             ],
             "name": "details"
