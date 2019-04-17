@@ -37,7 +37,7 @@ logger = logging_module.logger
 version = "1.0"
 
 @debug
-def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
+def _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_events):
     """
     Method to generate the events of the dfep schedule files
 
@@ -53,9 +53,6 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
     station = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/@name")[0]
     # schedulings
     schedulings = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/acq[action = 'ADD']")
-    # Get planning events to correct their timings
-    query = Query()
-
     for schedule in schedulings:
 
         start = schedule.xpath("start")[0].text
@@ -80,6 +77,14 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
                     "name": "DFEP_SCHEDULE",
                     "back_ref": "PLANNED_PLAYBACK"
                 })
+                value = {
+                    "name": "dfep_schedule",
+                    "type": "object",
+                    "values": [{"name": "station",
+                                "type": "text",
+                                "value": station}]
+                }
+                engine.insert_event_values(playback.event_uuid, value)
             # end for
         # end if
 
@@ -123,7 +128,7 @@ def _generate_dfep_schedule_events(xpath_xml, source, list_of_events):
 
     return
 
-def process_file(file_path):
+def process_file(file_path, engine, query):
     """Function to process the file and insert its relevant information
     into the DDBB of the eboa
     
@@ -151,7 +156,7 @@ def process_file(file_path):
     }
 
     # Generate dfep schedule events
-    _generate_dfep_schedule_events(xpath_xml, source, list_of_events)
+    _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_events)
 
     # Build the xml
     data = {"operations": [{
@@ -177,10 +182,11 @@ def insert_data_into_DDBB(data, filename, engine):
     return returned_value
 
 def command_process_file(file_path, output_path = None):
-    # Process file
-    data = process_file(file_path)
-
     engine = Engine()
+    query = Query()
+    # Process file
+    data = process_file(file_path, engine, query)
+
     # Validate data
     filename = os.path.basename(file_path)
 

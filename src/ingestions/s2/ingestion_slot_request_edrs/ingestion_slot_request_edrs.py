@@ -40,7 +40,7 @@ logger = logging_module.logger
 
 version = "1.0"
 
-def process_file(file_path):
+def process_file(file_path, engine, query):
     """
     Function to process the file and insert its relevant information
     into the DDBB of the eboa
@@ -72,8 +72,6 @@ def process_file(file_path):
         "validity_start": validity_start,
         "validity_stop": validity_stop
     }
-
-    query = Query()
 
     # Extract the slots
     slots = xpath_xml("/Earth_Explorer_File/Data_Block/List_of_Sessions/Session")
@@ -115,6 +113,22 @@ def process_file(file_path):
                             "name": "SLOT_REQUEST_EDRS",
                             "back_ref": "PLANNED_PLAYBACK"
                         })
+                        value = {
+                            "name": "station_schedule",
+                            "type": "object",
+                            "values": [{"name": "station",
+                                        "type": "text",
+                                        "value": "EDRS"}]
+                        }
+                        engine.insert_event_values(playback.event_uuid, value)
+                        value = {
+                            "name": "dfep_schedule",
+                            "type": "object",
+                            "values": [{"name": "station",
+                                        "type": "text",
+                                        "value": "EDRS"}]
+                        }
+                        engine.insert_event_values(playback.event_uuid, value)
                     # end if
                 # end if
             # end for
@@ -188,10 +202,12 @@ def insert_data_into_DDBB(data, filename, engine):
     return returned_value
 
 def command_process_file(file_path, output_path = None):
-    # Process file
-    data = process_file(file_path)
-
     engine = Engine()
+    query = Query()
+
+    # Process file
+    data = process_file(file_path, engine, query)
+
     # Validate data
     filename = os.path.basename(file_path)
 
