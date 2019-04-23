@@ -34,6 +34,14 @@
                 <RequestDate>2018-07-21T01:00:36Z</RequestDate>
             </ArchiveRequest>
             <ArchiveRequest>
+                <Pdi-Id>S2A_OPER_MSI_L1C_TC_MPS__20180721T001557_A016071_T14XMR_N02.06</Pdi-Id>
+                <SensingStart>2018-07-20T22:31:06Z</SensingStart>
+                <SensingStop>2018-07-20T22:32:07Z</SensingStop>
+                <RequestStatus>Failed</RequestStatus>
+                <ErrorInformation>null</ErrorInformation>
+                <RequestDate>2018-07-21T01:00:36Z</RequestDate>
+            </ArchiveRequest>
+            <ArchiveRequest>
                 <Pdi-Id>S2A_OPER_MSI_L1C_TC_MPS__20180721T001557_A016071_T11XNJ_N02.06</Pdi-Id>
                 <SensingStart>2018-07-20T22:31:06Z</SensingStart>
                 <SensingStop>2018-07-20T22:32:07Z</SensingStop>

@@ -1,5 +1,5 @@
 """
-    Ingestion module for the REP_OPAI files of Sentinel-2
+    Ingestion module for the REP_OPDHUS files of Sentinel-2
 
 Written by DEIMOS Space S.L. (femd)
 
@@ -65,15 +65,15 @@ def process_file(file_path, engine, query):
     xpath_xml = etree.XPathEvaluator(parsed_xml)
 
     list_of_annotations = []
+    list_of_datastrips = []
 
-    # Obtain the station
-    system = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/System")[0].text
+    system = "DHUS"
     # Obtain the creation date from the file name as the annotation creation date is not always correct
     creation_date = file_name[25:40]
     # Obtain the validity start
-    validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
+    validity_start = creation_date
     # Obtain the validity stop
-    validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
+    validity_stop = creation_date
 
     # Source for the main operation
     source= {
@@ -83,36 +83,77 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    #Might check status or take in account several possible centres?
-    for request in xpath_xml("/Earth_Explorer_File/Data_Block/List_Of_ArchiveRequests/ArchiveRequest[RequestStatus[text() = 'Success']]"):
-        #Obtain the product ID
-        product_id = request.xpath("Pdi-Id")[0].text
-        # Obtain the archiving_time
-        archiving_time = request.xpath("RequestDate")[0].text[:-1]
+    for tile in xpath_xml("/Earth_Explorer_File/Data_Block/Products/Product/PDI[contains(text(),'_TL')]"):
+            #Obtain the product ID
+            tile_id = tile.text
+            product_name = str(tile.xpath("../@name")[0])
 
-        archiving_annotation = {
-            "explicit_reference" : product_id,
-            "annotation_cnf": {
-                "name": "ARCHIVING_TIME",
-                "system": system
-                },
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": [
-                    {"name": "archiving_time",
-                     "type": "timestamp",
-                     "value": archiving_time
-                     }]
-            }]
-        }
-        list_of_annotations.append(archiving_annotation)
+            tile_dhus_dissemination_annotation = {
+                "explicit_reference" : tile_id,
+                "annotation_cnf": {
+                    "name": "DHUS_DISSEMINATION_TIME",
+                    "system": system
+                    },
+                "values": [{
+                    "name": "details",
+                    "type": "object",
+                    "values": [
+                        {"name": "dhus_dissemination_time",
+                         "type": "timestamp",
+                         "value": creation_date
+                         }]
+                }]
+            }
+            list_of_annotations.append(tile_dhus_dissemination_annotation)
+
+            tile_user_product_annotation = {
+                "explicit_reference" : tile_id,
+                "annotation_cnf": {
+                    "name": "USER_PRODUCT",
+                    "system": system
+                    },
+                "values": [{
+                    "name": "details",
+                    "type": "object",
+                    "values": [
+                        {"name": "product_name",
+                         "type": "text",
+                         "value": product_name
+                         }]
+                }]
+            }
+            list_of_annotations.append(tile_user_product_annotation)
     #end for
+
+    for datastrip in xpath_xml("/Earth_Explorer_File/Data_Block/Products/Product/PDI[contains(text(),'_DS')]"):
+        if datastrip.text not in list_of_datastrips:
+            list_of_datastrips.append(datastrip.text)
+
+            datastrip_dhus_dissemination_annotation = {
+            "explicit_reference" : datastrip.text,
+                "annotation_cnf": {
+                    "name": "DHUS_DISSEMINATION_TIME",
+                    "system": system
+                    },
+                "values": [{
+                    "name": "details",
+                    "type": "object",
+                    "values": [
+                        {"name": "dhus_dissemination_time",
+                         "type": "timestamp",
+                         "value": creation_date
+                         }]
+                }]
+            }
+            list_of_annotations.append(datastrip_dhus_dissemination_annotation)
+        #end if
+    #end for
+
 
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
-              "name": "ARCHIVING",
+              "name": "DHUS_DISSEMINATION",
               "exec": os.path.basename(__file__),
               "version": version
         },

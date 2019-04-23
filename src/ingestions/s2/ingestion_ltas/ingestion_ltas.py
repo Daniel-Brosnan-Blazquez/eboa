@@ -1,5 +1,5 @@
 """
-    Ingestion module for the REP_OPAI files of Sentinel-2
+    Ingestion module for the REP_OPLTAS files of Sentinel-2
 
 Written by DEIMOS Space S.L. (femd)
 
@@ -84,35 +84,35 @@ def process_file(file_path, engine, query):
     }
 
     #Might check status or take in account several possible centres?
-    for request in xpath_xml("/Earth_Explorer_File/Data_Block/List_Of_ArchiveRequests/ArchiveRequest[RequestStatus[text() = 'Success']]"):
+    for product in xpath_xml("/Earth_Explorer_File/Data_Block/productsListOutcome/product[statusReason[text() = 'Direct ingestion finished']]"):
         #Obtain the product ID
-        product_id = request.xpath("Pdi-Id")[0].text
+        product_id = product.xpath("productID")[0].text
         # Obtain the archiving_time
-        archiving_time = request.xpath("RequestDate")[0].text[:-1]
+        lt_archiving_time = product.xpath("statusTimestamp")[0].text[:-1]
 
-        archiving_annotation = {
+        lt_archiving_annotation = {
             "explicit_reference" : product_id,
             "annotation_cnf": {
-                "name": "ARCHIVING_TIME",
+                "name": "LONG_TERM_ARCHIVING_TIME",
                 "system": system
                 },
             "values": [{
                 "name": "details",
                 "type": "object",
                 "values": [
-                    {"name": "archiving_time",
+                    {"name": "long_term_archiving_time",
                      "type": "timestamp",
-                     "value": archiving_time
+                     "value": lt_archiving_time
                      }]
             }]
         }
-        list_of_annotations.append(archiving_annotation)
+        list_of_annotations.append(lt_archiving_annotation)
     #end for
 
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
-              "name": "ARCHIVING",
+              "name": "LONG_TERM_ARCHIVING",
               "exec": os.path.basename(__file__),
               "version": version
         },

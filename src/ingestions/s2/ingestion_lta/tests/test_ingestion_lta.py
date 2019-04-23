@@ -1,5 +1,5 @@
 """
-Automated tests for the ingestion of the REP_OPAI files
+Automated tests for the ingestion of the REP_OPLTA files
 
 Written by DEIMOS Space S.L. (femd)
 
@@ -29,7 +29,7 @@ from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRe
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 
 # Import ingestion
-import ingestions.s2.ingestion_ai.ingestion_ai as ingestion_ai
+import ingestions.s2.ingestion_lta.ingestion_lta as ingestion_lta
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
@@ -43,12 +43,12 @@ class TestEngine(unittest.TestCase):
         # Clear all tables before executing the test
         self.query_eboa.clear_db()
 
-    def test_rep_ai(self):
+    def test_rep_lta(self):
 
-        filename = "S2__OPER_REP_OPAI___MPS__20180721T130001_RIPPED.EOF"
+        filename = "S2__OPER_REP_OPLTA__EPA__20180721T130015_RIPPED.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
 
-        returned_value = ingestion_ai.command_process_file(file_path)
+        returned_value = ingestion_lta.command_process_file(file_path)
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
@@ -56,28 +56,28 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources) == 1
 
-        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T01:00:01", "op": "=="}],
+        sources = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-21T01:00:02", "op": "=="}],
                                               validity_stop_filters = [{"date": "2018-07-21T13:00:01", "op": "=="}],
-                                              generation_time_filters = [{"date": "2018-07-21T13:00:01", "op": "=="}],
-                                              processors = {"filter": "ingestion_ai.py", "op": "like"},
-                                              names = {"filter": "S2__OPER_REP_OPAI___MPS__20180721T130001_RIPPED.EOF", "op": "like"})
+                                              generation_time_filters = [{"date": "2018-07-21T13:00:15", "op": "=="}],
+                                              processors = {"filter": "ingestion_lta.py", "op": "like"},
+                                              names = {"filter": "S2__OPER_REP_OPLTA__EPA__20180721T130015_RIPPED.EOF", "op": "like"})
 
         assert len(sources) == 1
 
         #Check definite archiving_time
-        definite_archiving_time = self.query_eboa.get_annotations(annotation_cnf_names = {"op": "like", "filter": "ARCHIVING_TIME"},
-                                                     explicit_refs = {"op": "like", "filter": "S2A_OPER_MSI_L1C_TC_MPS__20180721T001557_A016071_T14XMR_N02.06"})
+        definite_archiving_time = self.query_eboa.get_annotations(annotation_cnf_names = {"op": "like", "filter": "LONG_TERM_ARCHIVING_TIME"},
+                                                     explicit_refs = {"op": "like", "filter": "S2B_OPER_MSI_L1C_TC_SGS__20171017T181225_A003211_T23VNK_N02.05"})
 
         assert definite_archiving_time[0].get_structured_values() == [{
             'type': 'object',
             'name': 'details',
             'values': [{'type': 'timestamp',
-                'name': 'archiving_time',
-                'value': '2018-07-21 01:00:36'
+                'name': 'long_term_archiving_time',
+                'value': '2018-07-21 01:00:10'
                 }]
         }]
 
-        #Check archiving_time
-        archiving_times = self.query_eboa.get_annotations(annotation_cnf_names = {"op": "like", "filter": "ARCHIVING_TIME"})
+        #Check archiving_times
+        archiving_times = self.query_eboa.get_annotations(annotation_cnf_names = {"op": "like", "filter": "LONG_TERM_ARCHIVING_TIME"})
 
-        assert len(archiving_times) == 2
+        assert len(archiving_times) == 3
