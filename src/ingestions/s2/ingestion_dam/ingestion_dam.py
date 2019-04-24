@@ -175,26 +175,7 @@ def process_file(file_path, engine, query):
             }
             list_of_explicit_references.append(datastrip_sensing_explicit_ref)
 
-            # sensing_identifier_annotation = {
-            # "explicit_reference": datastrip_id,
-            # "annotation_cnf": {
-            #     "name": "SENSING_IDENTIFIER",
-            #     "system": system
-            #     },
-            # "values": [{
-            #     "name": "details",
-            #     "type": "object",
-            #     "values": [
-            #         {"name": "sensing_identifier",
-            #          "type": "text",
-            #          "value": sensing_identifier
-            #         }]
-            #     }]
-            # }
-            # list_of_annotations.append(sensing_identifier_annotation)
-
             for granule in product.xpath("product_id[contains(text(),'_GR')]"):
-            #if '_GR' in product_id:
                 # Insert the granule explicit reference
                 granule_explicit_reference = {
                     "group": level + "_GR",
@@ -210,7 +191,6 @@ def process_file(file_path, engine, query):
             # end if
 
             for tile in product.xpath("product_id[contains(text(),'_TL')]"):
-            #if '_TL' in product_id:
                 # Insert the tile explicit reference
                 tile_explicit_reference = {
                     "group": level + "_TL",

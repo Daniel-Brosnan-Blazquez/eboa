@@ -83,7 +83,6 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    #Might check status or take in account several possible centres?
     for request in xpath_xml("/Earth_Explorer_File/Data_Block/List_Of_ArchiveRequests/ArchiveRequest[RequestStatus[text() = 'Success']]"):
         #Obtain the product ID
         product_id = request.xpath("Pdi-Id")[0].text
