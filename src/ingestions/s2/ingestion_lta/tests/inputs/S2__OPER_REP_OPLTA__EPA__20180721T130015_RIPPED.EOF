@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Earth_Explorer_File xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="/DATA_STRUCTURE/AI_LTAOperationReport.xsd">
+    <Earth_Explorer_Header>
+        <Fixed_Header>
+            <File_Name>S2__OPER_REP_OPLTA__EPA__20180721T130015_V20180721T010002_20180721T130001</File_Name>
+            <File_Description>ReportOperAI</File_Description>
+            <Notes/>
+            <Mission>Sentinel-2</Mission>
+            <File_Class>OPERation Activities</File_Class>
+            <File_Type>REP_OPLTA_</File_Type>
+            <Validity_Period>
+               <Validity_Start>UTC=2018-07-21T01:00:02</Validity_Start>
+               <Validity_Stop>UTC=2018-07-21T13:00:01</Validity_Stop>
+            </Validity_Period>
+            <File_Version>0001</File_Version>
+            <Source>
+               <System>EPA_</System>
+               <Creator>AI__</Creator>
+               <Creator_Version>2.0.23</Creator_Version>
+               <Creation_Date>UTC=2018-07-21T13:00:15</Creation_Date>
+            </Source>
+         </Fixed_Header>
+        <Variable_Header/>
+    </Earth_Explorer_Header>
+    <Data_Block>
+        <Centre>EPA_</Centre>
+        <List_of_LTA_Circulations/>
+        <List_of_LTA_Ingestions>
+            <Ingestion>
+                <Pdi-Id>S2B_OPER_MSI_L1C_TC_SGS__20171017T181225_A003211_T23VNK_N02.05</Pdi-Id>
+                <Status>ARCHIVED</Status>
+                <StatusReason>Migration succesfully completed</StatusReason>
+                <StatusTimeStamp>2018-07-21T01:00:10Z</StatusTimeStamp>
+            </Ingestion>
+            <Ingestion>
+                <Pdi-Id>S2B_OPER_MSI_L1C_TC_SGS__20171017T181225_A003211_T23VNH_N02.05</Pdi-Id>
+                <Status>ARCHIVED</Status>
+                <StatusReason>Migration succesfully completed</StatusReason>
+                <StatusTimeStamp>2018-07-21T01:00:11Z</StatusTimeStamp>
+            </Ingestion>
+            <Ingestion>
+                <Pdi-Id>S2B_OPER_MSI_L1C_TC_SGS__20171017T181225_A003211_T24WVC_N02.05</Pdi-Id>
+                <Status>ARCHIVED</Status>
+                <StatusReason>Migration succesfully completed</StatusReason>
+                <StatusTimeStamp>2018-07-21T01:00:27Z</StatusTimeStamp>
+            </Ingestion>
+        </List_of_LTA_Ingestions>
+        <List_Of_MRFs>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___PDMC_20150617T110000_V20150617T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2015-06-17T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___PDMC_20160212T110000_V20160212T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2016-02-12T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___EPA__20151021T110000_V20150617T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2015-06-17T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___PDMC_20151021T110000_V20150617T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2015-06-17T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___PDMC_20151130T110000_V20151130T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2015-11-30T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+            <MRF>
+                <Id>S2__OPER_CNF_OPAI___PDMC_20151207T110000_V20151130T110000_21000101T000000.EOF</Id>
+                <ValidityStart>2015-11-30T11:00:00Z</ValidityStart>
+                <ValidityStop>2100-01-01T00:00:00Z</ValidityStop>
+            </MRF>
+        </List_Of_MRFs>
+    </Data_Block>
+</Earth_Explorer_File>
