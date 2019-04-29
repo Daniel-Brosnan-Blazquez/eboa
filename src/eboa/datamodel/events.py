@@ -70,6 +70,13 @@ class Event(Base):
 
         return values
 
+    def get_duration(self):
+        """
+        Method to obtain the duration of the event
+        """
+
+        return (self.stop - self.start).total_seconds()
+
 class EventLink(Base):
     __tablename__ = 'event_links'
     event_uuid_link = Column(postgresql.UUID(as_uuid=True))
