@@ -723,7 +723,13 @@ class Query():
             params.append(filter(systems["filter"]))
         # end if
 
-        query = self.session.query(AnnotationCnf).filter(*params)
+        query = self.session.query(AnnotationCnf)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+
         log_query(query)
         annotation_cnfs = query.all()
 

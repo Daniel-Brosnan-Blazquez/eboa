@@ -1515,6 +1515,21 @@ class TestQuery(unittest.TestCase):
                 "annotation_cnf": {"name": "ANNOTATION_CNF_NAME",
                                    "system": "ANNOTATION_CNF_SYSTEM"},
                 }]
+        },
+{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature2",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE2",
+                "annotation_cnf": {"name": "ANNOTATION_CNF_NAME2",
+                                   "system": "ANNOTATION_CNF_SYSTEM2"},
+                }]
             }]}
         self.engine_eboa.treat_data(data)
 
@@ -1530,7 +1545,7 @@ class TestQuery(unittest.TestCase):
 
         annotation_cnf1 = self.query.get_annotation_cnfs()
 
-        assert len(annotation_cnf1) == 1
+        assert len(annotation_cnf1) == 2
 
         annotation_cnf = self.query.get_annotation_cnfs(annotation_cnf_uuids = {"filter": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"})
 
