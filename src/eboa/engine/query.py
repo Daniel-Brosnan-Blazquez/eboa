@@ -273,7 +273,13 @@ class Query():
             tables.append(DimSignature)
         # end if
 
-        query = self.session.query(Source).filter(*params)
+        query = self.session.query(Source)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+
         log_query(query)
         sources = query.all()
 
@@ -336,7 +342,13 @@ class Query():
             tables.append(DimSignature)
         # end if
 
-        query = self.session.query(Gauge).filter(*params)
+        query = self.session.query(Gauge)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+
         log_query(query)
         gauges = query.all()
 

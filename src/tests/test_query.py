@@ -158,39 +158,47 @@ class TestQuery(unittest.TestCase):
         assert result == True
 
     def test_query_source(self):
-        data = {"dim_signature": {"name": "dim_signature",
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
                 "source": {"name": "source.xml",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"}
-                                  }
-        self.engine_eboa.operation = data
-        self.engine_eboa._insert_dim_signature()
-        self.engine_eboa._insert_source()
-        self.engine_eboa.ingestion_start = datetime.datetime.now()
-        self.engine_eboa._insert_source_status(0, final = True)
+        },
+{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature2",
+                                  "exec": "exec2",
+                                  "version": "2.0"},
+                "source": {"name": "source2.xml",
+                           "generation_time": "2017-07-05T02:07:03",
+                           "validity_start": "2017-06-05T02:07:03",
+                           "validity_stop": "2017-06-05T08:07:36"}
+        }]}
+        self.engine_eboa.treat_data(data)
 
-        dim_signature1 = self.query.get_dim_signatures()
+        dim_signature1 = self.query.get_dim_signatures(dim_signatures = {"filter": "dim_signature", "op": "like"})
 
-        source = self.query.get_sources(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"})
-
-        assert len(source) == 1
-
-        source1 = self.query.get_sources()
+        source1 = self.query.get_sources(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(source1) == 1
+
+        sources = self.query.get_sources()
+
+        assert len(sources) == 2
 
         source = self.query.get_sources(source_uuids = {"filter": [source1[0].source_uuid], "op": "in"})
 
         assert len(source) == 1
 
-        source = self.query.get_sources(names = {"filter": [data["source"]["name"]], "op": "in"})
+        source = self.query.get_sources(names = {"filter": [data["operations"][0]["source"]["name"]], "op": "in"})
 
         assert len(source) == 1
 
-        name = data["source"]["name"][0:4] + "%"
+        name = data["operations"][0]["source"]["name"]
         source = self.query.get_sources(names = {"filter": name, "op": "like"})
 
         assert len(source) == 1
@@ -203,27 +211,27 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
-        source = self.query.get_sources(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
+        sources = self.query.get_sources(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
+
+        assert len(sources) == 2
+
+        sources = self.query.get_sources(ingestion_duration_filters = [{"float": 10, "op": "<"}])
+
+        assert len(sources) == 2
+
+        source = self.query.get_sources(processor_version_filters = [{"str": "2.0", "op": "<"}])
 
         assert len(source) == 1
 
-        source = self.query.get_sources(ingestion_duration_filters = [{"float": 10, "op": "<"}])
+        source = self.query.get_sources(processors = {"filter": [data["operations"][0]["dim_signature"]["exec"]], "op": "in"})
 
         assert len(source) == 1
 
-        source = self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": ">"}])
+        sources = self.query.get_sources(statuses = [{"float": 0, "op": "=="}])
 
-        assert len(source) == 1
+        assert len(sources) == 2
 
-        source = self.query.get_sources(processors = {"filter": [data["dim_signature"]["exec"]], "op": "in"})
-
-        assert len(source) == 1
-
-        source = self.query.get_sources(statuses = [{"float": 0, "op": "=="}])
-
-        assert len(source) == 1
-
-        dim_sig_name = data["dim_signature"]["name"][0:7] + "%"
+        dim_sig_name = data["operations"][0]["dim_signature"]["name"]
         source = self.query.get_sources(dim_signatures = {"filter": dim_sig_name, "op": "like"})
 
         assert len(source) == 1
@@ -551,18 +559,38 @@ class TestQuery(unittest.TestCase):
                     "stop": "2018-06-05T08:07:36"
 
                 }]
+            },
+{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature2",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {
+                        "name": "GAUGE2",
+                        "system": "SYSTEM2",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+
+                }]
             }]}
         self.engine_eboa.treat_data(data)
 
         dim_signature1 = self.query.get_dim_signatures()
 
-        gauge = self.query.get_gauges(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"})
-
-        assert len(gauge) == 1
-
-        gauge1 = self.query.get_gauges()
+        gauge1 = self.query.get_gauges(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(gauge1) == 1
+
+        gauges = self.query.get_gauges()
+
+        assert len(gauges) == 2
 
         gauge = self.query.get_gauges(gauge_uuids = {"filter": [gauge1[0].gauge_uuid], "op": "in"})
 
@@ -572,7 +600,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(gauge) == 1
 
-        gauge_name = data["operations"][0]["events"][0]["gauge"]["name"][0:4] + "%"
+        gauge_name = data["operations"][0]["events"][0]["gauge"]["name"]
         gauge = self.query.get_gauges(names = {"filter": gauge_name, "op": "like"})
 
         assert len(gauge) == 1
@@ -581,12 +609,12 @@ class TestQuery(unittest.TestCase):
 
         assert len(gauge) == 1
 
-        gauge_system = data["operations"][0]["events"][0]["gauge"]["system"][0:4] + "%"
+        gauge_system = data["operations"][0]["events"][0]["gauge"]["system"]
         gauge = self.query.get_gauges(systems = {"filter": gauge_system, "op": "like"})
 
         assert len(gauge) == 1
 
-        dim_sig_name = data["operations"][0]["dim_signature"]["name"][0:7] + "%"
+        dim_sig_name = data["operations"][0]["dim_signature"]["name"]
         gauge = self.query.get_gauges(dim_signatures = {"filter": dim_sig_name, "op": "like"})
 
         assert len(gauge) == 1
