@@ -206,7 +206,7 @@ class TestEngine(unittest.TestCase):
                     "type": "text"
                 },
                 {
-                    "value": "OCP",
+                    "value": "XBAND",
                     "name": "playback_mean",
                     "type": "text"
                 },
