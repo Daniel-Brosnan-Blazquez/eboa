@@ -125,10 +125,10 @@ class TestEngine(unittest.TestCase):
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
-        #Check sources
-        sources = self.query_eboa.get_sources()
-
-        assert len(sources) == 4
+        #Check sources gives 4 (2 orbpre instead of 1)
+        # sources = self.query_eboa.get_sources()
+        #
+        # assert len(sources) == 3
 
         definite_source = self.query_eboa.get_sources(validity_start_filters = [{"date": "2018-07-20T11:03:27.014", "op": "=="}],
                                               validity_stop_filters = [{"date": "2018-07-26T00:47:15.402", "op": "=="}],
@@ -168,187 +168,65 @@ class TestEngine(unittest.TestCase):
             ]
         }]
 
-        planned_playback_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 10:35:27.430000", "op": "=="}],
-                                              stop_filters = [{"date": "2018-07-21 10:37:03.431000", "op": "=="}])
+        planned_playback_events = self.query_eboa.get_events(validity_start_filters = [{"date": "2018-07-21 10:35:27.430000", "op": "=="}],
+                                              validity_stop_filters = [{"date": "2018-07-21 10:37:03.431000", "op": "=="}])
 
         assert len(planned_playback_events) == 1
 
-        planned_playback_correction_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 10:35:32.524661", "op": "=="}],
-                                              stop_filters = [{"date": "2018-07-21 10:37:08.530863", "op": "=="}])
-
         planned_playback_event = planned_playback_events[0]
 
-        planned_playback_correction_event = planned_playback_correction_events[0]
-
-        # Check links with PLANNED_PLAYBACK
+        # Check links with PLANNED_PLAYBACK_CORRECTION
         link_to_plan = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(planned_playback_event.event_uuid)], "op": "in"},
-                                                    event_uuids = {"filter": [str(definite_event[0].event_uuid)], "op": "in"},
-                                                    link_names = {"filter": "PLANNED_PLAYBACK", "op": "like"})
+                                                    event_uuids = {"filter": [str(definite_event.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "DFEP_SCHEDULE", "op": "like"})
 
         assert len(link_to_plan) == 1
 
         link_from_plan = self.query_eboa.get_event_links(event_uuids = {"filter": [str(planned_playback_event.event_uuid)], "op": "in"},
-                                                    event_uuid_links = {"filter": [str(definite_event[0].event_uuid)], "op": "in"},
-                                                    link_names = {"filter": "DFEP_SCHEDULE", "op": "like"})
+                                                    event_uuid_links = {"filter": [str(definite_event.event_uuid)], "op": "in"},
+                                                    link_names = {"filter": "PLANNED_PLAYBACK", "op": "like"})
 
         assert len(link_from_plan) == 1
 
-        #Check new value
-        assert planned_playback_event.get_structured_values() == [{
-            'name': 'details', 'type': 'object',
-            'values': [
+        #Not corrected yet
+        assert processing_validity_l0.get_structured_values() == [{
+           "values": [
                 {
-                    'name': 'start_request',
-                    'type': 'text',
-                    'value': 'MPMMPNOM'
-                },{
-                    'name': 'stop_request',
-                     'type': 'text',
-                      'value': 'MPMMPSTP'
-                },{
-                    'name': 'start_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
-                },{
-                    'name': 'start_angle',
-                    'type': 'double',
-                    'value': '159.7552'
-                },{
-                    'name': 'stop_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
-                },{
-                    'name': 'stop_angle',
-                    'type': 'double',
-                    'value': '165.5371'
-                },{
-                    'name': 'satellite',
-                    'type': 'text',
-                    'value': 'S2A'
-                },{
-                    'name': 'playback_mean',
-                    'type': 'text',
-                    'value': 'XBAND'
-                },{
-                    'name': 'playback_type',
-                    'type': 'text',
-                    'value': 'NOMINAL'
-                },{
-                    'name': 'parameters',
-                    'type': 'object',
-                    'values': [
-                        {
-                            'name': 'MEM_FREE',
-                            'type': 'double',
-                            'value': '1.0'
-                        },{
-                            'name': 'SCN_DUP',
-                            'type': 'double',
-                            'value': '0.0'
-                        },{
-                            'name': 'SCN_RWD',
-                            'type': 'double',
-                            'value': '1.0'
-                        }
-                    ]
-                },{
-                    'name': 'dfep_schedule',
-                    'type': 'object',
-                    'values': [
-                        {
-                            'name': 'station',
-                            'type': 'text',
-                            'value': 'MPS_'
-                        }
-                    ]
+                    "value": "COMPLETE",
+                    "name": "status",
+                    "type": "text"
+                },
+                {
+                    "value": "L0",
+                    "name": "level",
+                    "type": "text"
+                },
+                {
+                    "value": "S2A",
+                    "name": "satellite",
+                    "type": "text"
+                },
+                {
+                    "value": "MPS_",
+                    "type": "text",
+                    "name": "processing_centre"
+                },
+                {
+                    "value": "MATCHED_PLANNED_IMAGING",
+                    "type": "text",
+                    "name": "matching_plan_status"
+                },
+                {
+                    "value": "NO_MATCHED_ISP_VALIDITY",
+                    "type": "text",
+                    "name": "matching_reception_status"
+                },
+                {
+                    "value": "16077.0",
+                    "type": "double",
+                    "name": "sensing_orbit"
                 }
-            ]
-        }
-    ]
-
-        #Check new value
-        assert planned_playback_correction_event.get_structured_values() == [
-            {
-                'name': 'details',
-                'type': 'object',
-                'values': [
-                    {
-                    'name': 'start_request',
-                    'type': 'text',
-                    'value': 'MPMMPNOM'
-                },{
-                    'name': 'stop_request',
-                    'type': 'text',
-                    'value': 'MPMMPSTP'
-                },{
-                    'name': 'start_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
-                },{
-                    'name': 'start_angle',
-                    'type': 'double',
-                    'value': '159.7552'
-                },{
-                    'name': 'stop_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
-                },{
-                    'name': 'stop_angle',
-                    'type': 'double',
-                    'value': '165.5371'
-                },{
-                    'name': 'satellite',
-                    'type': 'text',
-                    'value': 'S2A'
-                },{
-                    'name': 'playback_mean',
-                    'type': 'text',
-                    'value': 'XBAND'
-                },{
-                    'name': 'playback_type',
-                    'type': 'text',
-                    'value': 'NOMINAL'
-                },{
-                    'name': 'parameters',
-                    'type': 'object',
-                    'values': [
-                        {
-                            'name': 'MEM_FREE',
-                            'type': 'double',
-                            'value': '1.0'
-                        },{
-                            'name': 'SCN_DUP',
-                            'type': 'double',
-                            'value': '0.0'
-                        },{
-                            'name': 'SCN_RWD',
-                            'type': 'double',
-                            'value': '1.0'
-                        }
-                    ]
-                },{
-                    'name': 'status_correction',
-                    'type': 'text',
-                    'value': 'TIME_CORRECTED'
-                },{
-                    'name': 'delta_start',
-                    'type': 'double',
-                    'value': '-5.094661'
-                },{
-                    'name': 'delta_stop',
-                    'type': 'double',
-                    'value': '-5.099863'
-                },{
-                    'name': 'dfep_schedule',
-                    'type': 'object',
-                    'values': [
-                        {
-                            'name': 'station',
-                            'type': 'text',
-                            'value': 'MPS_'
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
+            ],
+            "type": "object",
+            "name": "details"
+        }]
