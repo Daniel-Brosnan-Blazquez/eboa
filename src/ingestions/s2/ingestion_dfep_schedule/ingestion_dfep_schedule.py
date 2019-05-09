@@ -50,7 +50,8 @@ def _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_eve
     """
 
     satellite = source["name"][0:3]
-    station = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/@name")[0]
+    station = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station")[0].get("name")
+
     # schedulings
     schedulings = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/acq[action = 'ADD']")
     for schedule in schedulings:
@@ -148,7 +149,7 @@ def process_file(file_path, engine, query):
     generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
     validity_start = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/acq[action = 'DELETE_RANGE']/start")[0].text
     validity_stop = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/acq[action = 'DELETE_RANGE']/stop")[0].text
-    station = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station/@name")[0]
+    station = xpath_xml("/Earth_Explorer_File/Data_Block/sched/station")[0].get("name")
 
     source = {
         "name": file_name,

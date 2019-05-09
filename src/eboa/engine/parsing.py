@@ -14,6 +14,7 @@ from eboa.engine.functions import is_datetime
 def validate_data_dictionary(data):
     """
     """
+    
     # Check that the operations key exists
     if len(data.keys()) != 1 or not "operations" in data.keys():
         raise ErrorParsingDictionary("Operations key does not exist or there are other defined keys in the dictionary")
@@ -40,7 +41,7 @@ def validate_data_dictionary(data):
             raise ErrorParsingDictionary("The mode does not correspond to an allowed value")
         # end if
 
-        if item["mode"] == "insert":
+        if item["mode"] == "insert" or item["mode"] == "insert_and_erase":
             _validate_insert_structure(item)
         # end if
 
