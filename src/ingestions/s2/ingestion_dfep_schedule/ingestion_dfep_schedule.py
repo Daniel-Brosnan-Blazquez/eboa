@@ -83,7 +83,7 @@ def _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_eve
                     "type": "object",
                     "values": [{"name": "station",
                                 "type": "text",
-                                "value": station}]
+                                "value": str(station)}]
                 }
                 engine.insert_event_values(playback.event_uuid, value)
                 planned_playback_correction_uuid = [event_link.event_uuid_link for event_link in playback.eventLinks if event_link.name == "TIME_CORRECTION"][0]
@@ -134,7 +134,7 @@ def _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_eve
 def process_file(file_path, engine, query):
     """Function to process the file and insert its relevant information
     into the DDBB of the eboa
-    
+
     :param file_path: path to the file to be processed
     :type file_path: str
     """
@@ -201,7 +201,7 @@ def command_process_file(file_path, output_path = None):
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
     # end if
-    
+
     return returned_value
 
 if __name__ == "__main__":
@@ -224,5 +224,5 @@ if __name__ == "__main__":
     # the file following a schema. Schema not available for ORBPREs
 
     returned_value = command_process_file(file_path, output_path)
-    
+
     logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
