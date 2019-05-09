@@ -58,7 +58,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
     :rtype: str
 
     """
-    
+
     general_status = "COMPLETE"
 
     # Obtain the satellite
@@ -167,14 +167,20 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
         links = []
         if len(planned_playbacks) > 0:
             if downlink_mode in ["NOMINAL", "NRT"]:
-                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode, "PLANNED_PLAYBACK_TYPE_REGULAR"]
+                planned_playback_type = [downlink_mode, "REGULAR"]
             elif downlink_mode in ["SAD", "HKTM"]:
-                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode, "PLANNED_PLAYBACK_TYPE_HKTM_SAD"]
+                planned_playback_type = [downlink_mode, "HKTM_SAD"]
             else:
-                planned_playback_gauge_names = ["PLANNED_PLAYBACK_TYPE_" + downlink_mode]
+                planned_playback_type = [downlink_mode]
             # end if
 
-            associated_planned_playbacks = [planned_playback for planned_playback in planned_playbacks if planned_playback.gauge.name in planned_playback_gauge_names]
+            associated_planned_playbacks = []
+            for planned_playback in planned_playbacks:
+                matched_values = [value for value in planned_playback.eventTexts if value.name == "playback_type" and value.value in planned_playback_type]
+                if len(matched_values) > 0:
+                    associated_planned_playbacks.append(planned_playback)
+                # end if
+            # end for
 
             if len(associated_planned_playbacks) > 0:
                 matching_status = "MATCHED_PLANNED_PLAYBACK"
@@ -189,7 +195,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                 completeness_status = "RECEIVED"
                 if status != "COMPLETE":
                     completeness_status = status
-                # end if                    
+                # end if
 
                 list_of_events.append({
                     "explicit_reference": session_id,
@@ -293,7 +299,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
 
         # Insert playback_event
         list_of_events.append(playback_event)
-        
+
     # end for
 
     return status
@@ -354,7 +360,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # Obtain the sensing segment received (EFEP reports only give information about the start date of the first and last scenes)
         sensing_starts = vcid.xpath("ISP_Status/Status/SensStartTime")
         sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
-        
+
         # Sort list
         sensing_starts_in_iso_8601.sort()
         sensing_start = sensing_starts_in_iso_8601[0]
@@ -362,7 +368,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
         sensing_stops = vcid.xpath("ISP_Status/Status/SensStopTime")
         sensing_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_stop.text) for sensing_stop in sensing_stops]
-        
+
         # Sort list
         sensing_stops_in_iso_8601.sort()
         sensing_stop = sensing_stops_in_iso_8601[-1]
@@ -378,7 +384,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         # The packets registered in the APID 2047 have to be discarded
         received_number_packets_apid_2047 = int(vcid.xpath("ISP_Status/Status[@APID = 2047]/NumPackets")[0].text)
         received_number_packets = int(vcid.xpath("ISP_Status/Summary/NumPackets")[0].text) - int(received_number_packets_apid_2047)
-        
+
         # Obtain complete missing APIDs
         complete_missing_apids = vcid.xpath("ISP_Status/Status[number(NumPackets) = 0 and number(@APID) >= number($min_apid) and number(@APID) <= number($max_apid)]", min_apid = apid_conf["min_apid"], max_apid = apid_conf["max_apid"])
         for apid in complete_missing_apids:
@@ -665,8 +671,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         merged_timeline_isp_gaps = date_functions.merge_timeline(date_functions.sort_timeline_by_start(timeline_isp_gaps))
 
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
-        corrected_planned_imagings = query.get_events_join(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
-                                                           gauge_systems = {"filter": [satellite], "op": "like"},
+        corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                           gauge_systems = {"filter": satellite, "op": "like"},
                                                            value_filters = [{"name": {"op": "like", "str": "record_type"}, "type": "text", "value": {"op": "==", "value": downlink_mode}}],
                                                            start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
                                                            stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
@@ -698,9 +704,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         raw_isp_validity_event["values"][0]["values"].append({"name": "packet_status",
                                                  "type": "text",
                                                  "value": packet_status})
-        
+
         # If there are no found planned imaging events, the MSI will not be linked to the plan and so it will be unexpected
-        
+
         # If there are found planned imaging events, the MSI will be linked to the plan and its segment will be removed from the completeness
         if len(corrected_planned_imagings) > 0:
             for corrected_planned_imaging in corrected_planned_imagings:
@@ -748,12 +754,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
                 sensing_orbit_values = query.get_event_values_interface(value_type="double",
                                                                         value_filters=[{"name": {"op": "like", "str": "start_orbit"}, "type": "double"}],
-                                                                        event_uuids = {"op": "in", "list": [planned_imaging_uuid]})
+                                                                        event_uuids = {"op": "in", "filter": [planned_imaging_uuid]})
                 sensing_orbit = str(sensing_orbit_values[0].value)
 
                 # ISP validity event
                 isp_validity_event_link_ref = "ISP_VALIDITY_" + vcid_number + "_" + str(isp_validity_valid_segment["start"])
-                
+
                 isp_gaps_intersected = date_functions.intersect_timelines([isp_validity_valid_segment], merged_timeline_isp_gaps)
 
                 isp_validity_status = "COMPLETE"
@@ -839,7 +845,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 completeness_status = "RECEIVED"
                 if isp_validity_status != "COMPLETE":
                     completeness_status = isp_validity_status
-                # end if                    
+                # end if
 
                 isp_validity_completeness_event = {
                     "explicit_reference": session_id,
@@ -997,7 +1003,7 @@ def process_file(file_path, engine, query):
     """
     Function to process the file and insert its relevant information
     into the DDBB of the eboa
-    
+
     :param file_path: path to the file to be processed
     :type file_path: str
     :param engine: object to access the engine of the EBOA
@@ -1058,7 +1064,7 @@ def process_file(file_path, engine, query):
     # Extract the information of the pass
     _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, isp_status, acquisition_status)
 
-    
+
 
     # Build the xml
     data = {}
@@ -1105,7 +1111,7 @@ def command_process_file(file_path, output_path = None):
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
     # end if
-    
+
     return returned_value
 
 if __name__ == "__main__":
@@ -1128,5 +1134,5 @@ if __name__ == "__main__":
     # the file following a schema. Schema not available for ORBPREs
 
     returned_value = command_process_file(file_path, output_path)
-    
+
     logger.info("The ingestion has been performed and the exit status is {}".format(returned_value))
