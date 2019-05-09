@@ -87,7 +87,7 @@ def process_file(file_path, engine, query):
         # end if
 
         # Get the associated planned playback in the NPPF
-        playbacks = query.get_linked_events_join(gauge_names = {"filter": "PLANNED_PLAYBACK_CORRECTION", "op": "like"},
+        playbacks = query.get_linked_events(gauge_names = {"filter": "PLANNED_PLAYBACK_CORRECTION", "op": "like"},
                                                  gauge_systems = {"filter": sentinel, "op": "like"},
                                                  start_filters = [{"date": start, "op": ">"}],
                                                  stop_filters = [{"date": stop, "op": "<"}],
@@ -99,13 +99,12 @@ def process_file(file_path, engine, query):
         if len(playbacks["linked_events"]) > 0:
             for playback in playbacks["linked_events"]:
                 # Get the planned playback mean
-                planned_playback_mean_uuids = [link.event_uuid_link for link in playback.eventLinks if link.name == "PLANNED_PLAYBACK_TYPE"]
+                planned_playback_mean_uuids = [link.event_uuid_link for link in playback.eventLinks if link.name == "PLANNED_PLAYBACK_MEAN"]
                 if len(planned_playback_mean_uuids) > 0:
-                    planned_playback_mean_uuid = planned_playback_mean_uuids[0]
-                
-                    planned_playback_mean = query.get_events(event_uuids = {"op": "in", "filter": [planned_playback_mean_uuid]})[0]
 
-                    if planned_playback_mean.gauge.name == "PLANNED_PLAYBACK_MEAN_OCP":
+                    mean = [value.value for value in playback.eventTexts if value.name == "playback_mean"][0]
+
+                    if mean == "OCP":
                         status = "MATCHED_PLAYBACK"
                         links.append({
                             "link": str(playback.event_uuid),
@@ -121,6 +120,9 @@ def process_file(file_path, engine, query):
                                         "value": "EDRS"}]
                         }
                         engine.insert_event_values(playback.event_uuid, value)
+                        planned_playback_correction_uuid = [event_link.event_uuid_link for event_link in playback.eventLinks if event_link.name == "TIME_CORRECTION"][0]
+                        engine.insert_event_values(planned_playback_correction_uuid, value)
+
                         value = {
                             "name": "dfep_schedule",
                             "type": "object",
@@ -129,6 +131,9 @@ def process_file(file_path, engine, query):
                                         "value": "EDRS"}]
                         }
                         engine.insert_event_values(playback.event_uuid, value)
+                        planned_playback_correction_uuid = [event_link.event_uuid_link for event_link in playback.eventLinks if event_link.name == "TIME_CORRECTION"][0]
+                        engine.insert_event_values(planned_playback_correction_uuid, value)
+
                     # end if
                 # end if
             # end for

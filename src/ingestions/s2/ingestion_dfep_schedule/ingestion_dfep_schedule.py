@@ -85,6 +85,8 @@ def _generate_dfep_schedule_events(xpath_xml, source, engine, query, list_of_eve
                                 "value": station}]
                 }
                 engine.insert_event_values(playback.event_uuid, value)
+                planned_playback_correction_uuid = [event_link.event_uuid_link for event_link in playback.eventLinks if event_link.name == "TIME_CORRECTION"][0]
+                engine.insert_event_values(planned_playback_correction_uuid, value)
             # end for
         # end if
 
