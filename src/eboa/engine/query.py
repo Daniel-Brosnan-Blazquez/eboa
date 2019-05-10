@@ -16,6 +16,9 @@ import uuid
 from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
+# Import SQLalchemy entities
+from sqlalchemy import extract
+
 # Import datamodel
 from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
@@ -385,7 +388,7 @@ class Query():
         # end if
     # end def
 
-    def get_events(self, event_uuids = None, start_filters = None, stop_filters = None, ingestion_time_filters = None, value_filters = None, gauge_uuids = None, source_uuids = None, explicit_ref_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, limit = None):
+    def get_events(self, event_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, ingestion_time_filters = None, value_filters = None, gauge_uuids = None, source_uuids = None, explicit_ref_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, limit = None):
         """
         """
         params = []
@@ -477,6 +480,15 @@ class Query():
             for stop_filter in stop_filters:
                 op = arithmetic_operators[stop_filter["op"]]
                 params.append(op(Event.stop, stop_filter["date"]))
+            # end for
+        # end if
+
+        # duration filters
+        if duration_filters != None:
+            functions.is_valid_float_filters(duration_filters, arithmetic_operators)
+            for duration_filter in duration_filters:
+                op = arithmetic_operators[duration_filter["op"]]
+                params.append(op((extract("epoch", Event.stop) - extract("epoch", Event.start)), duration_filter["float"]))
             # end for
         # end if
 
