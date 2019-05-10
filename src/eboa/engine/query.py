@@ -141,7 +141,7 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -213,6 +213,15 @@ class Query():
             for validity_stop_filter in validity_stop_filters:
                 op = arithmetic_operators[validity_stop_filter["op"]]
                 params.append(op(Source.validity_stop, validity_stop_filter["date"]))
+            # end for
+        # end if
+
+        # validity duration filters
+        if validity_duration_filters != None:
+            functions.is_valid_float_filters(validity_duration_filters, arithmetic_operators)
+            for validity_duration_filter in validity_duration_filters:
+                op = arithmetic_operators[validity_duration_filter["op"]]
+                params.append(op((extract("epoch", Source.validity_stop) - extract("epoch", Source.validity_start)), validity_duration_filter["float"]))
             # end for
         # end if
 
