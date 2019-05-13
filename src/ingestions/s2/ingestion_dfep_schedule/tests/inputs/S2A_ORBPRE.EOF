@@ -30,19 +30,6 @@
   <Data_Block type="xml">
     <List_of_OSVs count="143">
       <OSV>
-        <TAI>TAI=2018-07-21T08:10:46.849213</TAI>
-        <UTC>UTC=2018-07-21T08:10:09.849213</UTC>
-        <UT1>UT1=2018-07-21T08:10:09.918189</UT1>
-        <Absolute_Orbit>+16077</Absolute_Orbit>
-        <X unit="m">-5874343.261</X>
-        <Y unit="m">-4110944.328</Y>
-        <Z unit="m">-0000000.000</Z>
-        <VX unit="m/s">-0929.179934</VX>
-        <VY unit="m/s">+1342.704827</VY>
-        <VZ unit="m/s">+7374.779891</VZ>
-        <Quality>0000000000000</Quality>
-      </OSV>
-      <OSV>
         <TAI>TAI=2018-07-21T09:51:28.776833</TAI>
         <UTC>UTC=2018-07-21T09:50:51.776833</UTC>
         <UT1>UT1=2018-07-21T09:50:51.845800</UT1>

@@ -117,6 +117,7 @@ class TestEngine(unittest.TestCase):
         returned_value = ingestion_orbpre.command_process_file(file_path)
 
         assert returned_value[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert returned_value[1]["status"] == eboa_engine.exit_codes["OK"]["status"]
 
         filename = "S2A_OPER_MPL_FSMPS__PDMC_20180719T090010_RIPPED.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
