@@ -177,6 +177,8 @@ class TestEngine(unittest.TestCase):
         planned_playback_correction_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 10:35:32.524661", "op": "=="}],
                                               stop_filters = [{"date": "2018-07-21 10:37:08.530863", "op": "=="}])
 
+        assert len(planned_playback_correction_events) == 1
+
         planned_playback_event = planned_playback_events[0]
 
         planned_playback_correction_event = planned_playback_correction_events[0]

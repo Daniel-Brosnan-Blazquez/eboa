@@ -163,7 +163,7 @@ class TestEngine(unittest.TestCase):
                     {
                         "name": "session_id",
                         "type": "text",
-                        "value": "L20180608110336202000109"
+                        "value": "L20180608110336202000111"
                     },{
                         "name": "edrs_unit",
                         "type": "text",
@@ -171,7 +171,7 @@ class TestEngine(unittest.TestCase):
                     },{
                         "name": "orbit",
                         "type": "double",
-                        "value": "16071.0"
+                        "value": "16073.0"
                     },{
                         "name": "satellite",
                         "type": "text",
@@ -192,16 +192,23 @@ class TestEngine(unittest.TestCase):
 
         #Check a definite explicit_ref
         definite_explicit_ref = self.query_eboa.get_explicit_refs(groups = {"filter": "EDRS_SESSION_IDs", "op": "like"},
-                                                          explicit_refs = {"filter": "L20180608110336202000109", "op": "like"})
+                                                          explicit_refs = {"filter": "L20180608110336202000111", "op": "like"})
 
         assert len(definite_explicit_ref) == 1
 
-        planned_playback_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 10:35:27.430000", "op": "=="}],
-                                              stop_filters = [{"date": "2018-07-21 10:37:03.431000", "op": "=="}])
+        planned_playback_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 02:48:22", "op": "=="}],
+                                              stop_filters = [{"date": "2018-07-21 03:04:04", "op": "=="}])
 
         assert len(planned_playback_events) == 1
 
+        planned_playback_correction_events = self.query_eboa.get_events(start_filters = [{"date": "2018-07-21 02:48:27.472821", "op": "=="}],
+                                              stop_filters = [{"date": "2018-07-21 03:04:08.957963", "op": "=="}])
+
+        assert len(planned_playback_correction_events) == 1
+
         planned_playback_event = planned_playback_events[0]
+
+        planned_playback_correction_event = planned_playback_correction_events[0]
 
         # Check links with PLANNED_PLAYBACK_CORRECTION
         link_to_plan = self.query_eboa.get_event_links(event_uuid_links = {"filter": [str(planned_playback_event.event_uuid)], "op": "in"},
@@ -212,68 +219,171 @@ class TestEngine(unittest.TestCase):
 
         link_from_plan = self.query_eboa.get_event_links(event_uuids = {"filter": [str(planned_playback_event.event_uuid)], "op": "in"},
                                                     event_uuid_links = {"filter": [str(definite_event[0].event_uuid)], "op": "in"},
-                                                    link_names = {"filter": "DFEP_SCHEDULE", "op": "like"})
+                                                    link_names = {"filter": "SLOT_REQUEST_EDRS", "op": "like"})
 
         assert len(link_from_plan) == 1
 
         assert planned_playback_event.get_structured_values() == [{
-            'name': 'details', 'type': 'object',
-            'values': [
+            "name": "details", "type": "object",
+            "values": [
                 {
-                    'name': 'start_request',
-                    'type': 'text',
-                    'value': 'MPMMPNOM'
+                    "name": "start_request",
+                    "type": "text",
+                    "value": "MPMMPNOM"
                 },{
-                    'name': 'stop_request',
-                     'type': 'text',
-                      'value': 'MPMMPSTP'
+                    "name": "stop_request",
+                     "type": "text",
+                      "value": "MPMMPSTP"
                 },{
-                    'name': 'start_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
+                    "name": "start_orbit",
+                    "type": "double",
+                    "value": "16073.0"
                 },{
-                    'name': 'start_angle',
-                    'type': 'double',
-                    'value': '159.7552'
+                    "name": "start_angle",
+                    "type": "double",
+                    "value": "289.7725"
                 },{
-                    'name': 'stop_orbit',
-                    'type': 'double',
-                    'value': '16078.0'
+                    "name": "stop_orbit",
+                    "type": "double",
+                    "value": "16073.0"
                 },{
-                    'name': 'stop_angle',
-                    'type': 'double',
-                    'value': '165.5371'
+                    "name": "stop_angle",
+                    "type": "double",
+                    "value": "345.8436"
                 },{
-                    'name': 'satellite',
-                    'type': 'text',
-                    'value': 'S2A'
+                    "name": "satellite",
+                    "type": "text",
+                    "value": "S2A"
                 },{
-                    'name': 'playback_mean',
-                    'type': 'text',
-                    'value': 'XBAND'
+                    "name": "playback_mean",
+                    "type": "text",
+                    "value": "OCP"
                 },{
-                    'name': 'playback_type',
-                    'type': 'text',
-                    'value': 'NOMINAL'
-                    },{
-                        'name': 'parameters',
-                        'type': 'object',
-                        'values': [
-                            {
-                                'name': 'MEM_FREE',
-                                'type': 'double',
-                                'value': '1.0'
-                            },{
-                                'name': 'SCN_DUP',
-                                'type': 'double',
-                                'value': '0.0'
-                            },{
-                                'name': 'SCN_RWD',
-                                'type': 'double',
-                                'value': '1.0'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                    "name": "playback_type",
+                    "type": "text",
+                    "value": "NOMINAL"
+                },
+                {
+                    "name": "parameters",
+                    "type": "object",
+                    "values": [
+                        {
+                            "name": "MEM_FREE",
+                            "type": "double",
+                            "value": "1.0"
+                        },{
+                            "name": "SCN_DUP",
+                            "type": "double",
+                            "value": "0.0"
+                        },{
+                            "name": "SCN_RWD",
+                        "type": "double",
+                            "value": "1.0"
+                        }
+                    ]
+                },
+                {
+                    "name": "station_schedule",
+                    "type": "object",
+                    "values": [{"name": "station",
+                                "type": "text",
+                                "value": "EDRS"}]},
+                {
+                    "name": "dfep_schedule",
+                    "type": "object",
+                    "values": [{"name": "station",
+                                "type": "text",
+                                "value": "EDRS"}]}
+            ]
+        }
+    ]
+
+        assert planned_playback_correction_event.get_structured_values() == [{
+            "name": "details", "type": "object",
+            "values": [
+                {
+                    "name": "start_request",
+                    "type": "text",
+                    "value": "MPMMPNOM"
+                },{
+                    "name": "stop_request",
+                     "type": "text",
+                      "value": "MPMMPSTP"
+                },{
+                    "name": "start_orbit",
+                    "type": "double",
+                    "value": "16073.0"
+                },{
+                    "name": "start_angle",
+                    "type": "double",
+                    "value": "289.7725"
+                },{
+                    "name": "stop_orbit",
+                    "type": "double",
+                    "value": "16073.0"
+                },{
+                    "name": "stop_angle",
+                    "type": "double",
+                    "value": "345.8436"
+                },{
+                    "name": "satellite",
+                    "type": "text",
+                    "value": "S2A"
+                },{
+                    "name": "playback_mean",
+                    "type": "text",
+                    "value": "OCP"
+                },{
+                    "name": "playback_type",
+                    "type": "text",
+                    "value": "NOMINAL"
+                },
+                {
+                    "name": "parameters",
+                    "type": "object",
+                    "values": [
+                        {
+                            "name": "MEM_FREE",
+                            "type": "double",
+                            "value": "1.0"
+                        },{
+                            "name": "SCN_DUP",
+                            "type": "double",
+                            "value": "0.0"
+                        },{
+                            "name": "SCN_RWD",
+                        "type": "double",
+                            "value": "1.0"
+                        }
+                    ]
+                },
+                {
+                    "name": "status_correction",
+                    "type": "text",
+                    "value": "TIME_CORRECTED"
+                },
+                {
+                    "name": "delta_start",
+                    "type": "double",
+                    "value": "-5.472821"
+                },
+                {
+                    "name": "delta_stop",
+                    "type": "double",
+                    "value": "-4.957963"
+                },
+                {
+                    "name": "station_schedule",
+                    "type": "object",
+                    "values": [{"name": "station",
+                                "type": "text",
+                                "value": "EDRS"}]},
+                {
+                    "name": "dfep_schedule",
+                    "type": "object",
+                    "values": [{"name": "station",
+                                "type": "text",
+                                "value": "EDRS"}]}
+            ]
+        }
+    ]

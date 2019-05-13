@@ -30,55 +30,29 @@
   <Data_Block type="xml">
     <List_of_OSVs count="143">
       <OSV>
-        <TAI>TAI=2018-07-20T22:06:35.117971</TAI>
-        <UTC>UTC=2018-07-20T22:05:58.117971</UTC>
-        <UT1>UT1=2018-07-20T22:05:58.186970</UT1>
-        <Absolute_Orbit>+16071</Absolute_Orbit>
-        <X unit="m">+7130458.857</X>
-        <Y unit="m">+0753518.973</Y>
+        <TAI>TAI=2018-07-21T01:27:58.897531</TAI>
+        <UTC>UTC=2018-07-21T01:27:21.897531</UTC>
+        <UT1>UT1=2018-07-21T01:27:21.966522</UT1>
+        <Absolute_Orbit>+16073</Absolute_Orbit>
+        <X unit="m">+5130242.644</X>
+        <Y unit="m">-5009317.965</Y>
         <Z unit="m">-0000000.000</Z>
-        <VX unit="m/s">+0163.126542</VX>
-        <VY unit="m/s">-1624.898672</VY>
-        <VZ unit="m/s">+7374.494040</VZ>
+        <VX unit="m/s">-1146.980358</VX>
+        <VY unit="m/s">-1162.380299</VY>
+        <VZ unit="m/s">+7374.374052</VZ>
         <Quality>0000000000000</Quality>
       </OSV>
       <OSV>
-        <TAI>TAI=2018-07-21T08:10:46.849213</TAI>
-        <UTC>UTC=2018-07-21T08:10:09.849213</UTC>
-        <UT1>UT1=2018-07-21T08:10:09.918189</UT1>
-        <Absolute_Orbit>+16077</Absolute_Orbit>
-        <X unit="m">-5874343.261</X>
-        <Y unit="m">-4110944.328</Y>
-        <Z unit="m">-0000000.000</Z>
-        <VX unit="m/s">-0929.179934</VX>
-        <VY unit="m/s">+1342.704827</VY>
-        <VZ unit="m/s">+7374.779891</VZ>
-        <Quality>0000000000000</Quality>
-      </OSV>
-      <OSV>
-        <TAI>TAI=2018-07-21T09:51:28.776833</TAI>
-        <UTC>UTC=2018-07-21T09:50:51.776833</UTC>
-        <UT1>UT1=2018-07-21T09:50:51.845800</UT1>
-        <Absolute_Orbit>+16078</Absolute_Orbit>
-        <X unit="m">-7065094.736</X>
-        <Y unit="m">-1221573.823</Y>
-        <Z unit="m">-0000000.000</Z>
-        <VX unit="m/s">-0269.810341</VX>
-        <VY unit="m/s">+1610.581671</VY>
-        <VZ unit="m/s">+7374.757343</VZ>
-        <Quality>0000000000000</Quality>
-      </OSV>
-      <OSV>
-        <TAI>TAI=2018-07-21T11:32:10.673527</TAI>
-        <UTC>UTC=2018-07-21T11:31:33.673527</UTC>
-        <UT1>UT1=2018-07-21T11:31:33.742486</UT1>
-        <Absolute_Orbit>+16079</Absolute_Orbit>
-        <X unit="m">-6913655.114</X>
-        <Y unit="m">+1899867.213</Y>
+        <TAI>TAI=2018-07-21T03:08:40.816822</TAI>
+        <UTC>UTC=2018-07-21T03:08:03.816822</UTC>
+        <UT1>UT1=2018-07-21T03:08:03.885817</UT1>
+        <Absolute_Orbit>+16074</Absolute_Orbit>
+        <X unit="m">+2512046.414</X>
+        <Y unit="m">-6715813.136</Y>
         <Z unit="m">+0000000.000</Z>
-        <VX unit="m/s">+0440.918875</VX>
-        <VY unit="m/s">+1572.434747</VY>
-        <VZ unit="m/s">+7374.746143</VZ>
+        <VX unit="m/s">-1532.293264</VX>
+        <VY unit="m/s">-0564.042270</VY>
+        <VZ unit="m/s">+7374.443739</VZ>
         <Quality>0000000000000</Quality>
       </OSV>
     </List_of_OSVs>
