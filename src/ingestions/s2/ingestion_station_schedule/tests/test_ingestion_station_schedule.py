@@ -45,7 +45,7 @@ class TestEngine(unittest.TestCase):
         # Clear all tables before executing the test
         self.query_eboa.clear_db()
 
-    def test_mpl_fs_only(self):
+    def test_mpl_sp_only(self):
 
         filename = "S2A_OPER_MPL_SPMPS__PDMC_20180719T090005_RIPPED.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
@@ -120,7 +120,7 @@ class TestEngine(unittest.TestCase):
             ]
         }]
 
-    def test_mpl_fs_with_plan(self):
+    def test_mpl_sp_with_plan(self):
 
         filename = "S2A_NPPF.EOF"
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/inputs/" + filename
