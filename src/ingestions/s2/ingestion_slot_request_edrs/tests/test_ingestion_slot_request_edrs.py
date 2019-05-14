@@ -83,7 +83,7 @@ class TestEngine(unittest.TestCase):
                     {
                         "name": "session_id",
                         "type": "text",
-                        "value": "L20180608110336202000109"
+                        "value": "L20180608110336202000111"
                     },{
                         "name": "edrs_unit",
                         "type": "text",
@@ -91,7 +91,7 @@ class TestEngine(unittest.TestCase):
                     },{
                         "name": "orbit",
                         "type": "double",
-                        "value": "16071.0"
+                        "value": "16073.0"
                     },{
                         "name": "satellite",
                         "type": "text",
@@ -112,7 +112,7 @@ class TestEngine(unittest.TestCase):
 
         #Check a definite explicit_ref
         definite_explicit_ref = self.query_eboa.get_explicit_refs(groups = {"filter": "EDRS_SESSION_IDs", "op": "like"},
-                                                          explicit_refs = {"filter": "L20180608110336202000109", "op": "like"})
+                                                          explicit_refs = {"filter": "L20180608110336202000111", "op": "like"})
 
         assert len(definite_explicit_ref) == 1
 
