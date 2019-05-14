@@ -436,7 +436,7 @@ def validate_values(data):
             raise ErrorParsingDictionary("The tag name inside values structure has to be of type string")
         # end if
         if not type(value["type"]) == str or not value["type"] in ["text", "timestamp", "boolean", "double", "geometry", "object"]:
-            raise ErrorParsingDictionary("The tag type inside values structure has to be of type string and allowed values are 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object'")
+            raise ErrorParsingDictionary("The tag type inside values structure has to be of type string and allowed values are 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object'. Provided type is '" + value["type"] + "'. The content of complete value is " + str(value) + ".")
         # end if
 
         if "values" in value and "value" in value:
