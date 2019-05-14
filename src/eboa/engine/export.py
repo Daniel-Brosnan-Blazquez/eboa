@@ -46,7 +46,7 @@ def build_values_structure(values, structure, position = 0, parent_level = -1, p
                 if value_type != "object":
                     value_content = str(value.value)
                     if value_type == "geometry":
-                        value_content = to_shape(value.value).to_wkt()
+                        value_content = to_shape(value.value).wkt
                     # end if
 
                     object_entity_structure["values"].append({"name": value.name,
@@ -223,7 +223,7 @@ def build_values_structure(values, structure, position = 0, parent_level = -1, p
     #             value = etree.SubElement(values_xml, "value", name=item["name"],
     #                              type=item["type"])
     #             if item["type"] == "geometry":
-    #                 value.text = to_shape(item["value"]).to_wkt().replace("POLYGON ((", "").replace("))", "").replace(",", "")
+    #                 value.text = to_shape(item["value"]).wkt.replace("POLYGON ((", "").replace("))", "").replace(",", "")
     #             else:
     #                 value.text = str(item["value"])
     #             # end if

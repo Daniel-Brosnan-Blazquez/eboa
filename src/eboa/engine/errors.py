@@ -69,6 +69,26 @@ class EboaResourcesPathNotAvailable(Error):
     def __init__(self, message):
         self.message = message
 
+class EboaLogPathNotAvailable(Error):
+    """Exception raised when the environment variable EBOA_LOG_PATH has not been defined.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class EboaSchemasPathNotAvailable(Error):
+    """Exception raised when the environment variable EBOA_SCHEMAS_PATH has not been defined.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class WrongGeometry(Error):
     """Exception raised when the geometry value is not accepted by the engine
 

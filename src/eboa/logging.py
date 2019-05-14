@@ -12,10 +12,10 @@ import os
 import json
 
 # Import auxiliary functions
-from eboa.engine.functions import get_resources_path, read_configuration
+from eboa.engine.functions import get_log_path, read_configuration
 
 config = read_configuration()
-eboa_resources_path = get_resources_path()
+log_path = get_log_path()
 
 class Log():
 
@@ -47,10 +47,10 @@ class Log():
         file_handlers = [handler for handler in self.logger.handlers if type(handler) == logging.handlers.RotatingFileHandler]
         if len(file_handlers) < 1:
             # Set the path to the log file
-            file_handler = RotatingFileHandler(eboa_resources_path + "/" + config["LOG"]["RELATIVE_PATH"], maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
+            file_handler = RotatingFileHandler(log_path + "/eboa_engine.log", maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
-            self.logger.info("File log handler created using file stored in path {}".format(eboa_resources_path + "/" + config["LOG"]["RELATIVE_PATH"]))
+            self.logger.info("File log handler created using file stored in path {}".format(log_path))
         # end if
 
         return

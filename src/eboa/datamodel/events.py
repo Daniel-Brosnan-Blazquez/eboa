@@ -302,7 +302,7 @@ class EventGeometry(Base):
         return {
             "type": "geometry",
             "name": self.name,
-            "value": to_shape(self.value).to_wkt(),
+            "value": to_shape(self.value).wkt,
             "position": self.position,
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,

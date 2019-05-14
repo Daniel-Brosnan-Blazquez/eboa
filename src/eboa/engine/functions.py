@@ -34,6 +34,36 @@ def is_datetime(date):
     else:
         return True
 
+def get_log_path():
+    """
+    Method to obtain the path to the log of the eboa
+    """
+    eboa_log_path = None
+    if "EBOA_LOG_PATH" in os.environ:
+        # Get the path to the log of the eboa
+        eboa_log_path = os.environ["EBOA_LOG_PATH"]
+
+    else:
+        raise EboaLogPathNotAvailable("The environment variable EBOA_LOG_PATH is not defined")
+    # end if
+
+    return eboa_log_path
+
+def get_schemas_path():
+    """
+    Method to obtain the path to the schemas of the eboa
+    """
+    eboa_schemas_path = None
+    if "EBOA_SCHEMAS_PATH" in os.environ:
+        # Get the path to the schemas of the eboa
+        eboa_schemas_path = os.environ["EBOA_SCHEMAS_PATH"]
+
+    else:
+        raise EboaSchemasPathNotAvailable("The environment variable EBOA_SCHEMAS_PATH is not defined")
+    # end if
+
+    return eboa_schemas_path
+
 def get_resources_path():
     """
     Method to obtain the path to the resources of the eboa

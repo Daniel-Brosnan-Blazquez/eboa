@@ -53,10 +53,9 @@ from eboa.logging import Log
 from eboa.debugging import debug, race_condition
 
 # Import auxiliary functions
-from eboa.engine.functions import get_resources_path, read_configuration
+from eboa.engine.functions import get_resources_path, get_schemas_path, read_configuration
 
 config = read_configuration()
-eboa_resources_path = get_resources_path()
 
 logging = Log()
 logger = logging.logger
@@ -235,7 +234,7 @@ class Engine():
 
         # Pass schema
         if check_schema:
-            schema_path = eboa_resources_path + "/" + config["RELATIVE_XML_SCHEMA_PATH"]
+            schema_path = get_schemas_path() + "/eboa_schema.xsd"
             parsed_schema = etree.parse(schema_path)
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
@@ -1704,7 +1703,7 @@ class Engine():
             if not type(value) in (EventObject, EventGeometry):
                 value_to_insert["value"] = value.value
             elif type(value) == EventGeometry:
-                value_to_insert["value"] = to_shape(value.value).to_wkt()
+                value_to_insert["value"] = to_shape(value.value).wkt
             # end if
             list_values_to_be_created[type(value)].append(value_to_insert)
         # end for
@@ -2172,7 +2171,7 @@ class Engine():
         returned_geometries = []
         for geometry in geometries:
             returned_geometries.append({
-                "value": to_shape(geometry.value).to_wkt(),
+                "value": to_shape(geometry.value).wkt,
                 "name": geometry.name
             })
         # end for
