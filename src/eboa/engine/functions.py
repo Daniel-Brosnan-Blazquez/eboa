@@ -55,7 +55,7 @@ def read_configuration():
     """
     eboa_resources_path = get_resources_path()
     # Get configuration
-    with open(eboa_resources_path + "/" + "config/engine.json") as json_data_file:
+    with open(eboa_resources_path + "/engine.json") as json_data_file:
         config = json.load(json_data_file)
 
     return config
