@@ -1,0 +1,1378 @@
+<?xml version ="1.0" encoding="UTF-8"?>
+<Earth_Explorer_File>
+   <Earth_Explorer_Header>
+      <Fixed_Header>
+         <File_Name>S2A_OPER_REP_PASS_E_EDRS_20180721T073807_V20180721T072823_20180721T073755</File_Name>
+         <File_Description>Acquisition Report</File_Description>
+         <Notes></Notes>
+         <Mission>Sentinel-2A</Mission>
+         <File_Class>OPER</File_Class>
+         <File_Type>REP_PASS_E</File_Type>
+         <Validity_Period>
+            <Validity_Start>UTC=2018-07-21T07:28:23</Validity_Start>
+            <Validity_Stop>UTC=2018-07-21T07:37:55</Validity_Stop>
+         </Validity_Period>
+         <File_Version>0001</File_Version>
+         <Source>
+            <System>EDRS</System>
+            <Creator>EISPProcessor</Creator>
+            <Creator_Version>1.0</Creator_Version>
+            <Creation_Date>UTC=2018-07-21T07:38:07</Creation_Date>
+         </Source>
+      </Fixed_Header>
+      <Variable_Header>
+         <Data_Block>XML</Data_Block>
+         <Downlink_Orbit>16076</Downlink_Orbit>
+         <Format_Reference>GMES-GSEG-EOPG-TN-10-0103</Format_Reference>
+      </Variable_Header>
+   </Earth_Explorer_Header>
+   <Data_Block type="xml">
+      <input_files>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00001.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00002.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00003.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00004.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00005.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00006.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00007.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00008.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00009.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00010.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00011.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00012.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00013.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00014.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00015.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00016.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00017.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00018.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00019.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00020.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00021.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00022.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00023.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00024.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00025.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00026.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00027.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00028.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00029.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00030.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00031.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00032.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00033.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00034.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00035.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00036.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00037.raw</input_file>
+         <input_file>DCS_02_L20180608110336202000113_ch2_DSDB_00038.raw</input_file>
+      </input_files>
+      <data_C2>
+         <Name>S2A</Name>
+         <Orbit>16076</Orbit>
+         <Configuration Standard="AOS">
+            <CaduLength>2044</CaduLength>
+            <SynchLength>4</SynchLength>
+            <RsLength>128</RsLength>
+            <ReedSolomon>None</ReedSolomon>
+            <CRC>false</CRC>
+            <InsertZoneSize>0</InsertZoneSize>
+            <RsStatusLength>2</RsStatusLength>
+            <FsStatusLength>8</FsStatusLength>
+            <TimeLength>8</TimeLength>
+         </Configuration>
+         <Status VCID="3" Name="SAT_HK">
+           <Description>Satellite Housekeeping Data</Description>
+           <NumFrames>16764</NumFrames>
+           <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+           <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+           <StartCounter>15479717</StartCounter>
+           <EndCounter>15496480</EndCounter>
+           <RsUncorrectable>0</RsUncorrectable>
+           <RsCorrectable>0</RsCorrectable>
+           <ISP_Status>
+             <Status APID="0" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>751</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.855261</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832384</AcqStopTime>
+               <StartCounter>2101</StartCounter>
+               <EndCounter>2851</EndCounter>
+             </Status>
+             <Status APID="1" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="2" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="3" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="4" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="5" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="6" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="7" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="8" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="9" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="10" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="11" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="12" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="13" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="14" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="15" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="32" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="33" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="34" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="35" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="36" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="37" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="38" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="39" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="40" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="41" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="42" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="43" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="44" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="45" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="46" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="47" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="144" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="145" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>10</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.883467</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.214879</AcqStopTime>
+               <StartCounter>5434</StartCounter>
+               <EndCounter>5443</EndCounter>
+             </Status>
+             <Status APID="146" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="147" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="148" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>6419</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832968</AcqStopTime>
+               <StartCounter>4129</StartCounter>
+               <EndCounter>10547</EndCounter>
+             </Status>
+             <Status APID="149" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="150" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>567</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854443</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832968</AcqStopTime>
+               <StartCounter>1331</StartCounter>
+               <EndCounter>1897</EndCounter>
+             </Status>
+             <Status APID="151" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>24</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.863437</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.216280</AcqStopTime>
+               <StartCounter>13273</StartCounter>
+               <EndCounter>13296</EndCounter>
+             </Status>
+             <Status APID="152" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="153" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="154" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="155" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="156" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="157" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="158" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="159" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="160" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="161" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="162" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="163" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="164" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>6944</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833027</AcqStopTime>
+               <StartCounter>13184</StartCounter>
+               <EndCounter>3743</EndCounter>
+             </Status>
+             <Status APID="165" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="166" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="167" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="168" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="169" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="170" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="171" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="172" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="173" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="174" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="175" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="176" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="177" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="178" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="179" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="180" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>14819</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>960</StartCounter>
+               <EndCounter>15778</EndCounter>
+             </Status>
+             <Status APID="181" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="182" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>118920</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>13399</StartCounter>
+               <EndCounter>1246</EndCounter>
+             </Status>
+             <Status APID="183" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="184" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="185" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="186" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="187" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="188" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="189" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="190" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="191" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="192" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="193" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>4</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.859816</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.828880</AcqStopTime>
+               <StartCounter>6822</StartCounter>
+               <EndCounter>6825</EndCounter>
+             </Status>
+             <Status APID="194" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="195" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="196" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>283</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.855728</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.830749</AcqStopTime>
+               <StartCounter>7483</StartCounter>
+               <EndCounter>7765</EndCounter>
+             </Status>
+             <Status APID="197" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="198" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="199" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>8</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.859816</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.828939</AcqStopTime>
+               <StartCounter>14632</StartCounter>
+               <EndCounter>14639</EndCounter>
+             </Status>
+             <Status APID="200" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="201" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="202" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="203" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="204" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="205" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="206" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="207" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="208" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="209" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="210" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="211" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="212" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>2265</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854268</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832793</AcqStopTime>
+               <StartCounter>9384</StartCounter>
+               <EndCounter>11648</EndCounter>
+             </Status>
+             <Status APID="213" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="214" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="215" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="216" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="217" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="218" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="219" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="220" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="221" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="222" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="223" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="224" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="225" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="226" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="227" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="228" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>4624</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854326</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832793</AcqStopTime>
+               <StartCounter>6867</StartCounter>
+               <EndCounter>11490</EndCounter>
+             </Status>
+             <Status APID="229" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="230" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="231" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="232" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="233" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="234" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="235" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="236" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="237" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="238" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="239" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="240" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="241" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="242" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="243" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="244" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="245" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="246" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="247" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="248" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="249" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="250" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="251" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="252" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="253" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="254" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="255" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="512" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="513" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>20</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854326</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.598965</AcqStopTime>
+               <StartCounter>970</StartCounter>
+               <EndCounter>989</EndCounter>
+             </Status>
+             <Status APID="514" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="515" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="516" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>1415</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854268</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832793</AcqStopTime>
+               <StartCounter>12801</StartCounter>
+               <EndCounter>14215</EndCounter>
+             </Status>
+             <Status APID="517" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="518" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="519" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>10</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854326</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.600075</AcqStopTime>
+               <StartCounter>4011</StartCounter>
+               <EndCounter>4020</EndCounter>
+             </Status>
+             <Status APID="520" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="521" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="522" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="523" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="524" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="525" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="526" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="527" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="528" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="529" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="530" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="531" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="532" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="533" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="534" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="535" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="536" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="537" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="538" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="539" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="540" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="541" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="542" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="543" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="592" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="593" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="594" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="595" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="596" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>5663</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854210</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>5351</StartCounter>
+               <EndCounter>11013</EndCounter>
+             </Status>
+             <Status APID="597" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="598" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>56625</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854210</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>4348</StartCounter>
+               <EndCounter>11823</EndCounter>
+               <SequenceErrors>3</SequenceErrors>
+               <EstimatedLost>3</EstimatedLost>
+               <Gaps>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.062342</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.062400</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.345750</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.345750</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.628982</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.628982</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+               </Gaps>
+             </Status>
+             <Status APID="599" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="600" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="601" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="602" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="603" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="604" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="605" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="606" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="607" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="608" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="609" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="610" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="611" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="612" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>5663</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854210</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>1121</StartCounter>
+               <EndCounter>6783</EndCounter>
+             </Status>
+             <Status APID="613" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="614" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>56625</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854210</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <StartCounter>11181</StartCounter>
+               <EndCounter>2273</EndCounter>
+               <SequenceErrors>4</SequenceErrors>
+               <EstimatedLost>4</EstimatedLost>
+               <Gaps>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:42.944202</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:42.944202</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.227493</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.227551</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.510842</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.510842</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+                 <Gap>
+                   <EstimatedLost>1</EstimatedLost>
+                   <PreAcqTime>21-JUL-2018 01:47:43.793841</PreAcqTime>
+                   <PostAcqTime>21-JUL-2018 01:47:43.793841</PostAcqTime>
+                   <PreCounter>16382</PreCounter>
+                   <PostCounter>0</PostCounter>
+                 </Gap>
+               </Gaps>
+             </Status>
+             <Status APID="615" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="616" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="617" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="618" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="619" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="620" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="621" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="622" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="623" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="624" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="625" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="626" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="627" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="628" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="629" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="630" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="631" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="632" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="633" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="634" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="635" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="636" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="637" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="638" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="639" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="768" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="769" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="770" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="771" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="772" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>16986</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854268</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832968</AcqStopTime>
+               <StartCounter>1924</StartCounter>
+               <EndCounter>2525</EndCounter>
+             </Status>
+             <Status APID="773" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="774" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>2622</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832793</AcqStopTime>
+               <StartCounter>10920</StartCounter>
+               <EndCounter>13541</EndCounter>
+             </Status>
+             <Status APID="775" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="776" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="777" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="778" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="779" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="780" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>567</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854385</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832910</AcqStopTime>
+               <StartCounter>1702</StartCounter>
+               <EndCounter>2268</EndCounter>
+             </Status>
+             <Status APID="781" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>19</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.923821</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.520595</AcqStopTime>
+               <StartCounter>10077</StartCounter>
+               <EndCounter>10095</EndCounter>
+             </Status>
+             <Status APID="782" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="783" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="784" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="785" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="786" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="787" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="788" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="789" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="790" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="791" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="792" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="793" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="794" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="795" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="796" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="797" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="798" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="799" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1280" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1281" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>14</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:43.292432</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.670679</AcqStopTime>
+               <StartCounter>1602</StartCounter>
+               <EndCounter>1615</EndCounter>
+             </Status>
+             <Status APID="1282" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>5662</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854268</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832968</AcqStopTime>
+               <StartCounter>1368</StartCounter>
+               <EndCounter>7029</EndCounter>
+             </Status>
+             <Status APID="1283" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>2</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:43.375825</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.670679</AcqStopTime>
+               <StartCounter>235</StartCounter>
+               <EndCounter>236</EndCounter>
+             </Status>
+             <Status APID="1284" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>5839</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854268</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.832968</AcqStopTime>
+               <StartCounter>10006</StartCounter>
+               <EndCounter>15844</EndCounter>
+             </Status>
+             <Status APID="1285" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1286" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1287" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>18</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:43.292782</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.660634</AcqStopTime>
+               <StartCounter>1901</StartCounter>
+               <EndCounter>1918</EndCounter>
+             </Status>
+             <Status APID="1288" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1289" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1290" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1291" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1292" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1293" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1294" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Status APID="1295" Name="HKTM">
+               <Description>HKTM</Description>
+               <NumPackets>0</NumPackets>
+             </Status>
+             <Summary>
+               <NumPackets>313388</NumPackets>
+               <AcqStartTime>21-JUL-2018 01:47:42.854151</AcqStartTime>
+               <AcqStopTime>21-JUL-2018 01:47:43.833085</AcqStopTime>
+               <SequenceErrors>7</SequenceErrors>
+               <EstimatedLost>7</EstimatedLost>
+             </Summary>
+           </ISP_Status>
+         </Status>
+         <Summary>
+            <NumFrames>18030619</NumFrames>
+            <AcqStartTime>21-JUL-2018 07:28:23.002358</AcqStartTime>
+            <AcqStopTime>21-JUL-2018 07:37:55.121772</AcqStopTime>
+            <RsUncorrectable>0</RsUncorrectable>
+            <RsCorrectable>0</RsCorrectable>
+         </Summary>
+      </data_C2>
+      <distribution_C2_ISP>
+         <output_file>S2A_OPER_STO_ISP__S_EDRS_20180721T073807_V20180721T052226_20180721T072541_C2_S001.DBL</output_file>
+      </distribution_C2_ISP>
+      <distribution_C2_TF>
+      </distribution_C2_TF>
+   </Data_Block>
+</Earth_Explorer_File>

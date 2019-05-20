@@ -81,8 +81,8 @@
             <FsStatusLength>8</FsStatusLength>
             <TimeLength>8</TimeLength>
          </Configuration>
-         <Status VCID="20">
-            <Description>Nominal Mission Data (Half scene 2)</Description>
+         <Status VCID="22">
+            <Description>RT Mission Data (Half scene 2)</Description>
             <NumFrames>17927163</NumFrames>
             <AcqStartTime>21-JUL-2018 07:28:23.002358</AcqStartTime>
             <AcqStopTime>21-JUL-2018 07:37:40.689924</AcqStopTime>
@@ -1192,7 +1192,7 @@
                   <EndCounter>0</EndCounter>
                </Status>
                <Summary>
-                  <NumPackets>1931041</NumPackets>
+                  <NumPackets>2015281</NumPackets>
                   <AcqStartTime>21-JUL-2018 07:28:23.004045</AcqStartTime>
                   <AcqStopTime>21-JUL-2018 07:37:40.689924</AcqStopTime>
                   <SensStartTime>21-JUL-2018 05:22:26.947423</SensStartTime>

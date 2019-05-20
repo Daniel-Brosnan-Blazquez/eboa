@@ -11,6 +11,7 @@ import argparse
 import datetime
 import json
 from tempfile import mkstemp
+from dateutil import parser
 
 # Import xml parser
 from lxml import etree
@@ -124,7 +125,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                         "back_ref": "PLAYBACK_VALIDITY"
                     }],
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "downlink_orbit",
@@ -266,7 +267,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "stop": acquisition_stop,
             "links": links,
             "values": [{
-                "name": "values",
+                "name": "details",
                 "type": "object",
                 "values": [
                     {"name": "downlink_orbit",
@@ -349,6 +350,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         "events": []
     }
 
+    isp_planning_completeness_generation_times = []
+
     vcids = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[NumFrames > 0 and (@VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22)]")
     for vcid in vcids:
         # Iterator and timeline for the ISP gaps
@@ -392,7 +395,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             apid_number = apid.get("APID")
             band_detector = functions.get_band_detector(apid_number)
             isp_gap_event = {
-                "link_ref": "ISP_GAP_" + isp_gap_iterator,
+                "link_ref": "ISP_GAP_" + str(isp_gap_iterator),
                 "explicit_reference": session_id,
                 "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
@@ -410,7 +413,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "back_ref": "RAW_ISP_VALIDITY"
                     }],
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "impact",
@@ -452,9 +455,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             # Insert segment for associating the ISP gap
             timeline_isp_gaps.append({
-                "id": "ISP_GAP_" + isp_gap_iterator,
-                "start": corrected_sensing_start,
-                "stop": corrected_sensing_stop
+                "id": "ISP_GAP_" + str(isp_gap_iterator),
+                "start": parser.parse(corrected_sensing_start),
+                "stop": parser.parse(corrected_sensing_stop)
             })
 
             isp_gap_iterator += 1
@@ -470,7 +473,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             stop = functions.three_letter_to_iso_8601(apid.xpath("SensStartTime")[0].text)
             corrected_stop = functions.convert_from_gps_to_utc(stop)
             isp_gap_event = {
-                "link_ref": "ISP_GAP_" + isp_gap_iterator,
+                "link_ref": "ISP_GAP_" + str(isp_gap_iterator),
                 "explicit_reference": session_id,
                 "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
@@ -488,7 +491,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "back_ref": "RAW_ISP_VALIDITY"
                     }],
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "impact",
@@ -529,9 +532,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             list_of_events.append(isp_gap_event)
             # Insert segment for associating the ISP gap
             timeline_isp_gaps.append({
-                "id": "ISP_GAP_" + isp_gap_iterator,
-                "start": corrected_sensing_start,
-                "stop": corrected_stop
+                "id": "ISP_GAP_" + str(isp_gap_iterator),
+                "start": parser.parse(corrected_sensing_start),
+                "stop": parser.parse(corrected_stop)
             })
 
             isp_gap_iterator += 1
@@ -549,7 +552,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             corrected_start = functions.convert_from_gps_to_utc(start)
 
             isp_gap_event = {
-                "link_ref": "ISP_GAP_" + isp_gap_iterator,
+                "link_ref": "ISP_GAP_" + str(isp_gap_iterator),
                 "explicit_reference": session_id,
                 "key": session_id + "_CHANNEL_" + channel,
                 "gauge": {
@@ -567,7 +570,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         "back_ref": "RAW_ISP_VALIDITY"
                     }],
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "impact",
@@ -609,9 +612,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
 
             # Insert segment for associating the ISP gap
             timeline_isp_gaps.append({
-                "id": "ISP_GAP_" + isp_gap_iterator,
-                "start": corrected_start,
-                "stop": corrected_sensing_stop
+                "id": "ISP_GAP_" + str(isp_gap_iterator),
+                "start": parser.parse(corrected_start),
+                "stop": parser.parse(corrected_sensing_stop)
             })
 
             isp_gap_iterator += 1
@@ -630,7 +633,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
             "start": corrected_sensing_start,
             "stop": corrected_sensing_stop,
             "values": [{
-                "name": "values",
+                "name": "details",
                 "type": "object",
                 "values": [
                     {"name": "status",
@@ -671,11 +674,18 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         merged_timeline_isp_gaps = date_functions.merge_timeline(date_functions.sort_timeline_by_start(timeline_isp_gaps))
 
         # Obtain the planned imaging events from the corrected events which record type corresponds to the downlink mode and are intersecting the segment of the RAW_ISP_VALIDTY
-        corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
-                                                           gauge_systems = {"filter": satellite, "op": "like"},
-                                                           value_filters = [{"name": {"op": "like", "str": "record_type"}, "type": "text", "value": {"op": "==", "value": downlink_mode}}],
-                                                           start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
-                                                           stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        if downlink_mode != "RT":
+            corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                          gauge_systems = {"filter": [satellite], "op": "in"},
+                                                          value_filters = [{"name": {"op": "like", "str": "record_type"}, "type": "text", "value": {"op": "==", "value": downlink_mode}}],
+                                                          start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
+                                                          stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        else:
+            corrected_planned_imagings = query.get_events(gauge_names = {"filter": "PLANNED_CUT_IMAGING_CORRECTION", "op": "like"},
+                                                          gauge_systems = {"filter": [satellite], "op": "in"},
+                                                          start_filters = [{"date": corrected_sensing_stop, "op": "<"}],
+                                                          stop_filters = [{"date": corrected_sensing_start, "op": ">"}])
+        # end if
 
         # Obtain the expected number of packets and the packet status
         raw_isp_validity_date_segments = date_functions.convert_input_events_to_date_segments([raw_isp_validity_event])
@@ -718,7 +728,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 planned_imaging_uuid = [event_link.event_uuid_link for event_link in corrected_planned_imaging.eventLinks if event_link.name == "PLANNED_EVENT"][0]
                 exit_status = engine.insert_event_values(planned_imaging_uuid, value)
                 if exit_status["inserted"] == True:
-
+                    planned_imaging_event = query.get_events(event_uuids = {"op": "in", "filter": [planned_imaging_uuid]})
+                    isp_planning_completeness_generation_times.append(planned_imaging_event[0].source.generation_time)
                     # Insert the linked COMPLETENESS event for the automatic completeness check
                     planning_event_values = corrected_planned_imaging.get_structured_values()
                     planning_event_values[0]["values"] = planning_event_values[0]["values"] + [
@@ -771,18 +782,18 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     {
                         "link": str(planned_imaging_uuid),
                         "link_mode": "by_uuid",
-                        "name": "ISP-VALIDITY",
+                        "name": "ISP_VALIDITY",
                         "back_ref": "PLANNED_IMAGING"
                     },{
                         "link": str(isp_validity_valid_segment["id1"]),
                         "link_mode": "by_ref",
                         "name": "ISP_VALIDITY",
-                        "back_ref": "RAW_ISP-VALIDITY"
+                        "back_ref": "RAW_ISP_VALIDITY"
                     },{
                         "link": "PLAYBACK_VALIDITY_" + vcid_number,
                         "link_mode": "by_ref",
                         "name": "ISP_VALIDITY",
-                        "back_ref": "PLAYBACK-VALIDITY"
+                        "back_ref": "PLAYBACK_VALIDITY"
                     }]
 
                 for isp_gap_intersected in isp_gaps_intersected:
@@ -790,8 +801,8 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                         links.append({
                             "link": id,
                             "link_mode": "by_ref",
-                            "name": "ISP-VALIDITY",
-                            "back_ref": "ISP-GAP"
+                            "name": "ISP_VALIDITY",
+                            "back_ref": "ISP_GAP"
                         })
                     # end for
                 # end for
@@ -809,7 +820,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "start": str(isp_validity_valid_segment["start"]),
                     "stop": str(isp_validity_valid_segment["stop"]),
                     "values": [{
-                        "name": "values",
+                        "name": "details",
                         "type": "object",
                         "values": [
                             {"name": "status",
@@ -866,7 +877,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             "link": isp_validity_event_link_ref,
                             "link_mode": "by_ref",
                             "name": "COMPLETENESS",
-                            "back_ref": "ISP-VALIDITY"
+                            "back_ref": "ISP_VALIDITY"
                         }],
                     "start": str(isp_validity_valid_segment["start"]),
                     "stop": str(isp_validity_valid_segment["stop"]),
@@ -895,6 +906,9 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                             {"name": "downlink_mode",
                              "type": "text",
                              "value": downlink_mode},
+                            {"name": "sensing_orbit",
+                             "type": "text",
+                             "value": sensing_orbit}
                         ]
                     }]
                 }
@@ -912,9 +926,12 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
         isp_planning_completeness_event_stops = [event["stop"] for event in isp_planning_completeness_operation["events"]]
         isp_planning_completeness_event_stops.sort()
 
+        isp_planning_completeness_generation_times.sort()
+        generation_time = isp_planning_completeness_generation_times[0]
+
         isp_planning_completeness_operation["source"] = {
             "name": source["name"],
-            "generation_time": source["generation_time"],
+            "generation_time": str(generation_time),
             "validity_start": str(isp_planning_completeness_event_starts[0]),
             "validity_stop": str(isp_planning_completeness_event_stops[-1])
         }
@@ -966,7 +983,7 @@ def _generate_pass_information(xpath_xml, source, engine, query, list_of_annotat
     link_details_annotation = {
         "explicit_reference": session_id,
         "annotation_cnf": {
-            "name": "LINK-DETAILS-CH" + channel,
+            "name": "LINK_DETAILS_CH" + channel,
             "system": "EDRS"
         },
         "values": [{
@@ -1033,20 +1050,39 @@ def process_file(file_path, engine, query):
     generation_time = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Source/Creation_Date")[0].text.split("=")[1]
     # Set the validity start to be the first sensing received to avoid error ingesting
     sensing_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status[@VCID = 2 or @VCID = 4 or @VCID = 5 or @VCID = 6 or @VCID = 20 or @VCID = 21 or @VCID = 22]/ISP_Status/Status/SensStartTime")
-    sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
 
-    # Sort list
-    sensing_starts_in_iso_8601.sort()
-    corrected_sensing_start = functions.convert_from_gps_to_utc(sensing_starts_in_iso_8601[0])
-    validity_start = corrected_sensing_start
+    acquisition_starts = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/AcqStartTime")
 
-    # Set the validity stop to be the last acquisition timing registered to avoid error ingesting
+    if len(sensing_starts) > 0:
+        # Set the validity start to be the first sensing timing acquired to avoid error ingesting
+        sensing_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(sensing_start.text) for sensing_start in sensing_starts]
+
+        # Sort list
+        sensing_starts_in_iso_8601.sort()
+        corrected_sensing_start = functions.convert_from_gps_to_utc(sensing_starts_in_iso_8601[0])
+        validity_start = corrected_sensing_start
+    elif len(acquisition_starts) > 0:
+        # Set the validity start to be the first acquisition timing registered to avoid error ingesting
+        acquisition_starts_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_start.text) for acquisition_start in acquisition_starts]
+
+        # Sort list
+        acquisition_starts_in_iso_8601.sort()
+        validity_start = acquisition_starts_in_iso_8601[0]
+    else:
+        validity_start = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Start")[0].text.split("=")[1]
+    # end if
+
     acquisition_stops = xpath_xml("/Earth_Explorer_File/Data_Block/*[contains(name(),'data_C')]/Status/ISP_Status/Status/AcqStopTime")
-    acquisition_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_stop.text) for acquisition_stop in acquisition_stops]
+    if len(acquisition_stops) > 0:
+        # Set the validity stop to be the last acquisition timing registered to avoid error ingesting
+        acquisition_stops_in_iso_8601 = [functions.three_letter_to_iso_8601(acquisition_stop.text) for acquisition_stop in acquisition_stops]
 
-    # Sort list
-    acquisition_stops_in_iso_8601.sort()
-    validity_stop = acquisition_stops_in_iso_8601[-1]
+        # Sort list
+        acquisition_stops_in_iso_8601.sort()
+        validity_stop = acquisition_stops_in_iso_8601[-1]
+    else:
+        validity_stop = xpath_xml("/Earth_Explorer_File/Earth_Explorer_Header/Fixed_Header/Validity_Period/Validity_Stop")[0].text.split("=")[1]
+    # end if
 
     source = {
         "name": file_name,
@@ -1055,15 +1091,19 @@ def process_file(file_path, engine, query):
         "validity_stop": validity_stop
     }
 
-    # Extract the information of the received data
-    isp_status = _generate_received_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations)
+    # Obtain link session ID
+    session_id_xpath = xpath_xml("/Earth_Explorer_File/Data_Block/input_files/input_file[1]")
 
-    # Extract the information of the received data
-    acquisition_status = _generate_acquisition_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations)
+    if len(session_id_xpath) > 0:
+        # Extract the information of the received data
+        isp_status = _generate_received_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations)
 
-    # Extract the information of the pass
-    _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, isp_status, acquisition_status)
+        # Extract the information of the received data
+        acquisition_status = _generate_acquisition_data_information(xpath_xml, source, engine, query, list_of_events, list_of_planning_operations)
 
+        # Extract the information of the pass
+        _generate_pass_information(xpath_xml, source, engine, query, list_of_annotations, list_of_explicit_references, isp_status, acquisition_status)
+    # end if
 
 
     # Build the xml
@@ -1081,6 +1121,8 @@ def process_file(file_path, engine, query):
         "events": list_of_events,
         "annotations": list_of_annotations
     })
+
+    os.remove(new_file_path)
 
     return data
 
