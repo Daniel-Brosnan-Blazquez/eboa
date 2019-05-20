@@ -131,7 +131,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
                         "back_ref": "PLAYBACK_VALIDITY"
                     }],
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "downlink_orbit",
@@ -284,7 +284,7 @@ def _generate_acquisition_data_information(xpath_xml, source, engine, query, lis
             "start": acquisition_start,
             "stop": acquisition_stop,
             "values": [{
-                "name": "values",
+                "name": "details",
                 "type": "object",
                 "values": [
                     {"name": "status",
@@ -522,7 +522,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                     "start": str(gap["start"]),
                     "stop": str(gap["stop"]),
                     "values": [{
-                        "name": "values",
+                        "name": "details",
                         "type": "object",
                         "values": [
                             {"name": "impact",
@@ -598,7 +598,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "start": str(start),
                 "stop": str(stop),
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "impact",
@@ -687,7 +687,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "start": str(start),
                 "stop": str(stop),
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "impact",
@@ -880,7 +880,7 @@ def _generate_received_data_information(xpath_xml, source, engine, query, list_o
                 "start": str(received_datablock["start"]),
                 "stop": str(received_datablock["stop"]),
                 "values": [{
-                    "name": "values",
+                    "name": "details",
                     "type": "object",
                     "values": [
                         {"name": "status",
@@ -1162,6 +1162,8 @@ def process_file(file_path, engine, query):
         "events": list_of_events,
         "annotations": list_of_annotations
     })
+
+    os.remove(new_file_path)
 
     return data
 

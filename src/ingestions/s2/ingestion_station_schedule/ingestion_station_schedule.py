@@ -192,6 +192,8 @@ def process_file(file_path, engine, query):
         "events": list_of_events
     }]}
 
+    os.remove(new_file_path)
+
     return data
 
 def insert_data_into_DDBB(data, filename, engine):

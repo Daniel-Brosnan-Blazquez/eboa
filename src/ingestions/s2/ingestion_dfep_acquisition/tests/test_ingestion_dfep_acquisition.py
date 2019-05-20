@@ -175,7 +175,7 @@ class TestDfepIngestion(unittest.TestCase):
                     "type": "text"
                     }
                 ],
-                "name": "values",
+                "name": "details",
                 "type": "object"
             }
         ]
@@ -292,7 +292,7 @@ class TestDfepIngestion(unittest.TestCase):
                     "name": "matching_plan_status"
                 }
             ],
-            "name": "values"
+            "name": "details"
         }]
 
         playback_validity_event2 = self.session.query(Event).join(Gauge).filter(Gauge.name == "PLAYBACK_VALIDITY_20",
@@ -439,7 +439,7 @@ class TestDfepIngestion(unittest.TestCase):
         assert len(specific_isp_validity1) == 1
 
         assert specific_isp_validity1[0].get_structured_values() == [{
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "name": "status",
@@ -635,7 +635,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert isp_gap_event1[0].get_structured_values() == [{
             "type": "object",
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "type": "text",
@@ -693,7 +693,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert isp_gap_event2[0].get_structured_values() == [{
             "type": "object",
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "type": "text",
@@ -757,7 +757,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert isp_gap_event3[0].get_structured_values() == [{
             "type": "object",
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "type": "text",
@@ -829,7 +829,7 @@ class TestDfepIngestion(unittest.TestCase):
         assert len(isp_gap_event4) == 1
 
         assert isp_gap_event4[0].get_structured_values() == [{
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "name": "impact",
@@ -1148,7 +1148,7 @@ class TestDfepIngestion(unittest.TestCase):
 
         assert playback_gap[0].get_structured_values() == [{
             "type": "object",
-            "name": "values",
+            "name": "details",
             "values": [
                 {
                     "type": "double",

@@ -188,6 +188,8 @@ def process_file(file_path, engine, query):
         }],
     }]}
 
+    os.remove(new_file_path)
+
     return data
 
 def insert_data_into_DDBB(data, filename, engine):
