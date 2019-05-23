@@ -860,12 +860,14 @@ class Query():
 
         return annotations
 
-    def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_ref_ingestion_time_filters = None, explicit_refs = None, groups = None, sources = None, source_uuids = None, event_uuids = None, gauge_names = None, gauge_systems = None, gauge_uuids = None, start_filters = None, stop_filters = None, event_ingestion_time_filters = None, event_value_filters = None, keys = None, annotation_ingestion_time_filters = None, annotation_uuids = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_cnf_uuids = None, annotation_value_filters = None):
+    def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_ref_ingestion_time_filters = None, explicit_refs = None, groups = None, sources = None, source_uuids = None, event_uuids = None, gauge_names = None, gauge_systems = None, gauge_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, keys = None, annotation_ingestion_time_filters = None, annotation_uuids = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_cnf_uuids = None, annotation_value_filters = None):
         """
         """
         params = []
 
         tables = []
+
+        query_of_events_or_annotations = False
 
         # group_ids
         if group_ids != None:
@@ -907,8 +909,11 @@ class Query():
 
         # Events
         explicit_ref_uuids_events = []
-        if event_uuids or start_filters or stop_filters or event_ingestion_time_filters or event_value_filters or gauge_uuids or source_uuids or explicit_ref_uuids or sources or explicit_refs or gauge_names or gauge_systems or keys:
-            events = self.get_events(event_uuids = event_uuids, start_filters = start_filters, stop_filters = stop_filters, ingestion_time_filters = event_ingestion_time_filters, value_filters = event_value_filters, gauge_uuids = gauge_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys)
+        if event_uuids or start_filters or stop_filters or event_ingestion_time_filters or event_value_filters or gauge_uuids or source_uuids or explicit_ref_uuids or sources or explicit_refs or gauge_names or gauge_systems or keys or duration_filters:
+            if event_uuids or start_filters or stop_filters or event_ingestion_time_filters or event_value_filters or gauge_uuids or source_uuids or sources or gauge_names or gauge_systems or keys or duration_filters:
+                query_of_events_or_annotations = True
+            # end if
+            events = self.get_events(event_uuids = event_uuids, start_filters = start_filters, stop_filters = stop_filters, ingestion_time_filters = event_ingestion_time_filters, value_filters = event_value_filters, gauge_uuids = gauge_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, duration_filters = duration_filters)
 
             explicit_ref_uuids_events = [str(event.explicit_ref_uuid) for event in events]
         # end if
@@ -916,6 +921,9 @@ class Query():
         # Annotations
         explicit_ref_uuids_annotations = []
         if source_uuids or explicit_ref_uuids or annotation_cnf_uuids or annotation_ingestion_time_filters or annotation_uuids or sources or explicit_refs or annotation_cnf_names or annotation_cnf_systems or annotation_value_filters:
+            if source_uuids or annotation_cnf_uuids or annotation_ingestion_time_filters or annotation_uuids or sources or annotation_cnf_names or annotation_cnf_systems or annotation_value_filters:
+                query_of_events_or_annotations = True
+            # end if
             annotations = self.get_annotations(source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, annotation_cnf_uuids = annotation_cnf_uuids, ingestion_time_filters = annotation_ingestion_time_filters, annotation_uuids = annotation_uuids, sources = sources, explicit_refs = explicit_refs, annotation_cnf_names = annotation_cnf_names, annotation_cnf_systems = annotation_cnf_systems, value_filters = annotation_value_filters)
 
             explicit_ref_uuids_annotations = [str(annotation.explicit_ref_uuid) for annotation in annotations]
@@ -923,7 +931,7 @@ class Query():
 
         # explicit references uuids
         explicit_ref_uuids = set (explicit_ref_uuids_events + explicit_ref_uuids_annotations)
-        if len(explicit_ref_uuids) > 0:
+        if query_of_events_or_annotations:
             params.append(ExplicitRef.explicit_ref_uuid.in_(explicit_ref_uuids))
         # end if
 
