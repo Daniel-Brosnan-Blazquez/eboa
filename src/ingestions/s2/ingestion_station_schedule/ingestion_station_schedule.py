@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Ingestion module for the Station schedule files of Sentinel-2
 

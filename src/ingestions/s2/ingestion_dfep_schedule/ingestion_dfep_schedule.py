@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Ingestion module for the DFEP schedule files of Sentinel-2
 

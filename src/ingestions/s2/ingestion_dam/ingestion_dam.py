@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Ingestion module for the REP_OPDAM files of Sentinel-2
 
