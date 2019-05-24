@@ -10,11 +10,11 @@ import os
 from oslo_concurrency import lockutils
 
 # Import engine functions
-from eboa.engine.functions import get_resources_path
+from eboa.engine.functions import get_resources_path, get_schemas_path
 
 # Import xml parser
 from lxml import etree
-import triggering.xpath_functions as xpath_functions
+import eboa.triggering.xpath_functions as xpath_functions
 
 # Import logging
 import argparse
@@ -23,6 +23,9 @@ from eboa.logging import Log
 # Import debugging
 from eboa.debugging import debug
 
+# Import errors
+from eboa.triggering.errors import TriggeringConfigCannotBeRead, TriggeringConfigDoesNotPassSchema, FileDoesNotMatchAnyRule
+
 logging_module = Log()
 logger = logging_module.logger
 
@@ -30,12 +33,24 @@ logger = logging_module.logger
 synchronized = lockutils.synchronized_with_prefix('eboa-triggering-')
 
 def get_triggering_conf():
-    eboa_resources_path = get_resources_path()
-
+    schema_path = get_schemas_path() + "/triggering_schema.xsd"
+    parsed_schema = etree.parse(schema_path)
+    schema = etree.XMLSchema(parsed_schema)
     # Get configuration
-    triggering_xml = etree.parse(eboa_resources_path + "/triggering.xml")
+    try:
+        triggering_xml = etree.parse(get_resources_path() + "/triggering.xml")
+    except etree.XMLSyntaxError as e:
+        logger.error("The triggering configuration file ({}) cannot be read".format(get_resources_path() + "/triggering.xml"))
+        raise TriggeringConfigCannotBeRead("The triggering configuration file ({}) cannot be read".format(get_resources_path() + "/triggering.xml"))
+    # end try
 
     triggering_xpath = etree.XPathEvaluator(triggering_xml)
+
+    valid = schema.validate(triggering_xml)
+    if not valid:
+        logger.error("The triggering configuration file ({}) does not pass the schema ({})".format(get_resources_path() + "/triggering.xml", get_schemas_path() + "/triggering_schema.xsd"))
+        raise TriggeringConfigCannotBeRead("The triggering configuration file ({}) does not pass the schema ({})".format(get_resources_path() + "/triggering.xml", get_schemas_path() + "/triggering_schema.xsd"))
+    # end if
 
     return triggering_xpath
 
@@ -130,10 +145,11 @@ def triggering(file_path):
     else:
         # File not register into the configuration
         # Register the associated alert
-        print("file not register")
+        logger.error("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
+        raise FileDoesNotMatchAnyRule("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
     # end if
 
-    return 0
+    return
 
 if __name__ == "__main__":
 
@@ -151,4 +167,4 @@ if __name__ == "__main__":
         result = triggering(file_path)
     # end if
 
-    exit(result)
+    exit(0)
