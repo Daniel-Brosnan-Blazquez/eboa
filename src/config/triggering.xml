@@ -1,39 +1,19 @@
 <triggering_rules>
   <rule>
-    <source_mask>S2._OPER_MPL__NPPF__........T......_........T......_.....TGZ</source_mask>
-    <source_type>MPL__NPPF_</source_type>
+    <source_mask>.*</source_mask>
+    <source_type>FILE_TYPE_1</source_type>
     <tool>
-      <command>ingestion.py -f </command>
+      <command>echo "Executing triggering for file type 1..."</command>
     </tool>
   </rule>
   <rule>
-    <source_mask>S2._OPER_REP_PASS_E_EDRS_........T......_V........T......_........T.......EOF</source_mask>
-    <source_type>REP_PASS_E</source_type>
+    <source_mask>.*</source_mask>
+    <source_type>FILE_TYPE_2</source_type>
     <tool>
-      <command>ingestion_edrs_acquisition.py -f </command>
+      <command>echo "Executing triggering for file type 2..."</command>
     </tool>
     <dependencies>
-      <source_type>MPL__NPPF_</source_type>
-    </dependencies>
-  </rule>
-  <rule>
-    <source_mask>S2._OPER_REP_PASS_[2|5]_...._........T......_V........T......_........T.......EOF</source_mask>
-    <source_type>REP_PASS_E</source_type>
-    <tool>
-      <command>ingestion_edrs_acquisition.py -f </command>
-    </tool>
-    <dependencies>
-      <source_type>MPL__NPPF_</source_type>
-    </dependencies>
-  </rule>
-  <rule>
-    <source_mask>S2._OPER_MPL_ORBPRE_........T......_........T......_.....EOF</source_mask>
-    <source_type>MPL_ORBPRE</source_type>
-    <tool>
-      <command>echo MPL_ORBPRE</command>
-    </tool>
-    <dependencies>
-      <source_type>MPL__NPPF_</source_type>
+      <source_type>FILE_TYPE_1</source_type>
     </dependencies>
   </rule>
 </triggering_rules>

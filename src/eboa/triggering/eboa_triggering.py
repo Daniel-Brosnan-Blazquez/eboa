@@ -73,7 +73,26 @@ def block_process(dependency):
     return
 
 @debug
-def execute_command(source_type, command):
+def execute_command(command):
+    """
+    Method to execute the commands while blocking other processes which would have dependencies
+    
+    :param source_type: lock to use for the mutex
+    :type source_type: str
+    :param command: command to execute inside the mutex
+    :type command: str
+    """
+    try:
+        os.system(command)
+    except Exception as e:
+        logger.info("The execution of the command has ended unexpectedly with the following error: {}".format(str(e)))
+        exit(-1)
+    # end try
+
+    return
+
+@debug
+def block_and_execute_command(source_type, command):
     """
     Method to execute the commands while blocking other processes which would have dependencies
     
@@ -84,7 +103,7 @@ def execute_command(source_type, command):
     """
     @synchronized(source_type, external=True, lock_path="/dev/shm")
     def blocking_on_command(command):
-        os.system(command)
+        execute_command(command)
     # end def
 
     blocking_on_command(command)
@@ -92,12 +111,14 @@ def execute_command(source_type, command):
     return
 
 @debug
-def triggering(file_path):
+def triggering(file_path, output_path = None):
     """
     Method to trigger commands depending on the matched configuration to the file_path
     
     :param file_path: path to the input file
     :type file_path: str
+    :param output_path: path to the output file
+    :type output_path: str
     """
 
     file_name = os.path.basename(file_path)
@@ -116,13 +137,15 @@ def triggering(file_path):
     if len(matching_rules) > 0:
         # File register into the configuration
         for rule in matching_rules:
-            dependecies = rule.xpath("dependencies/source_type")
-            for dependency in dependecies:
-                logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
-                # Block process on the related mutex depending on the configuration
-                block_process(dependency.text)
-            # end for
-
+            if output_path == None:
+                dependecies = rule.xpath("dependencies/source_type")
+                for dependency in dependecies:
+                    logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
+                    # Block process on the related mutex depending on the configuration
+                    block_process(dependency.text)
+                # end for
+            # end if
+            
             # Execute the associated tool entering on its specific mutex depending on its source type
             add_file_path = rule.xpath("tool/command/@add_file_path")
             add_file_path_content = True
@@ -136,10 +159,19 @@ def triggering(file_path):
             else:
                 command = rule.xpath("tool/command")[0].text
             # end if
+
+            if output_path:
+                command = command + " -o " + output_path
+            # end if
             logger.info("The following command is going to be triggered: {}".format(command))
             source_type = rule.xpath("source_type")[0].text
             logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
-            execute_command(source_type, command)
+
+            if output_path:
+                execute_command(command)
+            else:
+                block_and_execute_command(source_type, command)
+            # end if
             
             # Register an alert if the tool didn't succeed
         # end for
@@ -157,15 +189,33 @@ if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description='EBOA triggering.')
     args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
                              help='path to the file to process', required=True)
+    args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
+                             help="path to the output file", required=False)
+    
     args = args_parser.parse_args()
     file_path = args.file_path[0]
 
-    logger.info("Received file {}".format(file_path))
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        logger.error("The specified file {} does not exist".format(file_path))
+        exit(-1)
+    # end if
 
-    newpid = os.fork()
-    result = 0
-    if newpid == 0:
-        result = triggering(file_path)
+    logger.info("Received file {}".format(file_path))
+    
+    output_path = None
+    if args.output_path != None:
+        output_path = args.output_path[0]
+    # end if
+
+    if output_path:
+        triggering(file_path, output_path)
+    else:
+        newpid = os.fork()
+        result = 0
+        if newpid == 0:
+            result = triggering(file_path)
+        # end if
     # end if
 
     exit(0)

@@ -14,6 +14,7 @@ import os
 from dateutil import parser
 import copy
 from lxml import etree
+import json
 
 # Import logging
 from eboa.logging import Log
