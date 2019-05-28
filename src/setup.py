@@ -29,10 +29,12 @@ setup(name="eboa",
           "xmlschema",
           "jsonschema"
       ],
-      tests_require=[
-          "nose",
-          "before_after",
-          "coverage",
-          "termcolor"
-      ],
+      extras_require={
+          "tests" :[
+              "nose",
+              "before_after",
+              "coverage",
+              "termcolor"
+          ]
+      },
       test_suite='nose.collector')
