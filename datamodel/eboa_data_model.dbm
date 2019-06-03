@@ -3,14 +3,14 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.0" author="Daniel Brosnan Blazquez" last-position="261,930" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="451,1130" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
       login="true">
 </role>
 
-<database name="eboadb">
+<database name="eboadb" is-template="false" allow-conns="true">
 </database>
 
 <schema name="public" fill-color="#e1e1e1" sql-disabled="true">
@@ -21,7 +21,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 </schema>
 
 <extension name="postgis">
-  <schema name="eboa"/>
+	<schema name="eboa"/>
 </extension>
 
 <table name="events">
@@ -114,6 +114,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time">
 		<type name="timestamp" length="1"/>
 	</column>
+	<column name="ingested">
+		<type name="bool" length="0"/>
+	</column>
 	<column name="ingestion_duration">
 		<type name="interval" length="0"/>
 	</column>
@@ -146,7 +149,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="15"/>
+		<object name="dim_signature_uuid" index="16"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -350,7 +353,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_texts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="840"/>
+	<position x="1940" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -379,7 +382,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_doubles">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="980"/>
+	<position x="1940" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -408,7 +411,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_objects">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="1260"/>
+	<position x="1940" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -434,7 +437,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="1380"/>
+	<position x="1940" y="1380"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -553,7 +556,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_statuses">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1060" y="1500"/>
+	<position x="1060" y="1540"/>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -615,7 +618,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_booleans">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="700"/>
+	<position x="1940" y="700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -644,7 +647,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_timestamps">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1880" y="1120"/>
+	<position x="1940" y="1120"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -911,7 +914,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
-		<position x="0" y="0"/>
+		<position x="-4.88218" y="-1.275"/>
 	</label>
 </relationship>
 
@@ -1595,7 +1598,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="eboa.dim_signatures"
 	 dst-table="eboa.event_keys"
 	 src-required="true" dst-required="false"
-	del-action="CASCADE"/>
+	del-action="CASCADE">
+	<label ref-type="src-label">
+		<position x="-6.2825" y="-1.275"/>
+	</label>
+</relationship>
 
 <index name="idx_event_keys_visible" table="eboa.event_keys"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
@@ -1753,6 +1760,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1340" y="1340"/>
+	<column name="event_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
 	<column name="message" not-null="true">
 		<type name="text" length="0"/>
 	</column>
@@ -1762,18 +1772,40 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
-	<column name="generator">
+	<column name="generator" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<column name="notified" not-null="true">
+	<column name="notified">
 		<type name="boolean" length="0"/>
 	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="event_alerts_pk" type="pk-constr" table="eboa.event_alerts">
+		<columns names="event_alert_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="9"/>
+		<object name="event_uuid" index="10"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="0"/>
+		<object name="events_fk" index="1"/>
+	</customidxs>
 </table>
 
 <table name="alerts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1620" y="1500"/>
+	<position x="1660" y="1560"/>
 	<column name="alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1797,7 +1829,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_alerts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1500"/>
+	<position x="1340" y="1540"/>
+	<column name="source_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
 	<column name="message" not-null="true">
 		<type name="text" length="0"/>
 	</column>
@@ -1807,16 +1842,28 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
-	<column name="generator">
+	<column name="generator" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<column name="notified" not-null="true">
+	<column name="notified">
 		<type name="boolean" length="0"/>
 	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="source_alerts_pk" type="pk-constr" table="eboa.source_alerts">
+		<columns names="source_alert_uuid" ref-type="src-columns"/>
+	</constraint>
 
 	<customidxs object-type="column">
-		<object name="alert_uuid" index="5"/>
-		<object name="source_uuid" index="6"/>
+		<object name="alert_uuid" index="9"/>
+		<object name="source_uuid" index="10"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -1828,7 +1875,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_alerts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1600" y="1340"/>
+	<position x="1660" y="1340"/>
+	<column name="explicit_ref_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
 	<column name="message" not-null="true">
 		<type name="text" length="0"/>
 	</column>
@@ -1838,12 +1888,34 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingestion_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
-	<column name="generator">
+	<column name="generator" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<column name="notified" not-null="true">
+	<column name="notified">
 		<type name="boolean" length="0"/>
 	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="explicit_ref_alerts_pk" type="pk-constr" table="eboa.explicit_ref_alerts">
+		<columns names="explicit_ref_alert_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="9"/>
+		<object name="explicit_ref_uuid" index="10"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="0"/>
+		<object name="explicit_refs_fk" index="1"/>
+	</customidxs>
 </table>
 
 <relationship name="alerts_has_many_explicit_ref_alerts" type="rel1n"
@@ -1853,7 +1925,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#279006"
 	 src-table="eboa.alerts"
 	 dst-table="eboa.explicit_ref_alerts"
-	 src-required="false" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="alerts_has_many_sources_alerts" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -1862,7 +1935,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#b96d67"
 	 src-table="eboa.alerts"
 	 dst-table="eboa.source_alerts"
-	 src-required="false" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="alerts_has_many_event_alerts" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -1871,7 +1945,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#fe01ee"
 	 src-table="eboa.alerts"
 	 dst-table="eboa.event_alerts"
-	 src-required="false" dst-required="false"/>
+	 src-required="true" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="dst-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
 
 <relationship name="events_has_many_event_alerts" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -1880,7 +1959,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#c35c1e"
 	 src-table="eboa.events"
 	 dst-table="eboa.event_alerts"
-	 src-required="false" dst-required="false"/>
+	 src-required="false" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -1889,7 +1969,8 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#cdf733"
 	 src-table="eboa.explicit_refs"
 	 dst-table="eboa.explicit_ref_alerts"
-	 src-required="false" dst-required="false"/>
+	 src-required="false" dst-required="false"
+	del-action="CASCADE"/>
 
 <relationship name="sources_has_many_sources_alerts" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -1898,6 +1979,38 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#daab63"
 	 src-table="eboa.sources"
 	 dst-table="eboa.source_alerts"
+	 src-required="false" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="src-label">
+		<position x="15.1178" y="-1.275"/>
+	</label>
+</relationship>
+
+<table name="alert_groups">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1680" y="1680"/>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="alert_group_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="alert_groups_pk" type="pk-constr" table="eboa.alert_groups">
+		<columns names="alert_group_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_alert_group" type="uq-constr" table="eboa.alert_groups">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="alert_groups_has_many_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d21594"
+	 src-table="eboa.alert_groups"
+	 dst-table="eboa.alerts"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>

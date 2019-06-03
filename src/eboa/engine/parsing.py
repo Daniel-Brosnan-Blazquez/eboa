@@ -50,9 +50,9 @@ def validate_data_dictionary(data):
 
 def _validate_insert_structure(data):
 
-    check_items = [item in ["mode", "dim_signature", "source", "explicit_references", "events", "annotations"] for item in data.keys()]
+    check_items = [item in ["mode", "dim_signature", "source", "explicit_references", "events", "annotations", "alerts"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside the insert operation structure are: mode, dim_signature, source, explicit_references, events and annotations")
+        raise ErrorParsingDictionary("The allowed tags inside the insert operation structure are: mode, dim_signature, source, explicit_references, events, annotations and alerts")
     # end if
 
     # Mandatory tags
@@ -75,6 +75,9 @@ def _validate_insert_structure(data):
     # end if
     if "annotations" in data:
         _validate_annotations(data["annotations"])
+    # end if
+    if "alerts" in data:
+        _validate_alerts(data["alerts"])
     # end if
 
     return
@@ -261,6 +264,9 @@ def _validate_events(data):
         if "values" in event:
             validate_values(event["values"])
         # end if
+        if "link_ref" in event and not type(event["link_ref"]) == str:
+            raise ErrorParsingDictionary("The tag link_ref inside events structure has to be of type string")
+        # end if
 
     # end for
 
@@ -346,7 +352,7 @@ def _validate_event_links(data):
 def _validate_annotations(data):
 
     if type(data) != list:
-        raise ErrorParsingDictionary("The tag events has to be of type list")
+        raise ErrorParsingDictionary("The tag annotations has to be of type list")
     # end if
 
     for annotation in data:
@@ -463,14 +469,115 @@ def validate_values(data):
 
     return
 
-# def generate_json(self, json_path):
-#     """
-#     Method to generate a json file from the data managed by the engine
+def _validate_alerts(data):
 
-#     :param json_path: path to the json file to be generated
-#     :type json_path: str
-#     """
-#     with open(json_path, "w") as output_file:
-#         json.dump(self.data, output_file)
+    if type(data) != list:
+        raise ErrorParsingDictionary("The tag alerts has to be of type list")
+    # end if
 
-#     return
+    for alert in data:
+        if type(alert) != dict:
+            raise ErrorParsingDictionary("The alert inside the alerts structure have to be of type dict")
+        # end if
+
+        check_items = [item in ["message", "generator", "notification_time", "entity", "alert_cnf"] for item in alert.keys()]
+        if False in check_items:
+            raise ErrorParsingDictionary("The allowed tags inside alerts structure are: message, generator, notification_time, entity and alert_cnf")
+        # end if
+
+        # Mandatory tags
+        if not "message" in alert:
+            raise ErrorParsingDictionary("The tag message is mandatory inside alert structure")
+        # end if
+        if not type(alert["message"]) == str:
+            raise ErrorParsingDictionary("The tag message inside alerts structure has to be of type string")
+        # end if
+        if not "generator" in alert:
+            raise ErrorParsingDictionary("The tag generator is mandatory inside alert structure")
+        # end if
+        if not type(alert["generator"]) == str:
+            raise ErrorParsingDictionary("The tag generator inside alerts structure has to be of type string")
+        # end if
+        if not "notification_time" in alert:
+            raise ErrorParsingDictionary("The tag notification_time is mandatory inside alert structure")
+        # end if
+        if not is_datetime(alert["notification_time"]):
+            raise ErrorParsingDictionary("The tag notification_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        # end if
+
+        _validate_alert_entity(alert["entity"])        
+        _validate_alert_cnf(alert["alert_cnf"])
+
+    # end for
+
+    return
+
+def _validate_alert_entity(data):
+
+    if type(data) != dict:
+        raise ErrorParsingDictionary("The entity tag inside the alert structure has to be of type dict")
+    # end if
+
+    check_items = [item in ["reference_mode", "reference", "type"] for item in data.keys()]
+    if False in check_items:
+        raise ErrorParsingDictionary("The allowed tags inside entity structure are: reference_mode, reference and type")
+    # end if
+
+    # Mandatory tags
+    if not "reference_mode" in data:
+        raise ErrorParsingDictionary("The tag reference_mode is mandatory inside entity structure")
+    # end if
+    if not data["reference_mode"] in ["by_ref", "by_uuid"]:
+        raise ErrorParsingDictionary("The values allowed for tag reference_mode inside entity structure are 'by_ref' and 'by_uuid'")
+    # end if
+    if not "reference" in data:
+        raise ErrorParsingDictionary("The tag reference is mandatory inside entity structure")
+    # end if
+    if not type(data["reference"]) == str:
+        raise ErrorParsingDictionary("The tag reference inside entity structure has to be of type string")
+    # end if
+    if not "type" in data:
+        raise ErrorParsingDictionary("The tag type is mandatory inside entity structure")
+    # end if
+    if not data["type"] in ["event", "source", "explicit_ref"]:
+        raise ErrorParsingDictionary("The values allowed for tag type inside entity structure are 'event', 'source' and 'explicit_ref'")
+    # end if
+
+    return
+
+def _validate_alert_cnf(data):
+
+    if type(data) != dict:
+        raise ErrorParsingDictionary("The alert_cnf inside the alert structure has to be of type dict")
+    # end if
+
+    check_items = [item in ["name", "severity", "description", "group"] for item in data.keys()]
+    if False in check_items:
+        raise ErrorParsingDictionary("The allowed tags inside alert_cnf structure are: description, severity and name")
+    # end if
+
+    # Mandatory tags
+    if not "name" in data:
+        raise ErrorParsingDictionary("The tag name is mandatory inside alert_cnf structure")
+    # end if
+    if not type(data["name"]) == str:
+        raise ErrorParsingDictionary("The tag name inside alert_cnf structure has to be of type string")
+    # end if
+    if not "severity" in data:
+        raise ErrorParsingDictionary("The tag name is mandatory inside alert_cnf structure")
+    # end if
+    severities = ["info", "warning", "minor", "major", "critical", "fatal"]
+    if not data["severity"] in severities:
+        raise ErrorParsingDictionary("The tag severity inside alert_cnf structure has to be one of the following values {}".format(severities))
+    # end if
+
+    # Optional tags
+    if "description" in data and not type(data["description"]) == str:
+        raise ErrorParsingDictionary("The tag description inside alert_cnf structure has to be of type string")
+    # end if
+    # Optional tags
+    if "group" in data and not type(data["group"]) == str:
+        raise ErrorParsingDictionary("The tag group inside alert_cnf structure has to be of type string")
+    # end if
+
+    return

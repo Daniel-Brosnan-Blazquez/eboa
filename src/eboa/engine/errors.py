@@ -149,3 +149,13 @@ class DuplicatedValues(Error):
 
     def __init__(self, message):
         self.message = message
+
+class UndefinedEntityReference(Error):
+    """Exception raised when an alert has been defined for an entity which does not exist with the corresponding reference.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message

@@ -23,7 +23,7 @@ from eboa.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, Wrong
 
 # Import datamodel
 from eboa.datamodel.dim_signatures import DimSignature
-from eboa.datamodel.alerts import Alert
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -4670,3 +4670,117 @@ class TestEngine(unittest.TestCase):
         returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
         assert returned_value == eboa_engine.exit_codes["DUPLICATED_VALUES"]["status"]
+
+    def test_insert_alerts_by_ref(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "link_ref": "EVENT_REF",
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }],
+            "alerts": [{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "EVENT_REF",
+                    "type": "event"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name2",
+                    "severity": "warning",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "EXPLICIT_REFERENCE_EVENT",
+                    "type": "explicit_ref"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name3",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "source.json",
+                    "type": "source"
+                }
+            }]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+        
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        explicit_refs = self.session.query(ExplicitRef).all()
+
+        assert len(explicit_refs) == 1
+
+        event_alert = self.session.query(EventAlert).join(Alert).join(AlertGroup).filter(EventAlert.message == "Alert message",
+                                                                                         EventAlert.generator == "test",
+                                                                                         EventAlert.notification_time == "2018-06-05T08:07:36",
+                                                                                         EventAlert.event_uuid == events[0].event_uuid,
+                                                                                         Alert.name == "alert_name1",
+                                                                                         Alert.description == "Alert description",
+                                                                                         Alert.severity == 4,
+                                                                                         AlertGroup.name == "alert_group").all()
+        assert len(event_alert) == 1
+
+        explicit_ref_alert = self.session.query(ExplicitRefAlert).join(Alert).join(AlertGroup).filter(ExplicitRefAlert.message == "Alert message",
+                                                                                         ExplicitRefAlert.generator == "test",
+                                                                                         ExplicitRefAlert.notification_time == "2018-06-05T08:07:36",
+                                                                                         ExplicitRefAlert.explicit_ref_uuid == explicit_refs[0].explicit_ref_uuid,
+                                                                                         Alert.name == "alert_name2",
+                                                                                         Alert.description == "Alert description",
+                                                                                         Alert.severity == 1,
+                                                                                         AlertGroup.name == "alert_group").all()
+        assert len(explicit_ref_alert) == 1
+
+        source_alert = self.session.query(SourceAlert).join(Alert).join(AlertGroup).filter(SourceAlert.message == "Alert message",
+                                                                                         SourceAlert.generator == "test",
+                                                                                         SourceAlert.notification_time == "2018-06-05T08:07:36",
+                                                                                         SourceAlert.source_uuid == sources[0].source_uuid,
+                                                                                         Alert.name == "alert_name3",
+                                                                                         Alert.description == "Alert description",
+                                                                                         Alert.severity == 4,
+                                                                                         AlertGroup.name == "alert_group").all()
+        assert len(source_alert) == 1

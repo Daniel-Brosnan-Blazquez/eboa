@@ -20,6 +20,7 @@ class Source(Base):
     validity_start = Column(DateTime)
     validity_stop = Column(DateTime)
     generation_time = Column(DateTime)
+    ingested = Column(Boolean)
     ingestion_time = Column(DateTime)
     ingestion_duration = Column(Interval)
     processor = Column(Text)
@@ -67,28 +68,6 @@ class SourceStatus(Base):
     source = relationship("Source", backref="statuses")
     __mapper_args__ = {
         'primary_key':[source_uuid]
-    }
-
-    def __init__(self, time_stamp, status, source, log = None):
-        self.time_stamp = time_stamp
-        self.status = status
-        self.log = log
-        self.source = source
-
-class SourceAlert(Base):
-    __tablename__ = 'source_alerts'
-
-    message = Column(Text)
-    validated = Column(Boolean)
-    ingestion_time = Column(DateTime)
-    generator = Column(Text)
-    notified = Column(Boolean)
-    source_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('sources.source_uuid'))
-    source = relationship("Source", backref="alerts")
-    alert_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('alerts.alert_uuid'))
-    alert = relationship("Alert", backref="source_alerts")
-    __mapper_args__ = {
-        'primary_key':[alert_uuid, source_uuid]
     }
 
     def __init__(self, time_stamp, status, source, log = None):

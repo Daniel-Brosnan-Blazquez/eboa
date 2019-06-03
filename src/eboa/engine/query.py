@@ -22,6 +22,7 @@ from sqlalchemy import extract
 # Import datamodel
 from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus

@@ -25,12 +25,12 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference
 
 # Import datamodel
 from eboa.datamodel.base import Session
 from eboa.datamodel.dim_signatures import DimSignature
-from eboa.datamodel.alerts import Alert
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -59,6 +59,15 @@ config = read_configuration()
 
 logging = Log()
 logger = logging.logger
+
+alert_severity_codes = {
+    "info": 0,
+    "warning": 1,
+    "minor": 2,
+    "major": 3,
+    "critical": 4,
+    "fatal": 5
+}
 
 exit_codes = {
     "OK": {
@@ -116,6 +125,10 @@ exit_codes = {
     "DUPLICATED_VALUES": {
         "status": 13,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines duplicated values inside the same entity. The exception raised has been the following: {}"
+    },
+    "UNDEFINED_ENTITY_REF": {
+        "status": 14,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an alert which links to an undefined reference identifier {}"
     }
 }
 
@@ -506,6 +519,9 @@ class Engine():
         self.annotation_cnfs_explicit_refs = []
         self.annotations = {}
         self.keys_events = {}
+        self.alert_cnfs = {}
+        self.alert_groups = {}
+        self.event_link_refs = {}
 
         return
 
@@ -562,6 +578,12 @@ class Engine():
         # Insert explicit references
         self._insert_links_explicit_refs()
 
+        # Insert alert groups
+        self._insert_alert_groups()
+        
+        # Insert alert configuration
+        self._insert_alert_cnfs()
+        
         self.session.begin_nested()
         # Insert events
         try:
@@ -681,6 +703,20 @@ class Engine():
             return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
+        # Insert alerts
+        try:
+            self._insert_alerts()
+        except UndefinedEntityReference as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["UNDEFINED_ENTITY_REF"]["status"], error_message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["UNDEFINED_ENTITY_REF"]["status"]
+        # end try
+
         # Review the inserted events and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
@@ -784,7 +820,7 @@ class Engine():
                                                                Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
                                                                Source.processor_version == version,
                 Source.processor == processor).first()
-        if self.source and self.source.ingestion_duration:
+        if self.source and self.source.ingested:
             # The source has been already ingested
             raise SourceAlreadyIngested(exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
                                                                                                      self.dim_signature.dim_signature,
@@ -848,19 +884,16 @@ class Engine():
         Method to insert the gauges
         """
         description = None
-        gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"))  for event in self.operation.get("events") or []]
+        gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"), event.get("gauge").get("description"))  for event in self.operation.get("events") or []]
         unique_gauges = set(gauges)
         for gauge in unique_gauges:
             name = gauge[0]
             system = gauge[1]
+            description = gauge[2]
             self.gauges[(name,system)] = self.session.query(Gauge).filter(Gauge.name == name, Gauge.system == system, Gauge.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
             if not self.gauges[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                descriptions = [event.get("gauge").get("description") for event in self.operation.get("events") or [] if event.get("gauge").get("name") == name and event.get("gauge").get("system") == system]
-                if len(descriptions) > 0:
-                    description = descriptions[0]
-                # end if
                 self.gauges[(name,system)] = Gauge(id, name, self.dim_signature, system, description)
                 self.session.add(self.gauges[(name,system)])
                 try:
@@ -883,19 +916,16 @@ class Engine():
         """
         Method to insert the annotation configurations
         """
-        annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"))  for annotation in self.operation.get("annotations") or []]
+        annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"), annotation.get("annotation_cnf").get("description"))  for annotation in self.operation.get("annotations") or []]
         unique_annotation_cnfs = set(annotation_cnfs)
         for annotation in unique_annotation_cnfs:
             name = annotation[0]
             system = annotation[1]
+            description = annotation[2]
             self.annotation_cnfs[(name,system)] = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == name, AnnotationCnf.system == system, AnnotationCnf.dim_signature_uuid == self.dim_signature.dim_signature_uuid).first()
             if not self.annotation_cnfs[(name,system)]:
                 self.session.begin_nested()
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                descriptions = [event.get("annotation_cnf").get("description") for event in self.operation.get("annotations") or [] if event.get("annotation_cnf").get("name") == name and event.get("annotation_cnf").get("system") == system]
-                if len(descriptions) > 0:
-                    description = descriptions[0]
-                # end if
                 self.annotation_cnfs[(name,system)] = AnnotationCnf(id, name, self.dim_signature, system, description)
                 self.session.add(self.annotation_cnfs[(name,system)])
                 try:
@@ -919,23 +949,24 @@ class Engine():
         """
         Method to insert the groups of explicit references
         """
-        for explicit_ref in self.operation.get("explicit_references") or []:
-            if "group" in explicit_ref:
-                self.session.begin_nested()
-                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                expl_group_ddbb = ExplicitRefGrp(id, explicit_ref.get("group"))
-                self.session.add(expl_group_ddbb)
-                try:
-                    race_condition()
-                    self.session.commit()
-                except IntegrityError:
-                    # The explicit reference group exists already into DDBB
-                    self.session.rollback()
-                    expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == explicit_ref.get("group")).first()
-                    pass
-                # end try
-                self.expl_groups[explicit_ref.get("group")] = expl_group_ddbb
-            # end if
+        explicit_ref_groups = [explicit_ref.get("group") for explicit_ref in self.operation.get("explicit_references") or []]
+        unique_explicit_ref_groups = set(explicit_ref_groups)
+
+        for explicit_ref_group in unique_explicit_ref_groups or []:
+            self.session.begin_nested()
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            expl_group_ddbb = ExplicitRefGrp(id, explicit_ref_group)
+            self.session.add(expl_group_ddbb)
+            try:
+                race_condition()
+                self.session.commit()
+            except IntegrityError:
+                # The explicit reference group exists already into DDBB
+                self.session.rollback()
+                expl_group_ddbb = self.session.query(ExplicitRefGrp).filter(ExplicitRefGrp.name == explicit_ref_group).first()
+                pass
+            # end try
+            self.expl_groups[explicit_ref_group] = expl_group_ddbb
         # end for
 
         return
@@ -1087,7 +1118,6 @@ class Engine():
         list_events = []
         list_keys = []
         list_event_links_by_ref = {}
-        list_event_link_refs = {}
         list_event_links_by_uuid_ddbb = []
         list_values = {}
         for event in self.operation.get("events") or []:
@@ -1167,12 +1197,12 @@ class Engine():
                 # end for
             # end if
             if "link_ref" in event:
-                if event["link_ref"] in list_event_link_refs:
+                if event["link_ref"] in self.event_link_refs:
                     # The same link identifier has been specified in more than one event
                     self.session.rollback()
                     raise DuplicatedEventLinkRef(exit_codes["DUPLICATED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, event["link_ref"]))
                 # end if
-                list_event_link_refs[event["link_ref"]] = id
+                self.event_link_refs[event["link_ref"]] = id
             # end if
         # end for
 
@@ -1213,12 +1243,12 @@ class Engine():
         # Insert links by reference
         list_event_links_by_ref_ddbb = []
         for link_ref in list_event_links_by_ref:
-            if not link_ref in list_event_link_refs:
+            if not link_ref in self.event_link_refs:
                 # There has not been defined this link reference in any event
                 self.session.rollback()
                 raise UndefinedEventLink(exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
             # end if
-            event_uuid = list_event_link_refs[link_ref]
+            event_uuid = self.event_link_refs[link_ref]
             
             for link in list_event_links_by_ref[link_ref]:
                 list_event_links_by_ref_ddbb.append(dict(event_uuid_link = link["event_uuid"],
@@ -1444,6 +1474,146 @@ class Engine():
         return
 
     @debug
+    def _insert_alert_groups(self):
+        """
+        Method to insert the groups of alerts
+        """
+        alert_groups = [alert.get("alert_cnf").get("group") for alert in self.operation.get("alerts") or []]
+        unique_alert_groups = set(alert_groups)
+        for alert_group in unique_alert_groups or []:
+            self.session.begin_nested()
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            alert_group_ddbb = AlertGroup(id, alert_group)
+            self.session.add(alert_group_ddbb)
+            try:
+                race_condition()
+                self.session.commit()
+            except IntegrityError:
+                # The explicit reference group exists already into DDBB
+                self.session.rollback()
+                alert_group_ddbb = self.session.query(AlertGroup).filter(AlertGroup.name == alert_group).first()
+                pass
+            # end try
+            self.alert_groups[alert_group] = alert_group_ddbb
+        # end for
+
+        return
+    
+    @debug        
+    def _insert_alert_cnfs(self):
+        """
+        Method to insert the alert configurations
+        """
+        alert_cnfs = [(alert.get("alert_cnf").get("name"), alert.get("alert_cnf").get("description"), alert.get("alert_cnf").get("severity"), alert.get("alert_cnf").get("group")) for alert in self.operation.get("alerts") or []]
+        unique_alert_cnfs = set(alert_cnfs)
+        for alert_cnf in unique_alert_cnfs:
+            name = alert_cnf[0]
+            description = alert_cnf[1]
+            severity = alert_severity_codes[alert_cnf[2]]
+            group = self.alert_groups[alert_cnf[3]]
+            self.alert_cnfs[name] = self.session.query(Alert).filter(Alert.name == name).first()
+            if not self.alert_cnfs[name]:
+                self.session.begin_nested()
+                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                group
+                self.alert_cnfs[name] = Alert(id, name, severity, group, description)
+                self.session.add(self.alert_cnfs[name])
+                try:
+                    race_condition()
+                    self.session.commit()
+                except IntegrityError:
+                    # The alert has been inserted between the query and the insertion. Roll back transaction for
+                    # re-using the session
+                    self.session.rollback()
+                    # Get the stored alert configuration
+                    self.alert_cnfs[name] = self.session.query(Alert).filter(Alert.name == name).first()
+                    pass
+                # end try
+            # end if
+        # end for
+
+        return
+    
+    @debug
+    def _insert_alerts(self):
+        """
+        Method to insert the alerts
+        """
+        list_event_alerts = []
+        list_source_alerts = []
+        list_explicit_ref_alerts = []
+        for alert in self.operation.get("alerts") or []:
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            alert_cnf = self.alert_cnfs[alert.get("alert_cnf").get("name")]
+            message = alert.get("message")
+            generator = alert.get("generator")
+            notification_time = alert.get("notification_time")
+            entity_ref = alert.get("entity").get("reference")
+            entity_ref_mode = alert.get("entity").get("reference_mode")
+            entity_type = alert.get("entity").get("type")
+
+            kwargs = {}
+            kwargs["message"] = message
+            kwargs["ingestion_time"] = datetime.datetime.now()
+            kwargs["generator"] = generator
+            kwargs["notification_time"] = notification_time
+            kwargs["alert_uuid"] = alert_cnf.alert_uuid
+
+            if entity_ref_mode == "by_uuid":
+                entity_uuid = entity_ref
+            # end if
+
+            if entity_type == "event":
+                list_alerts = list_event_alerts
+                if entity_ref_mode == "by_ref":
+                    if not entity_ref in self.event_link_refs:
+                        raise UndefinedEntityReference(exit_codes["UNDEFINED_ENTITY_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, entity_ref))
+                    # end if
+                    entity_uuid = self.event_link_refs[entity_ref]
+                # end if
+                kwargs["event_alert_uuid"] = id
+                kwargs["event_uuid"] = entity_uuid
+            elif entity_type == "source":
+                list_alerts = list_source_alerts
+                if entity_ref_mode == "by_ref":
+                    if entity_ref != self.source.name:
+                        raise UndefinedEntityReference(exit_codes["UNDEFINED_ENTITY_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, entity_ref))
+                    # end if
+                    entity_uuid = self.source.source_uuid
+                # end if
+                kwargs["source_alert_uuid"] = id
+                kwargs["source_uuid"] = entity_uuid
+            else:
+                list_alerts = list_explicit_ref_alerts
+                if entity_ref_mode == "by_ref":
+                    if not entity_ref in self.explicit_refs:
+                        raise UndefinedEntityReference(exit_codes["UNDEFINED_ENTITY_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, entity_ref))
+                    # end if
+                    entity_uuid = self.explicit_refs[entity_ref].explicit_ref_uuid
+                # end if
+                kwargs["explicit_ref_alert_uuid"] = id
+                kwargs["explicit_ref_uuid"] = entity_uuid
+            # end if
+
+            # Insert the alert into the list for bulk ingestion
+            list_alerts.append(dict(kwargs))
+
+        # end for
+            
+        # Bulk insert alerts
+        if len(list_event_alerts) > 0:
+            self.session.bulk_insert_mappings(EventAlert, list_event_alerts)
+        # end if
+        if len(list_source_alerts) > 0:
+            self.session.bulk_insert_mappings(SourceAlert, list_source_alerts)
+        # end if
+        if len(list_explicit_ref_alerts) > 0:
+            self.session.bulk_insert_mappings(ExplicitRefAlert, list_explicit_ref_alerts)
+        # end if
+
+        return
+    
+    @debug
     def _insert_source_status(self, status, final = False, error_message = None):
         """
         Method to insert the DIM processing status
@@ -1467,6 +1637,7 @@ class Engine():
         if final:
             # Insert processing duration
             self.source.ingestion_duration = datetime.datetime.now() - self.ingestion_start
+            self.source.ingested = True
             self.source.ingestion_time = datetime.datetime.now()
         # end if
 
