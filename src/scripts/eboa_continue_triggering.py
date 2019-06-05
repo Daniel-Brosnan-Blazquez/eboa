@@ -6,6 +6,9 @@ Written by DEIMOS Space S.L. (dibb)
 
 module eboa
 """
+# Import python utilities
+import datetime
+
 # Import engine
 from eboa.engine.query import Query
 
@@ -24,7 +27,12 @@ maximum_parallel_ingestions = config["MAXIMUM_PARALLEL_INGESTIONS"]
 def main():
     query = Query()
 
-    sources = query.get_sources(ingested = False)
+    # Get sources not ingested in the last 2 hours (to avoid blocking the chain by blocked ingestions)
+    # 2 hours is the time for notifying alerts and so the system will be protected
+    stop = datetime.datetime.now()
+    start = stop + datetime.timedelta(hours=-2)
+    sources = query.get_sources(ingested = False, generation_time_filters = [{"date": start.isoformat(), "op": ">"},
+                                                                             {"date": stop.isoformat(), "op": "<"}])
 
     return_value = 0
     if len(sources) > maximum_parallel_ingestions:
