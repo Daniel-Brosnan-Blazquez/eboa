@@ -61,19 +61,51 @@ def command_process_file(processor, file_path, output_path = None):
     # Validate data
     filename = os.path.basename(file_path)
 
-    returned_value = 0
+    returned_statuses = [{
+        "source": filename,
+        "dim_signature": None,
+        "processor": None,
+        "status": eboa_engine.exit_codes["OK"]["status"]
+    }]
+
     # Treat data
     if output_path == None:
-        returned_value = insert_data_into_DDBB(data, filename, engine)
+        returned_statuses = insert_data_into_DDBB(data, filename, engine)
     else:
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
     # end if
 
+    failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
+    successes = [returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
+
+    if len(failures) == 0:
+        for success in successes:
+            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
+                                                                                                                                           success["dim_signature"],
+                                                                                                                                           success["processor"]))
+        # end for
+
+        logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
+        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
+    else:
+        for failure in failures:
+            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {} with status {}".format(filename,
+                                                                                                                                                          failure["dim_signature"],
+                                                                                                                                                          failure["processor"],
+                                                                                                                                                          failure["status"]))
+        # end for
+        for success in successes:
+            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
+                                                                                                                                           success["dim_signature"],
+                                                                                                                                           success["processor"]))
+        # end for                    
+    # end if
+    
     engine.close_session()
     query.close_session()
     
-    return returned_value
+    return returned_statuses
 
 def main():
     args_parser = argparse.ArgumentParser(description="Process NPPFs.")
@@ -98,12 +130,8 @@ def main():
         output_path = args.output_path[0]
     # end if
 
-    returned_value = command_process_file(processor, file_path, output_path)
+    returned_statuses = command_process_file(processor, file_path, output_path)
     
-    logger.info("The ingestion has been performed and the returned value is {}".format(returned_value))
-
-    ### Check the status of the returned_value
-
     exit(0)
 
 if __name__ == "__main__":

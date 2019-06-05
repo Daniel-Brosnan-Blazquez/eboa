@@ -9,6 +9,7 @@ module eboa
 # Import python utilities
 import os
 from oslo_concurrency import lockutils
+import datetime
 
 # Import engine functions
 from eboa.engine.functions import get_resources_path, get_schemas_path
@@ -16,6 +17,9 @@ from eboa.engine.functions import get_resources_path, get_schemas_path
 # Import xml parser
 from lxml import etree
 import eboa.triggering.xpath_functions as xpath_functions
+
+# Import engine
+from eboa.engine.engine import Engine
 
 # Import logging
 import argparse
@@ -184,7 +188,7 @@ def triggering(file_path, output_path = None):
 
     return
 
-if __name__ == "__main__":
+def main():
 
     args_parser = argparse.ArgumentParser(description='EBOA triggering.')
     args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
@@ -194,7 +198,7 @@ if __name__ == "__main__":
     
     args = args_parser.parse_args()
     file_path = args.file_path[0]
-
+    
     # Check if file exists
     if not os.path.isfile(file_path):
         logger.error("The specified file {} does not exist".format(file_path))
@@ -206,11 +210,49 @@ if __name__ == "__main__":
     output_path = None
     if args.output_path != None:
         output_path = args.output_path[0]
+        # Check if file exists
+        if not os.path.isdir(os.path.dirname(output_path)):
+            logger.error("The specified path to the output file {} does not exist".format(output_path))
+            exit(-1)
+        # end if
     # end if
 
     if output_path:
         triggering(file_path, output_path)
     else:
+        engine_eboa = Engine()
+
+        # Insert an associated alert for checking pending ingestions
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "PENDING_SOURCES",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": os.path.basename(file_path),
+                       "generation_time": datetime.datetime.now().isoformat(),
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"},
+            "alerts": [{
+                "message": "The input {} has been received to be ingested".format(file_path),
+                "generator": os.path.basename(__file__),
+                "notification_time": (datetime.datetime.now() + datetime.timedelta(hours=2)).isoformat(),
+                "alert_cnf": {
+                    "name": "PENDING_INGESTION_OF_SOURCE",
+                    "severity": "fatal",
+                    "description": "Alert refers to the pending ingestion of the relative input",
+                    "group": "INGESTION_CONTROL"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": os.path.basename(file_path),
+                    "type": "source"
+                }
+            }]
+        }]
+        }
+        engine_eboa.treat_data(data)
+
         newpid = os.fork()
         result = 0
         if newpid == 0:
@@ -218,4 +260,8 @@ if __name__ == "__main__":
         # end if
     # end if
 
-    exit(0)
+    exit(0)    
+
+if __name__ == "__main__":
+
+    main()

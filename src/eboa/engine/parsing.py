@@ -113,7 +113,7 @@ def _validate_dim_signature(data):
 
 def _validate_source(data):
 
-    check_items = [item in ["generation_time", "name", "validity_start", "validity_stop"] for item in data.keys()]
+    check_items = [item in ["generation_time", "name", "validity_start", "validity_stop", "ingested"] for item in data.keys()]
     if False in check_items:
         raise ErrorParsingDictionary("The allowed tags inside source structure are: generation_time, name, validity_start and validity_stop")
     # end if
@@ -144,6 +144,10 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag validity_stop inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
     # end if
 
+    if "ingested" in data and not data["ingested"].lower() in ["false", "true"]:
+        raise ErrorParsingDictionary("The tag ingested has to have one of the following values: false or true")
+    # end if
+    
     return
 
 def _validate_explicit_references(data):

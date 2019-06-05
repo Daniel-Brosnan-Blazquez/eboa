@@ -72,7 +72,7 @@ alert_severity_codes = {
 exit_codes = {
     "OK": {
         "status": 0,
-        "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has ingested correctly {} event/s and {} annotation/s"
+        "message": "The source file {} associated to the DIM signature {} and DIM processing {} with version {} has ingested correctly {} event/s, {} annotation/s and {} alert/s"
     },
     "INGESTION_STARTED": {
         "status": 1,
@@ -731,6 +731,11 @@ class Engine():
             n_annotations = len(self.operation.get("annotations"))
         # end if
 
+        n_alerts = 0
+        if "alerts" in self.operation:
+            n_alerts = len(self.operation.get("alerts"))
+        # end if
+
         # Log that the file has been ingested correctly
         self._insert_source_status(exit_codes["OK"]["status"],True)
         logger.info(exit_codes["OK"]["message"].format(
@@ -739,7 +744,8 @@ class Engine():
             self.source.processor, 
             self.source.processor_version,
             n_events,
-            n_annotations))
+            n_annotations,
+            n_alerts))
 
         # Remove if the content was inserted due to errors processing the input
         self.source.content_json = None
@@ -1635,10 +1641,17 @@ class Engine():
         # end if
 
         if final:
-            # Insert processing duration
-            self.source.ingestion_duration = datetime.datetime.now() - self.ingestion_start
-            self.source.ingested = True
-            self.source.ingestion_time = datetime.datetime.now()
+            ingested = True
+            if self.operation.get("source").get("ingested") == "false":
+                ingested = False
+            # end if
+            self.source.ingested = ingested
+
+            if ingested:
+                # Insert ingestion duration and ingestion time
+                self.source.ingestion_duration = datetime.datetime.now() - self.ingestion_start
+                self.source.ingestion_time = datetime.datetime.now()
+            # end if
         # end if
 
         self.session.commit()

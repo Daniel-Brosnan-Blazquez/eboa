@@ -142,7 +142,7 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -294,7 +294,14 @@ class Query():
         query = query.filter(*params)
 
         log_query(query)
-        sources = query.all()
+
+        sources = []
+        if delete:
+            query.delete(synchronize_session="fetch")
+            self.session.commit()
+        else:
+            sources = query.all()
+        # end if
 
         return sources
 
