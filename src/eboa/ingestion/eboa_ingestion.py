@@ -86,8 +86,6 @@ def command_process_file(processor, file_path, output_path = None):
                                                                                                                                            success["processor"]))
         # end for
 
-        logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
-        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
     else:
         for failure in failures:
             logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {} with status {}".format(filename,
@@ -101,7 +99,11 @@ def command_process_file(processor, file_path, output_path = None):
                                                                                                                                            success["processor"]))
         # end for                    
     # end if
-    
+
+    # Remove the entry associated to the notification of pending ingestions
+    query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
+    logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
+        
     engine.close_session()
     query.close_session()
     

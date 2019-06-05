@@ -90,6 +90,14 @@ def read_configuration():
 
     return config
 
+def is_valid_bool_filter(filter):
+
+    if type(filter) != bool:
+        raise InputError("The parameter filter must be a boolean value (received filter: {}).".format(filter))
+    # end if
+
+    return True
+
 def is_valid_date_filters(date_filters, operators):
 
     if type(date_filters) != list:
