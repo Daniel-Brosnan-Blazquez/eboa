@@ -15,6 +15,7 @@ from itertools import chain
 from oslo_concurrency import lockutils
 import json
 import jsonschema
+import re
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -834,15 +835,15 @@ class Engine():
                                                                                                      version))
         elif self.source:
             # Upadte the information
-            self.source.validity_start = validity_start
-            self.source.validity_stop = validity_stop
-            self.source.generation_time = generation_time
+            self.source.validity_start = parser.parse(validity_start)
+            self.source.validity_stop = parser.parse(validity_stop)
+            self.source.generation_time = parser.parse(generation_time)
             return
         # end if
 
         self.source = Source(id, name,
-                                    generation_time, version, self.dim_signature,
-                                    validity_start, validity_stop, processor = processor)
+                                    parser.parse(generation_time), version, self.dim_signature,
+                                    parser.parse(validity_start), parser.parse(validity_stop), processor = processor)
         self.session.add(self.source)
         try:
             race_condition()
@@ -1365,31 +1366,35 @@ class Engine():
                     # end if
                     list_to_use = list_values["timestamps"]
                 elif item["type"] == "geometry":
-                    list_coordinates = item.get("value").split(" ")
-                    if len (list_coordinates) % 2 != 0:
-                        self.session.rollback()
-                        raise OddNumberOfCoordinates(exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
-                    # end if
-                    coordinates = 0
-                    value = "POLYGON(("
-                    for coordinate in list_coordinates:
-                        if coordinates == 2:
-                            value = value + ","
-                            coordinates = 0
-                        # end if
-                        try:
-                            float(coordinate)
-                        except ValueError:
+                    if re.match("POLYGON((.*))", item.get("value")):
+                        value = item.get("value")
+                    else:
+                        list_coordinates = item.get("value").split(" ")
+                        if len (list_coordinates) % 2 != 0:
                             self.session.rollback()
-                            raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
-                        # end try
-                        value = value + coordinate
-                        coordinates += 1
-                        if coordinates == 1:
-                            value = value + " "
+                            raise OddNumberOfCoordinates(exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
                         # end if
-                    # end for
-                    value = value + "))"
+                        coordinates = 0
+                        value = "POLYGON(("
+                        for coordinate in list_coordinates:
+                            if coordinates == 2:
+                                value = value + ","
+                                coordinates = 0
+                            # end if
+                            try:
+                                float(coordinate)
+                            except ValueError:
+                                self.session.rollback()
+                                raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
+                            # end try
+                            value = value + coordinate
+                            coordinates += 1
+                            if coordinates == 1:
+                                value = value + " "
+                            # end if
+                        # end for
+                        value = value + "))"
+                    # end if                        
                     if not "geometries" in list_values:
                         list_values["geometries"] = []
                     # end if
@@ -1738,7 +1743,7 @@ class Engine():
                     source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
                                                                                                              DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                                                                              Source.validity_start < validity_stop,
-                                                                                                             Source.validity_stop > validity_start).first()
+                                                                                                             Source.validity_stop > validity_start).order_by(Source.ingestion_time).first()
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
@@ -2033,7 +2038,7 @@ class Engine():
                         source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                    Event.gauge_uuid == gauge_uuid,
                                                                                                    Event.start < validity_stop,
-                                                                                                   Event.stop > validity_start).first()
+                                                                                                   Event.stop > validity_start).order_by(Source.ingestion_time).first()
 
                         # Events related to the DIM processing with the maximum generation time
                         events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,

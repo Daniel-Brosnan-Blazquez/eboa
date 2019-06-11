@@ -48,6 +48,9 @@ def build_values_structure(values, structure, position = 0, parent_level = -1, p
                     if value_type == "geometry":
                         value_content = to_shape(value.value).wkt
                     # end if
+                    elif value_type == "timestamp":
+                        value_content = value.value.isoformat()
+                    # end if
 
                     object_entity_structure["values"].append({"name": value.name,
                                                               "type": value_type,

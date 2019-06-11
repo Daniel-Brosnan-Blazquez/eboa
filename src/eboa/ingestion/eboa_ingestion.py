@@ -15,6 +15,7 @@ from dateutil import parser
 import copy
 from lxml import etree
 import json
+import traceback
 
 # Import logging
 from eboa.logging import Log
@@ -55,6 +56,7 @@ def command_process_file(processor, file_path, output_path = None):
         data = processor_module.process_file(file_path, engine, query)
     except Exception as e:
         logger.info("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
+        traceback.print_exc(file=sys.stdout)
         exit(-1)
     # end try
 
@@ -88,7 +90,7 @@ def command_process_file(processor, file_path, output_path = None):
 
     else:
         for failure in failures:
-            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {} with status {}".format(filename,
+            logger.info("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
                                                                                                                                                           failure["dim_signature"],
                                                                                                                                                           failure["processor"],
                                                                                                                                                           failure["status"]))
