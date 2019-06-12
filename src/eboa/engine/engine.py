@@ -539,13 +539,15 @@ class Engine():
         try:
             self._insert_source()
             self.ingestion_start = datetime.datetime.now()
-            self._insert_source_status(exit_codes["INGESTION_STARTED"]["status"])
-            # Log that the ingestion of the source file has been started
-            logger.info(exit_codes["INGESTION_STARTED"]["message"].format(
+            log_info = exit_codes["INGESTION_STARTED"]["message"].format(
                 self.source.name,
                 self.dim_signature.dim_signature,
                 self.source.processor, 
-                self.source.processor_version))
+                self.source.processor_version)
+            self._insert_source_status(exit_codes["INGESTION_STARTED"]["status"],
+                                       error_message = log_info)
+            # Log that the ingestion of the source file has been started
+            logger.info(log_info)
         except SourceAlreadyIngested as e:
             self.session.rollback()
             self._insert_source_status(exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
