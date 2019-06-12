@@ -105,12 +105,17 @@ def block_and_execute_command(source_type, command):
     :param command: command to execute inside the mutex
     :type command: str
     """
-    @synchronized(source_type, external=True, lock_path="/dev/shm")
-    def blocking_on_command(command):
+    newpid = os.fork()
+    if newpid == 0:
         execute_command(command)
-    # end def
+    else:
+        @synchronized(source_type, external=True, lock_path="/dev/shm")
+        def blocking_on_command():
+            os.waitpid(newpid, 0)
+        # end def
 
-    blocking_on_command(command)
+        blocking_on_command()        
+    # end if
 
     return
 
