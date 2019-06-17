@@ -18,7 +18,7 @@ from eboa.datamodel.functions import read_configuration
 # Import logging
 from eboa.logging import Log
 
-logging_module = Log()
+logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
 
 config = read_configuration()

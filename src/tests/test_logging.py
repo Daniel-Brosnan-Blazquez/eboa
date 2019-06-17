@@ -33,7 +33,7 @@ class TestLogging(unittest.TestCase):
         os.environ["EBOA_LOG_LEVEL"] = "DEBUG"
         os.environ["EBOA_STREAM_LOG"] = "YES"
 
-        logging_module = Log()
+        logging_module = Log(name = __name__)
         logger = logging_module.logger
 
         assert logger.level == logging.DEBUG
@@ -43,7 +43,7 @@ class TestLogging(unittest.TestCase):
         del os.environ["EBOA_LOG_LEVEL"]
         del os.environ["EBOA_STREAM_LOG"]
 
-        logging_module.define_logging_configuration()
+        logging_module.define_logging_configuration(name = __name__)
 
         config_log_level = eval("logging." + config["LOG"]["LEVEL"])
 

@@ -25,7 +25,7 @@ import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 from eboa.engine.query import Query
 
-logging_module = Log()
+logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
 
 def insert_data_into_DDBB(data, filename, engine):

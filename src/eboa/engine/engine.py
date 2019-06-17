@@ -58,7 +58,7 @@ from eboa.engine.functions import get_resources_path, get_schemas_path, read_con
 
 config = read_configuration()
 
-logging = Log()
+logging = Log(name = __name__)
 logger = logging.logger
 
 alert_severity_codes = {

@@ -4130,7 +4130,7 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_event_simple_update_debug(self):
 
-        logging_module = Log()
+        logging_module = Log(name = __name__)
 
         previous_logging_level = None
         if "EBOA_LOG_LEVEL" in os.environ:

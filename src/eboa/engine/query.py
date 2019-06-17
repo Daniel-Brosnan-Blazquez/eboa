@@ -42,7 +42,7 @@ from eboa.logging import Log
 # Import query printing facilities
 from eboa.engine.printing import literal_query
 
-logging = Log()
+logging = Log(name = __name__)
 logger = logging.logger
 
 

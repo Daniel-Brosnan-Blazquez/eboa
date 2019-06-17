@@ -10,7 +10,7 @@ from geoalchemy2.shape import to_shape
 import logging
 from eboa.logging import Log
 
-logging = Log()
+logging = Log(name = __name__)
 logger = logging.logger
 
 def build_values_structure(values, structure, position = 0, parent_level = -1, parent_position = 0):

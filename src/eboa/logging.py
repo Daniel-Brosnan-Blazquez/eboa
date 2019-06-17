@@ -19,12 +19,16 @@ log_path = get_log_path()
 
 class Log():
 
-    def __init__(self):
-        self.define_logging_configuration()
+    def __init__(self, name = None):
+        self.define_logging_configuration(name)
 
-    def define_logging_configuration(self):
+    def define_logging_configuration(self, name = None):
         # Define logging configuration
-        self.logger = logging.getLogger(__name__)
+        if name == None:
+            name = __name__
+        # end if
+        self.logger = logging.getLogger(name)
+
         if "EBOA_LOG_LEVEL" in os.environ:
             self.logger.setLevel(eval("logging." + os.environ["EBOA_LOG_LEVEL"]))
         else:
@@ -38,7 +42,6 @@ class Log():
             stream_handler = logging.StreamHandler()
             stream_handler.setFormatter(formatter)
             self.logger.addHandler(stream_handler)
-            self.logger.info("Stream Log handler created")
         elif not "EBOA_STREAM_LOG" in os.environ and len(stream_handlers) > 0:
             self.logger.info("Stream Log handler is going to be removed")
             self.logger.removeHandler(stream_handlers[0])
@@ -50,7 +53,6 @@ class Log():
             file_handler = RotatingFileHandler(log_path + "/eboa_engine.log", maxBytes=config["LOG"]["MAX_BYTES"], backupCount=config["LOG"]["MAX_BACKUP"])
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
-            self.logger.info("File log handler created using file stored in path {}".format(log_path))
         # end if
 
         return

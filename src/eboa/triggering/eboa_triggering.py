@@ -31,7 +31,7 @@ from eboa.debugging import debug
 # Import errors
 from eboa.triggering.errors import TriggeringConfigCannotBeRead, TriggeringConfigDoesNotPassSchema, FileDoesNotMatchAnyRule
 
-logging_module = Log()
+logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
 
 # Set the synchronized module
