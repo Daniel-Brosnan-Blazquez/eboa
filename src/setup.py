@@ -27,7 +27,8 @@ setup(name="eboa",
           "oslo.concurrency",
           "Pillow",
           "xmlschema",
-          "jsonschema"
+          "jsonschema",
+          "psutil"
       ],
       extras_require={
           "tests" :[

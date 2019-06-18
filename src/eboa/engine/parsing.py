@@ -84,6 +84,10 @@ def _validate_insert_structure(data):
 
 def _validate_dim_signature(data):
 
+    if type(data) != dict:
+        raise ErrorParsingDictionary("The tag dim_signature must be a dictionary")
+    # end if
+    
     check_items = [item in ["exec", "name", "version"] for item in data.keys()]
     if False in check_items:
         raise ErrorParsingDictionary("The allowed tags inside dim_signature structure are: exec, name and version")
@@ -113,6 +117,10 @@ def _validate_dim_signature(data):
 
 def _validate_source(data):
 
+    if type(data) != dict:
+        raise ErrorParsingDictionary("The tag source must be a dictionary")
+    # end if
+    
     check_items = [item in ["generation_time", "name", "validity_start", "validity_stop", "ingested"] for item in data.keys()]
     if False in check_items:
         raise ErrorParsingDictionary("The allowed tags inside source structure are: generation_time, name, validity_start and validity_stop")

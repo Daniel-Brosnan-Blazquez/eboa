@@ -49,13 +49,13 @@ def get_triggering_conf():
         raise TriggeringConfigCannotBeRead("The triggering configuration file ({}) cannot be read".format(get_resources_path() + "/triggering.xml"))
     # end try
 
-    triggering_xpath = etree.XPathEvaluator(triggering_xml)
-
     valid = schema.validate(triggering_xml)
     if not valid:
         logger.error("The triggering configuration file ({}) does not pass the schema ({})".format(get_resources_path() + "/triggering.xml", get_schemas_path() + "/triggering_schema.xsd"))
-        raise TriggeringConfigCannotBeRead("The triggering configuration file ({}) does not pass the schema ({})".format(get_resources_path() + "/triggering.xml", get_schemas_path() + "/triggering_schema.xsd"))
+        raise TriggeringConfigDoesNotPassSchema("The triggering configuration file ({}) does not pass the schema ({})".format(get_resources_path() + "/triggering.xml", get_schemas_path() + "/triggering_schema.xsd"))
     # end if
+
+    triggering_xpath = etree.XPathEvaluator(triggering_xml)
 
     return triggering_xpath
 
