@@ -1,3 +1,4 @@
+
 <health>
   <alerts>
     <alert id="general_cpu_max_threshold" threshold="90"/>
@@ -8,6 +9,6 @@
     <alert id="disk_max_threshold" threshold="90"/>
   </alerts>
   <folders>
-    <forlder name="ROOT" path="/" threshold_num_files="100"/>
+    <folder name="ROOT" path="/" threshold_num_files="100"/>
   </folders>
 </health>
