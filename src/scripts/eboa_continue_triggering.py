@@ -8,6 +8,7 @@ module eboa
 """
 # Import python utilities
 import datetime
+import os
 
 # Import engine
 from eboa.engine.query import Query
