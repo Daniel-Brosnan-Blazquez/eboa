@@ -55,7 +55,7 @@ def command_process_file(processor, file_path, output_path = None):
     try:
         data = processor_module.process_file(file_path, engine, query)
     except Exception as e:
-        logger.info("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
+        logger.error("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
         traceback.print_exc(file=sys.stdout)
         exit(-1)
     # end try
@@ -90,7 +90,7 @@ def command_process_file(processor, file_path, output_path = None):
 
     else:
         for failure in failures:
-            logger.info("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
+            logger.error("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
                                                                                                                                                           failure["dim_signature"],
                                                                                                                                                           failure["processor"],
                                                                                                                                                           failure["status"]))
@@ -128,6 +128,8 @@ def main():
         exit(-1)
     # end if
 
+    logger.info("Received file {}".format(file_path))
+    
     processor = args.processor[0]
     output_path = None
     if args.output_path != None:
