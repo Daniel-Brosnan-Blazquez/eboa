@@ -96,7 +96,7 @@ def execute_command(command):
     return
 
 @debug
-def block_and_execute_command(source_type, command):
+def block_and_execute_command(source_type, command, file_name, dependencies):
     """
     Method to execute the commands while blocking other processes which would have dependencies
     
@@ -107,6 +107,15 @@ def block_and_execute_command(source_type, command):
     """
     newpid = os.fork()
     if newpid == 0:
+        for dependency in dependencies:
+            logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
+            # Block process on the related mutex depending on the configuration
+            block_process(dependency.text)
+        # end for
+
+        logger.info("The following command is going to be triggered: {}".format(command))
+        logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
+
         execute_command(command)
     else:
         @synchronized(source_type, external=True, lock_path="/dev/shm")
@@ -146,13 +155,9 @@ def triggering(file_path, output_path = None):
     if len(matching_rules) > 0:
         # File register into the configuration
         for rule in matching_rules:
+            dependencies = None
             if output_path == None:
-                dependecies = rule.xpath("dependencies/source_type")
-                for dependency in dependecies:
-                    logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
-                    # Block process on the related mutex depending on the configuration
-                    block_process(dependency.text)
-                # end for
+                dependencies = rule.xpath("dependencies/source_type")
             # end if
             
             # Execute the associated tool entering on its specific mutex depending on its source type
@@ -172,14 +177,12 @@ def triggering(file_path, output_path = None):
             if output_path:
                 command = command + " -o " + output_path
             # end if
-            logger.info("The following command is going to be triggered: {}".format(command))
             source_type = rule.xpath("source_type")[0].text
-            logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
 
             if output_path:
                 execute_command(command)
             else:
-                block_and_execute_command(source_type, command)
+                block_and_execute_command(source_type, command, file_name, dependencies)
             # end if
             
             # Register an alert if the tool didn't succeed
