@@ -8,8 +8,11 @@ module eboa
 """
 # Import python utilities
 import os
+import shlex
+from subprocess import Popen, PIPE
 from oslo_concurrency import lockutils
 import datetime
+import errno
 
 # Import engine functions
 from eboa.engine.functions import get_resources_path, get_schemas_path
@@ -34,8 +37,7 @@ from eboa.triggering.errors import TriggeringConfigCannotBeRead, TriggeringConfi
 logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
 
-# Set the synchronized module
-synchronized = lockutils.synchronized_with_prefix('eboa-triggering-')
+on_going_ingestions_folder = get_resources_path() + "/on_going_ingestions/"
 
 def get_triggering_conf():
     schema_path = get_schemas_path() + "/triggering_schema.xsd"
@@ -60,19 +62,24 @@ def get_triggering_conf():
     return triggering_xpath
 
 @debug
-def block_process(dependency):
+def block_process(dependency, file_name):
     """
     Method to block the execution of the process on a mutex
     
     :param dependecy: dependency where to block the process
     :type dependency: str
     """
-    @synchronized(dependency, external=True, lock_path="/dev/shm")
+    @lockutils.synchronized(dependency, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
     def block_on_dependecy():
+        logger.debug("The triggering of the file {} has been unblocked by the dependency: {}".format(file_name, dependency))
         return
     # end def
 
-    block_on_dependecy()
+    number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
+    while number_of_files_being_processed > 0:
+        block_on_dependecy()
+        number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
+    # end while
     
     return
 
@@ -86,10 +93,12 @@ def execute_command(command):
     :param command: command to execute inside the mutex
     :type command: str
     """
-    try:
-        os.system(command)
-    except Exception as e:
-        logger.info("The execution of the command has ended unexpectedly with the following error: {}".format(str(e)))
+    command_split = shlex.split(command)
+    program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output, error = program.communicate()
+    return_code = program.returncode
+    if return_code != 0:
+        logger.error("The execution of the command has ended unexpectedly with the following error: {}".format(str(error)))
         exit(-1)
     # end try
 
@@ -110,17 +119,38 @@ def block_and_execute_command(source_type, command, file_name, dependencies):
         for dependency in dependencies:
             logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
             # Block process on the related mutex depending on the configuration
-            block_process(dependency.text)
+            block_process(dependency.text, file_name)
         # end for
 
         logger.info("The following command is going to be triggered: {}".format(command))
         logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
 
         execute_command(command)
+        logger.info("The triggering of the file {} has been executed".format(file_name))
+    
     else:
-        @synchronized(source_type, external=True, lock_path="/dev/shm")
+
+        try:
+            os.makedirs(on_going_ingestions_folder + source_type)
+        except OSError as exc:
+            if exc.errno != errno.EEXIST:
+                raise
+            # end if
+            pass
+        # end try
+
+        open(on_going_ingestions_folder + source_type + "/" + file_name,"w+")
+        
+        @debug
+        @lockutils.synchronized(source_type, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
         def blocking_on_command():
+            logger.debug("The triggering of the file {} will block the triggering depending on: {}".format(file_name, source_type))
             os.waitpid(newpid, 0)
+            try:
+                os.remove(on_going_ingestions_folder + source_type + "/" + file_name)
+            except FileNotFoundError:
+                pass
+            # end try
         # end def
 
         blocking_on_command()        
@@ -150,7 +180,7 @@ def triggering(file_path, output_path = None):
 
     matching_rules = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name)]", file_name = file_name)
 
-    logger.info("Found {} rules for the file {}".format(len(matching_rules), file_name))
+    logger.info("Found {} rule/s for the file {}".format(len(matching_rules), file_name))
 
     if len(matching_rules) > 0:
         # File register into the configuration
