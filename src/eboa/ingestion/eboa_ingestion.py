@@ -102,9 +102,11 @@ def command_process_file(processor, file_path, output_path = None):
         # end for                    
     # end if
 
-    # Remove the entry associated to the notification of pending ingestions
-    query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
-    logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
+    if output_path == None:
+        # Remove the entry associated to the notification of pending ingestions
+        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
+        logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
+    # end if
         
     engine.close_session()
     query.close_session()
