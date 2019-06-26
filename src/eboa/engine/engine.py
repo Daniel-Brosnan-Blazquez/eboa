@@ -180,16 +180,16 @@ class Engine():
                 data = json.load(input_file)
 
         except ValueError:
-            error_message = exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
+            message = exit_codes["FILE_NOT_VALID"]["message"].format(json_name)
             self._insert_source_without_dim_signature(json_name)
-            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error = True, message = message)
             self.source.parse_error = "The json file cannot be loaded as it has a wrong structure"
             # Insert the content of the file into the DDBB
             with open(json_path) as input_file:
                 self.source.content_text = input_file.read()
             self.session.commit()
             # Log the error
-            logger.error(error_message)
+            logger.error(message)
             return exit_codes["FILE_NOT_VALID"]["status"]
         # end try
 
@@ -198,7 +198,7 @@ class Engine():
                 parsing.validate_data_dictionary(data)
             except ErrorParsingDictionary as e:
                 self._insert_source_without_dim_signature(json_name)
-                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error = True, message = str(e))
                 self.source.parse_error = str(e)
                 # Insert the content of the file into the DDBB
                 with open(json_path) as input_file:
@@ -232,7 +232,7 @@ class Engine():
             parsed_xml = etree.parse(xml_path)
         except etree.XMLSyntaxError as e:
             self._insert_source_without_dim_signature(xml_name)
-            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error = True, message = str(e))
             # Insert the parse error into the DDBB
             self.source.parse_error = str(e)
             # Insert the content of the file into the DDBB
@@ -253,9 +253,9 @@ class Engine():
             schema = etree.XMLSchema(parsed_schema)
             valid = schema.validate(parsed_xml)
             if not valid:
-                error_message = exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
+                message = exit_codes["FILE_NOT_VALID"]["message"].format(xml_name)
                 self._insert_source_without_dim_signature(xml_name)
-                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = error_message)
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error = True, message = message)
                 # Insert the parse error into the DDBB
                 self.source.parse_error = str(schema.error_log.last_error)
                 # Insert the content of the file into the DDBB
@@ -263,7 +263,7 @@ class Engine():
                     self.source.content_text = xml_file.read()
                 self.session.commit()
                 # Log the error
-                logger.error(error_message)
+                logger.error(message)
                 return exit_codes["FILE_NOT_VALID"]["status"]
             # end if
         # end if
@@ -443,7 +443,7 @@ class Engine():
         except ErrorParsingDictionary as e:
             if source != None:
                 self._insert_source_without_dim_signature(source)
-                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error_message = str(e))
+                self._insert_source_status(exit_codes["FILE_NOT_VALID"]["status"], error = True, message = str(e))
                 self.source.parse_error = str(e)
                 self.session.commit()
             # end if
@@ -545,19 +545,19 @@ class Engine():
                 self.source.processor, 
                 self.source.processor_version)
             self._insert_source_status(exit_codes["INGESTION_STARTED"]["status"],
-                                       error_message = log_info)
+                                       message = log_info)
             # Log that the ingestion of the source file has been started
             logger.info(log_info)
         except SourceAlreadyIngested as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["SOURCE_ALREADY_INGESTED"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["SOURCE_ALREADY_INGESTED"]["status"], message = str(e))
             # Log that the source file has been already been processed
             logger.error(e)
             self.session.commit()
             return exit_codes["SOURCE_ALREADY_INGESTED"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_SOURCE_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_SOURCE_PERIOD"]["status"], error = True, message = str(e))
             # Log that the source file has a wrong specified period as the stop is lower than the start
             logger.error(e)
             # Insert content in the DDBB
@@ -566,26 +566,42 @@ class Engine():
             return exit_codes["WRONG_SOURCE_PERIOD"]["status"]
         # end try
 
+        logger.debug("DIM signature and source inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         # Insert gauges
         self._insert_gauges()
 
+        logger.debug("Gauges inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         # Insert annotation configuration
         self._insert_annotation_cnfs()
+
+        logger.debug("Annotation configurations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert explicit reference groups
         self._insert_expl_groups()
 
-        # Insert links between explicit references
+        logger.debug("Explicit reference groups inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
+        # Insert explicit references
         self._insert_explicit_refs()
 
-        # Insert explicit references
+        logger.debug("Explicit references inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
+        # Insert links between explicit references
         self._insert_links_explicit_refs()
+
+        logger.debug("Explicit reference links inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
 
         # Insert alert groups
         self._insert_alert_groups()
+
+        logger.debug("Alert groups inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert alert configuration
         self._insert_alert_cnfs()
+
+        logger.debug("Alert configurations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         self.session.begin_nested()
         # Insert events
@@ -593,7 +609,7 @@ class Engine():
             self._insert_events()
         except DuplicatedEventLinkRef as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -602,7 +618,7 @@ class Engine():
             return exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
         except LinksInconsistency as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["LINKS_INCONSISTENCY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["LINKS_INCONSISTENCY"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -611,7 +627,7 @@ class Engine():
             return exit_codes["LINKS_INCONSISTENCY"]["status"]
         except UndefinedEventLink as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -620,7 +636,7 @@ class Engine():
             return exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_EVENT_PERIOD"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_EVENT_PERIOD"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -629,7 +645,7 @@ class Engine():
             return exit_codes["WRONG_EVENT_PERIOD"]["status"]
         except WrongValue as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -638,7 +654,7 @@ class Engine():
             return exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -647,7 +663,7 @@ class Engine():
             return exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         except WrongGeometry as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -656,7 +672,7 @@ class Engine():
             return exit_codes["WRONG_GEOMETRY"]["status"]
         except DuplicatedValues as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -665,12 +681,14 @@ class Engine():
             return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
+        logger.debug("Events inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         # Insert annotations
         try:
             self._insert_annotations()
         except WrongValue as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_VALUE"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -679,7 +697,7 @@ class Engine():
             return exit_codes["WRONG_VALUE"]["status"]
         except OddNumberOfCoordinates as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -688,7 +706,7 @@ class Engine():
             return exit_codes["ODD_NUMBER_OF_COORDINATES"]["status"]
         except WrongGeometry as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["WRONG_GEOMETRY"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -697,7 +715,7 @@ class Engine():
             return exit_codes["WRONG_GEOMETRY"]["status"]
         except DuplicatedValues as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["DUPLICATED_VALUES"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -706,12 +724,14 @@ class Engine():
             return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
+        logger.debug("Annotations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         # Insert alerts
         try:
             self._insert_alerts()
         except UndefinedEntityReference as e:
             self.session.rollback()
-            self._insert_source_status(exit_codes["UNDEFINED_ENTITY_REF"]["status"], error_message = str(e))
+            self._insert_source_status(exit_codes["UNDEFINED_ENTITY_REF"]["status"], error = True, message = str(e))
             # Insert content in the DDBB
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
@@ -720,10 +740,14 @@ class Engine():
             return exit_codes["UNDEFINED_ENTITY_REF"]["status"]
         # end try
 
+        logger.debug("Alerts inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         # Review the inserted events and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
 
+        logger.debug("Deprecated data removed for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        
         n_events = 0
         if "events" in self.operation:
             n_events = len(self.operation.get("events"))
@@ -990,7 +1014,6 @@ class Engine():
         annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or []]
         declared_explicit_refs = [i.get("name") for i in self.operation.get("explicit_references") or []]
         linked_explicit_refs = [link.get("link") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("links") for link in explicit_ref.get("links")]
-
         explicit_references = set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs)
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
@@ -1017,7 +1040,6 @@ class Engine():
                 # end try
             # end if
         # end for
-
         return
         
     @debug
@@ -1627,14 +1649,14 @@ class Engine():
         return
     
     @debug
-    def _insert_source_status(self, status, final = False, error_message = None):
+    def _insert_source_status(self, status, final = False, error = False, message = None):
         """
         Method to insert the DIM processing status
 
         :param status: code indicating the status of the processing of the file
         :type status: int
-        :param error_message: error message generated when the ingestion does not finish correctly
-        :type error_message: str
+        :param message: error message generated when the ingestion does not finish correctly
+        :type message: str
         :param final: boolean indicated whether it is a final status or not. This is to insert the ingestion duration in case of final = True
         :type final: bool
         """
@@ -1642,9 +1664,14 @@ class Engine():
         status = SourceStatus(datetime.datetime.now(),status,self.source)
         self.session.add(status)
 
-        if error_message:
+        if message:
             # Insert the error message
-            status.log = error_message
+            status.log = message
+        # end if
+
+        if error:
+            # Insert the error message
+            status.ingestion_error = True
         # end if
 
         if final:
