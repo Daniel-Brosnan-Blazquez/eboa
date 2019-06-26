@@ -21,8 +21,10 @@ class Source(Base):
     validity_stop = Column(DateTime)
     generation_time = Column(DateTime)
     ingested = Column(Boolean)
+    ingestion_error = Column(Boolean)
     ingestion_time = Column(DateTime)
     ingestion_duration = Column(Interval)
+    processing_duration = Column(Interval)
     processor = Column(Text)
     processor_version = Column(Text)
     content_json = Column(JSON)
@@ -52,7 +54,11 @@ class Source(Base):
             "validity_start": self.validity_start,
             "validity_stop": self.validity_stop,
             "generation_time": self.generation_time,
+            "ingested": self.ingested,
+            "ingestion_error": self.ingestion_error,
             "ingestion_time": self.ingestion_time,
+            "ingestion_duration": self.ingestion_duration,
+            "processing_duration": self.processing_duration,
             "processor": self.processor,
             "processor_version": self.processor_version,
             "dim_signature_uuid": self.dim_signature_uuid
