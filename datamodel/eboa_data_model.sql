@@ -47,6 +47,7 @@ CREATE TABLE eboa.events(
 	gauge_uuid uuid NOT NULL,
 	explicit_ref_uuid uuid,
 	source_uuid uuid NOT NULL,
+	alert_group_uuid uuid,
 	CONSTRAINT events_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
 
@@ -80,7 +81,9 @@ CREATE TABLE eboa.sources(
 	generation_time timestamp,
 	ingestion_time timestamp,
 	ingested bool,
+	ingestion_error bool,
 	ingestion_duration interval,
+	processing_duration interval,
 	processor text,
 	processor_version text,
 	content_json json,
@@ -1553,6 +1556,13 @@ ALTER TABLE eboa.alert_groups OWNER TO eboa;
 -- object: alert_groups_fk | type: CONSTRAINT --
 -- ALTER TABLE eboa.alerts DROP CONSTRAINT IF EXISTS alert_groups_fk CASCADE;
 ALTER TABLE eboa.alerts ADD CONSTRAINT alert_groups_fk FOREIGN KEY (alert_group_uuid)
+REFERENCES eboa.alert_groups (alert_group_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: alert_groups_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.events DROP CONSTRAINT IF EXISTS alert_groups_fk CASCADE;
+ALTER TABLE eboa.events ADD CONSTRAINT alert_groups_fk FOREIGN KEY (alert_group_uuid)
 REFERENCES eboa.alert_groups (alert_group_uuid) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --

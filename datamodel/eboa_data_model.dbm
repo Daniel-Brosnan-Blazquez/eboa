@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="451,1130" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,775" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -117,7 +117,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="ingested">
 		<type name="bool" length="0"/>
 	</column>
+	<column name="ingestion_error">
+		<type name="bool" length="0"/>
+	</column>
 	<column name="ingestion_duration">
+		<type name="interval" length="0"/>
+	</column>
+	<column name="processing_duration">
 		<type name="interval" length="0"/>
 	</column>
 	<column name="processor">
@@ -149,7 +155,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="16"/>
+		<object name="dim_signature_uuid" index="18"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -2011,6 +2017,16 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#d21594"
 	 src-table="eboa.alert_groups"
 	 dst-table="eboa.alerts"
+	 src-required="false" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="alert_groups_has_many_events" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#660a6b"
+	 src-table="eboa.alert_groups"
+	 dst-table="eboa.events"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>
