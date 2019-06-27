@@ -121,14 +121,17 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag source must be a dictionary")
     # end if
     
-    check_items = [item in ["generation_time", "name", "validity_start", "validity_stop", "ingested"] for item in data.keys()]
+    check_items = [item in ["name", "validity_start", "validity_stop", "reception_time", "generation_time", "ingested"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside source structure are: generation_time, name, validity_start and validity_stop")
+        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, generation_time, reception_time and ingested")
     # end if
 
     # Mandatory tags        
     if not "generation_time" in data:
         raise ErrorParsingDictionary("The tag generation_time is mandatory inside source structure")
+    # end if
+    if not "reception_time" in data:
+        raise ErrorParsingDictionary("The tag reception_time is mandatory inside source structure")
     # end if
     if not "name" in data:
         raise ErrorParsingDictionary("The tag name is mandatory inside source structure")
@@ -144,6 +147,9 @@ def _validate_source(data):
     # end if
     if not is_datetime(data["generation_time"]):
         raise ErrorParsingDictionary("The tag generation_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+    # end if
+    if not is_datetime(data["reception_time"]):
+        raise ErrorParsingDictionary("The tag reception_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
     # end if
     if not is_datetime(data["validity_start"]):
         raise ErrorParsingDictionary("The tag validity_start inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")

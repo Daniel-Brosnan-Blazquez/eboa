@@ -299,6 +299,7 @@ class Engine():
         # Extract source
         if len (operation.xpath("source")) == 1:
             data["source"] = {"name": operation.xpath("source")[0].get("name"),
+                              "reception_time": operation.xpath("source")[0].get("reception_time"),
                               "generation_time": operation.xpath("source")[0].get("generation_time"),
                               "validity_start": operation.xpath("source")[0].get("validity_start"),
                               "validity_stop": operation.xpath("source")[0].get("validity_stop")} 
@@ -824,6 +825,7 @@ class Engine():
         processor = self.operation.get("dim_signature").get("exec")
         source = self.operation.get("source")
         name = source.get("name")
+        reception_time = source.get("reception_time")
         generation_time = source.get("generation_time")
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
@@ -832,7 +834,7 @@ class Engine():
         if parser.parse(validity_stop) < parser.parse(validity_start):
             # The validity period is not correct (stop > start)
             # Create Source for registering the error in the DDBB
-            self.source = Source(id, name, generation_time,
+            self.source = Source(id, name, reception_time, generation_time,
                                         version, self.dim_signature, processor = processor)
             self.session.add(self.source)
             try:
@@ -863,11 +865,12 @@ class Engine():
             # Upadte the information
             self.source.validity_start = parser.parse(validity_start)
             self.source.validity_stop = parser.parse(validity_stop)
+            self.source.reception_time = parser.parse(reception_time)
             self.source.generation_time = parser.parse(generation_time)
             return
         # end if
 
-        self.source = Source(id, name,
+        self.source = Source(id, name, parser.parse(reception_time),
                                     parser.parse(generation_time), version, self.dim_signature,
                                     parser.parse(validity_start), parser.parse(validity_stop), processor = processor)
         self.session.add(self.source)
@@ -899,7 +902,7 @@ class Engine():
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         self.source = self.session.query(Source).filter(Source.name == name).first()
         if not self.source:
-            self.source = Source(id, name)
+            self.source = Source(id, name, datetime.datetime.now().isoformat())
             self.session.add(self.source)
             # If there is a race condition here the eboa will insert a
             # new row with the same name as the unique constraint is

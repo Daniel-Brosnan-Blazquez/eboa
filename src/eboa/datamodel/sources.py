@@ -19,6 +19,7 @@ class Source(Base):
     name = Column(Text)
     validity_start = Column(DateTime)
     validity_stop = Column(DateTime)
+    reception_time = Column(DateTime)
     generation_time = Column(DateTime)
     ingested = Column(Boolean)
     ingestion_error = Column(Boolean)
@@ -36,11 +37,12 @@ class Source(Base):
     dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dimSignature = relationship("DimSignature", backref="sources")
 
-    def __init__(self, source_uuid, name, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None):
+    def __init__(self, source_uuid, name, reception_time, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None):
         self.source_uuid = source_uuid
         self.name = name
         self.validity_start = validity_start
         self.validity_stop = validity_stop
+        self.reception_time = reception_time
         self.generation_time = generation_time
         self.ingestion_time = ingestion_time
         self.processor_version = processor_version
@@ -51,14 +53,15 @@ class Source(Base):
         return {
             "source_uuid": self.source_uuid,
             "name": self.name,
-            "validity_start": self.validity_start,
-            "validity_stop": self.validity_stop,
-            "generation_time": self.generation_time,
+            "validity_start": str(self.validity_start).replace(" ", "T"),
+            "validity_stop": str(self.validity_stop).replace(" ", "T"),
+            "reception_time": str(self.generation_time).replace(" ", "T"),
+            "generation_time": str(self.generation_time).replace(" ", "T"),
             "ingested": self.ingested,
             "ingestion_error": self.ingestion_error,
-            "ingestion_time": self.ingestion_time,
-            "ingestion_duration": self.ingestion_duration,
-            "processing_duration": self.processing_duration,
+            "ingestion_time": str(self.ingestion_time).replace(" ", "T"),
+            "ingestion_duration": str(self.ingestion_duration),
+            "processing_duration": str(self.processing_duration),
             "processor": self.processor,
             "processor_version": self.processor_version,
             "dim_signature_uuid": self.dim_signature_uuid

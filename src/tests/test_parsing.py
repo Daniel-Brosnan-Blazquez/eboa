@@ -26,6 +26,7 @@ class TestParsing(unittest.TestCase):
                     "version": "1.0"
                 },
                 "source": {
+                    "reception_time": "2018-06-06T13:33:29",
                     "generation_time": "2018-06-06T13:33:29",
                     "name": "test_simple_update.json",
                     "validity_start": "2018-06-05T02:07:03",
@@ -171,6 +172,7 @@ class TestParsing(unittest.TestCase):
                     "version": "1.0"
                 },
                 "source": {
+                    "reception_time": "2018-06-06T13:33:29",
                     "generation_time": "2018-06-06T13:33:29",
                     "name": "test_simple_update.json",
                     "validity_start": "2018-06-05T02:07:03",

@@ -23,6 +23,7 @@
           <xs:complexType>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="generation_time" type="xs:dateTime" use="required"/>
+            <xs:attribute name="reception_time" type="xs:dateTime" use="required"/>
             <xs:attribute name="validity_start" type="xs:dateTime" use="required"/>
             <xs:attribute name="validity_stop" type="xs:dateTime" use="required"/>
           </xs:complexType>

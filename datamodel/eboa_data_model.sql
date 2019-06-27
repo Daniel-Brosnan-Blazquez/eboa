@@ -78,6 +78,7 @@ CREATE TABLE eboa.sources(
 	name text NOT NULL,
 	validity_start timestamp,
 	validity_stop timestamp,
+	reception_time timestamp NOT NULL,
 	generation_time timestamp,
 	ingestion_time timestamp,
 	ingested bool,
@@ -1138,6 +1139,15 @@ CREATE INDEX idx_processing_generation_time ON eboa.sources
 	);
 -- ddl-end --
 
+-- object: idx_processing_reception_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_processing_reception_time CASCADE;
+CREATE INDEX idx_processing_reception_time ON eboa.sources
+	USING btree
+	(
+	  reception_time
+	);
+-- ddl-end --
+
 -- object: idx_processing_ingestion_time | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_processing_ingestion_time CASCADE;
 CREATE INDEX idx_processing_ingestion_time ON eboa.sources
@@ -1162,15 +1172,6 @@ CREATE INDEX idx_processing_dim_exec_version ON eboa.sources
 	USING btree
 	(
 	  processor_version
-	);
--- ddl-end --
-
--- object: idx_processing_dim_signature_id | type: INDEX --
--- DROP INDEX IF EXISTS eboa.idx_processing_dim_signature_id CASCADE;
-CREATE INDEX idx_processing_dim_signature_id ON eboa.sources
-	USING btree
-	(
-	  dim_signature_uuid
 	);
 -- ddl-end --
 
@@ -1565,6 +1566,15 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE eboa.events ADD CONSTRAINT alert_groups_fk FOREIGN KEY (alert_group_uuid)
 REFERENCES eboa.alert_groups (alert_group_uuid) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: idx_processing_dim_signature_id | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_processing_dim_signature_id CASCADE;
+CREATE INDEX idx_processing_dim_signature_id ON eboa.sources
+	USING btree
+	(
+	  dim_signature_uuid
+	);
 -- ddl-end --
 
 

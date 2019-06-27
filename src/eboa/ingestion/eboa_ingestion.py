@@ -16,6 +16,11 @@ import copy
 from lxml import etree
 import json
 import traceback
+import datetime
+import parser
+
+# Import auxiliary functions
+from eboa.engine.functions import is_datetime
 
 # Import logging
 from eboa.logging import Log
@@ -39,7 +44,7 @@ def insert_data_into_DDBB(data, filename, engine):
 
     return returned_statuses
 
-def command_process_file(processor, file_path, output_path = None):
+def command_process_file(processor, file_path, reception_time, output_path = None):
 
     # Process file
     try:
@@ -53,7 +58,7 @@ def command_process_file(processor, file_path, output_path = None):
     query = Query()
 
     try:
-        data = processor_module.process_file(file_path, engine, query)
+        data = processor_module.process_file(file_path, engine, query, reception_time)
     except Exception as e:
         logger.error("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
         traceback.print_exc(file=sys.stdout)
@@ -119,6 +124,8 @@ def main():
                         help="processor module", required=True)
     args_parser.add_argument("-f", dest="file_path", type=str, nargs=1,
                         help="path to the file to process", required=True)
+    args_parser.add_argument("-t", dest="reception_time", type=str, nargs=1,
+                             help="reception time of the file", required=False)
     args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
                              help="path to the output file", required=False)
     args = args_parser.parse_args()
@@ -131,6 +138,11 @@ def main():
     # end if
 
     logger.info("Received file {}".format(file_path))
+
+    reception_time = datetime.datetime.now().isoformat()
+    if args.reception_time != None and is_datetime(args.reception_time):
+        reception_time = parser.parse(args.reception_time[0]).isoformat()
+    # end if
     
     processor = args.processor[0]
     output_path = None
@@ -138,7 +150,7 @@ def main():
         output_path = args.output_path[0]
     # end if
 
-    returned_statuses = command_process_file(processor, file_path, output_path)
+    returned_statuses = command_process_file(processor, file_path, reception_time, output_path)
     
     exit(0)
 

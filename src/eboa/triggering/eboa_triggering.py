@@ -159,12 +159,14 @@ def block_and_execute_command(source_type, command, file_name, dependencies):
     return
 
 @debug
-def triggering(file_path, output_path = None):
+def triggering(file_path, reception_time, output_path = None):
     """
     Method to trigger commands depending on the matched configuration to the file_path
     
     :param file_path: path to the input file
     :type file_path: str
+    :param reception_time: date of reception of the file
+    :type reception_time: str
     :param output_path: path to the output file
     :type output_path: str
     """
@@ -199,9 +201,9 @@ def triggering(file_path, output_path = None):
                 # end if
             # end if
             if add_file_path_content:
-                command = rule.xpath("tool/command")[0].text + " " + file_path
+                command = rule.xpath("tool/command")[0].text + " " + file_path + " -t " + reception_time
             else:
-                command = rule.xpath("tool/command")[0].text
+                command = rule.xpath("tool/command")[0].text + " -t " + reception_time
             # end if
 
             if output_path:
@@ -255,11 +257,13 @@ def main():
         # end if
     # end if
 
+    reception_time = datetime.datetime.now().isoformat()
+
     if output_path:
-        triggering(file_path, output_path)
+        triggering(file_path, reception_time, output_path)
     else:
         engine_eboa = Engine()
-
+        
         # Insert an associated alert for checking pending ingestions
         data = {"operations": [{
             "mode": "insert",
@@ -267,7 +271,8 @@ def main():
                               "exec": "",
                               "version": ""},
             "source": {"name": os.path.basename(file_path),
-                       "generation_time": datetime.datetime.now().isoformat(),
+                       "reception_time": reception_time,
+                       "generation_time": reception_time,
                        "validity_start": datetime.datetime.now().isoformat(),
                        "validity_stop": datetime.datetime.now().isoformat(),
                        "ingested": "false"},
@@ -294,7 +299,7 @@ def main():
         newpid = os.fork()
         result = 0
         if newpid == 0:
-            result = triggering(file_path)
+            result = triggering(file_path, reception_time)
         # end if
     # end if
 

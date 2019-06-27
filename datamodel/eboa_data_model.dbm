@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,775" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,734" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -108,6 +108,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="validity_stop">
 		<type name="timestamp" length="1"/>
 	</column>
+	<column name="reception_time" not-null="true">
+		<type name="timestamp" length="1"/>
+	</column>
 	<column name="generation_time">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -155,7 +158,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="18"/>
+		<object name="dim_signature_uuid" index="19"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -562,7 +565,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_statuses">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1060" y="1540"/>
+	<position x="1060" y="1560"/>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -1514,6 +1517,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
+<index name="idx_processing_reception_time" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="reception_time"/>
+		</idxelement>
+</index>
+
 <index name="idx_processing_ingestion_time" table="eboa.sources"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
 	 index-type="btree" factor="0">
@@ -1535,14 +1546,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
 			<column name="processor_version"/>
-		</idxelement>
-</index>
-
-<index name="idx_processing_dim_signature_id" table="eboa.sources"
-	 concurrent="false" unique="false" fast-update="false" buffering="false"
-	 index-type="btree" factor="0">
-		<idxelement use-sorting="false">
-			<column name="dim_signature_uuid"/>
 		</idxelement>
 </index>
 
@@ -2028,5 +2031,13 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="eboa.alert_groups"
 	 dst-table="eboa.events"
 	 src-required="false" dst-required="false"/>
+
+<index name="idx_processing_dim_signature_id" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="dim_signature_uuid"/>
+		</idxelement>
+</index>
 
 </dbmodel>

@@ -142,7 +142,7 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -154,6 +154,8 @@ class Query():
         :type validity_start_filters: date_filters
         :param validity_stop_filters: list of stop filters
         :type validity_stop_filters: date_filters
+        :param reception_time_filters: list of reception time filters
+        :type reception_time_filters: date_filters
         :param generation_time_filters: list of generation time filters
         :type generation_time_filters: date_filters
         :param ingestion_time_filters: list of ingestion time filters
@@ -226,6 +228,15 @@ class Query():
             # end for
         # end if
 
+        # reception_time filters
+        if reception_time_filters != None:
+            functions.is_valid_date_filters(reception_time_filters, arithmetic_operators)
+            for reception_time_filter in reception_time_filters:
+                op = arithmetic_operators[reception_time_filter["op"]]
+                params.append(op(Source.reception_time, reception_time_filter["date"]))
+            # end for
+        # end if
+        
         # generation_time filters
         if generation_time_filters != None:
             functions.is_valid_date_filters(generation_time_filters, arithmetic_operators)

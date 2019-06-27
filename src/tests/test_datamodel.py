@@ -67,7 +67,7 @@ class TestDatamodel(unittest.TestCase):
 
         processing_time = datetime.datetime.now()
         source_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        source = Source(source_uuid, "DIM_PROCESSING_NAME", processing_time, "1.0", dim_signature, processor = "PROCESSOR")
+        source = Source(source_uuid, "DIM_PROCESSING_NAME", processing_time, processing_time, "1.0", dim_signature, processor = "PROCESSOR")
         
         # Insert source into database
         self.session.add(source)
@@ -263,6 +263,7 @@ class TestDatamodel(unittest.TestCase):
                                   "exec": "exec",
                                   "version": "1.0"},
                 "source": {"name": "source.xml",
+                           "reception_time": "2018-07-05T02:07:03",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
                            "validity_stop": "2018-06-05T08:07:36"},
