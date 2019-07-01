@@ -1769,8 +1769,8 @@ class Engine():
         # end if
 
         if error:
-            # Insert the error message
-            status.ingestion_error = True
+            # Flag the ingestion error
+            self.source.ingestion_error = True
         # end if
 
         if final:
