@@ -101,20 +101,21 @@ class TestEngine(unittest.TestCase):
 
 
     def test_insert_source(self):
-        data = {"dim_signature": {"name": "dim_signature",
-                                  "exec": "exec",
-                                  "version": "1.0"},
-                "source": {"name": "source.xml",
-                           "reception_time": "2018-06-06T13:33:29",
-                           "generation_time": "2018-07-05T02:07:03",
-                           "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"}
-            }
-        self.engine_eboa.operation = data
-        self.engine_eboa._insert_dim_signature()
-        self.engine_eboa._insert_source()
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
-        source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"]).all()
+        source_ddbb = self.session.query(Source).filter(Source.name == data["operations"][0]["source"]["name"], Source.validity_start == data["operations"][0]["source"]["validity_start"], Source.validity_stop == data["operations"][0]["source"]["validity_stop"], Source.generation_time == data["operations"][0]["source"]["generation_time"], Source.processor_version == data["operations"][0]["dim_signature"]["version"]).all()
 
         assert len(source_ddbb) == 1
 
@@ -4878,3 +4879,100 @@ class TestEngine(unittest.TestCase):
                                                                                          Alert.severity == 4,
                                                                                          AlertGroup.name == "alert_group").all()
         assert len(source_alert) == 1
+
+    def test_insert_data_with_processing_duration_as_argument(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data, processing_duration = datetime.timedelta(seconds=3))[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+        
+        assert sources[0].processing_duration == datetime.timedelta(seconds=3)
+
+    def test_insert_data_with_processing_duration_as_argument_wrong_value(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data, processing_duration = "Not a timedelta")[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+        
+        assert sources[0].processing_duration == None
+
+    def test_insert_data_with_processing_duration_in_data(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "processing_duration": "6.0",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data, processing_duration = datetime.timedelta(seconds=3))[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+        
+        assert sources[0].processing_duration == datetime.timedelta(seconds=6)
+
+    def test_insert_data_with_processing_duration_in_data_wrong_format(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "processing_duration": "not_a_convertable_float",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 0
+        

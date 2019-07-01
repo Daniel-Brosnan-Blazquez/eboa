@@ -17,7 +17,6 @@ from lxml import etree
 import json
 import traceback
 import datetime
-import parser
 
 # Import auxiliary functions
 from eboa.engine.functions import is_datetime
@@ -33,9 +32,9 @@ from eboa.engine.query import Query
 logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
 
-def insert_data_into_DDBB(data, filename, engine):
+def insert_data_into_DDBB(data, filename, engine, processing_duration):
     # Treat data
-    returned_statuses = engine.treat_data(data, filename)
+    returned_statuses = engine.treat_data(data, filename, processing_duration = processing_duration)
     for returned_status in returned_statuses:
         if returned_status["status"] == eboa_engine.exit_codes["FILE_NOT_VALID"]["status"]:
             logger.error("The file {} could not be validated".format(filename))
@@ -57,8 +56,12 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     engine = Engine()
     query = Query()
 
+    processing_duration = None
     try:
+        start = datetime.datetime.now()
         data = processor_module.process_file(file_path, engine, query, reception_time)
+        stop = datetime.datetime.now()
+        processing_duration = stop - start
     except Exception as e:
         logger.error("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
         traceback.print_exc(file=sys.stdout)
@@ -77,7 +80,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
 
     # Treat data
     if output_path == None:
-        returned_statuses = insert_data_into_DDBB(data, filename, engine)
+        returned_statuses = insert_data_into_DDBB(data, filename, engine, processing_duration)
     else:
         with open(output_path, "w") as write_file:
             json.dump(data, write_file, indent=4)
@@ -140,7 +143,7 @@ def main():
     logger.info("Received file {}".format(file_path))
 
     reception_time = datetime.datetime.now().isoformat()
-    if args.reception_time != None and is_datetime(args.reception_time):
+    if args.reception_time != None and is_datetime(args.reception_time[0]):
         reception_time = parser.parse(args.reception_time[0]).isoformat()
     # end if
     

@@ -121,9 +121,9 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag source must be a dictionary")
     # end if
     
-    check_items = [item in ["name", "validity_start", "validity_stop", "reception_time", "generation_time", "ingested"] for item in data.keys()]
+    check_items = [item in ["name", "validity_start", "validity_stop", "reception_time", "generation_time", "ingested", "processing_duration"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, generation_time, reception_time and ingested")
+        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, generation_time, reception_time, ingested and processing_duration")
     # end if
 
     # Mandatory tags        
@@ -158,8 +158,16 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag validity_stop inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
     # end if
 
+    # Optional tags
     if "ingested" in data and not data["ingested"].lower() in ["false", "true"]:
         raise ErrorParsingDictionary("The tag ingested has to have one of the following values: false or true")
+    # end if
+    if "processing_duration" in data:
+        try:
+            float(data["processing_duration"])
+        except (ValueError, TypeError):
+            raise ErrorParsingDictionary("The tag processing_duration (" + str(data["processing_duration"]) + ") inside source structure has to be convertable to float")
+        # end try
     # end if
     
     return

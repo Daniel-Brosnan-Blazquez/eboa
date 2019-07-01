@@ -37,7 +37,7 @@ class Source(Base):
     dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dimSignature = relationship("DimSignature", backref="sources")
 
-    def __init__(self, source_uuid, name, reception_time, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None):
+    def __init__(self, source_uuid, name, reception_time, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None, processing_duration = None, processor_progress = None):
         self.source_uuid = source_uuid
         self.name = name
         self.validity_start = validity_start
@@ -48,6 +48,8 @@ class Source(Base):
         self.processor_version = processor_version
         self.processor = processor
         self.dimSignature = dim_signature
+        self.processing_duration = processing_duration
+        self.processor_progress = processor_progress
 
     def jsonify(self):
         return {
@@ -66,6 +68,46 @@ class Source(Base):
             "processor_version": self.processor_version,
             "dim_signature_uuid": self.dim_signature_uuid
         }
+
+    def get_ingestion_progress(self):
+
+        ingestion_progress = 0
+        if self.ingestion_progress:
+            ingestion_progress = self.ingestion_progress
+        # end if
+        
+        return ingestion_progress
+
+    def get_processor_progress(self):
+
+        processor_progress = 0
+        if self.processor_progress:
+            processor_progress = self.processor_progress
+        # end if
+        
+        return processor_progress
+
+    def get_general_progress(self):
+
+        ingestion_progress = 0
+        if self.ingestion_progress:
+            ingestion_progress = self.ingestion_progress
+        # end if
+        processor_progress = 0
+        if self.processor_progress:
+            processor_progress = self.processor_progress
+        # end if
+        
+        return (ingestion_progress + processor_progress) / 2
+
+    def get_triggering_duration(self):
+
+        triggering_duration = None
+        if self.reception_time and self.ingestion_time:
+            triggering_duration = self.ingestion_time - self.reception_time
+        # end if
+        
+        return triggering_duration
 
 class SourceStatus(Base):
     __tablename__ = 'source_statuses'

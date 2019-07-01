@@ -130,6 +130,10 @@ exit_codes = {
     "UNDEFINED_ENTITY_REF": {
         "status": 14,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an alert which links to an undefined reference identifier {}"
+    },
+    "PROCESSING_DURATION_NOT_TIMEDELTA": {
+        "status": 15,
+        "message": "The source file with name {} has been received to be processed with a processing duration of type different than datetime.timedelta"
     }
 }
 
@@ -155,6 +159,7 @@ class Engine():
         # end if
         self.data = data
         self.session = Session()
+        self.session_progress = Session()
         self.query = Query(self.session)
         self.operation = None
     
@@ -302,7 +307,10 @@ class Engine():
                               "reception_time": operation.xpath("source")[0].get("reception_time"),
                               "generation_time": operation.xpath("source")[0].get("generation_time"),
                               "validity_start": operation.xpath("source")[0].get("validity_start"),
-                              "validity_stop": operation.xpath("source")[0].get("validity_stop")} 
+                              "validity_stop": operation.xpath("source")[0].get("validity_stop")}
+            if operation.xpath("source")[0].get("processing_duration") != None:
+                data["source"]["processing_duration"] = operation.xpath("source")[0].get("processing_duration")
+            # end if
         # end if
 
         # Extract explicit_references
@@ -454,7 +462,7 @@ class Engine():
 
         return True
 
-    def treat_data(self, data = None, source = None, validate = True):
+    def treat_data(self, data = None, source = None, validate = True, processing_duration = None):
         """
         Method to treat the data stored in self.data
 
@@ -464,6 +472,8 @@ class Engine():
         :type source: str
         :param validate: flag to indicate if the schema check has to be performed
         :type validate: bool
+        :param processing_duration: duration of the processing which generated the data to be treated
+        :type processing_duration: datetime.timedelta
 
         :return: exit_codes for every operation with the associated information (DIM signature, processor and source)
         :rtype: list of dictionaries
@@ -472,6 +482,11 @@ class Engine():
             self.data = data
         # end if
 
+        if not type(processing_duration) == datetime.timedelta:
+            logger.error(exit_codes["PROCESSING_DURATION_NOT_TIMEDELTA"]["message"].format(source))
+            processing_duration = None
+        # end if
+        
         if validate:
             is_valid = self._validate_data(self.data, source = source)
             if not is_valid:
@@ -496,7 +511,7 @@ class Engine():
             # end if
 
             if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
-                returned_value = self._insert_data()
+                returned_value = self._insert_data(processing_duration = processing_duration)
                 returned_information = {
                     "source": self.operation.get("source").get("name"),
                     "dim_signature": self.operation.get("dim_signature").get("name"),
@@ -528,9 +543,11 @@ class Engine():
         return
 
     @debug
-    def _insert_data(self):
+    def _insert_data(self, processing_duration = None):
         """
         Method to insert the data into the DDBB for an operation of mode insert
+        :param processing_duration: duration of the processing which generated the data to be treated
+        :type processing_duration: datetime.timedelta
         """
         # Initialize context
         self._initialize_context_insert_data()
@@ -538,7 +555,7 @@ class Engine():
         # Insert the DIM signature
         self._insert_dim_signature()
         try:
-            self._insert_source()
+            self._insert_source(processing_duration = processing_duration)
             self.ingestion_start = datetime.datetime.now()
             log_info = exit_codes["INGESTION_STARTED"]["message"].format(
                 self.source.name,
@@ -567,40 +584,69 @@ class Engine():
             return exit_codes["WRONG_SOURCE_PERIOD"]["status"]
         # end try
 
-        logger.debug("DIM signature and source inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+        # Get the general source entry (processor = None, version = None, DIM signature = PENDING_SOURCES)
+        # This is when using the command eboa_triggering.py for ingestion control purposes
+        self.general_source_progress = self.session_progress.query(Source).join(DimSignature).filter(Source.name == self.operation.get("source").get("name"),
+                                                                                  DimSignature.dim_signature == "PENDING_SOURCES",
+                                                                                  Source.processor_version == "",
+                                                                                  Source.processor == "").first()
+
+        if not self.general_source_progress:
+            self.general_source_progress = self.source_progress
+        # end if
+
+        if not self.operation.get("source").get("ingested") == "false":
+            self.general_source_progress.processor_progress = 100
+        # end if
+
+        self._insert_ingestion_progress(10)
         
         # Insert gauges
         self._insert_gauges()
 
         logger.debug("Gauges inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+
+        self._insert_ingestion_progress(15)
         
         # Insert annotation configuration
         self._insert_annotation_cnfs()
+
+        self._insert_ingestion_progress(20)
 
         logger.debug("Annotation configurations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert explicit reference groups
         self._insert_expl_groups()
 
+        self._insert_ingestion_progress(25)
+
         logger.debug("Explicit reference groups inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert explicit references
         self._insert_explicit_refs()
+
+        self._insert_ingestion_progress(30)
 
         logger.debug("Explicit references inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert links between explicit references
         self._insert_links_explicit_refs()
 
+        self._insert_ingestion_progress(35)
+
         logger.debug("Explicit reference links inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
 
         # Insert alert groups
         self._insert_alert_groups()
 
+        self._insert_ingestion_progress(40)
+
         logger.debug("Alert groups inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert alert configuration
         self._insert_alert_cnfs()
+
+        self._insert_ingestion_progress(45)
 
         logger.debug("Alert configurations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
@@ -682,6 +728,8 @@ class Engine():
             return exit_codes["DUPLICATED_VALUES"]["status"]
         # end try
 
+        self._insert_ingestion_progress(65)
+
         logger.debug("Events inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Insert annotations
@@ -726,7 +774,9 @@ class Engine():
         # end try
 
         logger.debug("Annotations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
-        
+
+        self._insert_ingestion_progress(80)
+
         # Insert alerts
         try:
             self._insert_alerts()
@@ -741,11 +791,15 @@ class Engine():
             return exit_codes["UNDEFINED_ENTITY_REF"]["status"]
         # end try
 
+        self._insert_ingestion_progress(85)
+
         logger.debug("Alerts inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         # Review the inserted events and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
+
+        self._insert_ingestion_progress(90)
 
         logger.debug("Deprecated data removed for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
@@ -764,6 +818,8 @@ class Engine():
             n_alerts = len(self.operation.get("alerts"))
         # end if
 
+        self._insert_ingestion_progress(100)
+
         # Log that the file has been ingested correctly
         self._insert_source_status(exit_codes["OK"]["status"],True)
         logger.info(exit_codes["OK"]["message"].format(
@@ -780,6 +836,7 @@ class Engine():
         
         # Commit data
         self.session.commit()
+
         return exit_codes["OK"]["status"]
         
     @debug
@@ -816,10 +873,24 @@ class Engine():
 
         return
 
+    def _insert_ingestion_progress(self, progress):
+        """
+        Method to insert the ingestion progress of a source
+        :param progress: value of progress
+        :type progress: float
+        """
+        if not self.operation.get("source").get("ingested") == "false":
+            self.source_progress.ingestion_progress = progress
+            self.general_source_progress.ingestion_progress = progress
+            self.session_progress.commit()
+        # end if
+    
     @debug
-    def _insert_source(self):
+    def _insert_source(self, processing_duration = None):
         """
         Method to insert the DIM processing
+        :param processing_duration: duration of the processing which generated the data to be treated
+        :type processing_duration: interval
         """
         version = self.operation.get("dim_signature").get("version")
         processor = self.operation.get("dim_signature").get("exec")
@@ -829,13 +900,22 @@ class Engine():
         generation_time = source.get("generation_time")
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
+        processing_duration_from_input_data = source.get("processing_duration")
+        if processing_duration_from_input_data:
+            processing_duration = datetime.timedelta(seconds=float(processing_duration_from_input_data))
+        # end if
 
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         if parser.parse(validity_stop) < parser.parse(validity_start):
             # The validity period is not correct (stop > start)
             # Create Source for registering the error in the DDBB
+            processor_progress = None
+            if not self.operation.get("source").get("ingested") == "false":
+                processor_progress = 100
+            # end if
             self.source = Source(id, name, reception_time, generation_time,
-                                        version, self.dim_signature, processor = processor)
+                                        version, self.dim_signature, processor = processor,
+                                 processing_duration = processing_duration, processor_progress = processor_progress)
             self.session.add(self.source)
             try:
                 race_condition()
@@ -867,12 +947,23 @@ class Engine():
             self.source.validity_stop = parser.parse(validity_stop)
             self.source.reception_time = parser.parse(reception_time)
             self.source.generation_time = parser.parse(generation_time)
+            self.source.processing_duration = processing_duration
+            processor_progress = None
+            if not self.operation.get("source").get("ingested") == "false":
+                self.source.processor_progress = 100
+            # end if
             return
+        # end if
+
+        processor_progress = None
+        if not self.operation.get("source").get("ingested") == "false":
+            processor_progress = 100
         # end if
 
         self.source = Source(id, name, parser.parse(reception_time),
                                     parser.parse(generation_time), version, self.dim_signature,
-                                    parser.parse(validity_start), parser.parse(validity_stop), processor = processor)
+                                    parser.parse(validity_start), parser.parse(validity_stop), processor = processor,
+                             processing_duration = processing_duration, processor_progress = processor_progress)
         self.session.add(self.source)
         try:
             race_condition()
@@ -889,6 +980,11 @@ class Engine():
                                                               processor, 
                                                               version))
         # end try
+
+        self.source_progress = self.session_progress.query(Source).filter(Source.name == name,
+                                                        Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
+                                                        Source.processor_version == version,
+                                                        Source.processor == processor).first()
 
         return
 
@@ -1678,9 +1774,13 @@ class Engine():
         # end if
 
         if final:
+            
             ingested = True
             if self.operation.get("source").get("ingested") == "false":
                 ingested = False
+            else:
+                self.source_progress.ingestion_progress = 100
+                self.general_source_progress.ingestion_progress = 100
             # end if
             self.source.ingested = ingested
 
@@ -2383,6 +2483,7 @@ class Engine():
         Method to close the session
         """
         self.session.close()
+        self.session_progress.close()
         return
 
     def geometries_to_wkt(self, geometries):
