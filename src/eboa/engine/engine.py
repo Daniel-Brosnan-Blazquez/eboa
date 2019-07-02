@@ -482,7 +482,7 @@ class Engine():
             self.data = data
         # end if
 
-        if not type(processing_duration) == datetime.timedelta:
+        if processing_duration != None and not type(processing_duration) == datetime.timedelta:
             logger.error(exit_codes["PROCESSING_DURATION_NOT_TIMEDELTA"]["message"].format(source))
             processing_duration = None
         # end if
@@ -1017,7 +1017,7 @@ class Engine():
         """
         description = None
         gauges = [(event.get("gauge").get("name"), event.get("gauge").get("system"), event.get("gauge").get("description"))  for event in self.operation.get("events") or []]
-        unique_gauges = set(gauges)
+        unique_gauges = sorted(set(gauges))
         for gauge in unique_gauges:
             name = gauge[0]
             system = gauge[1]
@@ -1049,7 +1049,7 @@ class Engine():
         Method to insert the annotation configurations
         """
         annotation_cnfs = [(annotation.get("annotation_cnf").get("name"), annotation.get("annotation_cnf").get("system"), annotation.get("annotation_cnf").get("description"))  for annotation in self.operation.get("annotations") or []]
-        unique_annotation_cnfs = set(annotation_cnfs)
+        unique_annotation_cnfs = sorted(set(annotation_cnfs))
         for annotation in unique_annotation_cnfs:
             name = annotation[0]
             system = annotation[1]
@@ -1082,7 +1082,7 @@ class Engine():
         Method to insert the groups of explicit references
         """
         explicit_ref_groups = [explicit_ref.get("group") for explicit_ref in self.operation.get("explicit_references") or []]
-        unique_explicit_ref_groups = set(explicit_ref_groups)
+        unique_explicit_ref_groups = sorted(set(explicit_ref_groups))
 
         for explicit_ref_group in unique_explicit_ref_groups or []:
             self.session.begin_nested()
@@ -1113,7 +1113,7 @@ class Engine():
         annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or []]
         declared_explicit_refs = [i.get("name") for i in self.operation.get("explicit_references") or []]
         linked_explicit_refs = [link.get("link") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("links") for link in explicit_ref.get("links")]
-        explicit_references = set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs)
+        explicit_references = sorted(set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs))
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
             if not self.explicit_refs[explicit_ref]:
@@ -1149,40 +1149,36 @@ class Engine():
         list_explicit_reference_links = []
         for explicit_ref in [i for i in self.operation.get("explicit_references") or [] if i.get("links")]:
             for link in explicit_ref.get("links") or []:
-                explicit_ref1 = self.explicit_refs[explicit_ref.get("name")]
-                explicit_ref2 = self.explicit_refs[link.get("link")]
-                link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref1.explicit_ref_uuid, ExplicitRefLink.name == link.get("name"), ExplicitRefLink.explicit_ref_uuid == explicit_ref2.explicit_ref_uuid).first()
-                if not link_ddbb:
-                    self.session.begin_nested()
-                    self.session.add(ExplicitRefLink(explicit_ref1.explicit_ref_uuid, link.get("name"), explicit_ref2))
-                    try:
-                        race_condition()
-                        self.session.commit()
-                    except IntegrityError:
-                        # The link exists already into DDBB
-                        self.session.rollback()
-                        pass
-                    # end try
-                # end if
+                list_explicit_reference_links.append((explicit_ref.get("name"), link.get("link"), link.get("name")))
+                
                 # Insert the back ref if specified
                 if link.get("back_ref"):
-                    link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref2.explicit_ref_uuid, ExplicitRefLink.name == link.get("back_ref"), ExplicitRefLink.explicit_ref_uuid == explicit_ref1.explicit_ref_uuid).first()
-                    if not link_ddbb:
-                        self.session.begin_nested()
-                        self.session.add(ExplicitRefLink(explicit_ref2.explicit_ref_uuid, link.get("back_ref"), explicit_ref1))
-                        try:
-                            race_condition()
-                            self.session.commit()
-                        except IntegrityError:
-                            # The link exists already into DDBB
-                            self.session.rollback()
-                            pass
-                        # end try
-                    # end if
+                    list_explicit_reference_links.append((link.get("link"), explicit_ref.get("name"), link.get("back_ref")))
                 # end if
             # end for
         # end for
 
+        unique_sorted_links = sorted(set(list_explicit_reference_links))
+        
+        for link in list_explicit_reference_links:
+            explicit_ref1 = self.explicit_refs[link[0]]
+            explicit_ref2 = self.explicit_refs[link[1]]
+            link_name = link[2]
+            link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.explicit_ref_uuid_link == explicit_ref1.explicit_ref_uuid, ExplicitRefLink.name == link_name, ExplicitRefLink.explicit_ref_uuid == explicit_ref2.explicit_ref_uuid).first()
+            if not link_ddbb:
+                self.session.begin_nested()
+                self.session.add(ExplicitRefLink(explicit_ref1.explicit_ref_uuid, link_name, explicit_ref2))
+                try:
+                    race_condition()
+                    self.session.commit()
+                except IntegrityError:
+                    # The link exists already into DDBB
+                    self.session.rollback()
+                    pass
+                # end try
+            # end if
+        # end for
+        
         return
 
     def _insert_event(self, list_events, id, start, stop, gauge_uuid, explicit_ref_uuid, visible, source = None, source_id = None):
@@ -1247,8 +1243,13 @@ class Engine():
         """
         list_events = []
         list_keys = []
-        list_event_links_by_ref = {}
+        list_event_links_by_ref = []
+        list_event_links_by_ref_sorted = []
+        list_event_links_by_ref_ddbb = []
+        list_event_links_by_uuid = []
+        list_event_links_by_uuid_sorted = []
         list_event_links_by_uuid_ddbb = []
+
         list_values = {}
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1307,21 +1308,19 @@ class Engine():
                     # end if
                     
                     if link["link_mode"] == "by_ref":
-                        if not link["link"] in list_event_links_by_ref:
-                            list_event_links_by_ref[link["link"]] = []
-                        # end if
-                        list_event_links_by_ref[link["link"]].append({"name": link["name"],
-                                                                      "event_uuid": id,
-                                                                      "back_ref": back_ref,
-                                                                      "back_ref_name": back_ref_name})
+                        list_event_links_by_ref.append((id,
+                                                        link["name"],
+                                                        link["link"],
+                                                        back_ref,
+                                                        back_ref_name))
                     else:
-                        list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = id,
-                                                                  name = link["name"],
-                                                                  event_uuid = link["link"]))
+                        list_event_links_by_uuid.append((str(id),
+                                                         link["name"],
+                                                         link["link"]))
                         if back_ref:
-                            list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = link["link"],
-                                                                      name = back_ref_name,
-                                                                      event_uuid = id))
+                            list_event_links_by_uuid.append((link["link"],
+                                                             back_ref_name,
+                                                             str(id)))
                         # end if
                     # end if
                 # end for
@@ -1371,25 +1370,39 @@ class Engine():
         # end try
 
         # Insert links by reference
-        list_event_links_by_ref_ddbb = []
-        for link_ref in list_event_links_by_ref:
+        list_event_links_by_ref_sorted = sorted(set(list_event_links_by_ref))
+        for link in list_event_links_by_ref_sorted:
+            link_ref = link[2]
             if not link_ref in self.event_link_refs:
                 # There has not been defined this link reference in any event
                 self.session.rollback()
                 raise UndefinedEventLink(exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
             # end if
+
+            link_name = link[1]
+            event_uuid_link = link[0]
             event_uuid = self.event_link_refs[link_ref]
             
-            for link in list_event_links_by_ref[link_ref]:
-                list_event_links_by_ref_ddbb.append(dict(event_uuid_link = link["event_uuid"],
-                                                         name = link["name"],
-                                                         event_uuid = event_uuid))
-                if link["back_ref"]:
-                    list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
-                                                             name = link["back_ref_name"],
-                                                             event_uuid = link["event_uuid"]))
-                # end if
-            # end for
+            list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid_link,
+                                                     name = link_name,
+                                                     event_uuid = event_uuid))
+            back_ref = link[3]
+            back_ref_name = link[4]
+            if back_ref:
+                list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
+                                                         name = back_ref_name,
+                                                         event_uuid = event_uuid_link))
+            # end if
+        # end for
+
+        list_event_links_by_uuid_sorted = sorted(set(list_event_links_by_uuid))
+        for link in list_event_links_by_uuid_sorted:
+            event_uuid_link = link[0]
+            link_name = link[1]
+            event_uuid = link[2]
+            list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = event_uuid_link,
+                                                      name = link_name,
+                                                      event_uuid = event_uuid))
         # end for
 
         # Bulk insert links
@@ -1613,7 +1626,7 @@ class Engine():
         Method to insert the groups of alerts
         """
         alert_groups = [alert.get("alert_cnf").get("group") for alert in self.operation.get("alerts") or []]
-        unique_alert_groups = set(alert_groups)
+        unique_alert_groups = sorted(set(alert_groups))
         for alert_group in unique_alert_groups or []:
             self.session.begin_nested()
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1639,7 +1652,7 @@ class Engine():
         Method to insert the alert configurations
         """
         alert_cnfs = [(alert.get("alert_cnf").get("name"), alert.get("alert_cnf").get("description"), alert.get("alert_cnf").get("severity"), alert.get("alert_cnf").get("group")) for alert in self.operation.get("alerts") or []]
-        unique_alert_cnfs = set(alert_cnfs)
+        unique_alert_cnfs = sorted(set(alert_cnfs))
         for alert_cnf in unique_alert_cnfs:
             name = alert_cnf[0]
             description = alert_cnf[1]
@@ -2369,10 +2382,7 @@ class Engine():
         """
         Method to insert values and associate them to the event related to the UUID received in the position specified
 
-        IMPORTANT!!! This method does not perform the commit. Anyhow,
-        the engine will block processes accesing this method at
-        self.session.bulk_insert_mappings(EventObject,
-        list_values["objects"]) so remember to commit or release the session
+        IMPORTANT!!! This method performs the commit
 
         :param event_uuid: event to assiciate the value to
         :type from_event_uuid: uuid
@@ -2470,6 +2480,8 @@ class Engine():
             # end try
 
             if continue_with_values_ingestion:
+                # Two commits because of nested
+                self.session.commit()
                 self.session.commit()
             # end if
 
