@@ -884,6 +884,8 @@ class Engine():
             self.general_source_progress.ingestion_progress = progress
             self.session_progress.commit()
         # end if
+
+        return
     
     @debug
     def _insert_source(self, processing_duration = None):
@@ -1316,9 +1318,9 @@ class Engine():
                     else:
                         list_event_links_by_uuid.append((str(id),
                                                          link["name"],
-                                                         link["link"]))
+                                                         str(link["link"])))
                         if back_ref:
-                            list_event_links_by_uuid.append((link["link"],
+                            list_event_links_by_uuid.append((str(link["link"]),
                                                              back_ref_name,
                                                              str(id)))
                         # end if
@@ -1792,8 +1794,7 @@ class Engine():
             if self.operation.get("source").get("ingested") == "false":
                 ingested = False
             else:
-                self.source_progress.ingestion_progress = 100
-                self.general_source_progress.ingestion_progress = 100
+                self._insert_ingestion_progress(100)
             # end if
             self.source.ingested = ingested
 

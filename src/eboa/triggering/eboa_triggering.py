@@ -296,6 +296,8 @@ def main():
         }
         engine_eboa.treat_data(data)
 
+        engine_eboa.close_session()
+        
         newpid = os.fork()
         result = 0
         if newpid == 0:
