@@ -1774,8 +1774,9 @@ class Engine():
         :param final: boolean indicated whether it is a final status or not. This is to insert the ingestion duration in case of final = True
         :type final: bool
         """
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         # Insert processing status
-        status = SourceStatus(datetime.datetime.now(),status,self.source)
+        status = SourceStatus(id,datetime.datetime.now(),status,self.source)
         self.session.add(status)
 
         if message:

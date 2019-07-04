@@ -76,10 +76,15 @@ class TestDatamodel(unittest.TestCase):
         assert len(self.session.query(Source).filter(Source.source_uuid == source_uuid, Source.name == "DIM_PROCESSING_NAME", Source.generation_time == processing_time, Source.processor_version == "1.0", Source.dim_signature_uuid == dim_signature.dim_signature_uuid, Source.processor == "PROCESSOR").all()) == 1
 
         # Insert status for the source
-        self.session.add(SourceStatus(processing_time, 0, source))
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))        
+        self.session.add(SourceStatus(id, processing_time, 0, source))
+        self.session.commit()
+        # Insert status for the source
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        self.session.add(SourceStatus(id, processing_time, 0, source))
         self.session.commit()
 
-        assert len(self.session.query(SourceStatus).filter(SourceStatus.source_uuid == source_uuid, SourceStatus.status == 0).all()) == 1
+        assert len(self.session.query(SourceStatus).filter(SourceStatus.source_uuid == source_uuid, SourceStatus.status == 0).all()) == 2
 
         # Insert explicit reference group
         explicit_ref_grp_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))

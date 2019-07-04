@@ -112,17 +112,24 @@ class Source(Base):
 class SourceStatus(Base):
     __tablename__ = 'source_statuses'
 
+    source_status_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     time_stamp = Column(DateTime)
     status = Column(Integer)
     log = Column(Text)
     source_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('sources.source_uuid'))
     source = relationship("Source", backref="statuses")
-    __mapper_args__ = {
-        'primary_key':[source_uuid]
-    }
 
-    def __init__(self, time_stamp, status, source, log = None):
+    def __init__(self, source_status_uuid, time_stamp, status, source, log = None):
+        self.source_status_uuid = source_status_uuid
         self.time_stamp = time_stamp
         self.status = status
         self.log = log
         self.source = source
+
+    def jsonify(self):
+        return {
+            "source_uuid": self.source.source_uuid,
+            "time_stamp": str(self.time_stamp).replace(" ", "T"),
+            "log": self.log,
+            "status": self.status,
+        }

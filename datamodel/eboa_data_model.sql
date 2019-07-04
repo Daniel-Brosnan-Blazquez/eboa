@@ -311,10 +311,13 @@ ALTER TABLE eboa.explicit_ref_links OWNER TO eboa;
 -- object: eboa.source_statuses | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.source_statuses CASCADE;
 CREATE TABLE eboa.source_statuses(
+	source_status_uuid uuid NOT NULL,
 	time_stamp timestamp NOT NULL,
 	status integer NOT NULL,
 	log text,
-	source_uuid uuid NOT NULL
+	source_uuid uuid NOT NULL,
+	CONSTRAINT source_statuses_pk PRIMARY KEY (source_status_uuid)
+
 );
 -- ddl-end --
 ALTER TABLE eboa.source_statuses OWNER TO eboa;

@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,734" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,828" last-zoom="0.95"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -565,7 +565,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_statuses">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1060" y="1560"/>
+	<position x="1020" y="1560"/>
+	<column name="source_status_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
 	<column name="time_stamp" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
@@ -575,9 +578,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="log">
 		<type name="text" length="0"/>
 	</column>
+	<constraint name="source_statuses_pk" type="pk-constr" table="eboa.source_statuses">
+		<columns names="source_status_uuid" ref-type="src-columns"/>
+	</constraint>
 
 	<customidxs object-type="column">
-		<object name="source_uuid" index="3"/>
+		<object name="source_uuid" index="4"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
