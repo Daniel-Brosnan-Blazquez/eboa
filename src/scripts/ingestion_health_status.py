@@ -134,6 +134,7 @@ def main():
         },
         "source": {
             "name": source,
+            "reception_time": now,
             "generation_time": now,
             "validity_start": now,
             "validity_stop": now
