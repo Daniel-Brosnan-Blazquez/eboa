@@ -36,7 +36,7 @@ def main():
                                                                              {"date": stop.isoformat(), "op": "<"}])
 
     return_value = 0
-    if len(sources) > maximum_parallel_ingestions:
+    if len(sources) >= maximum_parallel_ingestions:
         logger.error("The system has reached the maximum number of parallel ingestions set as {}".format(maximum_parallel_ingestions))
         return_value = -1
     # end if
