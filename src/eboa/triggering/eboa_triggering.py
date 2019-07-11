@@ -75,12 +75,16 @@ def block_process(dependency, file_name):
         return
     # end def
 
-    number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
-    while number_of_files_being_processed > 0:
-        block_on_dependecy()
+    try:
         number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
-    # end while
-    
+        while number_of_files_being_processed > 0:
+            block_on_dependecy()
+            number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
+        # end while
+    except FileNotFoundError:
+        # There were not files ingested yet associated to the dependency
+        pass
+    # end try
     return
 
 @debug
@@ -235,6 +239,8 @@ def main():
                              help='path to the file to process', required=True)
     args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
                              help="path to the output file", required=False)
+    args_parser.add_argument("-r", "--remove_input",
+                             help="remove input file when triggering finished", action="store_true")
     
     args = args_parser.parse_args()
     file_path = args.file_path[0]
@@ -261,6 +267,13 @@ def main():
 
     if output_path:
         triggering(file_path, reception_time, output_path)
+        if args.remove_input:
+            try:
+                os.remove(file_path)
+            except FileNotFoundError:
+                pass
+            # end try
+        # end if
     else:
         engine_eboa = Engine()
         
@@ -302,6 +315,13 @@ def main():
         result = 0
         if newpid == 0:
             result = triggering(file_path, reception_time)
+            if args.remove_input:
+                try:
+                    os.remove(file_path)
+                except FileNotFoundError:
+                    pass
+                # end try
+            # end if
         # end if
     # end if
 
