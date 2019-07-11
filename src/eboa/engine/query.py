@@ -18,6 +18,7 @@ from geoalchemy2.shape import to_shape
 
 # Import SQLalchemy entities
 from sqlalchemy import extract
+from sqlalchemy.orm import scoped_session
 
 # Import datamodel
 from eboa.datamodel.base import Session, engine, Base
@@ -96,7 +97,8 @@ class Query():
         :type session: sqlalchemy.orm.sessionmaker
         """
         if session == None:
-            self.session = Session()
+            Scoped_session = scoped_session(Session)
+            self.session = Scoped_session()
         else:
             self.session = session
         # end if

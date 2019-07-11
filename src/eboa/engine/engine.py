@@ -20,6 +20,7 @@ import re
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.sql import func
+from sqlalchemy.orm import scoped_session
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -158,8 +159,9 @@ class Engine():
             data = {}
         # end if
         self.data = data
-        self.session = Session()
-        self.session_progress = Session()
+        Scoped_session = scoped_session(Session)
+        self.session = Scoped_session()
+        self.session_progress = Scoped_session()
         self.query = Query(self.session)
         self.operation = None
     
@@ -1118,14 +1120,16 @@ class Engine():
         explicit_references = sorted(set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs))
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
+
+            explicit_ref_grp = None
+            # Get associated group if exists from the declared explicit references
+            declared_explicit_reference = next(iter([i for i in self.operation.get("explicit_references") or [] if i.get("name") == explicit_ref]), None)
+            if declared_explicit_reference:
+                explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
+            # end if
+            
             if not self.explicit_refs[explicit_ref]:
                 self.session.begin_nested()
-                explicit_ref_grp = None
-                # Get associated group if exists from the declared explicit references
-                declared_explicit_reference = next(iter([i for i in self.operation.get("explicit_references") or [] if i.get("name") == explicit_ref]), None)
-                if declared_explicit_reference:
-                    explicit_ref_grp = self.expl_groups.get(declared_explicit_reference.get("group"))
-                # end if
                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                 self.explicit_refs[explicit_ref] = ExplicitRef(id, datetime.datetime.now(), explicit_ref, explicit_ref_grp)
                 self.session.add(self.explicit_refs[explicit_ref])
@@ -1139,6 +1143,14 @@ class Engine():
                     self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
                     pass
                 # end try
+            # end if
+
+
+            # Update group information if available (this is to reduce the effort at ingestion level of synchronizing groups.
+            # The ingestion developer has to take into account using always the same groups accross ingestion
+            # processors for the same explicit references to avoid clashes)
+            if explicit_ref_grp != None:
+                self.explicit_refs[explicit_ref].group = explicit_ref_grp
             # end if
         # end for
         return
@@ -1162,7 +1174,7 @@ class Engine():
 
         unique_sorted_links = sorted(set(list_explicit_reference_links))
         
-        for link in list_explicit_reference_links:
+        for link in unique_sorted_links:
             explicit_ref1 = self.explicit_refs[link[0]]
             explicit_ref2 = self.explicit_refs[link[1]]
             link_name = link[2]
