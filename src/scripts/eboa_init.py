@@ -20,9 +20,24 @@ config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 
+def execute_command(command, success_message):
+    command_split = shlex.split(command)
+    program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
+    output, error = program.communicate()
+    return_code = program.returncode
+    if return_code != 0:
+        print("The execution of the command {} has ended unexpectedly with the following error: {} and the following output: {}".format(command, str(error), str(output)))
+        exit(-1)
+    else:
+        print(success_message)
+    # end try
+
+
 def main():
 
     args_parser = argparse.ArgumentParser(description="Initialize BOA environment.")
+    args_parser.add_argument('-f', dest='datamodel_path', type=str, nargs=1,
+                             help='path to the datamodel', required=False)
     args_parser.add_argument("-o", "--initialize_orc",
                              help="Initialize also ORC environment", action="store_true")
 
@@ -38,17 +53,28 @@ def main():
     
     args = args_parser.parse_args()
 
+    # Default path for the docker environment
+    datamodel_path = "/datamodel/eboa_data_model.sql"
+    if args.datamodel_path != None:
+        datamodel_path = args.datamodel_path[0]
+        # Check if file exists
+        if not os.path.isfile(datamodel_path):
+            print("The specified path to the datamodel file {} does not exist".format(datamodel_path))
+            exit(-1)
+        # end if
+    # end if
+
     datatabse_address = db_configuration["host"]
     datatabse_port = db_configuration["port"]
 
-    command = "init_ddbb.sh -h {} -p {} -f /datamodel/eboa_data_model.sql".format(datatabse_address, datatabse_port)
-    print("The BOA database is going to be initialize...")
+    command = "init_ddbb.sh -h {} -p {} -f {}".format(datatabse_address, datatabse_port, datamodel_path)
+    print("The BOA database is going to be initialize using the datamodel SQL file {}...".format(datamodel_path))
     command_split = shlex.split(command)
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
     output, error = program.communicate()
     return_code = program.returncode
     if return_code != 0:
-        print("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
+        print("The execution of the command {} has ended unexpectedly with the following error: {} and the following output: {}".format(command, str(error), str(output)))
         exit(-1)
     else:
         print("The BOA database has been initialized successfully :-)")
@@ -58,42 +84,21 @@ def main():
 
         print("The MINARC archive is going to be initialize...")
         command = "minArcPurge -Y"
-        command_split = shlex.split(command)
-        program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
-        output, error = program.communicate()
-        return_code = program.returncode
-        if return_code != 0:
-            print("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
-            exit(-1)
-        else:
-            print("The MINARC archive has been initialized successfully :-)")
-        # end try
+        execute_command(command, "The MINARC archive has been initialized successfully :-)")
 
         print("The MINARC database is going to be initialize...")
-        command = "minArcDB --drop-tables ; minArcDB --create-tables"
-        command_split = shlex.split(command)
-        program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
-        output, error = program.communicate()
-        return_code = program.returncode
-        if return_code != 0:
-            print("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
-            exit(-1)
-        else:
-            print("The MINARC database has been initialized successfully :-)")
-        # end try
+        command = "minArcDB --drop-tables"
+        execute_command(command, "The MINARC database has been erased successfully :-)")
+
+        command = "minArcDB --create-tables"
+        execute_command(command, "The MINARC database has been initialized successfully :-)")
 
         print("The ORC database is going to be initialize...")
-        command = "orcManageDB --drop-tables ; orcManageDB --create-tables"
-        command_split = shlex.split(command)
-        program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
-        output, error = program.communicate()
-        return_code = program.returncode
-        if return_code != 0:
-            print("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
-            exit(-1)
-        else:
-            print("The ORC database has been initialized successfully :-)")
-        # end try
+        command = "orcManageDB --drop-tables"
+        execute_command(command, "The ORC database has been erased successfully :-)")
+
+        command = "orcManageDB --create-tables"
+        execute_command(command, "The ORC database has been initialized successfully :-)")
         
     # end if
     
