@@ -63,7 +63,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
         stop = datetime.datetime.now()
         processing_duration = stop - start
     except Exception as e:
-        logger.error("The ingestion has ended unexpectedly with the following error: {}".format(str(e)))
+        logger.error("The ingestion of the file {} has ended unexpectedly with the following error: {}".format(file_path, str(e)))
         traceback.print_exc(file=sys.stdout)
         exit(-1)
     # end try
