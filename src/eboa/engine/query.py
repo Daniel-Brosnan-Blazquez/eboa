@@ -316,7 +316,8 @@ class Query():
 
         sources = []
         if delete:
-            query.delete(synchronize_session="fetch")
+            sources = query.all()
+            self.session.query(Source).filter(Source.source_uuid.in_([source.source_uuid for source in sources])).delete(synchronize_session=False)
             self.session.commit()
         else:
             sources = query.all()
