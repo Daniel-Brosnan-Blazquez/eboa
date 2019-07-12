@@ -102,10 +102,10 @@ def execute_command(command):
     output, error = program.communicate()
     return_code = program.returncode
     if return_code != 0:
-        logger.error("The execution of the command has ended unexpectedly with the following error: {}".format(str(error)))
+        logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
         exit(-1)
-    # end try
-
+    # end if
+    
     return
 
 @debug
@@ -269,6 +269,7 @@ def main():
         triggering(file_path, reception_time, output_path)
         if args.remove_input:
             try:
+                logger.info("The received file {} is going to be removed".format(file_path))
                 os.remove(file_path)
             except FileNotFoundError:
                 pass
@@ -317,6 +318,7 @@ def main():
             result = triggering(file_path, reception_time)
             if args.remove_input:
                 try:
+                    logger.info("The received file {} is going to be removed".format(file_path))
                     os.remove(file_path)
                 except FileNotFoundError:
                     pass
