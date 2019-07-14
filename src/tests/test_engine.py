@@ -20,6 +20,7 @@ from eboa.engine.engine import Engine
 from eboa.engine.query import Query
 from eboa.datamodel.base import Session, engine, Base
 from eboa.engine.errors import UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry
+from eboa.engine.errors import LinksInconsistency
 
 # Import datamodel
 from eboa.datamodel.dim_signatures import DimSignature
@@ -2007,9 +2008,14 @@ class TestEngine(unittest.TestCase):
             }]
             }
         self.engine_eboa.data = data
-        returned_value = self.engine_eboa.treat_data()[0]["status"]
+        assert_value = False
+        try:
+            self.engine_eboa.treat_data()
+        except LinksInconsistency:
+            assert_value = True
+        # end try
 
-        assert returned_value == eboa_engine.exit_codes["LINKS_INCONSISTENCY"]["status"]
+        assert assert_value == True
 
         sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["LINKS_INCONSISTENCY"]["status"],
                                                                            Source.name == data["operations"][0]["source"]["name"]).all()
@@ -4975,4 +4981,4 @@ class TestEngine(unittest.TestCase):
         sources = self.session.query(Source).all()
 
         assert len(sources) == 0
-        
+

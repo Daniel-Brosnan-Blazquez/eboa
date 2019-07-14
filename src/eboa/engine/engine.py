@@ -52,7 +52,7 @@ import eboa.engine.parsing as parsing
 from eboa.logging import Log
 
 # Import debugging
-from eboa.debugging import debug, race_condition
+from eboa.debugging import debug, race_condition, race_condition2
 
 # Import auxiliary functions
 from eboa.engine.functions import get_resources_path, get_schemas_path, read_configuration
@@ -135,6 +135,22 @@ exit_codes = {
     "PROCESSING_DURATION_NOT_TIMEDELTA": {
         "status": 15,
         "message": "The source file with name {} has been received to be processed with a processing duration of type different than datetime.timedelta"
+    },
+    "PROCESSOR_DOES_NOT_EXIST": {
+        "status": 16,
+        "message": "The source file with path {} was going to be processed with the processor {} which does not exist. Reported error: {}"
+    },
+    "PROCESSING_ENDED_UNEXPECTEDLY": {
+        "status": 17,
+        "message": "The source file with name {} was going to be processed by the processor {} but the processing ended unexpectedly with the error {}"
+    },
+    "INGESTION_ENDED_UNEXPECTEDLY": {
+        "status": 18,
+        "message": "The source file with name {} was going to be ingested with the processor {} but the ingestion ended unexpectedly with the error {}"
+    },
+    "FILE_DOES_NOT_EXIST": {
+        "status": 19,
+        "message": "The source file with path {} does not exist"
     }
 }
 
@@ -673,7 +689,7 @@ class Engine():
             self.session.commit()
             # Log the error
             logger.error(e)
-            return exit_codes["LINKS_INCONSISTENCY"]["status"]
+            raise LinksInconsistency(e)
         except UndefinedEventLink as e:
             self.session.rollback()
             self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error = True, message = str(e))
@@ -1431,6 +1447,7 @@ class Engine():
         # Bulk insert links
         list_event_links_ddbb = list_event_links_by_ref_ddbb + list_event_links_by_uuid_ddbb
         try:
+            race_condition2()
             self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
         except IntegrityError as e:
             self.session.rollback()
@@ -1852,6 +1869,10 @@ class Engine():
 
             # Remove annotations due to the generation time
             self._remove_deprecated_annotations()
+
+            # Commit data
+            self.session.commit()
+
         # end def
 
         _remove_deprecated_data_synchronize(self)
@@ -2532,3 +2553,31 @@ class Engine():
         # end for
 
         return returned_geometries
+
+def insert_source_status(session, source, status, error = False, message = None):
+    """
+    Method to insert the DIM processing status
+
+    :param status: code indicating the status of the processing of the file
+    :type status: int
+    :param message: error message generated when the ingestion does not finish correctly
+    :type message: str
+    """
+    id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+    # Insert processing status
+    status = SourceStatus(id,datetime.datetime.now(),status,source)
+    session.add(status)
+
+    if message:
+        # Insert the error message
+        status.log = message
+    # end if
+
+    if error:
+        # Flag the ingestion error
+        source.ingestion_error = True
+    # end if
+
+    session.commit()
+
+    return

@@ -41,29 +41,26 @@ def insert_event_for_ingestion(event, source, list_of_events):
 ###########
 # Functions for helping with trating XML files
 ###########
-def remove_namespaces(file_path, new_file_path):
+def remove_namespaces(file_path, new_file_path, xml_declaration = True):
     """
-    Method to insert an event into a list for ingestion so that some checks are performed before
+    Method to remove namespaces from XML file
 
     """
     parser = etree.XMLParser(remove_blank_text=True)
     tree = etree.parse(file_path, parser)
-    root = tree.getroot()
-    
-    for elem in root.getiterator():
-        if not hasattr(elem.tag, 'find'):
-            continue
-        # end if
-        i = elem.tag.find('}')
-        if i >= 0:
-            elem.tag = elem.tag[i+1:]
-        # end if
+    #xpath query for selecting all element nodes in namespace
+    query = "descendant-or-self::*[namespace-uri()!='']"
+    #for each element returned by the above xpath query...
+    for element in tree.xpath(query):
+        #replace element name with its local name
+        element.tag = etree.QName(element).localname
     # end for
+    root = tree.getroot()
 
     objectify.deannotate(root, cleanup_namespaces=True)
 
     tree.write(new_file_path,
-               pretty_print=True, xml_declaration=True, encoding='UTF-8')
+               pretty_print=True, xml_declaration=xml_declaration, encoding='UTF-8')
 
     return
 

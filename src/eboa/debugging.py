@@ -44,3 +44,7 @@ def debug(method):
 def race_condition():
     """ Commit function for race conditions checks """
     return
+
+def race_condition2():
+    """ Commit function for race conditions checks """
+    return

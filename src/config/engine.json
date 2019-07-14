@@ -3,6 +3,7 @@
         "LEVEL": "INFO",
         "MAX_BYTES": 5000000,
         "MAX_BACKUP": 10
-    }
+    },
+    "INGESTION_RETRIES": 2
 }
  

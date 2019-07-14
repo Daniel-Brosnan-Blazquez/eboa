@@ -82,16 +82,16 @@ def main():
 
     if args.initialize_orc:
 
-        print("The MINARC archive is going to be initialize...")
-        command = "minArcPurge -Y"
-        execute_command(command, "The MINARC archive has been initialized successfully :-)")
-
         print("The MINARC database is going to be initialize...")
         command = "minArcDB --drop-tables"
         execute_command(command, "The MINARC database has been erased successfully :-)")
 
         command = "minArcDB --create-tables"
         execute_command(command, "The MINARC database has been initialized successfully :-)")
+
+        print("The MINARC archive is going to be initialize...")
+        command = "minArcPurge -Y"
+        execute_command(command, "The MINARC archive has been initialized successfully :-)")
 
         print("The ORC database is going to be initialize...")
         command = "orcManageDB --drop-tables"

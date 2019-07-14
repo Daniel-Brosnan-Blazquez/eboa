@@ -291,3 +291,4 @@ def is_valid_text_filter(text_filter):
     # end if
 
     return True
+
