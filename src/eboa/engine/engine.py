@@ -1822,10 +1822,8 @@ class Engine():
             status.log = message
         # end if
 
-        if error:
-            # Flag the ingestion error
-            self.source.ingestion_error = True
-        # end if
+        # Flag the ingestion error
+        self.source.ingestion_error = error
 
         if final:
             
