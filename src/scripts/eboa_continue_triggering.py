@@ -31,7 +31,7 @@ def main():
     # Get sources not ingested in the last 2 hours (to avoid blocking the chain by blocked ingestions)
     # 2 hours is the time for notifying alerts and so the system will be protected
     stop = datetime.datetime.now()
-    start = stop + datetime.timedelta(hours=-2)
+    start = stop + datetime.timedelta(minutes=-30)
     sources = query.get_sources(ingested = False, generation_time_filters = [{"date": start.isoformat(), "op": ">"},
                                                                              {"date": stop.isoformat(), "op": "<"}])
 
