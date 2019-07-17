@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+BASH_ENV=/container.env
+# Ingest into DDBB the health status information every minute
+* * * * * ingestion_health_status.py
