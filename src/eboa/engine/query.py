@@ -739,7 +739,49 @@ class Query():
                 linked_events = self.get_events(event_uuids = {"filter": linked_event_uuids, "op": "in"})
             # end if
 
-            events["linked_events"] = events_linking
+            events["linked_events"] = linked_events
+        # end if
+
+        return events
+
+    def get_linking_events_group_by_link_name(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, value_filters = None, return_prime_events = True, keys = None, back_ref = False):
+
+        # Obtain prime events
+        prime_events = self.get_events(event_uuids = event_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters)
+
+        prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
+        events_linking = {}
+        for link_name in link_names["filter"]:
+            # Obtain the links to the prime events from other events
+            links = []
+            if len(prime_event_uuids) > 0:
+                links = self.get_event_links(event_uuids = {"filter": prime_event_uuids, "op": "in"}, link_names = {"filter": [link_name], "op": link_names["op"]})
+            # end if
+
+            # Obtain the events linking the prime events
+            event_linking_uuids = [str(link.event_uuid_link) for link in links]
+            events_linking[link_name] = []
+            if len(event_linking_uuids) > 0:
+                events_linking[link_name] = self.get_events(event_uuids = {"filter": event_linking_uuids, "op": "in"})
+            # end if
+        # end for
+        
+        events = {}
+        if return_prime_events:
+            events["prime_events"] = prime_events
+        # end if
+        events["linking_events"] = events_linking
+
+        if back_ref:
+            # Obtain the events linking the prime events
+            links = self.get_event_links(event_uuid_links = {"filter": prime_event_uuids, "op": "in"})
+            linked_event_uuids = [str(link.event_uuid) for link in links]
+            linked_events = []
+            if len(event_linking_uuids) > 0:
+                linked_events = self.get_events(event_uuids = {"filter": linked_event_uuids, "op": "in"})
+            # end if
+
+            events["linked_events"] = linked_events
         # end if
 
         return events
