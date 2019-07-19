@@ -8,7 +8,7 @@ module eboa
 from setuptools import setup, find_packages
 
 setup(name="eboa",
-      version="0.1.0",
+      version="0.1.1",
       description="Engine for Business Operation Analysis",
       url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",
