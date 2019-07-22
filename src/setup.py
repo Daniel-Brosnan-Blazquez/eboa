@@ -28,7 +28,8 @@ setup(name="eboa",
           "Pillow",
           "xmlschema",
           "jsonschema",
-          "psutil"
+          "psutil",
+          "inotify"
       ],
       extras_require={
           "tests" :[
