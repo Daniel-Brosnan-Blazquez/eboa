@@ -188,7 +188,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(source1) == 1
 
-        sources = self.query.get_sources()
+        sources = self.query.get_sources(ingestion_error = {"filter": True, "op": "!="})
 
         assert len(sources) == 2
 

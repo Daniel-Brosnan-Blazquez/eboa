@@ -32,7 +32,9 @@ def main():
     # 2 hours is the time for notifying alerts and so the system will be protected
     stop = datetime.datetime.now()
     start = stop + datetime.timedelta(minutes=-30)
-    sources = query.get_sources(ingested = False, generation_time_filters = [{"date": start.isoformat(), "op": ">"},
+    sources = query.get_sources(ingested = False,
+                                ingestion_error = {"filter": True, "op": "!="},
+                                generation_time_filters = [{"date": start.isoformat(), "op": ">"},
                                                                              {"date": stop.isoformat(), "op": "<"}])
 
     return_value = 0

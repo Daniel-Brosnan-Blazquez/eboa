@@ -144,7 +144,7 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -270,6 +270,13 @@ class Query():
         if ingested != None:
             functions.is_valid_bool_filter(ingested)
             params.append(Source.ingested == ingested)
+        # end if
+
+        # ingestion_error filter
+        if ingestion_error != None:
+            functions.is_valid_bool_filter_with_op(ingestion_error, arithmetic_operators)
+            op = arithmetic_operators[ingestion_error["op"]]
+            params.append(op(Source.ingestion_error, ingestion_error["filter"]))
         # end if
 
         # Processors
