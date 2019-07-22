@@ -98,6 +98,27 @@ def is_valid_bool_filter(filter):
 
     return True
 
+def is_valid_bool_filter_with_op(bool_filter, operators):
+
+    if type(bool_filter) != dict:
+        raise InputError("The parameter bool_filter must be a dict (received bool_filter: {}).".format(bool_filter))
+    # end if
+
+    if len(bool_filter.keys()) != 2 or not "filter" in bool_filter.keys() or not "op" in bool_filter.keys():
+        raise InputError("Every bool_filter should be a dictionary with keys date and op (received keys: {}).".format(bool_filter.keys()))
+    # end if
+
+    if not bool_filter["op"] in operators:
+        raise InputError("The specified op is not a valid operator (received op: {}).".format(bool_filter["op"]))
+    # end if
+    try:
+        bool(bool_filter["filter"])
+    except ValueError:
+        raise InputError("The specified bool is not a valid bool (received bool: {}).".format(bool_filter["filter"]))
+    # end try
+
+    return True
+
 def is_valid_date_filters(date_filters, operators):
 
     if type(date_filters) != list:
