@@ -2031,6 +2031,7 @@ class Engine():
         self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
 
         # Remove the events that were partially affected by the insert and erase operation
+        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
         # Bulk insert values
@@ -2270,7 +2271,7 @@ class Engine():
                                                                                                                Event.stop <= validity_stop,
                                                                                                                Event.source_uuid != source_max_generation_time.source_uuid).all()
 
-                    # Get the events ending on the current period to be removed
+                    # Get the events not ending on the current period to be removed
                     events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
                                                                                                                    Event.gauge_uuid == gauge_uuid,
                                                                                                                    Event.start < validity_stop,
@@ -2318,6 +2319,7 @@ class Engine():
         self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
 
         # Remove the events that were partially affected by the insert and erase operation
+        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
         # Bulk insert values
@@ -2362,6 +2364,7 @@ class Engine():
                                                                                                                     Source.generation_time <= max_generation_time,
                                                                                                                     EventKey.event_key == key,
                                                                                                                     Source.dim_signature_uuid == dim_signature_uuid)
+            self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(events_uuids_to_delete)).delete(synchronize_session=False)
             self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_delete)).delete(synchronize_session=False)
 
             # Make events visible
