@@ -1746,6 +1746,10 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_keys) == 2
 
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 2
+
     def test_insert_event_keys_with_links(self):
 
         data = {"operations": [{
