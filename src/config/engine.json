@@ -1,8 +1,8 @@
 {
     "LOG": {
         "LEVEL": "INFO",
-        "MAX_BYTES": 5000000,
-        "MAX_BACKUP": 10
+        "MAX_BYTES": 50000000,
+        "MAX_BACKUP": 0
     },
     "INGESTION_RETRIES": 2
 }
