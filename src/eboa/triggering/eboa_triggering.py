@@ -13,7 +13,6 @@ from subprocess import Popen, PIPE
 from oslo_concurrency import lockutils
 import datetime
 import errno
-import inotify.adapters
 
 # Import engine functions
 from eboa.engine.functions import get_resources_path, get_schemas_path
@@ -70,19 +69,18 @@ def block_process(dependency, file_name):
     :param dependecy: dependency where to block the process
     :type dependency: str
     """
+    @lockutils.synchronized(dependency, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
+    def block_on_dependecy():
+        logger.debug("The triggering of the file {} has been unblocked by the dependency: {}".format(file_name, dependency))
+        return
+    # end def
+
     try:
-        inotify_adapters = inotify.adapters.Inotify()
-        inotify_adapters.add_watch(on_going_ingestions_folder + dependency)
         number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
         while number_of_files_being_processed > 0:
-            # Wait till there are modifications in the folder of the dependecy or timeout after 60 seconds
-            for event in inotify_adapters.event_gen(yield_nones=False, timeout_s=60):
-                break
-            # end for
+            block_on_dependecy()
             number_of_files_being_processed = len(os.listdir(on_going_ingestions_folder + dependency))
         # end while
-        inotify_adapters.remove_watch(on_going_ingestions_folder + dependency)
-        logger.debug("The triggering of the file {} has been unblocked by the dependency: {}".format(file_name, dependency))
     except FileNotFoundError:
         # There were not files ingested yet associated to the dependency
         pass
@@ -147,14 +145,19 @@ def block_and_execute_command(source_type, command, file_name, dependencies):
 
         open(on_going_ingestions_folder + source_type + "/" + file_name,"w+")
         
-        logger.debug("The triggering of the file {} will block the triggering depending on: {}".format(file_name, source_type))
-        os.waitpid(newpid, 0)
-        try:
-            os.remove(on_going_ingestions_folder + source_type + "/" + file_name)
-        except FileNotFoundError:
-            pass
-        # end try
+        @debug
+        @lockutils.synchronized(source_type, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
+        def blocking_on_command():
+            logger.debug("The triggering of the file {} will block the triggering depending on: {}".format(file_name, source_type))
+            os.waitpid(newpid, 0)
+            try:
+                os.remove(on_going_ingestions_folder + source_type + "/" + file_name)
+            except FileNotFoundError:
+                pass
+            # end try
+        # end def
 
+        blocking_on_command()        
     # end if
 
     return
@@ -229,7 +232,18 @@ def triggering(file_path, reception_time, output_path = None):
 
     return
 
-def main(file_path, remove_input = False, output_path = None):
+def main():
+
+    args_parser = argparse.ArgumentParser(description='EBOA triggering.')
+    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
+                             help='path to the file to process', required=True)
+    args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
+                             help="path to the output file", required=False)
+    args_parser.add_argument("-r", "--remove_input",
+                             help="remove input file when triggering finished", action="store_true")
+    
+    args = args_parser.parse_args()
+    file_path = args.file_path[0]
     
     # Check if file exists
     if not os.path.isfile(file_path):
@@ -239,7 +253,9 @@ def main(file_path, remove_input = False, output_path = None):
 
     logger.info("Received file {}".format(file_path))
     
-    if output_path != None:
+    output_path = None
+    if args.output_path != None:
+        output_path = args.output_path[0]
         # Check if file exists
         if not os.path.isdir(os.path.dirname(output_path)):
             logger.error("The specified path to the output file {} does not exist".format(output_path))
@@ -251,7 +267,7 @@ def main(file_path, remove_input = False, output_path = None):
 
     if output_path:
         triggering(file_path, reception_time, output_path)
-        if remove_input:
+        if args.remove_input:
             try:
                 logger.info("The received file {} is going to be removed".format(file_path))
                 os.remove(file_path)
@@ -300,7 +316,7 @@ def main(file_path, remove_input = False, output_path = None):
         result = 0
         if newpid == 0:
             result = triggering(file_path, reception_time)
-            if remove_input:
+            if args.remove_input:
                 try:
                     logger.info("The received file {} is going to be removed".format(file_path))
                     os.remove(file_path)
@@ -315,25 +331,4 @@ def main(file_path, remove_input = False, output_path = None):
 
 if __name__ == "__main__":
 
-    args_parser = argparse.ArgumentParser(description='EBOA triggering.')
-    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
-                             help='path to the file to process', required=True)
-    args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
-                             help="path to the output file", required=False)
-    args_parser.add_argument("-r", "--remove_input",
-                             help="remove input file when triggering finished", action="store_true")
-    
-    args = args_parser.parse_args()
-    file_path = args.file_path[0]    
-
-    remove_input = False
-    if args.remove_input:
-        remove_input = True
-    # end if
-    
-    output_path = None
-    if args.output_path != None:
-        output_path = args.output_path[0]
-    # end if
-    
-    main(file_path, remove_input, output_path)
+    main()
