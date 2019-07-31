@@ -12,9 +12,13 @@ import re
 import shlex
 from subprocess import Popen, PIPE
 import os
+import shutil
 
 # Import auxiliary functions
 from eboa.datamodel.functions import read_configuration
+
+# Import engine functions
+from eboa.engine.functions import get_resources_path
 
 config = read_configuration()
 
@@ -80,6 +84,10 @@ def main():
         print("The BOA database has been initialized successfully :-)")
     # end try
 
+    # Remove the on_going_ingestions directory
+    on_going_ingestions_folder = get_resources_path() + "/on_going_ingestions/"
+    shutil.rmtree(on_going_ingestions_folder)
+    
     if args.initialize_orc:
 
         print("The MINARC database is going to be initialize...")
