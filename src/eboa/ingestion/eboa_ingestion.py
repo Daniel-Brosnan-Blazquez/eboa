@@ -110,10 +110,6 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
             except Exception as e:
                 success = False
 
-                query = Query()
-                query.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "notlike"}, delete = True)
-                query.close_session()
-
                 logger.error("The insertion of the data related to file {} has ended unexpectedly with the following error: {}".format(filename, str(e)))
                 if number_of_retries >= max_number_of_retries:
                     logger.error("The ingestion of the file {} has exceeded the number of retries {}. Previously related data ingested has been removed".format(filename, max_number_of_retries))
@@ -127,6 +123,10 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
 
                     return -1
                 else:
+                    query_remove = Query()
+                    query_remove.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "notlike"}, delete = True)
+                    query_remove.close_session()
+
                     logger.error("The ingestion of the file {} is going to be retried. Previously related data ingested has been removed".format(filename))
                 # end if
             # end try
