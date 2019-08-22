@@ -22,7 +22,9 @@ from lxml import etree
 import eboa.triggering.xpath_functions as xpath_functions
 
 # Import engine
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
+from eboa.engine.query import Query
 
 # Import logging
 import argparse
@@ -109,7 +111,7 @@ def execute_command(command):
     return
 
 @debug
-def block_and_execute_command(source_type, command, file_name, dependencies):
+def block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this):
     """
     Method to execute the commands while blocking other processes which would have dependencies
     
@@ -148,16 +150,22 @@ def block_and_execute_command(source_type, command, file_name, dependencies):
         @debug
         @lockutils.synchronized(source_type, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
         def blocking_on_command():
-            logger.debug("The triggering of the file {} will block the triggering depending on: {}".format(file_name, source_type))
+            logger.info("The triggering of the file {} will block the triggering depending on: {}".format(file_name, source_type))
             os.waitpid(newpid, 0)
-            try:
-                os.remove(on_going_ingestions_folder + source_type + "/" + file_name)
-            except FileNotFoundError:
-                pass
-            # end try
         # end def
 
-        blocking_on_command()        
+        if len(dependencies_on_this) > 0:
+            blocking_on_command()
+        else:
+            os.waitpid(newpid, 0)
+        # end if
+
+        try:
+            os.remove(on_going_ingestions_folder + source_type + "/" + file_name)
+        except FileNotFoundError:
+            pass
+        # end try
+
     # end if
 
     return
@@ -215,10 +223,15 @@ def triggering(file_path, reception_time, output_path = None):
             # end if
             source_type = rule.xpath("source_type")[0].text
 
+            # Get dependencies on this type of triggering
+            dependencies_on_this = triggering_xpath("/triggering_rules/rule/dependencies[source_type = $source_type]", source_type = source_type)
+
+            logger.info("Found {} dependecy/ies on the triggering of the file {}".format(len(dependencies_on_this), file_name))
+
             if output_path:
                 execute_command(command)
             else:
-                block_and_execute_command(source_type, command, file_name, dependencies)
+                block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this)
             # end if
             
             # Register an alert if the tool didn't succeed
@@ -245,12 +258,6 @@ def main():
     args = args_parser.parse_args()
     file_path = args.file_path[0]
     
-    # Check if file exists
-    if not os.path.isfile(file_path):
-        logger.error("The specified file {} does not exist".format(file_path))
-        exit(-1)
-    # end if
-
     logger.info("Received file {}".format(file_path))
     
     output_path = None
@@ -266,6 +273,12 @@ def main():
     reception_time = datetime.datetime.now().isoformat()
 
     if output_path:
+        # Check if file exists
+        if not os.path.isfile(file_path):
+            logger.error("The specified file {} does not exist".format(file_path))
+            exit(-1)
+        # end if
+
         triggering(file_path, reception_time, output_path)
         if args.remove_input:
             try:
@@ -309,8 +322,21 @@ def main():
         }]
         }
         engine_eboa.treat_data(data)
-
+        
         engine_eboa.close_session()
+
+        # Check if file exists
+        if not os.path.isfile(file_path):
+            logger.error("The specified file {} does not exist".format(file_path))
+            query_log_status = Query()
+            sources = query_log_status.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+            if len(sources) > 0:
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(file_path))
+            # end if
+            query_log_status.close_session()
+
+            exit(-1)
+        # end if
         
         newpid = os.fork()
         result = 0
