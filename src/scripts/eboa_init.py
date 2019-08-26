@@ -86,7 +86,12 @@ def main():
 
     # Remove the on_going_ingestions directory
     on_going_ingestions_folder = get_resources_path() + "/on_going_ingestions/"
-    shutil.rmtree(on_going_ingestions_folder)
+    try:
+        shutil.rmtree(on_going_ingestions_folder)
+    except FileNotFoundError:
+        pass
+    # end try
+        
     
     if args.initialize_orc:
 
