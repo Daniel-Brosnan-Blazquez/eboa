@@ -1580,4 +1580,568 @@ CREATE INDEX idx_processing_dim_signature_id ON eboa.sources
 	);
 -- ddl-end --
 
+-- object: pg_trgm | type: EXTENSION --
+-- DROP EXTENSION IF EXISTS pg_trgm CASCADE;
+CREATE EXTENSION pg_trgm
+      WITH SCHEMA eboa;
+-- ddl-end --
+
+-- -- object: eboa.gin_trgm_ops | type: OPERATOR CLASS --
+-- -- DROP OPERATOR CLASS IF EXISTS eboa.gin_trgm_ops USING gin CASCADE;
+-- CREATE OPERATOR CLASS eboa.gin_trgm_ops FOR TYPE text
+--  USING gin AS
+-- 	STORAGE	text;
+-- -- ddl-end --
+-- ALTER OPERATOR CLASS eboa.gin_trgm_ops USING gin OWNER TO postgres;
+-- -- ddl-end --
+-- 
+-- object: idx_event_boolean_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_boolean_name_gin CASCADE;
+CREATE INDEX idx_event_boolean_name_gin ON eboa.event_booleans
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_text_value_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_text_value_gin CASCADE;
+CREATE INDEX idx_event_text_value_gin ON eboa.event_texts
+	USING gin
+	(
+	  value eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_text_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_text_name_gin CASCADE;
+CREATE INDEX idx_event_text_name_gin ON eboa.event_texts
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_double_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_double_name_gin CASCADE;
+CREATE INDEX idx_event_double_name_gin ON eboa.event_doubles
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_timestamp_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_timestamp_name_gin CASCADE;
+CREATE INDEX idx_event_timestamp_name_gin ON eboa.event_timestamps
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_object_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_object_name_gin CASCADE;
+CREATE INDEX idx_event_object_name_gin ON eboa.event_objects
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_geometry_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_geometry_name_gin CASCADE;
+CREATE INDEX idx_event_geometry_name_gin ON eboa.event_geometries
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_boolean_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_boolean_name_gin CASCADE;
+CREATE INDEX idx_annotation_boolean_name_gin ON eboa.annotation_booleans
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_timestamp_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_timestamp_name_gin CASCADE;
+CREATE INDEX idx_annotation_timestamp_name_gin ON eboa.annotation_timestamps
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_text_value_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_text_value_gin CASCADE;
+CREATE INDEX idx_annotation_text_value_gin ON eboa.annotation_texts
+	USING gin
+	(
+	  value eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_text_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_text_name_gin CASCADE;
+CREATE INDEX idx_annotation_text_name_gin ON eboa.annotation_texts
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_double_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_double_name_gin CASCADE;
+CREATE INDEX idx_annotation_double_name_gin ON eboa.annotation_doubles
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_object_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_object_name_gin CASCADE;
+CREATE INDEX idx_annotation_object_name_gin ON eboa.annotation_objects
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_geometry_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_geometry_name_gin CASCADE;
+CREATE INDEX idx_annotation_geometry_name_gin ON eboa.annotation_geometries
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_gauge_cnf_system_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_gauge_cnf_system_gin CASCADE;
+CREATE INDEX idx_gauge_cnf_system_gin ON eboa.gauges
+	USING gin
+	(
+	  system eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_gauge_cnf_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_gauge_cnf_name_gin CASCADE;
+CREATE INDEX idx_gauge_cnf_name_gin ON eboa.gauges
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_links_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_links_name_gin CASCADE;
+CREATE INDEX idx_event_links_name_gin ON eboa.event_links
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_dim_signature_dim_signature_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_dim_signature_dim_signature_gin CASCADE;
+CREATE INDEX idx_dim_signature_dim_signature_gin ON eboa.dim_signatures
+	USING gin
+	(
+	  dim_signature eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_cnf_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_cnf_name_gin CASCADE;
+CREATE INDEX idx_annotation_cnf_name_gin ON eboa.annotation_cnfs
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_cnf_system_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_cnf_system_gin CASCADE;
+CREATE INDEX idx_annotation_cnf_system_gin ON eboa.annotation_cnfs
+	USING gin
+	(
+	  system eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_links_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_links_name_gin CASCADE;
+CREATE INDEX idx_explicit_ref_links_name_gin ON eboa.explicit_ref_links
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_explicit_ref_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_explicit_ref_gin CASCADE;
+CREATE INDEX idx_explicit_ref_explicit_ref_gin ON eboa.explicit_refs
+	USING gin
+	(
+	  explicit_ref eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_cnf_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_cnf_name_gin CASCADE;
+CREATE INDEX idx_explicit_ref_cnf_name_gin ON eboa.explicit_ref_cnfs
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_keys_event_key_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_keys_event_key_gin CASCADE;
+CREATE INDEX idx_event_keys_event_key_gin ON eboa.event_keys
+	USING gin
+	(
+	  event_key eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_source_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_name_gin CASCADE;
+CREATE INDEX idx_source_name_gin ON eboa.sources
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_validated | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_validated CASCADE;
+CREATE INDEX idx_event_alerts_validated ON eboa.event_alerts
+	USING btree
+	(
+	  validated
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_ingestion_time CASCADE;
+CREATE INDEX idx_event_alerts_ingestion_time ON eboa.event_alerts
+	USING btree
+	(
+	  ingestion_time
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_generator_gin CASCADE;
+CREATE INDEX idx_event_alerts_generator_gin ON eboa.event_alerts
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_notified | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_notified CASCADE;
+CREATE INDEX idx_event_alerts_notified ON eboa.event_alerts
+	USING btree
+	(
+	  notified
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_solved | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_solved CASCADE;
+CREATE INDEX idx_event_alerts_solved ON eboa.event_alerts
+	USING btree
+	(
+	  solved
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_solved_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_solved_time CASCADE;
+CREATE INDEX idx_event_alerts_solved_time ON eboa.event_alerts
+	USING btree
+	(
+	  solved_time
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_notification_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_notification_time CASCADE;
+CREATE INDEX idx_event_alerts_notification_time ON eboa.event_alerts
+	USING btree
+	(
+	  notification_time
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_alert_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_alert_uuid CASCADE;
+CREATE INDEX idx_event_alerts_alert_uuid ON eboa.event_alerts
+	USING btree
+	(
+	  alert_uuid
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_event_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_event_uuid CASCADE;
+CREATE INDEX idx_event_alerts_event_uuid ON eboa.event_alerts
+	USING btree
+	(
+	  event_uuid
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_generator CASCADE;
+CREATE INDEX idx_event_alerts_generator ON eboa.event_alerts
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_validated | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_validated CASCADE;
+CREATE INDEX idx_source_alerts_validated ON eboa.source_alerts
+	USING btree
+	(
+	  validated
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_ingestion_time CASCADE;
+CREATE INDEX idx_source_alerts_ingestion_time ON eboa.source_alerts
+	USING btree
+	(
+	  ingestion_time
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_generator_gin CASCADE;
+CREATE INDEX idx_source_alerts_generator_gin ON eboa.source_alerts
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_notified | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_notified CASCADE;
+CREATE INDEX idx_source_alerts_notified ON eboa.source_alerts
+	USING btree
+	(
+	  notified
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_solved | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_solved CASCADE;
+CREATE INDEX idx_source_alerts_solved ON eboa.source_alerts
+	USING btree
+	(
+	  solved
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_solved_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_solved_time CASCADE;
+CREATE INDEX idx_source_alerts_solved_time ON eboa.source_alerts
+	USING btree
+	(
+	  solved_time
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_notification_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_notification_time CASCADE;
+CREATE INDEX idx_source_alerts_notification_time ON eboa.source_alerts
+	USING btree
+	(
+	  notification_time
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_alert_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_alert_uuid CASCADE;
+CREATE INDEX idx_source_alerts_alert_uuid ON eboa.source_alerts
+	USING btree
+	(
+	  alert_uuid
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_source_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_source_uuid CASCADE;
+CREATE INDEX idx_source_alerts_source_uuid ON eboa.source_alerts
+	USING btree
+	(
+	  source_uuid
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_generator CASCADE;
+CREATE INDEX idx_source_alerts_generator ON eboa.source_alerts
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_validated | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_validated CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_validated ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  validated
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_ingestion_time CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_ingestion_time ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  ingestion_time
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_generator_gin CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_generator_gin ON eboa.explicit_ref_alerts
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_notified | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_notified CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_notified ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  notified
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_solved | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_solved CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_solved ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  solved
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_solved_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_solved_time CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_solved_time ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  solved_time
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_notification_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_notification_time CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_notification_time ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  notification_time
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_alert_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_alert_uuid CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_alert_uuid ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  alert_uuid
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_explicit_ref_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_explicit_ref_uuid CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_explicit_ref_uuid ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  explicit_ref_uuid
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_generator CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_generator ON eboa.explicit_ref_alerts
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: idx_alert_groups_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alert_groups_name CASCADE;
+CREATE INDEX idx_alert_groups_name ON eboa.alert_groups
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_alert_groups_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alert_groups_name_gin CASCADE;
+CREATE INDEX idx_alert_groups_name_gin ON eboa.alert_groups
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_alerts_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alerts_name CASCADE;
+CREATE INDEX idx_alerts_name ON eboa.alerts
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_alerts_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alerts_name_gin CASCADE;
+CREATE INDEX idx_alerts_name_gin ON eboa.alerts
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_alerts_severity | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alerts_severity CASCADE;
+CREATE INDEX idx_alerts_severity ON eboa.alerts
+	USING btree
+	(
+	  severity
+	);
+-- ddl-end --
+
+-- object: idx_alerts_alert_group_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_alerts_alert_group_uuid CASCADE;
+CREATE INDEX idx_alerts_alert_group_uuid ON eboa.alerts
+	USING btree
+	(
+	  alert_group_uuid
+	);
+-- ddl-end --
+
 

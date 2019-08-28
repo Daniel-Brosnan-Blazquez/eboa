@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="440,828" last-zoom="0.95"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="357,892" last-zoom="0.9"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -13,10 +13,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <database name="eboadb" is-template="false" allow-conns="true">
 </database>
 
-<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true" faded-out="true">
 </schema>
 
-<schema name="eboa" fill-color="#e1e1e1">
+<schema name="eboa" fill-color="#e1e1e1" faded-out="true">
 	<role name="eboa"/>
 </schema>
 
@@ -362,7 +362,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_texts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="840"/>
+	<position x="1980" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -391,7 +391,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_doubles">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="980"/>
+	<position x="1980" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -420,7 +420,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_objects">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="1260"/>
+	<position x="1980" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -446,7 +446,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_geometries">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="1380"/>
+	<position x="1980" y="1380"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -591,7 +591,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<table name="event_booleans">
+<table name="event_booleans" hide-ext-attribs="true">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="700" y="700"/>
@@ -633,7 +633,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_booleans">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="700"/>
+	<position x="1980" y="700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -662,7 +662,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_timestamps">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1940" y="1120"/>
+	<position x="1980" y="1120"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -1839,6 +1839,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="alerts_pk" type="pk-constr" table="eboa.alerts">
 		<columns names="alert_uuid" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_group_uuid" index="4"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alert_groups_fk" index="2"/>
+	</customidxs>
 </table>
 
 <table name="source_alerts">
@@ -1890,7 +1898,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_alerts">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1660" y="1340"/>
+	<position x="1640" y="1340"/>
 	<column name="explicit_ref_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2043,6 +2051,537 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 index-type="btree" factor="0">
 		<idxelement use-sorting="false">
 			<column name="dim_signature_uuid"/>
+		</idxelement>
+</index>
+
+<extension name="pg_trgm">
+	<schema name="eboa"/>
+</extension>
+
+<opclass  name="gin_trgm_ops" index-type="gin" default="false" sql-disabled="true">
+	<schema name="eboa"/>
+	<role name="postgres"/>
+	<type name="text" length="0"/>
+	<element type="storage">
+		<type name="text" length="0"/>
+	</element>
+</opclass>
+
+<index name="idx_event_boolean_name_gin" table="eboa.event_booleans"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_text_value_gin" table="eboa.event_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_text_name_gin" table="eboa.event_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_double_name_gin" table="eboa.event_doubles"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_timestamp_name_gin" table="eboa.event_timestamps"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_object_name_gin" table="eboa.event_objects"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_geometry_name_gin" table="eboa.event_geometries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_boolean_name_gin" table="eboa.annotation_booleans"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_timestamp_name_gin" table="eboa.annotation_timestamps"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_text_value_gin" table="eboa.annotation_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_text_name_gin" table="eboa.annotation_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_double_name_gin" table="eboa.annotation_doubles"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_object_name_gin" table="eboa.annotation_objects"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_geometry_name_gin" table="eboa.annotation_geometries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_gauge_cnf_system_gin" table="eboa.gauges"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="system"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_gauge_cnf_name_gin" table="eboa.gauges"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_links_name_gin" table="eboa.event_links"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_dim_signature_dim_signature_gin" table="eboa.dim_signatures"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="dim_signature"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_cnf_name_gin" table="eboa.annotation_cnfs"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_cnf_system_gin" table="eboa.annotation_cnfs"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="system"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_links_name_gin" table="eboa.explicit_ref_links"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_explicit_ref_gin" table="eboa.explicit_refs"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="explicit_ref"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_cnf_name_gin" table="eboa.explicit_ref_cnfs"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_keys_event_key_gin" table="eboa.event_keys"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="event_key"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_name_gin" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_validated" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_ingestion_time" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_generator_gin" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_notified" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_solved" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_solved_time" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_notification_time" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_alert_uuid" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_event_uuid" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="event_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_generator" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_validated" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_ingestion_time" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_generator_gin" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_notified" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_solved" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_solved_time" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_notification_time" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_alert_uuid" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_source_uuid" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="source_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_generator" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_validated" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_ingestion_time" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_generator_gin" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_notified" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_solved" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_solved_time" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_notification_time" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_alert_uuid" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_explicit_ref_uuid" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="explicit_ref_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_generator" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_alert_groups_name" table="eboa.alert_groups"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_alert_groups_name_gin" table="eboa.alert_groups"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_alerts_name" table="eboa.alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_alerts_name_gin" table="eboa.alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_alerts_severity" table="eboa.alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="severity"/>
+		</idxelement>
+</index>
+
+<index name="idx_alerts_alert_group_uuid" table="eboa.alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_group_uuid"/>
 		</idxelement>
 </index>
 
