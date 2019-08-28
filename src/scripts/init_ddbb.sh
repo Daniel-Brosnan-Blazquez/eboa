@@ -70,9 +70,6 @@ fi
 # Create DDBB
 psql -p $PORT -h $HOST -U postgres -c "CREATE DATABASE eboadb;"
 
-# Add extenstion for postgis
-psql -p $PORT -h $HOST -U postgres -d eboadb -c "CREATE EXTENSION postgis;"
-
 # Fill DDBB
 psql -p $PORT -h $HOST -U postgres -d eboadb -f $DATAMODEL_FILE
 status=$?
