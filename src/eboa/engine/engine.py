@@ -1969,10 +1969,15 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid != source_max_generation_time.source_uuid,
-                                                 Event.gauge_uuid == gauge_uuid,
-                                                 Event.start >= validity_start,
-                                                 Event.stop <= validity_stop)
+                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.generation_time <= max_generation_time,
+                                                                                                     Event.source_uuid != source_max_generation_time.source_uuid,
+                                                                                                     Event.gauge_uuid == gauge_uuid,
+                                                                                                     Event.start >= validity_start,
+                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
+                                                                                                     Event.gauge_uuid == gauge_uuid,
+                                                                                                     Event.start >= validity_start,
+                                                                                                     Event.stop <= validity_stop)
                 self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
                 event_uuids_to_be_removed.delete(synchronize_session=False)
 
@@ -2218,6 +2223,7 @@ class Engine():
                                                                                                                   Event.start < validity_stop,
                                                                                                                   Event.stop > validity_start)
 
+                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, max_generation_time.first()[0].isoformat(), validity_start, validity_stop))
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                Event.gauge_uuid == gauge_uuid,
@@ -2256,10 +2262,15 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid != source_max_generation_time.source_uuid,
-                                                     Event.gauge_uuid == gauge_uuid,
-                                                     Event.start >= validity_start,
-                                                     Event.stop <= validity_stop)
+                    sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.generation_time <= max_generation_time,
+                                                                                                         Event.source_uuid != source_max_generation_time.source_uuid,
+                                                                                                         Event.gauge_uuid == gauge_uuid,
+                                                                                                         Event.start >= validity_start,
+                                                                                                         Event.stop <= validity_stop)
+                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
+                                                                                                         Event.gauge_uuid == gauge_uuid,
+                                                                                                         Event.start >= validity_start,
+                                                                                                         Event.stop <= validity_stop)
                     self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
                     event_uuids_to_be_removed.delete(synchronize_session=False)
 
