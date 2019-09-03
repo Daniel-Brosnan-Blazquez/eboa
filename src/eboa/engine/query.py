@@ -9,7 +9,6 @@ module eboa
 import datetime
 from datetime import timedelta
 from lxml import etree
-import operator
 import uuid
 
 # Import GEOalchemy entities
@@ -43,25 +42,11 @@ from eboa.logging import Log
 # Import query printing facilities
 from eboa.engine.printing import literal_query
 
+# Import operators
+from eboa.engine.operators import arithmetic_operators, text_operators
+
 logging = Log(name = __name__)
 logger = logging.logger
-
-
-arithmetic_operators = {
-    ">": operator.gt,
-    ">=": operator.ge,
-    "<": operator.lt,
-    "<=": operator.le,
-    "==": operator.eq,
-    "!=": operator.ne
-}
-
-text_operators = {
-    "like": "like",
-    "notlike": "notlike",
-    "in": "in_",
-    "notin": "notin_",
-}
 
 event_value_entities = {
     "text": EventText,
@@ -127,15 +112,25 @@ class Query():
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
-            filter = eval('DimSignature.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
-            params.append(filter(dim_signature_uuids["filter"]))
+            if dim_signature_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signature_uuids["op"]]
+                params.append(op(DimSignature.dim_signature_uuid, dim_signature_uuids["filter"]))
+            else:
+                filter = eval('DimSignature.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
+                params.append(filter(dim_signature_uuids["filter"]))
+            # end if
         # end if
 
         # DIM signatures
         if dim_signatures != None:
             functions.is_valid_text_filter(dim_signatures)
-            filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
-            params.append(filter(dim_signatures["filter"]))
+            if dim_signatures["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signatures["op"]]
+                params.append(op(DimSignature.dim_signature, dim_signatures["filter"]))
+            else:
+                filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
+                params.append(filter(dim_signatures["filter"]))
+            # end if
         # end if
 
         query = self.session.query(DimSignature).filter(*params)
@@ -165,7 +160,7 @@ class Query():
         :param ingestion_duration_filters: list of ingestion duration filters
         :type ingestion_duration_filters: float_filters
         :param processor_version_filters: list of version filters
-        :type processor_version_filters: string_filter
+        :type processor_version_filters: text_filter
         :param procesors: processor filters
         :type procesors: text_filter
         :param dim_signature_uuids: list of DIM signature identifiers
@@ -185,27 +180,42 @@ class Query():
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
-            filter = eval('Source.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
-            params.append(filter(dim_signature_uuids["filter"]))
+            if dim_signature_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signature_uuids["op"]]
+                params.append(op(Source.dim_signature_uuid, dim_signature_uuids["filter"]))
+            else:
+                filter = eval('Source.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
+                params.append(filter(dim_signature_uuids["filter"]))
+            # end if
         # end if
 
         # Source UUIDs
         if source_uuids != None:
             functions.is_valid_text_filter(source_uuids)
-            filter = eval('Source.source_uuid.' + text_operators[source_uuids["op"]])
-            params.append(filter(source_uuids["filter"]))
+            if source_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_uuids["op"]]
+                params.append(op(Source.source_uuid, source_uuids["filter"]))
+            else:
+                filter = eval('Source.source_uuid.' + text_operators[source_uuids["op"]])
+                params.append(filter(source_uuids["filter"]))
+            # end if
         # end if
 
         # Source names
         if names != None:
             functions.is_valid_text_filter(names)
-            filter = eval('Source.name.' + text_operators[names["op"]])
-            params.append(filter(names["filter"]))
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(Source.name, names["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
         # end if
 
         # validity_start filters
         if validity_start_filters != None:
-            functions.is_valid_date_filters(validity_start_filters, arithmetic_operators)
+            functions.is_valid_date_filters(validity_start_filters)
             for validity_start_filter in validity_start_filters:
                 op = arithmetic_operators[validity_start_filter["op"]]
                 params.append(op(Source.validity_start, validity_start_filter["date"]))
@@ -214,7 +224,7 @@ class Query():
 
         # validity_stop filters
         if validity_stop_filters != None:
-            functions.is_valid_date_filters(validity_stop_filters, arithmetic_operators)
+            functions.is_valid_date_filters(validity_stop_filters)
             for validity_stop_filter in validity_stop_filters:
                 op = arithmetic_operators[validity_stop_filter["op"]]
                 params.append(op(Source.validity_stop, validity_stop_filter["date"]))
@@ -223,7 +233,7 @@ class Query():
 
         # validity duration filters
         if validity_duration_filters != None:
-            functions.is_valid_float_filters(validity_duration_filters, arithmetic_operators)
+            functions.is_valid_float_filters(validity_duration_filters)
             for validity_duration_filter in validity_duration_filters:
                 op = arithmetic_operators[validity_duration_filter["op"]]
                 params.append(op((extract("epoch", Source.validity_stop) - extract("epoch", Source.validity_start)), validity_duration_filter["float"]))
@@ -232,7 +242,7 @@ class Query():
 
         # reception_time filters
         if reception_time_filters != None:
-            functions.is_valid_date_filters(reception_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(reception_time_filters)
             for reception_time_filter in reception_time_filters:
                 op = arithmetic_operators[reception_time_filter["op"]]
                 params.append(op(Source.reception_time, reception_time_filter["date"]))
@@ -241,7 +251,7 @@ class Query():
         
         # generation_time filters
         if generation_time_filters != None:
-            functions.is_valid_date_filters(generation_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(generation_time_filters)
             for generation_time_filter in generation_time_filters:
                 op = arithmetic_operators[generation_time_filter["op"]]
                 params.append(op(Source.generation_time, generation_time_filter["date"]))
@@ -250,7 +260,7 @@ class Query():
 
         # ingestion_time filters
         if ingestion_time_filters != None:
-            functions.is_valid_date_filters(ingestion_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(ingestion_time_filters)
             for ingestion_time_filter in ingestion_time_filters:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(Source.ingestion_time, ingestion_time_filter["date"]))
@@ -259,7 +269,7 @@ class Query():
 
         # ingestion_duration filters
         if ingestion_duration_filters != None:
-            functions.is_valid_float_filters(ingestion_duration_filters, arithmetic_operators)
+            functions.is_valid_float_filters(ingestion_duration_filters)
             for ingestion_duration_filter in ingestion_duration_filters:
                 op = arithmetic_operators[ingestion_duration_filter["op"]]
                 params.append(op(Source.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
@@ -274,7 +284,7 @@ class Query():
 
         # ingestion_error filter
         if ingestion_error != None:
-            functions.is_valid_bool_filter_with_op(ingestion_error, arithmetic_operators)
+            functions.is_valid_bool_filter_with_op(ingestion_error)
             op = arithmetic_operators[ingestion_error["op"]]
             params.append(op(Source.ingestion_error, ingestion_error["filter"]))
         # end if
@@ -282,22 +292,33 @@ class Query():
         # Processors
         if processors != None:
             functions.is_valid_text_filter(processors)
-            filter = eval('Source.processor.' + text_operators[processors["op"]])
-            params.append(filter(processors["filter"]))
+            if processors["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[processors["op"]]
+                params.append(op(Source.processor, processors["filter"]))
+            else:
+                filter = eval('Source.processor.' + text_operators[processors["op"]])
+                params.append(filter(processors["filter"]))
+            # end if
         # end if
 
         # processor_version filters
         if processor_version_filters != None:
-            functions.is_valid_string_filters(processor_version_filters, arithmetic_operators)
             for processor_version_filter in processor_version_filters:
-                op = arithmetic_operators[processor_version_filter["op"]]
-                params.append(op(Source.processor_version, processor_version_filter["str"]))
+                functions.is_valid_text_filter(processor_version_filter)
+
+                if processor_version_filter["op"] in arithmetic_operators.keys():
+                    op = arithmetic_operators[processor_version_filter["op"]]
+                    params.append(op(Source.processor_version, processor_version_filter["filter"]))
+                else:
+                    filter = eval('Source.processor_version.' + text_operators[processor_version_filter["op"]])
+                    params.append(filter(processor_version_filter["filter"]))
+                # end if
             # end for
         # end if
 
         # status filters
         if statuses != None:
-            functions.is_valid_float_filters(statuses, arithmetic_operators)
+            functions.is_valid_float_filters(statuses)
             for status in statuses:
                 op = arithmetic_operators[status["op"]]
                 params.append(op(SourceStatus.status, status["float"]))
@@ -307,8 +328,13 @@ class Query():
         # DIM signatures
         if dim_signatures != None:
             functions.is_valid_text_filter(dim_signatures)
-            filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
-            params.append(filter(dim_signatures["filter"]))
+            if dim_signatures["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signatures["op"]]
+                params.append(op(DimSignature.dim_signature, dim_signatures["filter"]))
+            else:
+                filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
+                params.append(filter(dim_signatures["filter"]))
+            # end if
             tables.append(DimSignature)
         # end if
 
@@ -356,36 +382,61 @@ class Query():
         # Gauge UUIDs
         if gauge_uuids != None:
             functions.is_valid_text_filter(gauge_uuids)
-            filter = eval('Gauge.gauge_uuid.' + text_operators[gauge_uuids["op"]])
-            params.append(filter(gauge_uuids["filter"]))
+            if gauge_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_uuids["op"]]
+                params.append(op(Gauge.gauge_uuid, gauge_uuids["filter"]))
+            else:
+                filter = eval('Gauge.gauge_uuid.' + text_operators[gauge_uuids["op"]])
+                params.append(filter(gauge_uuids["filter"]))
+            # end if
         # end if
 
         # Gauge names
         if names != None:
             functions.is_valid_text_filter(names)
-            filter = eval('Gauge.name.' + text_operators[names["op"]])
-            params.append(filter(names["filter"]))
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(Gauge.name, names["filter"]))
+            else:
+                filter = eval('Gauge.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
         # end if
 
         # Gauge systems
         if systems != None:
             functions.is_valid_text_filter(systems)
-            filter = eval('Gauge.system.' + text_operators[systems["op"]])
-            params.append(filter(systems["filter"]))
+            if systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[systems["op"]]
+                params.append(op(Gauge.system, systems["filter"]))
+            else:
+                filter = eval('Gauge.system.' + text_operators[systems["op"]])
+                params.append(filter(systems["filter"]))
+            # end if
         # end if
 
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
-            filter = eval('Gauge.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
-            params.append(filter(dim_signature_uuids["filter"]))
+            if dim_signature_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signature_uuids["op"]]
+                params.append(op(Gauge.dim_signature_uuid, dim_signature_uuids["filter"]))
+            else:
+                filter = eval('Gauge.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
+                params.append(filter(dim_signature_uuids["filter"]))
+            # end if
         # end if
 
         # DIM signatures
         if dim_signatures != None:
             functions.is_valid_text_filter(dim_signatures)
-            filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
-            params.append(filter(dim_signatures["filter"]))
+            if dim_signatures["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signatures["op"]]
+                params.append(op(DimSignature.dim_signature, dim_signatures["filter"]))
+            else:
+                filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
+                params.append(filter(dim_signatures["filter"]))
+            # end if
             tables.append(DimSignature)
         # end if
 
@@ -404,7 +455,7 @@ class Query():
     def prepare_query_values(self, value_filters, value_entities, params, tables = None):
         # value filters
         if value_filters != None:
-            functions.is_valid_value_filters(value_filters, arithmetic_operators, text_operators)
+            functions.is_valid_value_filters(value_filters)
             for value_filter in value_filters:
                 # Type
                 value_type = value_entities[value_filter["type"]]
@@ -413,19 +464,23 @@ class Query():
                 # end if
 
                 # Name
-                value_name = value_filter["name"]["str"]
-                op_name = eval("value_type.name." + text_operators[value_filter["name"]["op"]])
-                params.append(op_name(value_name))
+                if value_filter["name"]["op"] in arithmetic_operators.keys():
+                    op = arithmetic_operators[value_filter["name"]["op"]]
+                    params.append(op(eval("value_type.name"), value_filter["name"]["filter"]))
+                else:
+                    filter = eval('value_type.name.' + text_operators[value_filter["name"]["op"]])
+                    params.append(filter(value_filter["name"]["filter"]))
+                # end if
 
                 # Value
                 if "value" in value_filter:
                     value = value_filter["value"]
                     if value["op"] in arithmetic_operators.keys():
                         op = arithmetic_operators[value["op"]]
-                        params.append(op(value_type.value, value["value"]))
+                        params.append(op(value_type.value, value["filter"]))
                     else:
                         op = eval("value_type.value." + text_operators[value["op"]])
-                        params.append(op(value["value"]))
+                        params.append(op(value["filter"]))
                     # end if
                 # end if
             # end for
@@ -444,74 +499,119 @@ class Query():
         # event_uuids
         if event_uuids != None:
             functions.is_valid_text_filter(event_uuids)
-            filter = eval('Event.event_uuid.' + text_operators[event_uuids["op"]])
-            params.append(filter(event_uuids["filter"]))
+            if event_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuids["op"]]
+                params.append(op(DimSignature.event_uuid, event_uuids["filter"]))
+            else:
+                filter = eval('Event.event_uuid.' + text_operators[event_uuids["op"]])
+                params.append(filter(event_uuids["filter"]))
+            # end if
         # end if
 
         # source_uuids
         if source_uuids != None:
             functions.is_valid_text_filter(source_uuids)
-            filter = eval('Event.source_uuid.' + text_operators[source_uuids["op"]])
-            params.append(filter(source_uuids["filter"]))
+            if source_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_uuids["op"]]
+                params.append(op(Event.source_uuid, source_uuids["filter"]))
+            else:
+                filter = eval('Event.source_uuid.' + text_operators[source_uuids["op"]])
+                params.append(filter(source_uuids["filter"]))
+            # end if
         # end if
 
         # explicit_ref_uuids
         if explicit_ref_uuids != None:
             functions.is_valid_text_filter(explicit_ref_uuids)
-            filter = eval('Event.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
-            params.append(filter(explicit_ref_uuids["filter"]))
+            if explicit_ref_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_uuids["op"]]
+                params.append(op(Event.explicit_ref_uuid, explicit_ref_uuids["filter"]))
+            else:
+                filter = eval('Event.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
+                params.append(filter(explicit_ref_uuids["filter"]))
+            # end if
         # end if
 
         # gauge_uuids
         if gauge_uuids != None:
             functions.is_valid_text_filter(gauge_uuids)
-            filter = eval('Event.gauge_uuid.' + text_operators[gauge_uuids["op"]])
-            params.append(filter(gauge_uuids["filter"]))
+            if gauge_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_uuids["op"]]
+                params.append(op(Event.gauge_uuid, gauge_uuids["filter"]))
+            else:
+                filter = eval('Event.gauge_uuid.' + text_operators[gauge_uuids["op"]])
+                params.append(filter(gauge_uuids["filter"]))
+            # end if
         # end if
 
         # Sources
         if sources != None:
             functions.is_valid_text_filter(sources)
-            filter = eval('Source.name.' + text_operators[sources["op"]])
-            params.append(filter(sources["filter"]))
+            if sources["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[sources["op"]]
+                params.append(op(Source.name, sources["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[sources["op"]])
+                params.append(filter(sources["filter"]))
+            # end if
             tables.append(Source)
         # end if
 
         # Explicit references
         if explicit_refs != None:
             functions.is_valid_text_filter(explicit_refs)
-            filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
-            params.append(filter(explicit_refs["filter"]))
+            if explicit_refs["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_refs["op"]]
+                params.append(op(ExplicitRef.explicit_ref, explicit_refs["filter"]))
+            else:
+                filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
+                params.append(filter(explicit_refs["filter"]))
+            # end if
             tables.append(ExplicitRef)
         # end if
 
         # Gauge names
         if gauge_names != None:
             functions.is_valid_text_filter(gauge_names)
-            filter = eval('Gauge.name.' + text_operators[gauge_names["op"]])
-            params.append(filter(gauge_names["filter"]))
+            if gauge_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_names["op"]]
+                params.append(op(Gauge.name, gauge_names["filter"]))
+            else:
+                filter = eval('Gauge.name.' + text_operators[gauge_names["op"]])
+                params.append(filter(gauge_names["filter"]))
+            # end if
             tables.append(Gauge)
         # end if
 
         # Gauge systems
         if gauge_systems != None:
             functions.is_valid_text_filter(gauge_systems)
-            filter = eval('Gauge.system.' + text_operators[gauge_systems["op"]])
-            params.append(filter(gauge_systems["filter"]))
+            if gauge_systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_systems["op"]]
+                params.append(op(Gauge.system, gauge_systems["filter"]))
+            else:
+                filter = eval('Gauge.system.' + text_operators[gauge_systems["op"]])
+                params.append(filter(gauge_systems["filter"]))
+            # end if
             tables.append(Gauge)
         # end if
 
         # keys
         if keys != None:
             functions.is_valid_text_filter(keys)
-            filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
-            params.append(filter(keys["filter"]))
+            if keys["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[keys["op"]]
+                params.append(op(EventKey.event_key, keys["filter"]))
+            else:
+                filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
+                params.append(filter(keys["filter"]))
+            # end if
             tables.append(EventKey)
         # end if
 
         # start filters
         if start_filters != None:
-            functions.is_valid_date_filters(start_filters, arithmetic_operators)
+            functions.is_valid_date_filters(start_filters)
             for start_filter in start_filters:
                 op = arithmetic_operators[start_filter["op"]]
                 params.append(op(Event.start, start_filter["date"]))
@@ -520,7 +620,7 @@ class Query():
 
         # stop filters
         if stop_filters != None:
-            functions.is_valid_date_filters(stop_filters, arithmetic_operators)
+            functions.is_valid_date_filters(stop_filters)
             for stop_filter in stop_filters:
                 op = arithmetic_operators[stop_filter["op"]]
                 params.append(op(Event.stop, stop_filter["date"]))
@@ -529,7 +629,7 @@ class Query():
 
         # duration filters
         if duration_filters != None:
-            functions.is_valid_float_filters(duration_filters, arithmetic_operators)
+            functions.is_valid_float_filters(duration_filters)
             for duration_filter in duration_filters:
                 op = arithmetic_operators[duration_filter["op"]]
                 params.append(op((extract("epoch", Event.stop) - extract("epoch", Event.start)), duration_filter["float"]))
@@ -538,7 +638,7 @@ class Query():
 
         # ingestion_time filters
         if ingestion_time_filters != None:
-            functions.is_valid_date_filters(ingestion_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(ingestion_time_filters)
             for ingestion_time_filter in ingestion_time_filters:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(Event.ingestion_time, ingestion_time_filter["date"]))
@@ -572,22 +672,37 @@ class Query():
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
-            filter = eval('EventKey.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
-            params.append(filter(dim_signature_uuids["filter"]))
+            if dim_signature_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signature_uuids["op"]]
+                params.append(op(EventKey.dim_signature_uuid, dim_signature_uuids["filter"]))
+            else:
+                filter = eval('EventKey.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
+                params.append(filter(dim_signature_uuids["filter"]))
+            # end if
         # end if
 
         # event_uuids
         if event_uuids != None:
             functions.is_valid_text_filter(event_uuids)
-            filter = eval('EventKey.event_uuid.' + text_operators[event_uuids["op"]])
-            params.append(filter(event_uuids["filter"]))
+            if event_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuids["op"]]
+                params.append(op(EventKey.event_uuid, event_uuids["filter"]))
+            else:
+                filter = eval('EventKey.event_uuid.' + text_operators[event_uuids["op"]])
+                params.append(filter(event_uuids["filter"]))
+            # end if
         # end if
 
         # keys
         if keys != None:
             functions.is_valid_text_filter(keys)
-            filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
-            params.append(filter(keys["filter"]))
+            if keys["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[keys["op"]]
+                params.append(op(EventKey.event_key, keys["filter"]))
+            else:
+                filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
+                params.append(filter(keys["filter"]))
+            # end if
         # end if
 
         query = self.session.query(EventKey).filter(*params)
@@ -602,20 +717,35 @@ class Query():
         params = []
         if event_uuid_links:
             functions.is_valid_text_filter(event_uuid_links)
-            filter = eval('EventLink.event_uuid_link.' + text_operators[event_uuid_links["op"]])
-            params.append(filter(event_uuid_links["filter"]))
+            if event_uuid_links["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuid_links["op"]]
+                params.append(op(EventLink.event_uuid_link, event_uuid_links["filter"]))
+            else:
+                filter = eval('EventLink.event_uuid_link.' + text_operators[event_uuid_links["op"]])
+                params.append(filter(event_uuid_links["filter"]))
+            # end if
         # end if
 
         if event_uuids:
             functions.is_valid_text_filter(event_uuids)
-            filter = eval('EventLink.event_uuid.' + text_operators[event_uuids["op"]])
-            params.append(filter(event_uuids["filter"]))
+            if event_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuids["op"]]
+                params.append(op(EventLink.event_uuid, event_uuids["filter"]))
+            else:
+                filter = eval('EventLink.event_uuid.' + text_operators[event_uuids["op"]])
+                params.append(filter(event_uuids["filter"]))
+            # end if
         # end if
 
         if link_names:
             functions.is_valid_text_filter(link_names)
-            filter = eval('EventLink.name.' + text_operators[link_names["op"]])
-            params.append(filter(link_names["filter"]))
+            if link_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[link_names["op"]]
+                params.append(op(EventLink.name, link_names["filter"]))
+            else:
+                filter = eval('EventLink.name.' + text_operators[link_names["op"]])
+                params.append(filter(link_names["filter"]))
+            # end if
         # end if
 
         query = self.session.query(EventLink).filter(*params)
@@ -801,36 +931,61 @@ class Query():
         # DIM signature UUIDs
         if dim_signature_uuids != None:
             functions.is_valid_text_filter(dim_signature_uuids)
-            filter = eval('AnnotationCnf.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
-            params.append(filter(dim_signature_uuids["filter"]))
+            if dim_signature_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signature_uuids["op"]]
+                params.append(op(AnnotationCnf.dim_signature_uuid, dim_signature_uuids["filter"]))
+            else:
+                filter = eval('AnnotationCnf.dim_signature_uuid.' + text_operators[dim_signature_uuids["op"]])
+                params.append(filter(dim_signature_uuids["filter"]))
+            # end if
         # end if
         # DIM signatures
         if dim_signatures != None:
             functions.is_valid_text_filter(dim_signatures)
-            filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
-            params.append(filter(dim_signatures["filter"]))
+            if dim_signatures["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[dim_signatures["op"]]
+                params.append(op(DimSignature.dim_signature, dim_signatures["filter"]))
+            else:
+                filter = eval('DimSignature.dim_signature.' + text_operators[dim_signatures["op"]])
+                params.append(filter(dim_signatures["filter"]))
+            # end if
             tables.append(DimSignature)
         # end if
 
         # AnnotationCnf UUIDs
         if annotation_cnf_uuids != None:
             functions.is_valid_text_filter(annotation_cnf_uuids)
-            filter = eval('AnnotationCnf.annotation_cnf_uuid.' + text_operators[annotation_cnf_uuids["op"]])
-            params.append(filter(annotation_cnf_uuids["filter"]))
+            if annotation_cnf_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_uuids["op"]]
+                params.append(op(AnnotationCnf.annotation_cnf_uuid, annotation_cnf_uuids["filter"]))
+            else:
+                filter = eval('AnnotationCnf.annotation_cnf_uuid.' + text_operators[annotation_cnf_uuids["op"]])
+                params.append(filter(annotation_cnf_uuids["filter"]))
+            # end if
         # end if
 
         # AnnotationCnf names
         if names != None:
             functions.is_valid_text_filter(names)
-            filter = eval('AnnotationCnf.name.' + text_operators[names["op"]])
-            params.append(filter(names["filter"]))
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(AnnotationCnf.name, names["filter"]))
+            else:
+                filter = eval('AnnotationCnf.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
         # end if
 
         # AnnotationCnf systems
         if systems != None:
             functions.is_valid_text_filter(systems)
-            filter = eval('AnnotationCnf.system.' + text_operators[systems["op"]])
-            params.append(filter(systems["filter"]))
+            if systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[systems["op"]]
+                params.append(op(AnnotationCnf.system, systems["filter"]))
+            else:
+                filter = eval('AnnotationCnf.system.' + text_operators[systems["op"]])
+                params.append(filter(systems["filter"]))
+            # end if
         # end if
 
         query = self.session.query(AnnotationCnf)
@@ -856,34 +1011,54 @@ class Query():
         # source_uuids
         if source_uuids != None:
             functions.is_valid_text_filter(source_uuids)
-            filter = eval('Annotation.source_uuid.' + text_operators[source_uuids["op"]])
-            params.append(filter(source_uuids["filter"]))
+            if source_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_uuids["op"]]
+                params.append(op(Annotation.source_uuid, source_uuids["filter"]))
+            else:
+                filter = eval('Annotation.source_uuid.' + text_operators[source_uuids["op"]])
+                params.append(filter(source_uuids["filter"]))
+            # end if
         # end if
 
         # explicit_ref_uuids
         if explicit_ref_uuids != None:
             functions.is_valid_text_filter(explicit_ref_uuids)
-            filter = eval('Annotation.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
-            params.append(filter(explicit_ref_uuids["filter"]))
+            if explicit_ref_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_uuids["op"]]
+                params.append(op(Annotation.explicit_ref_uuid, explicit_ref_uuids["filter"]))
+            else:
+                filter = eval('Annotation.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
+                params.append(filter(explicit_ref_uuids["filter"]))
+            # end if
         # end if
 
         # annotation_cnf_uuids
         if annotation_cnf_uuids != None:
             functions.is_valid_text_filter(annotation_cnf_uuids)
-            filter = eval('Annotation.annotation_cnf_uuid.' + text_operators[annotation_cnf_uuids["op"]])
-            params.append(filter(annotation_cnf_uuids["filter"]))
+            if annotation_cnf_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_uuids["op"]]
+                params.append(op(Annotation.annotation_cnf_uuid, annotation_cnf_uuids["filter"]))
+            else:
+                filter = eval('Annotation.annotation_cnf_uuid.' + text_operators[annotation_cnf_uuids["op"]])
+                params.append(filter(annotation_cnf_uuids["filter"]))
+            # end if
         # end if
 
         # annotation_uuids
         if annotation_uuids != None:
             functions.is_valid_text_filter(annotation_uuids)
-            filter = eval('Annotation.annotation_uuid.' + text_operators[annotation_uuids["op"]])
-            params.append(filter(annotation_uuids["filter"]))
+            if annotation_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_uuids["op"]]
+                params.append(op(Annotation.annotation_uuid, annotation_uuids["filter"]))
+            else:
+                filter = eval('Annotation.annotation_uuid.' + text_operators[annotation_uuids["op"]])
+                params.append(filter(annotation_uuids["filter"]))
+            # end if
         # end if
 
         # ingestion_time filters
         if ingestion_time_filters != None:
-            functions.is_valid_date_filters(ingestion_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(ingestion_time_filters)
             for ingestion_time_filter in ingestion_time_filters:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(Annotation.ingestion_time, ingestion_time_filter["date"]))
@@ -893,32 +1068,52 @@ class Query():
         # Sources
         if sources != None:
             functions.is_valid_text_filter(sources)
-            filter = eval('Source.name.' + text_operators[sources["op"]])
-            params.append(filter(sources["filter"]))
+            if sources["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[sources["op"]]
+                params.append(op(Source.source, sources["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[sources["op"]])
+                params.append(filter(sources["filter"]))
+            # end if
             tables.append(Source)
         # end if
 
         # Explicit references
         if explicit_refs != None:
             functions.is_valid_text_filter(explicit_refs)
-            filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
-            params.append(filter(explicit_refs["filter"]))
+            if explicit_refs["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_refs["op"]]
+                params.append(op(ExplicitRef.explicit_ref, explicit_refs["filter"]))
+            else:
+                filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
+                params.append(filter(explicit_refs["filter"]))
+            # end if
             tables.append(ExplicitRef)
         # end if
 
         # Annotation configuration names
         if annotation_cnf_names != None:
             functions.is_valid_text_filter(annotation_cnf_names)
-            filter = eval('AnnotationCnf.name.' + text_operators[annotation_cnf_names["op"]])
-            params.append(filter(annotation_cnf_names["filter"]))
+            if annotation_cnf_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_names["op"]]
+                params.append(op(AnnotationCnf.name, annotation_cnf_names["filter"]))
+            else:
+                filter = eval('AnnotationCnf.name.' + text_operators[annotation_cnf_names["op"]])
+                params.append(filter(annotation_cnf_names["filter"]))
+            # end if
             tables.append(AnnotationCnf)
         # end if
 
         # Annotation configuration systems
         if annotation_cnf_systems != None:
             functions.is_valid_text_filter(annotation_cnf_systems)
-            filter = eval('AnnotationCnf.system.' + text_operators[annotation_cnf_systems["op"]])
-            params.append(filter(annotation_cnf_systems["filter"]))
+            if annotation_cnf_systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_systems["op"]]
+                params.append(op(AnnotationCnf.system, annotation_cnf_systems["filter"]))
+            else:
+                filter = eval('AnnotationCnf.system.' + text_operators[annotation_cnf_systems["op"]])
+                params.append(filter(annotation_cnf_systems["filter"]))
+            # end if
             tables.append(AnnotationCnf)
         # end if
 
@@ -949,35 +1144,55 @@ class Query():
         # group_ids
         if group_ids != None:
             functions.is_valid_text_filter(group_ids)
-            filter = eval('ExplicitRef.expl_ref_cnf_uuid.' + text_operators[group_ids["op"]])
-            params.append(filter(group_ids["filter"]))
+            if group_ids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[group_ids["op"]]
+                params.append(op(ExplicitRef.expl_ref_cnf_uuid, group_ids["filter"]))
+            else:
+                filter = eval('ExplicitRef.expl_ref_cnf_uuid.' + text_operators[group_ids["op"]])
+                params.append(filter(group_ids["filter"]))
+            # end if
         # end if
 
         # explicit_ref_uuids
         if explicit_ref_uuids != None:
             functions.is_valid_text_filter(explicit_ref_uuids)
-            filter = eval('ExplicitRef.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
-            params.append(filter(explicit_ref_uuids["filter"]))
+            if explicit_ref_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_uuids["op"]]
+                params.append(op(ExplicitRef.explicit_ref_uuid, explicit_ref_uuids["filter"]))
+            else:
+                filter = eval('ExplicitRef.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
+                params.append(filter(explicit_ref_uuids["filter"]))
+            # end if
         # end if
 
         # Explicit references
         if explicit_refs != None:
             functions.is_valid_text_filter(explicit_refs)
-            filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
-            params.append(filter(explicit_refs["filter"]))
+            if explicit_refs["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_refs["op"]]
+                params.append(op(ExplicitRef.explicit_ref, explicit_refs["filter"]))
+            else:
+                filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
+                params.append(filter(explicit_refs["filter"]))
+            # end if
         # end if
 
         # Groups
         if groups != None:
             functions.is_valid_text_filter(groups)
-            filter = eval('ExplicitRefGrp.name.' + text_operators[groups["op"]])
-            params.append(filter(groups["filter"]))
+            if groups["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[groups["op"]]
+                params.append(op(ExplicitRefGrp.name, groups["filter"]))
+            else:
+                filter = eval('ExplicitRefGrp.name.' + text_operators[groups["op"]])
+                params.append(filter(groups["filter"]))
+            # end if
             tables.append(ExplicitRefGrp)
         # end if
 
         # explicit references ingestion_time filters
         if explicit_ref_ingestion_time_filters != None:
-            functions.is_valid_date_filters(explicit_ref_ingestion_time_filters, arithmetic_operators)
+            functions.is_valid_date_filters(explicit_ref_ingestion_time_filters)
             for ingestion_time_filter in explicit_ref_ingestion_time_filters:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(ExplicitRef.ingestion_time, ingestion_time_filter["date"]))
@@ -1029,20 +1244,35 @@ class Query():
         params = []
         if explicit_ref_uuid_links:
             functions.is_valid_text_filter(explicit_ref_uuid_links)
-            filter = eval('ExplicitRefLink.explicit_ref_uuid_link.' + text_operators[explicit_ref_uuid_links["op"]])
-            params.append(filter(explicit_ref_uuid_links["filter"]))
+            if explicit_ref_uuid_links["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_uuid_links["op"]]
+                params.append(op(DimSignature.explicit_ref_uuid_link, explicit_ref_uuid_links["filter"]))
+            else:
+                filter = eval('ExplicitRefLink.explicit_ref_uuid_link.' + text_operators[explicit_ref_uuid_links["op"]])
+                params.append(filter(explicit_ref_uuid_links["filter"]))
+            # end if
         # end if
 
         if explicit_ref_uuids:
             functions.is_valid_text_filter(explicit_ref_uuids)
-            filter = eval('ExplicitRefLink.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
-            params.append(filter(explicit_ref_uuids["filter"]))
+            if explicit_ref_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_uuids["op"]]
+                params.append(op(ExplicitRefLink.explicit_ref_uuid, explicit_ref_uuids["filter"]))
+            else:
+                filter = eval('ExplicitRefLink.explicit_ref_uuid.' + text_operators[explicit_ref_uuids["op"]])
+                params.append(filter(explicit_ref_uuids["filter"]))
+            # end if
         # end if
 
         if link_names:
             functions.is_valid_text_filter(link_names)
-            filter = eval('ExplicitRefLink.name.' + text_operators[link_names["op"]])
-            params.append(filter(link_names["filter"]))
+            if link_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[link_names["op"]]
+                params.append(op(ExplicitRefLink.name, link_names["filter"]))
+            else:
+                filter = eval('ExplicitRefLink.name.' + text_operators[link_names["op"]])
+                params.append(filter(link_names["filter"]))
+            # end if
         # end if
 
         query = self.session.query(ExplicitRefLink).filter(*params)
@@ -1145,15 +1375,25 @@ class Query():
         # Group UUIDs
         if group_ids != None:
             functions.is_valid_text_filter(group_ids)
-            filter = eval('ExplicitRefGrp.expl_ref_cnf_uuid.' + text_operators[group_ids["op"]])
-            params.append(filter(group_ids["filter"]))
+            if group_ids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[group_ids["op"]]
+                params.append(op(ExplicitRefGrp.expl_ref_cnf_uuid, group_ids["filter"]))
+            else:
+                filter = eval('ExplicitRefGrp.expl_ref_cnf_uuid.' + text_operators[group_ids["op"]])
+                params.append(filter(group_ids["filter"]))
+            # end if
         # end if
 
         # Gauge names
         if names != None:
             functions.is_valid_text_filter(names)
-            filter = eval('ExplicitRefGrp.name.' + text_operators[names["op"]])
-            params.append(filter(names["filter"]))
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(ExplicitRefGrp.name, names["filter"]))
+            else:
+                filter = eval('ExplicitRefGrp.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
         # end if
 
         query = self.session.query(ExplicitRefGrp).filter(*params)
@@ -1198,8 +1438,13 @@ class Query():
         # event_uuids
         if event_uuids != None:
             functions.is_valid_text_filter(event_uuids)
-            filter = eval('event_value_entities[value_type].event_uuid.' + text_operators[event_uuids["op"]])
-            params.append(filter(event_uuids["filter"]))
+            if event_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuids["op"]]
+                params.append(op(event_value_entities[value_type].event_uuid, event_uuids["filter"]))
+            else:
+                filter = eval('event_value_entities[value_type].event_uuid.' + text_operators[event_uuids["op"]])
+                params.append(filter(event_uuids["filter"]))
+            # end if
         # end if
 
         # value filters
@@ -1249,8 +1494,13 @@ class Query():
         # annotation_uuids
         if annotation_uuids != None:
             functions.is_valid_text_filter(annotation_uuids)
-            filter = eval('annotation_value_entities[value_type].annotation_uuid.' + text_operators[annotation_uuids["op"]])
-            params.append(filter(annotation_uuids["filter"]))
+            if annotation_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_uuids["op"]]
+                params.append(op(annotation_value_entities[value_type].annotation_uuid, annotation_uuids["filter"]))
+            else:
+                filter = eval('annotation_value_entities[value_type].annotation_uuid.' + text_operators[annotation_uuids["op"]])
+                params.append(filter(annotation_uuids["filter"]))
+            # end if
         # end if
 
         # value filters

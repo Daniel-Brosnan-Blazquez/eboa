@@ -221,7 +221,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(sources) == 2
 
-        source = self.query.get_sources(processor_version_filters = [{"str": "2.0", "op": "<"}])
+        source = self.query.get_sources(processor_version_filters = [{"filter": "2.0", "op": "<"}])
 
         assert len(source) == 1
 
@@ -246,7 +246,7 @@ class TestQuery(unittest.TestCase):
                                         generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}],
                                         ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                         ingestion_duration_filters = [{"float": 10, "op": "<"}],
-                                        processor_version_filters = [{"str": "0.0", "op": ">"}],
+                                        processor_version_filters = [{"filter": "0.0", "op": ">"}],
                                         dim_signatures = {"filter": dim_sig_name, "op": "like"},
         statuses = [{"float": 0, "op": "=="}])
 
@@ -499,7 +499,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(processor_version_filters = [{"str": "0.0"}])
+            self.query.get_sources(processor_version_filters = [{"filter": "0.0"}])
         except InputError:
             result = True
         # end try
@@ -517,7 +517,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": ">", "not_a_valid_key": "not_a_valid_value"}])
+            self.query.get_sources(processor_version_filters = [{"filter": "0.0", "op": ">", "not_a_valid_key": "not_a_valid_value"}])
         except InputError:
             result = True
         # end try
@@ -526,7 +526,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(processor_version_filters = [{"str": "0.0", "op": "not_a_valid_operator"}])
+            self.query.get_sources(processor_version_filters = [{"filter": "0.0", "op": "not_a_valid_operator"}])
         except InputError:
             result = True
         # end try
@@ -535,7 +535,7 @@ class TestQuery(unittest.TestCase):
 
         result = False
         try:
-            self.query.get_sources(processor_version_filters = [{"str": ["not_a_valid_string"], "op": "=="}])
+            self.query.get_sources(processor_version_filters = [{"filter": ["not_a_valid_string"], "op": "=="}])
         except InputError:
             result = True
         # end try
@@ -797,19 +797,19 @@ class TestQuery(unittest.TestCase):
 
         event = self.query.get_events(value_filters = [{"name": {
             "op": "like",
-            "str": "TEXT"},
+            "filter": "TEXT"},
                                                         "type": "text",
                                                         "value": {
                                                             "op": "in",
-                                                            "value": ["TEXT", "TEXT2"]}
+                                                            "filter": ["TEXT", "TEXT2"]}
                                                     },
                                                        {"name": {
                                                            "op": "like",
-                                                           "str": "BOOLEAN"},
+                                                           "filter": "BOOLEAN"},
                                                         "type": "boolean",
                                                         "value": {
                                                             "op": "==",
-                                                            "value": "true"}
+                                                            "filter": "true"}
                                                        }])
 
         assert len(event) == 1
@@ -828,19 +828,19 @@ class TestQuery(unittest.TestCase):
                                       keys = {"filter": "EVENT_KEY", "op": "like"},
                                       value_filters = [{"name": {
                                           "op": "like",
-                                          "str": "TEXT"},
+                                          "filter": "TEXT"},
                                                         "type": "text",
                                                         "value": {
                                                             "op": "in",
-                                                            "value": ["TEXT", "TEXT2"]}
+                                                            "filter": ["TEXT", "TEXT2"]}
                                                     },
                                                        {"name": {
                                                            "op": "like",
-                                                           "str": "BOOLEAN"},
+                                                           "filter": "BOOLEAN"},
                                                         "type": "boolean",
                                                         "value": {
                                                             "op": "==",
-                                                            "value": "true"}
+                                                            "filter": "true"}
                                                        }])
 
         assert len(event) == 1
@@ -1711,19 +1711,19 @@ class TestQuery(unittest.TestCase):
 
         annotation = self.query.get_annotations(value_filters = [{"name": {
             "op": "like",
-            "str": "TEXT"},
+            "filter": "TEXT"},
                                                         "type": "text",
                                                         "value": {
                                                             "op": "in",
-                                                            "value": ["TEXT", "TEXT2"]}
+                                                            "filter": ["TEXT", "TEXT2"]}
                                                     },
                                                        {"name": {
                                                            "op": "like",
-                                                           "str": "BOOLEAN"},
+                                                           "filter": "BOOLEAN"},
                                                         "type": "boolean",
                                                         "value": {
                                                             "op": "==",
-                                                            "value": "true"}
+                                                            "filter": "true"}
                                                        }])
 
         assert len(annotation) == 1
@@ -1737,19 +1737,19 @@ class TestQuery(unittest.TestCase):
                                       ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                       value_filters = [{"name": {
                                           "op": "like",
-                                          "str": "TEXT"},
+                                          "filter": "TEXT"},
                                                         "type": "text",
                                                         "value": {
                                                             "op": "in",
-                                                            "value": ["TEXT", "TEXT2"]}
+                                                            "filter": ["TEXT", "TEXT2"]}
                                                     },
                                                        {"name": {
                                                            "op": "like",
-                                                           "str": "BOOLEAN"},
+                                                           "filter": "BOOLEAN"},
                                                         "type": "boolean",
                                                         "value": {
                                                             "op": "==",
-                                                            "value": "true"}
+                                                            "filter": "true"}
                                                        }])
 
         assert len(annotation) == 1
@@ -1854,35 +1854,35 @@ class TestQuery(unittest.TestCase):
                                                                       explicit_ref_ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                                                       event_value_filters = [{"name": {
                                                                           "op": "like",
-                                                                          "str": "TEXT"},
+                                                                          "filter": "TEXT"},
                                                                                               "type": "text",
                                                                                               "value": {
                                                                                                   "op": "in",
-                                                                                                  "value": ["TEXT", "TEXT2"]}
+                                                                                                  "filter": ["TEXT", "TEXT2"]}
                                                                                           },
                                                                                              {"name": {
                                                                                                  "op": "like",
-                                                                                                 "str": "BOOLEAN"},
+                                                                                                 "filter": "BOOLEAN"},
                                                                                               "type": "boolean",
                                                                                               "value": {
                                                                                                   "op": "==",
-                                                                                                  "value": "true"}
+                                                                                                  "filter": "true"}
                                                                                           }],
                                                                       annotation_value_filters = [{"name": {
                                                                           "op": "like",
-                                                                          "str": "TEXT"},
+                                                                          "filter": "TEXT"},
                                                                                                    "type": "text",
                                                                                                    "value": {
                                                                                                        "op": "in",
-                                                                                                       "value": ["TEXT", "TEXT2"]}
+                                                                                                       "filter": ["TEXT", "TEXT2"]}
                                                                                                },
                                                                                                   {"name": {
                                                                                                       "op": "like",
-                                                                                                      "str": "BOOLEAN"},
+                                                                                                      "filter": "BOOLEAN"},
                                                                                                    "type": "boolean",
                                                                                                    "value": {
                                                                                                        "op": "==",
-                                                                                                       "value": "true"}
+                                                                                                       "filter": "true"}
                                                                                                }],
                                                                       groups = {"filter": "EXPL_%", "op": "like"})
 
@@ -2185,7 +2185,7 @@ class TestQuery(unittest.TestCase):
 
         events = self.query.get_events()
 
-        values = self.query.get_event_values_interface(value_type = "text", event_uuids = {"filter": [event.event_uuid for event in events], "op": "in"}, value_filters = [{"name": {"op": "like", "str": "TEXT"}, "type": "text", "value": {"op": "like", "value": "TEXT"}}])
+        values = self.query.get_event_values_interface(value_type = "text", event_uuids = {"filter": [event.event_uuid for event in events], "op": "in"}, value_filters = [{"name": {"op": "like", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}])
 
         assert len(values) == 2
 
@@ -2315,7 +2315,7 @@ class TestQuery(unittest.TestCase):
 
         annotations = self.query.get_annotations()
 
-        values = self.query.get_annotation_values_interface(value_type = "text", annotation_uuids = {"filter": [annotation.annotation_uuid for annotation in annotations], "op": "in"}, value_filters = [{"name": {"op": "like", "str": "TEXT"}, "type": "text", "value": {"op": "like", "value": "TEXT"}}])
+        values = self.query.get_annotation_values_interface(value_type = "text", annotation_uuids = {"filter": [annotation.annotation_uuid for annotation in annotations], "op": "in"}, value_filters = [{"name": {"op": "like", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}])
 
         assert len(values) == 2
 

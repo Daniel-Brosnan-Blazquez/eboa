@@ -329,7 +329,7 @@ def main():
         if not os.path.isfile(file_path):
             logger.error("The specified file {} does not exist".format(file_path))
             query_log_status = Query()
-            sources = query_log_status.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+            sources = query_log_status.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
             if len(sources) > 0:
                 eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(file_path))
             # end if

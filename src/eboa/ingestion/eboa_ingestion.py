@@ -56,7 +56,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
         logger.error("The specified processor {} for processing the file {} does not exist. Return error: {}".format(processor, file_path, str(e)))
         # Log status
         query_log_status = Query()
-        sources = query_log_status.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+        sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
         if len(sources) > 0:
             eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["PROCESSOR_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["PROCESSOR_DOES_NOT_EXIST"]["message"].format(file_path, processor, str(e)))
         # end if
@@ -86,7 +86,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
             traceback.print_exc(file=sys.stdout)
             # Log status
             query_log_status = Query()
-            sources = query_log_status.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+            sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
             if len(sources) > 0:
                 eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["message"].format(filename, processor, str(e)))
             # end if
@@ -115,7 +115,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
                     logger.error("The ingestion of the file {} has exceeded the number of retries {}. Previously related data ingested has been removed".format(filename, max_number_of_retries))
                     # Log status
                     query_log_status = Query()
-                    sources = query_log_status.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+                    sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
                     if len(sources) > 0:
                         eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["INGESTION_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["INGESTION_ENDED_UNEXPECTEDLY"]["message"].format(filename, processor, str(e)))
                     # end if
@@ -124,7 +124,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
                     return -1
                 else:
                     query_remove = Query()
-                    query_remove.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "notlike"}, delete = True)
+                    query_remove.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "!="}, delete = True)
                     query_remove.close_session()
 
                     logger.error("The ingestion of the file {} is going to be retried. Previously related data ingested has been removed".format(filename))
@@ -173,7 +173,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
 
     if output_path == None:
         # Remove the entry associated to the notification of pending ingestions
-        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "like"}, processors = {"filter": "", "op": "like"}, processor_version_filters = [{"str": "", "op": "=="}], delete = True)
+        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, processors = {"filter": "", "op": "=="}, processor_version_filters = [{"filter": "", "op": "=="}], delete = True)
         logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
     # end if
         
@@ -190,7 +190,7 @@ def main(file_path, processor, output_path = None, reception_time = None):
         logger.error("The specified file {} does not exist".format(file_path))
         # Log status
         query_log_status = Query()
-        sources = query_log_status.get_sources(names = {"filter": filename, "op": "like"}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "like"})
+        sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
         if len(sources) > 0:
             eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(filename))
         # end if
