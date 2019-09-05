@@ -154,7 +154,6 @@ exit_codes = {
     }
 }
 
-
 class Engine():
     """Class for communicating with the engine of the eboa module
 
@@ -175,9 +174,9 @@ class Engine():
             data = {}
         # end if
         self.data = data
-        Scoped_session = scoped_session(Session)
-        self.session = Scoped_session()
-        self.session_progress = Scoped_session()
+        self.Scoped_session = scoped_session(Session)
+        self.session = self.Scoped_session()
+        self.session_progress = self.Scoped_session()
         self.query = Query(self.session)
         self.operation = None
     
@@ -813,7 +812,9 @@ class Engine():
 
         logger.debug("Alerts inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
 
-        # At this point all the information has been inserted, commit data
+        # At this point all the information has been inserted, commit data twice as there was a begin nested initiated
+        self.session.commit()
+        self.session.commit()
         self.session.commit()
         
         # Review the inserted events and annotations for removing the
@@ -857,6 +858,9 @@ class Engine():
         
         # Commit data
         self.session.commit()
+
+        self.session.close()
+        self.session = self.Scoped_session()
 
         return exit_codes["OK"]["status"]
         
@@ -1453,9 +1457,6 @@ class Engine():
             self.session.rollback()
             raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
-
-        # Commit data
-        self.session.commit()
 
         return
 
@@ -2223,7 +2224,7 @@ class Engine():
                                                                                                                   Event.start < validity_stop,
                                                                                                                   Event.stop > validity_start)
 
-                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, max_generation_time.first()[0].isoformat(), validity_start, validity_stop))
+                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event for the gauge_uuid {} with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, gauge_uuid, max_generation_time.first()[0].isoformat(), validity_start, validity_stop))
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                Event.gauge_uuid == gauge_uuid,
@@ -2521,7 +2522,7 @@ class Engine():
                         self.session.bulk_insert_mappings(EventGeometry, list_values["geometries"])
                     except InternalError as e:
                         self.session.rollback()
-                        logger.error(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                        logger.error("The values specified define a wrong geometry. The exception raised has been the following {}".format(e))
                         exit_status = {
                             "error": True,
                             "inserted": False,
@@ -2530,7 +2531,12 @@ class Engine():
                 # end if
             except IntegrityError as e:
                 self.session.rollback()
-                raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                logger.error("The values specified define duplicated entities inside the same value. The exception raised has been the following {}".format(e))
+                exit_status = {
+                    "error": True,
+                    "inserted": False,
+                }
+                return exit_status
             # end try
 
             if continue_with_values_ingestion:

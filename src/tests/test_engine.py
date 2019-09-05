@@ -257,19 +257,28 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_gauge(self):
 
-        self.engine_eboa._initialize_context_insert_data()
-        self.test_insert_source()
-        data = {"gauge": {
-            "name": "GAUGE",
-            "system": "SYSTEM",
-            "insertion_type": "SIMPLE_UPDATE"
-        }}
-        self.engine_eboa.operation["events"] = [data]
-        self.engine_eboa._insert_gauges()
-        # Call commit as the method uses the nested operation
-        self.engine_eboa.session.commit()
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
-        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["gauge"]["name"], Gauge.system == data["gauge"]["system"]).all()
+        gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == "GAUGE_NAME", Gauge.system == "GAUGE_SYSTEM").all()
 
         assert len(gauge_ddbb) == 1
 
@@ -321,18 +330,27 @@ class TestEngine(unittest.TestCase):
 
     def test_insert_annotation(self):
 
-        self.engine_eboa._initialize_context_insert_data()
-        self.test_insert_source()
-        data = {"annotation_cnf": {
-            "name": "ANNOTATION_CNF",
-            "system": "SYSTEM"
-        }}
-        self.engine_eboa.operation["annotations"] = [data]
-        self.engine_eboa._insert_annotation_cnfs()
-        # Call commit as the method uses the nested operation
-        self.engine_eboa.session.commit()
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                }}]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
 
-        annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == data["annotation_cnf"]["name"], AnnotationCnf.system == data["annotation_cnf"]["system"]).all()
+        annotation_cnf_ddbb = self.session.query(AnnotationCnf).filter(AnnotationCnf.name == "ANNOTATION_CNF", AnnotationCnf.system == "SYSTEM").all()
 
         assert len(annotation_cnf_ddbb) == 1
 
