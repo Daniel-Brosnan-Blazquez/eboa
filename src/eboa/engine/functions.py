@@ -101,6 +101,40 @@ def is_valid_bool_filter(filter):
 
     return True
 
+def is_valid_positive_integer(filter):
+
+    try:
+        int(filter)
+    except ValueError:
+        raise InputError("The parameter filter must be an integer (received filter: {}).".format(filter))
+    # end try
+    
+    if int(filter) < 0:
+        raise InputError("The parameter filter must be a positive integer (received filter: {}).".format(filter))
+    # end if
+
+    return True
+
+def is_valid_order_by(order_by):
+
+    if type(order_by) != dict:
+        raise InputError("The parameter order_by must be a dictionary (received order_by: {}).".format(order_by))
+    # end if
+
+    if len(order_by.keys()) != 2 or not "field" in order_by.keys() or not "descending" in order_by.keys():
+        raise InputError("Every order_by should be a dictionary with keys field and descending (received keys: {}).".format(order_by.keys()))
+    # end if
+
+    if type(order_by["field"]) != str:
+        raise InputError("The key field inside the dictionary order_by must be a string (received type: {}).".format(order_by["field"]))
+    # end if
+
+    if type(order_by["descending"]) != bool:
+        raise InputError("The key descending inside the dictionary order_by must be a boolean (received type: {}).".format(order_by["descending"]))
+    # end if
+
+    return True
+
 def is_valid_bool_filter_with_op(bool_filter):
 
     if type(bool_filter) != dict:

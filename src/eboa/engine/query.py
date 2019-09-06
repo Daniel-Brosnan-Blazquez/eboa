@@ -95,7 +95,7 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_dim_signatures(self, dim_signature_uuids = None, dim_signatures = None):
+    def get_dim_signatures(self, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the DIM signature entities filtered by the received parameters
 
@@ -134,12 +134,36 @@ class Query():
         # end if
 
         query = self.session.query(DimSignature).filter(*params)
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("DimSignature." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("DimSignature." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+        
         log_query(query)
         dim_signatures = query.all()
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False, order_by = None, limit = None, offset = None):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -345,6 +369,29 @@ class Query():
 
         query = query.filter(*params)
 
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Source." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Source." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
         log_query(query)
 
         sources = []
@@ -358,7 +405,7 @@ class Query():
 
         return sources
 
-    def get_gauges(self, gauge_uuids = None, names = None, systems = None, dim_signature_uuids = None, dim_signatures = None):
+    def get_gauges(self, gauge_uuids = None, names = None, systems = None, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the gauges entities filtered by the received parameters
 
@@ -447,6 +494,29 @@ class Query():
 
         query = query.filter(*params)
 
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Gauge." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Gauge." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
         log_query(query)
         gauges = query.all()
 
@@ -487,7 +557,7 @@ class Query():
         # end if
     # end def
 
-    def get_events(self, event_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, ingestion_time_filters = None, value_filters = None, gauge_uuids = None, source_uuids = None, explicit_ref_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, limit = None):
+    def get_events(self, event_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, ingestion_time_filters = None, value_filters = None, gauge_uuids = None, source_uuids = None, explicit_ref_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -655,8 +725,28 @@ class Query():
 
         query = query.filter(*params)
 
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Event." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Event." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
         if limit != None:
+            functions.is_valid_positive_integer(limit)
             query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
         # end if
 
         log_query(query)
@@ -923,7 +1013,7 @@ class Query():
 
         return events
 
-    def get_annotation_cnfs(self, dim_signature_uuids = None, annotation_cnf_uuids = None, names = None, systems = None, dim_signatures = None):
+    def get_annotation_cnfs(self, dim_signature_uuids = None, annotation_cnf_uuids = None, names = None, systems = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -995,12 +1085,35 @@ class Query():
 
         query = query.filter(*params)
 
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("AnnotationCnf." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("AnnotationCnf." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
         log_query(query)
         annotation_cnfs = query.all()
 
         return annotation_cnfs
 
-    def get_annotations(self, source_uuids = None, explicit_ref_uuids = None, annotation_cnf_uuids = None, ingestion_time_filters = None, annotation_uuids = None, sources = None, explicit_refs = None, annotation_cnf_names = None, annotation_cnf_systems = None, value_filters = None):
+    def get_annotations(self, source_uuids = None, explicit_ref_uuids = None, annotation_cnf_uuids = None, ingestion_time_filters = None, annotation_uuids = None, sources = None, explicit_refs = None, annotation_cnf_names = None, annotation_cnf_systems = None, value_filters = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -1127,12 +1240,35 @@ class Query():
 
         query = query.filter(*params)
 
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Annotation." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Annotation." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+        
         log_query(query)
         annotations = query.all()
 
         return annotations
 
-    def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_ref_ingestion_time_filters = None, explicit_refs = None, groups = None, sources = None, source_uuids = None, event_uuids = None, gauge_names = None, gauge_systems = None, gauge_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, keys = None, annotation_ingestion_time_filters = None, annotation_uuids = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_cnf_uuids = None, annotation_value_filters = None):
+    def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_ref_ingestion_time_filters = None, explicit_refs = None, groups = None, sources = None, source_uuids = None, event_uuids = None, gauge_names = None, gauge_systems = None, gauge_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, keys = None, annotation_ingestion_time_filters = None, annotation_uuids = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_cnf_uuids = None, annotation_value_filters = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -1233,6 +1369,30 @@ class Query():
         # end for
 
         query = query.filter(*params)
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("ExplicitRef." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("ExplicitRef." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+        
         log_query(query)
         explicit_refs = query.all()
 
