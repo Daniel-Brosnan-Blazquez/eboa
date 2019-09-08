@@ -1931,7 +1931,7 @@ class Engine():
                 # Get the maximum generation time at this moment
                 max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                                                                                             Source.validity_start < validity_stop,
-                                                                                                                            Source.validity_stop > validity_start)
+                                                                                                                            Source.validity_stop > validity_start).first()
 
                 # Get the related source
                 source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
@@ -2222,9 +2222,9 @@ class Engine():
                     # Get the maximum generation time at this moment
                     max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                                                                   Event.start < validity_stop,
-                                                                                                                  Event.stop > validity_start)
+                                                                                                                  Event.stop > validity_start).first()
 
-                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event for the gauge_uuid {} with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, gauge_uuid, max_generation_time.first()[0].isoformat(), validity_start, validity_stop))
+                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event for the gauge_uuid {} with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, gauge_uuid, max_generation_time[0].isoformat(), validity_start, validity_stop))
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                Event.gauge_uuid == gauge_uuid,
@@ -2365,7 +2365,7 @@ class Engine():
             key = key_pair[0]
             dim_signature_uuid = key_pair[1]
 
-            max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key, Source.dim_signature_uuid == dim_signature_uuid)
+            max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).join(EventKey).filter(EventKey.event_key == key, Source.dim_signature_uuid == dim_signature_uuid).first()
 
             event_max_generation_time = self.session.query(Event).join(Source).join(EventKey).filter(Source.generation_time == max_generation_time,
                                                                                                             EventKey.event_key == key,
@@ -2402,7 +2402,7 @@ class Engine():
             max_generation_time = self.session.query(func.max(Source.generation_time)).join(Annotation) \
                                                                                       .join(AnnotationCnf). \
                                                                                       join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
-                                                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid)
+                                                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
 
             source_max_generation_time = self.session.query(Source).join(Annotation) \
                                                                         .join(AnnotationCnf). \
