@@ -15,7 +15,7 @@ from eboa.engine.functions import read_configuration
 # Import exceptions
 from eboa.engine.errors import EboaResourcesPathNotAvailable
 
-class TestDatamodel(unittest.TestCase):
+class TestEngineFunctions(unittest.TestCase):
 
     def test_no_eboa_resources_path(self):
 

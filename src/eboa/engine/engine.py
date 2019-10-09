@@ -56,20 +56,12 @@ from eboa.debugging import debug, race_condition, race_condition2
 
 # Import auxiliary functions
 from eboa.engine.functions import get_resources_path, get_schemas_path, read_configuration
+from eboa.engine.common_functions import insert_values, insert_alert_groups, insert_alert_cnfs
 
 config = read_configuration()
 
 logging = Log(name = __name__)
 logger = logging.logger
-
-alert_severity_codes = {
-    "info": 0,
-    "warning": 1,
-    "minor": 2,
-    "major": 3,
-    "critical": 4,
-    "fatal": 5
-}
 
 exit_codes = {
     "OK": {
@@ -102,11 +94,11 @@ exit_codes = {
     },
     "WRONG_VALUE": {
         "status": 7,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the value {} that cannot be converted to the specified type {}"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation defining a wrong value. The error was: {}"
     },
     "ODD_NUMBER_OF_COORDINATES": {
         "status": 8,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation which defines the geometry value {} with an odd number of coordinates"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event/annotation defining a wrong value. The error was: {}"
     },
     "FILE_NOT_VALID": {
         "status": 9,
@@ -571,6 +563,8 @@ class Engine():
         
         # Insert the DIM signature
         self._insert_dim_signature()
+
+        # Insert source
         try:
             self._insert_source(processing_duration = processing_duration)
             self.ingestion_start = datetime.datetime.now()
@@ -1479,114 +1473,15 @@ class Engine():
         :param positions: counter of the positions per level
         :type positions: dict
         """
-        if positions == None:
-            positions = {}
-        # end if
-        if not "objects" in list_values:
-            list_values["objects"] = []
-        # end if
-        list_values["objects"].append(dict([("name", values.get("name")),
-                                           ("position",  position),
-                                           ("parent_level",  parent_level),
-                                           ("parent_position",  parent_position),
-                                           (entity_uuid["name"], entity_uuid["id"])]
-        ))
-        parent_level += 1
-        parent_position = position
-        if not parent_level in positions:
-            # List for keeping track of the positions occupied in the level (parent_level = level - 1)
-            positions[parent_level] = 0
-        # end if
-        for item in values["values"]:
-            if item["type"] == "object":
-                self._insert_values(item, entity_uuid, list_values, positions[parent_level], parent_level, parent_position, positions)
-            else:
-                value = bool(str(item.get("value")))
-                if item["type"] == "boolean":
-                    if not "booleans" in list_values:
-                        list_values["booleans"] = []
-                    # end if
-                    if item.get("value").lower() == "true":
-                        value = True
-                    elif item.get("value").lower() == "false":
-                        value = False
-                    else:
-                        self.session.rollback()
-                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
-                    list_to_use = list_values["booleans"]
-                elif item["type"] == "text":
-                    value = str(item.get("value"))
-                    if not "texts" in list_values:
-                        list_values["texts"] = []
-                    # end if
-                    list_to_use = list_values["texts"]
-                elif item["type"] == "double":
-                    try:
-                        value = float(item.get("value"))
-                    except ValueError:
-                        self.session.rollback()
-                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
-                    # end try
-                    if not "doubles" in list_values:
-                        list_values["doubles"] = []
-                    # end if
-                    list_to_use = list_values["doubles"]
-                elif item["type"] == "timestamp":
-                    try:
-                        value = parser.parse(item.get("value"))
-                    except ValueError:
-                        self.session.rollback()
-                        raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value"), item["type"]))
-                    # end try
-                    if not "timestamps" in list_values:
-                        list_values["timestamps"] = []
-                    # end if
-                    list_to_use = list_values["timestamps"]
-                elif item["type"] == "geometry":
-                    if re.match("POLYGON((.*))", item.get("value")):
-                        value = item.get("value")
-                    else:
-                        list_coordinates = item.get("value").split(" ")
-                        if len (list_coordinates) % 2 != 0:
-                            self.session.rollback()
-                            raise OddNumberOfCoordinates(exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, item.get("value")))
-                        # end if
-                        coordinates = 0
-                        value = "POLYGON(("
-                        for coordinate in list_coordinates:
-                            if coordinates == 2:
-                                value = value + ","
-                                coordinates = 0
-                            # end if
-                            try:
-                                float(coordinate)
-                            except ValueError:
-                                self.session.rollback()
-                                raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, coordinate, "float"))
-                            # end try
-                            value = value + coordinate
-                            coordinates += 1
-                            if coordinates == 1:
-                                value = value + " "
-                            # end if
-                        # end for
-                        value = value + "))"
-                    # end if                        
-                    if not "geometries" in list_values:
-                        list_values["geometries"] = []
-                    # end if
-                    list_to_use = list_values["geometries"]
-                # end if
-                list_to_use.append(dict([("name", item.get("name")),
-                                         ("value", value),
-                                         ("position",  positions[parent_level]),
-                                         ("parent_level",  parent_level),
-                                         ("parent_position",  parent_position),
-                                         (entity_uuid["name"], entity_uuid["id"])]
-                                    ))
-            # end if
-            positions[parent_level] += 1
-        # end for
+        try:
+            insert_values(values, entity_uuid, list_values, position, parent_level, parent_position, positions)
+        except WrongValue as e:
+            self.session.rollback()
+            raise WrongValue(exit_codes["WRONG_VALUE"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, str(e)))
+        except OddNumberOfCoordinates as e:
+            self.session.rollback()
+            raise OddNumberOfCoordinates(exit_codes["ODD_NUMBER_OF_COORDINATES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, str(e)))
+        # end try
 
         return
         
@@ -1666,25 +1561,8 @@ class Engine():
         """
         Method to insert the groups of alerts
         """
-        alert_groups = [alert.get("alert_cnf").get("group") for alert in self.operation.get("alerts") or []]
-        unique_alert_groups = sorted(set(alert_groups))
-        for alert_group in unique_alert_groups or []:
-            self.session.begin_nested()
-            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-            alert_group_ddbb = AlertGroup(id, alert_group)
-            self.session.add(alert_group_ddbb)
-            try:
-                race_condition()
-                self.session.commit()
-            except IntegrityError:
-                # The explicit reference group exists already into DDBB
-                self.session.rollback()
-                alert_group_ddbb = self.session.query(AlertGroup).filter(AlertGroup.name == alert_group).first()
-                pass
-            # end try
-            self.alert_groups[alert_group] = alert_group_ddbb
-        # end for
-
+        self.alert_groups = insert_alert_groups(self.session, self.operation)
+        
         return
     
     @debug        
@@ -1692,34 +1570,8 @@ class Engine():
         """
         Method to insert the alert configurations
         """
-        alert_cnfs = [(alert.get("alert_cnf").get("name"), alert.get("alert_cnf").get("description"), alert.get("alert_cnf").get("severity"), alert.get("alert_cnf").get("group")) for alert in self.operation.get("alerts") or []]
-        unique_alert_cnfs = sorted(set(alert_cnfs))
-        for alert_cnf in unique_alert_cnfs:
-            name = alert_cnf[0]
-            description = alert_cnf[1]
-            severity = alert_severity_codes[alert_cnf[2]]
-            group = self.alert_groups[alert_cnf[3]]
-            self.alert_cnfs[name] = self.session.query(Alert).filter(Alert.name == name).first()
-            if not self.alert_cnfs[name]:
-                self.session.begin_nested()
-                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                group
-                self.alert_cnfs[name] = Alert(id, name, severity, group, description)
-                self.session.add(self.alert_cnfs[name])
-                try:
-                    race_condition()
-                    self.session.commit()
-                except IntegrityError:
-                    # The alert has been inserted between the query and the insertion. Roll back transaction for
-                    # re-using the session
-                    self.session.rollback()
-                    # Get the stored alert configuration
-                    self.alert_cnfs[name] = self.session.query(Alert).filter(Alert.name == name).first()
-                    pass
-                # end try
-            # end if
-        # end for
-
+        self.alert_cnfs = insert_alert_cnfs(self.session, self.operation, self.alert_groups)
+        
         return
     
     @debug

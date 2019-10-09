@@ -47,7 +47,6 @@ CREATE TABLE eboa.events(
 	gauge_uuid uuid NOT NULL,
 	explicit_ref_uuid uuid,
 	source_uuid uuid NOT NULL,
-	alert_group_uuid uuid,
 	CONSTRAINT events_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
 
@@ -1564,13 +1563,6 @@ REFERENCES eboa.alert_groups (alert_group_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: alert_groups_fk | type: CONSTRAINT --
--- ALTER TABLE eboa.events DROP CONSTRAINT IF EXISTS alert_groups_fk CASCADE;
-ALTER TABLE eboa.events ADD CONSTRAINT alert_groups_fk FOREIGN KEY (alert_group_uuid)
-REFERENCES eboa.alert_groups (alert_group_uuid) MATCH FULL
-ON DELETE SET NULL ON UPDATE CASCADE;
--- ddl-end --
-
 -- object: idx_processing_dim_signature_id | type: INDEX --
 -- DROP INDEX IF EXISTS eboa.idx_processing_dim_signature_id CASCADE;
 CREATE INDEX idx_processing_dim_signature_id ON eboa.sources
@@ -2142,6 +2134,718 @@ CREATE INDEX idx_alerts_alert_group_uuid ON eboa.alerts
 	(
 	  alert_group_uuid
 	);
+-- ddl-end --
+
+-- object: eboa.reports | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.reports CASCADE;
+CREATE TABLE eboa.reports(
+	report_uuid uuid NOT NULL,
+	name text NOT NULL,
+	generation_mode text,
+	relative_path text,
+	validity_start timestamp,
+	validity_stop timestamp,
+	triggering_time timestamp NOT NULL,
+	generation_start timestamp,
+	generation_stop timestamp,
+	metadata_ingestion_duration interval,
+	generated bool,
+	compressed bool,
+	generation_progress decimal(5,2),
+	metadata_ingestion_progress decimal(5,2),
+	generator text,
+	generator_version text,
+	generation_error bool,
+	content_json json,
+	report_group_uuid uuid NOT NULL,
+	CONSTRAINT reports_pk PRIMARY KEY (report_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.reports OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_report_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_name CASCADE;
+CREATE INDEX idx_report_name ON eboa.reports
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_name_gin CASCADE;
+CREATE INDEX idx_report_name_gin ON eboa.reports
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_mode | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_mode CASCADE;
+CREATE INDEX idx_report_generation_mode ON eboa.reports
+	USING btree
+	(
+	  generation_mode
+	);
+-- ddl-end --
+
+-- object: idx_report_validity_start | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_validity_start CASCADE;
+CREATE INDEX idx_report_validity_start ON eboa.reports
+	USING btree
+	(
+	  validity_start
+	);
+-- ddl-end --
+
+-- object: idx_report_validity_stop | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_validity_stop CASCADE;
+CREATE INDEX idx_report_validity_stop ON eboa.reports
+	USING btree
+	(
+	  validity_stop
+	);
+-- ddl-end --
+
+-- object: idx_report_triggering_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_triggering_time CASCADE;
+CREATE INDEX idx_report_triggering_time ON eboa.reports
+	USING btree
+	(
+	  triggering_time
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_start | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_start CASCADE;
+CREATE INDEX idx_report_generation_start ON eboa.reports
+	USING btree
+	(
+	  generation_start
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_stop | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_stop CASCADE;
+CREATE INDEX idx_report_generation_stop ON eboa.reports
+	USING btree
+	(
+	  generation_stop
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_duration | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_duration CASCADE;
+CREATE INDEX idx_report_generation_duration ON eboa.reports
+	USING btree
+	(
+	  metadata_ingestion_duration
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_progress | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_progress CASCADE;
+CREATE INDEX idx_report_generation_progress ON eboa.reports
+	USING btree
+	(
+	  generation_progress
+	);
+-- ddl-end --
+
+-- object: idx_report_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generator CASCADE;
+CREATE INDEX idx_report_generator ON eboa.reports
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: idx_report_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generator_gin CASCADE;
+CREATE INDEX idx_report_generator_gin ON eboa.reports
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_generator_version | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generator_version CASCADE;
+CREATE INDEX idx_report_generator_version ON eboa.reports
+	USING btree
+	(
+	  generator_version
+	);
+-- ddl-end --
+
+-- object: idx_report_generator_version_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generator_version_gin CASCADE;
+CREATE INDEX idx_report_generator_version_gin ON eboa.reports
+	USING gin
+	(
+	  generator_version eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_generation_error | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_generation_error CASCADE;
+CREATE INDEX idx_report_generation_error ON eboa.reports
+	USING btree
+	(
+	  generation_error
+	);
+-- ddl-end --
+
+-- object: eboa.report_groups | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_groups CASCADE;
+CREATE TABLE eboa.report_groups(
+	name text,
+	description text,
+	report_group_uuid uuid NOT NULL,
+	CONSTRAINT report_groups_pk PRIMARY KEY (report_group_uuid),
+	CONSTRAINT unique_report_group UNIQUE (name)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_groups OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_report_groups_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_groups_name CASCADE;
+CREATE INDEX idx_report_groups_name ON eboa.report_groups
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_groups_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_groups_name_gin CASCADE;
+CREATE INDEX idx_report_groups_name_gin ON eboa.report_groups
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: report_groups_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.reports DROP CONSTRAINT IF EXISTS report_groups_fk CASCADE;
+ALTER TABLE eboa.reports ADD CONSTRAINT report_groups_fk FOREIGN KEY (report_group_uuid)
+REFERENCES eboa.report_groups (report_group_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_event_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_event_alerts CASCADE;
+CREATE TABLE eboa.report_event_alerts(
+	report_uuid uuid NOT NULL,
+	event_alert_uuid uuid NOT NULL,
+	CONSTRAINT report_alert_events_pk PRIMARY KEY (report_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_event_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: event_alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_event_alerts DROP CONSTRAINT IF EXISTS event_alerts_fk CASCADE;
+ALTER TABLE eboa.report_event_alerts ADD CONSTRAINT event_alerts_fk FOREIGN KEY (event_alert_uuid)
+REFERENCES eboa.event_alerts (event_alert_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_explicit_ref_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_explicit_ref_alerts CASCADE;
+CREATE TABLE eboa.report_explicit_ref_alerts(
+	report_uuid uuid NOT NULL,
+	explicit_ref_alert_uuid uuid NOT NULL,
+	CONSTRAINT report_alert_explicit_ref_pk PRIMARY KEY (report_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_explicit_ref_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: explicit_ref_alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_explicit_ref_alerts DROP CONSTRAINT IF EXISTS explicit_ref_alerts_fk CASCADE;
+ALTER TABLE eboa.report_explicit_ref_alerts ADD CONSTRAINT explicit_ref_alerts_fk FOREIGN KEY (explicit_ref_alert_uuid)
+REFERENCES eboa.explicit_ref_alerts (explicit_ref_alert_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_source_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_source_alerts CASCADE;
+CREATE TABLE eboa.report_source_alerts(
+	report_uuid uuid NOT NULL,
+	source_alert_uuid uuid NOT NULL,
+	CONSTRAINT report_alert_sources_pk PRIMARY KEY (report_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_source_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: source_alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_source_alerts DROP CONSTRAINT IF EXISTS source_alerts_fk CASCADE;
+ALTER TABLE eboa.report_source_alerts ADD CONSTRAINT source_alerts_fk FOREIGN KEY (source_alert_uuid)
+REFERENCES eboa.source_alerts (source_alert_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_alerts CASCADE;
+CREATE TABLE eboa.report_alerts(
+	report_alert_uuid uuid NOT NULL,
+	message text NOT NULL,
+	validated boolean,
+	ingestion_time timestamp NOT NULL,
+	generator text NOT NULL,
+	notified boolean,
+	solved bool,
+	solved_time timestamp,
+	notification_time timestamp NOT NULL,
+	report_uuid uuid,
+	alert_uuid uuid NOT NULL,
+	CONSTRAINT report_alerts_pk PRIMARY KEY (report_alert_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_report_alerts_validated | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_validated CASCADE;
+CREATE INDEX idx_report_alerts_validated ON eboa.report_alerts
+	USING btree
+	(
+	  validated
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_ingestion_time CASCADE;
+CREATE INDEX idx_report_alerts_ingestion_time ON eboa.report_alerts
+	USING btree
+	(
+	  ingestion_time
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_generator_gin CASCADE;
+CREATE INDEX idx_report_alerts_generator_gin ON eboa.report_alerts
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_notified | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_notified CASCADE;
+CREATE INDEX idx_report_alerts_notified ON eboa.report_alerts
+	USING btree
+	(
+	  notified
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_solved | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_solved CASCADE;
+CREATE INDEX idx_report_alerts_solved ON eboa.report_alerts
+	USING btree
+	(
+	  solved
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_solved_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_solved_time CASCADE;
+CREATE INDEX idx_report_alerts_solved_time ON eboa.report_alerts
+	USING btree
+	(
+	  solved_time
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_notification_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_notification_time CASCADE;
+CREATE INDEX idx_report_alerts_notification_time ON eboa.report_alerts
+	USING btree
+	(
+	  notification_time
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_generator CASCADE;
+CREATE INDEX idx_report_alerts_generator ON eboa.report_alerts
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_alerts DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_alerts ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_alerts DROP CONSTRAINT IF EXISTS alerts_fk CASCADE;
+ALTER TABLE eboa.report_alerts ADD CONSTRAINT alerts_fk FOREIGN KEY (alert_uuid)
+REFERENCES eboa.alerts (alert_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_statuses | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_statuses CASCADE;
+CREATE TABLE eboa.report_statuses(
+	report_status_uuid uuid NOT NULL,
+	time_stamp timestamp NOT NULL,
+	status integer NOT NULL,
+	log text,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT report_statuses_pk PRIMARY KEY (report_status_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_statuses OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_report_status_time_stamp | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_status_time_stamp CASCADE;
+CREATE INDEX idx_report_status_time_stamp ON eboa.report_statuses
+	USING btree
+	(
+	  time_stamp
+	);
+-- ddl-end --
+
+-- object: idx_report_status_proc_status | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_status_proc_status CASCADE;
+CREATE INDEX idx_report_status_proc_status ON eboa.report_statuses
+	USING btree
+	(
+	  status
+	);
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_statuses DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_statuses ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: eboa.report_texts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_texts CASCADE;
+CREATE TABLE eboa.report_texts(
+	name text NOT NULL,
+	value text NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_texts UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_texts UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_texts OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.report_doubles | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_doubles CASCADE;
+CREATE TABLE eboa.report_doubles(
+	name text NOT NULL,
+	value double precision NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_doubles UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_doubles UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_doubles OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.report_objects | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_objects CASCADE;
+CREATE TABLE eboa.report_objects(
+	name text NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_objects UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_objects UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_objects OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.report_geometries | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_geometries CASCADE;
+CREATE TABLE eboa.report_geometries(
+	name text NOT NULL,
+	value geometry NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_geometries UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_geometries UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_geometries OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.report_booleans | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_booleans CASCADE;
+CREATE TABLE eboa.report_booleans(
+	name text NOT NULL,
+	value boolean NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_booleans UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_booleans UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_booleans OWNER TO eboa;
+-- ddl-end --
+
+-- object: eboa.report_timestamps | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_timestamps CASCADE;
+CREATE TABLE eboa.report_timestamps(
+	name text NOT NULL,
+	value timestamp NOT NULL,
+	"position" integer NOT NULL,
+	parent_level integer NOT NULL,
+	parent_position integer NOT NULL,
+	report_uuid uuid NOT NULL,
+	CONSTRAINT unique_value_report_timestamps UNIQUE (name,parent_level,parent_position),
+	CONSTRAINT unique_value_position_report_timestamps UNIQUE ("position",parent_level,parent_position)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_timestamps OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_report_boolean_value | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_boolean_value CASCADE;
+CREATE INDEX idx_report_boolean_value ON eboa.report_booleans
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_report_boolean_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_boolean_name CASCADE;
+CREATE INDEX idx_report_boolean_name ON eboa.report_booleans
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_text_value | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_text_value CASCADE;
+CREATE INDEX idx_report_text_value ON eboa.report_texts
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_report_text_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_text_name CASCADE;
+CREATE INDEX idx_report_text_name ON eboa.report_texts
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_double_value | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_double_value CASCADE;
+CREATE INDEX idx_report_double_value ON eboa.report_doubles
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_report_double_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_double_name CASCADE;
+CREATE INDEX idx_report_double_name ON eboa.report_doubles
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_timestamp_value | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_timestamp_value CASCADE;
+CREATE INDEX idx_report_timestamp_value ON eboa.report_timestamps
+	USING btree
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_report_timestamp_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_timestamp_name CASCADE;
+CREATE INDEX idx_report_timestamp_name ON eboa.report_timestamps
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_object_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_object_name CASCADE;
+CREATE INDEX idx_report_object_name ON eboa.report_objects
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_geometry_name | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_geometry_name CASCADE;
+CREATE INDEX idx_report_geometry_name ON eboa.report_geometries
+	USING btree
+	(
+	  name
+	);
+-- ddl-end --
+
+-- object: idx_report_geometry_value | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_geometry_value CASCADE;
+CREATE INDEX idx_report_geometry_value ON eboa.report_geometries
+	USING gist
+	(
+	  value
+	);
+-- ddl-end --
+
+-- object: idx_report_boolean_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_boolean_name_gin CASCADE;
+CREATE INDEX idx_report_boolean_name_gin ON eboa.report_booleans
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_text_value_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_text_value_gin CASCADE;
+CREATE INDEX idx_report_text_value_gin ON eboa.report_texts
+	USING gin
+	(
+	  value eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_text_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_text_name_gin CASCADE;
+CREATE INDEX idx_report_text_name_gin ON eboa.report_texts
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_double_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_double_name_gin CASCADE;
+CREATE INDEX idx_report_double_name_gin ON eboa.report_doubles
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_timestamp_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_timestamp_name_gin CASCADE;
+CREATE INDEX idx_report_timestamp_name_gin ON eboa.report_timestamps
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_object_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_object_name_gin CASCADE;
+CREATE INDEX idx_report_object_name_gin ON eboa.report_objects
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_geometry_name_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_geometry_name_gin CASCADE;
+CREATE INDEX idx_report_geometry_name_gin ON eboa.report_geometries
+	USING gin
+	(
+	  name eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_booleans DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_booleans ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_texts DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_texts ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_doubles DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_doubles ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_timestamps DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_timestamps ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_objects DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_objects ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: reports_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_geometries DROP CONSTRAINT IF EXISTS reports_fk CASCADE;
+ALTER TABLE eboa.report_geometries ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
+REFERENCES eboa.reports (report_uuid) MATCH FULL
+ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
 

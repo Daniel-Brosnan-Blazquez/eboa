@@ -29,6 +29,8 @@ from eboa.datamodel.sources import Source, SourceStatus
 from eboa.datamodel.explicit_refs import ExplicitRef, ExplicitRefGrp, ExplicitRefLink
 from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText, AnnotationDouble, AnnotationObject, AnnotationGeometry, AnnotationBoolean, AnnotationTimestamp
 from sqlalchemy.dialects import postgresql
+from rboa.datamodel.reports import Report, ReportGroup, ReportStatus, ReportText, ReportDouble, ReportObject, ReportGeometry, ReportBoolean, ReportTimestamp
+from rboa.datamodel.alerts import ReportAlert
 
 # Import exceptions
 from eboa.engine.errors import InputError

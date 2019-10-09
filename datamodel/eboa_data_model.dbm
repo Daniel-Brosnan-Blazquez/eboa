@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="357,892" last-zoom="0.9"
+<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="357,1191" last-zoom="0.9"
 	 default-schema="public" default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -245,7 +245,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_doubles">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="660" y="980"/>
+	<position x="680" y="980"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -716,7 +716,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="eboa.sources"
 	 dst-table="eboa.source_statuses"
 	 src-required="true" dst-required="false"
-	del-action="CASCADE"/>
+	del-action="CASCADE">
+	<label ref-type="dst-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
 
 <relationship name="explicit_refs_has_many_annotations" type="rel1n"
 	 src-col-pattern="{sc}"
@@ -2035,16 +2039,11 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-table="eboa.alert_groups"
 	 dst-table="eboa.alerts"
 	 src-required="false" dst-required="false"
-	del-action="CASCADE"/>
-
-<relationship name="alert_groups_has_many_events" type="rel1n"
-	 src-col-pattern="{sc}"
-	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
-	 src-fk-pattern="{st}_fk"
-	 custom-color="#660a6b"
-	 src-table="eboa.alert_groups"
-	 dst-table="eboa.events"
-	 src-required="false" dst-required="false"/>
+	del-action="CASCADE">
+	<label ref-type="name-label">
+		<position x="184.287" y="-41.5271"/>
+	</label>
+</relationship>
 
 <index name="idx_processing_dim_signature_id" table="eboa.sources"
 	 concurrent="false" unique="false" fast-update="false" buffering="false"
@@ -2584,5 +2583,909 @@ CAUTION: Do not modify this file unless you know what you are doing.
 			<column name="alert_group_uuid"/>
 		</idxelement>
 </index>
+
+<table name="reports">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="960" y="1680"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="1"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="generation_mode">
+		<type name="text" length="1"/>
+	</column>
+	<column name="relative_path">
+		<type name="text" length="1"/>
+	</column>
+	<column name="validity_start">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="validity_stop">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="triggering_time" not-null="true">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="generation_start">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="generation_stop">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="metadata_ingestion_duration">
+		<type name="interval" length="0"/>
+	</column>
+	<column name="generated">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="compressed">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="generation_progress">
+		<type name="decimal" length="5" precision="2"/>
+	</column>
+	<column name="metadata_ingestion_progress">
+		<type name="decimal" length="5" precision="2"/>
+	</column>
+	<column name="generator">
+		<type name="text" length="0"/>
+	</column>
+	<column name="generator_version">
+		<type name="text" length="1"/>
+	</column>
+	<column name="generation_error">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="content_json">
+		<type name="json" length="0"/>
+	</column>
+	<constraint name="reports_pk" type="pk-constr" table="eboa.reports">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="report_group_uuid" index="18"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="report_groups_fk" index="1"/>
+	</customidxs>
+</table>
+
+<index name="idx_report_name" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_name_gin" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_mode" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generation_mode"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_validity_start" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validity_start"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_validity_stop" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validity_stop"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_triggering_time" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="triggering_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_start" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generation_start"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_stop" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generation_stop"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_duration" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="metadata_ingestion_duration"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_progress" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generation_progress"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generator" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generator_gin" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generator_version" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator_version"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generator_version_gin" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator_version"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_generation_error" table="eboa.reports"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generation_error"/>
+		</idxelement>
+</index>
+
+<table name="report_groups">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1360" y="2020"/>
+	<column name="name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
+	<column name="report_group_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_groups_pk" type="pk-constr" table="eboa.report_groups">
+		<columns names="report_group_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_report_group" type="uq-constr" table="eboa.report_groups">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_report_groups_name" table="eboa.report_groups"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_groups_name_gin" table="eboa.report_groups"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<relationship name="report_groups_has_many_reports" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#42513f"
+	 src-table="eboa.report_groups"
+	 dst-table="eboa.reports"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<table name="report_event_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1340" y="1740"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_alert_events_pk" type="pk-constr" table="eboa.report_event_alerts">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="event_alert_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="event_alerts_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="event_alerts_has_many_report_alert_events" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#f76072"
+	 src-table="eboa.event_alerts"
+	 dst-table="eboa.report_event_alerts"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="dst-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<table name="report_explicit_ref_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1680" y="1760"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_alert_explicit_ref_pk" type="pk-constr" table="eboa.report_explicit_ref_alerts">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="explicit_ref_alert_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="explicit_ref_alerts_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="explicit_ref_alerts_has_many_report_explicit_ref_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#0ea7a9"
+	 src-table="eboa.explicit_ref_alerts"
+	 dst-table="eboa.report_explicit_ref_alerts"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<table name="report_source_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1680" y="1840"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_alert_sources_pk" type="pk-constr" table="eboa.report_source_alerts">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="source_alert_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="source_alerts_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="source_alerts_has_many_report_explicit_ref_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ccfc96"
+	 src-table="eboa.source_alerts"
+	 dst-table="eboa.report_source_alerts"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="name-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<table name="report_alerts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1340" y="1800"/>
+	<column name="report_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="report_alerts_pk" type="pk-constr" table="eboa.report_alerts">
+		<columns names="report_alert_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="10"/>
+		<object name="report_uuid" index="9"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="2"/>
+		<object name="reports_fk" index="1"/>
+	</customidxs>
+</table>
+
+<index name="idx_report_alerts_validated" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_ingestion_time" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_generator_gin" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_notified" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_solved" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_solved_time" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_notification_time" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_generator" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<relationship name="reports_has_many_report_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#6fb753"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_alerts"
+	 src-required="false" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="alerts_has_many_report_alerts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#6c7823"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.report_alerts"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="name-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<table name="report_statuses">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1000" y="2000"/>
+	<column name="report_status_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="time_stamp" not-null="true">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="status" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="log">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="report_statuses_pk" type="pk-constr" table="eboa.report_statuses">
+		<columns names="report_status_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="report_uuid" index="4"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="reports_fk" index="1"/>
+	</customidxs>
+</table>
+
+<index name="idx_report_status_time_stamp" table="eboa.report_statuses"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="time_stamp"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_status_proc_status" table="eboa.report_statuses"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="status"/>
+		</idxelement>
+</index>
+
+<relationship name="reports_has_many_report_statuses" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#67b89a"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_statuses"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE">
+	<label ref-type="name-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<table name="report_texts">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="640" y="1680"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="value" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_texts" type="uq-constr" table="eboa.report_texts">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_texts" type="uq-constr" table="eboa.report_texts">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="report_doubles">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="620" y="1820"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="value" not-null="true">
+		<type name="double precision" length="1"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_doubles" type="uq-constr" table="eboa.report_doubles">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_doubles" type="uq-constr" table="eboa.report_doubles">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="report_objects">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="620" y="2100"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_objects" type="uq-constr" table="eboa.report_objects">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_objects" type="uq-constr" table="eboa.report_objects">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="report_geometries">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="620" y="2220"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="value" not-null="true">
+		<type name="geometry" length="0"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_geometries" type="uq-constr" table="eboa.report_geometries">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_geometries" type="uq-constr" table="eboa.report_geometries">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="report_booleans" hide-ext-attribs="true">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="640" y="1540"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="value" not-null="true">
+		<type name="boolean" length="1"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_booleans" type="uq-constr" table="eboa.report_booleans">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_booleans" type="uq-constr" table="eboa.report_booleans">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="report_timestamps">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="620" y="1960"/>
+	<column name="name" not-null="true">
+		<type name="text" length="1"/>
+	</column>
+	<column name="value" not-null="true">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_level" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<column name="parent_position" not-null="true">
+		<type name="integer" length="1"/>
+	</column>
+	<constraint name="unique_value_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
+		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_value_position_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
+		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_report_boolean_value" table="eboa.report_booleans"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_boolean_name" table="eboa.report_booleans"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_text_value" table="eboa.report_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_text_name" table="eboa.report_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_double_value" table="eboa.report_doubles"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_double_name" table="eboa.report_doubles"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_timestamp_value" table="eboa.report_timestamps"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_timestamp_name" table="eboa.report_timestamps"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_object_name" table="eboa.report_objects"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_geometry_name" table="eboa.report_geometries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_geometry_value" table="eboa.report_geometries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gist" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_boolean_name_gin" table="eboa.report_booleans"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_text_value_gin" table="eboa.report_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="value"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_text_name_gin" table="eboa.report_texts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_double_name_gin" table="eboa.report_doubles"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_timestamp_name_gin" table="eboa.report_timestamps"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_object_name_gin" table="eboa.report_objects"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_geometry_name_gin" table="eboa.report_geometries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<relationship name="reports_has_many_report_booleans" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#94b7e7"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_booleans"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="reports_has_many_report_texts" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#75887c"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_texts"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="reports_has_many_report_doubles" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#2eaee5"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_doubles"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="reports_has_many_report_timestamps" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#0d8446"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_timestamps"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="reports_has_many_report_objects" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#e1c2e4"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_objects"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="reports_has_many_report_geometries" type="rel1n"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#493bad"
+	 src-table="eboa.reports"
+	 dst-table="eboa.report_geometries"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
 
 </dbmodel>

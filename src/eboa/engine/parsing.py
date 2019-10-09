@@ -532,7 +532,7 @@ def _validate_alerts(data):
         # end if
 
         _validate_alert_entity(alert["entity"])        
-        _validate_alert_cnf(alert["alert_cnf"])
+        validate_alert_cnf(alert["alert_cnf"])
 
     # end for
 
@@ -571,7 +571,7 @@ def _validate_alert_entity(data):
 
     return
 
-def _validate_alert_cnf(data):
+def validate_alert_cnf(data):
 
     if type(data) != dict:
         raise ErrorParsingDictionary("The alert_cnf inside the alert structure has to be of type dict")

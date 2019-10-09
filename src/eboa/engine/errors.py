@@ -159,3 +159,13 @@ class UndefinedEntityReference(Error):
 
     def __init__(self, message):
         self.message = message
+
+class FilePathDoesNotExist(Error):
+    """Exception raised when a file path does not exist.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
