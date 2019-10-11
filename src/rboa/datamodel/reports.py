@@ -86,18 +86,20 @@ class Report(Base):
         return {
             "report_uuid": self.report_uuid,
             "name": self.name,
+            "generation_mode": self.generation_mode,
+            "relative_path": self.relative_path,
             "validity_start": str(self.validity_start).replace(" ", "T"),
             "validity_stop": str(self.validity_stop).replace(" ", "T"),
-            "reception_time": str(self.generation_time).replace(" ", "T"),
-            "generation_time": str(self.generation_time).replace(" ", "T"),
-            "ingested": self.ingested,
-            "ingestion_error": self.ingestion_error,
-            "ingestion_time": str(self.ingestion_time).replace(" ", "T"),
-            "ingestion_duration": str(self.ingestion_duration),
-            "processing_duration": str(self.processing_duration),
-            "processor": self.processor,
-            "processor_version": self.processor_version,
-            "dim_signature_uuid": self.dim_signature_uuid
+            "triggering_time": str(self.triggering_time).replace(" ", "T"),
+            "generation_start": str(self.generation_start).replace(" ", "T"),
+            "generation_stop": str(self.generation_stop).replace(" ", "T"),
+            "metadata_ingestion_duration": str(self.metadata_ingestion_duration),
+            "generated": self.generated,
+            "compressed": self.compressed,
+            "generator": self.generator,
+            "generator_version": self.generator_version,
+            "generation_error": self.generation_error,
+            "report_group_uuid": self.report_group_uuid
         }
 
     def get_ingestion_progress(self):

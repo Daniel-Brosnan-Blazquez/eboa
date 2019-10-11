@@ -837,15 +837,16 @@ class Engine():
         self._insert_ingestion_progress(100)
 
         # Log that the file has been ingested correctly
-        self._insert_source_status(exit_codes["OK"]["status"],True)
-        logger.info(exit_codes["OK"]["message"].format(
+        log = exit_codes["OK"]["message"].format(
             self.source.name,
             self.dim_signature.dim_signature,
             self.source.processor, 
             self.source.processor_version,
             n_events,
             n_annotations,
-            n_alerts))
+            n_alerts)
+        self._insert_source_status(exit_codes["OK"]["status"],True, message = log)
+        logger.info(log)
 
         # Remove if the content was inserted due to errors processing the input
         self.source.content_json = None

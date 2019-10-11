@@ -407,6 +407,268 @@ class Query():
 
         return sources
 
+    def get_reports(self, names = None, generation_modes = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, triggering_time_filters = None, generation_start_filters = None, generation_stop_filters = None, metadata_ingestion_duration_filters = None, generated = None, compressed = None, generators = None, generator_version_filters = None, generation_error = None, report_group_uuids = None, report_uuids = None, report_groups = None, statuses = None, delete = False, order_by = None, limit = None, offset = None):
+        """
+        Method to obtain the reports entities filtered by the received parameters
+
+        :param report_uuids: list of report identifiers
+        :type report_uuids: text_filter
+        :param names: report name filters
+        :type names: text_filter
+        :param generation_modes: report name filters
+        :type generation_modes: text_filter
+        :param validity_start_filters: list of start filters
+        :type validity_start_filters: date_filters
+        :param validity_stop_filters: list of stop filters
+        :type validity_stop_filters: date_filters
+        :param validity_duration_filters: list of duration filters
+        :type validity_duration_filters: float_filters
+        :param triggering_time_filters: list of triggering time filters
+        :type triggering_time_filters: date_filters
+        :param generation_start_filters: list of generation start filters
+        :type generation_start_filters: date_filters
+        :param generation_stop_filters: list of generation stop filters
+        :type generation_stop_filters: date_filters
+        :param metadata_ingestion_duration_filters: list of metadata ingestion duration filters
+        :type metadata_ingestion_duration_filters: float_filters
+        :param generated: flag to indicate if the report was generated or not
+        :type generated: boolean_filter
+        :param compressed: flag to indicate if the report was compressed or not
+        :type compressed: boolean_filter
+        :param generators: generators filters
+        :type generators: text_filter
+        :param generator_version_filters: list of version filters
+        :type generator_version_filters: text_filter
+        :param generation_error: flag to indicate if the report generation ended in error or not
+        :type generation_error: boolean_filter
+        :param report_group_uuids: list of report group identifiers
+        :type report_group_uuids: text_filter
+        :param report_uuids: list of report identifiers
+        :type report_uuids: text_filter
+        :param report_groups: report group filters
+        :type report_groups: text_filter
+        :param statuses: status filters
+        :type statuses: float_filter
+
+        :return: found reports
+        :rtype: list
+        """
+        params = []
+        tables = []
+
+        # Report names
+        if names != None:
+            functions.is_valid_text_filter(names)
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(Report.name, names["filter"]))
+            else:
+                filter = eval('Report.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
+        # end if
+
+        # Report generation modes
+        if generation_modes != None:
+            functions.is_valid_text_filter(generation_modes)
+            if generation_modes["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[generation_modes["op"]]
+                params.append(op(Report.generation_mode, generation_modes["filter"]))
+            else:
+                filter = eval('Report.generation_mode.' + text_operators[generation_modes["op"]])
+                params.append(filter(generation_modes["filter"]))
+            # end if
+        # end if
+
+        # validity_start filters
+        if validity_start_filters != None:
+            functions.is_valid_date_filters(validity_start_filters)
+            for validity_start_filter in validity_start_filters:
+                op = arithmetic_operators[validity_start_filter["op"]]
+                params.append(op(Report.validity_start, validity_start_filter["date"]))
+            # end for
+        # end if
+
+        # validity_stop filters
+        if validity_stop_filters != None:
+            functions.is_valid_date_filters(validity_stop_filters)
+            for validity_stop_filter in validity_stop_filters:
+                op = arithmetic_operators[validity_stop_filter["op"]]
+                params.append(op(Report.validity_stop, validity_stop_filter["date"]))
+            # end for
+        # end if
+
+        # validity duration filters
+        if validity_duration_filters != None:
+            functions.is_valid_float_filters(validity_duration_filters)
+            for validity_duration_filter in validity_duration_filters:
+                op = arithmetic_operators[validity_duration_filter["op"]]
+                params.append(op((extract("epoch", Report.validity_stop) - extract("epoch", Report.validity_start)), validity_duration_filter["float"]))
+            # end for
+        # end if
+
+        # triggering_time filters
+        if triggering_time_filters != None:
+            functions.is_valid_date_filters(triggering_time_filters)
+            for triggering_time_filter in triggering_time_filters:
+                op = arithmetic_operators[triggering_time_filter["op"]]
+                params.append(op(Report.triggering_time, triggering_time_filter["date"]))
+            # end for
+        # end if
+
+        # generation_start filters
+        if generation_start_filters != None:
+            functions.is_valid_date_filters(generation_start_filters)
+            for generation_start_filter in generation_start_filters:
+                op = arithmetic_operators[generation_start_filter["op"]]
+                params.append(op(Report.generation_start, generation_start_filter["date"]))
+            # end for
+        # end if
+
+        # generation_stop filters
+        if generation_stop_filters != None:
+            functions.is_valid_date_filters(generation_stop_filters)
+            for generation_stop_filter in generation_stop_filters:
+                op = arithmetic_operators[generation_stop_filter["op"]]
+                params.append(op(Report.generation_stop, generation_stop_filter["date"]))
+            # end for
+        # end if
+
+        # generated filter
+        if generated != None:
+            functions.is_valid_bool_filter(generated)
+            params.append(Report.generated == generated)
+        # end if
+
+        # compressed filter
+        if compressed != None:
+            functions.is_valid_bool_filter(compressed)
+            params.append(Report.compressed == compressed)
+        # end if
+
+        # Generators
+        if generators != None:
+            functions.is_valid_text_filter(generators)
+            if generators["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[generators["op"]]
+                params.append(op(Report.generator, generators["filter"]))
+            else:
+                filter = eval('Report.generator.' + text_operators[generators["op"]])
+                params.append(filter(generators["filter"]))
+            # end if
+        # end if
+
+        # generator_version filters
+        if generator_version_filters != None:
+            for generator_version_filter in generator_version_filters:
+                functions.is_valid_text_filter(generator_version_filter)
+
+                if generator_version_filter["op"] in arithmetic_operators.keys():
+                    op = arithmetic_operators[generator_version_filter["op"]]
+                    params.append(op(Report.generator_version, generator_version_filter["filter"]))
+                else:
+                    filter = eval('Report.generator_version.' + text_operators[generator_version_filter["op"]])
+                    params.append(filter(generator_version_filter["filter"]))
+                # end if
+            # end for
+        # end if
+
+        # generation_error filter
+        if generation_error != None:
+            functions.is_valid_bool_filter_with_op(generation_error)
+            op = arithmetic_operators[generation_error["op"]]
+            params.append(op(Report.generation_error, generation_error["filter"]))
+        # end if
+
+        # Report group UUIDs
+        if report_group_uuids != None:
+            functions.is_valid_text_filter(report_group_uuids)
+            if report_group_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[report_group_uuids["op"]]
+                params.append(op(Report.report_group_uuid, report_group_uuids["filter"]))
+            else:
+                filter = eval('Report.report_group_uuid.' + text_operators[report_group_uuids["op"]])
+                params.append(filter(report_group_uuids["filter"]))
+            # end if
+        # end if
+
+        # Report UUIDs
+        if report_uuids != None:
+            functions.is_valid_text_filter(report_uuids)
+            if report_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[report_uuids["op"]]
+                params.append(op(Report.report_uuid, report_uuids["filter"]))
+            else:
+                filter = eval('Report.report_uuid.' + text_operators[report_uuids["op"]])
+                params.append(filter(report_uuids["filter"]))
+            # end if
+        # end if
+        
+        # Report groups
+        if report_groups != None:
+            functions.is_valid_text_filter(report_groups)
+            if report_groups["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[report_groups["op"]]
+                params.append(op(DimSignature.report_group, report_groups["filter"]))
+            else:
+                filter = eval('ReportGroup.name.' + text_operators[report_groups["op"]])
+                params.append(filter(report_groups["filter"]))
+            # end if
+            tables.append(ReportGroup)
+        # end if
+
+        # status filters
+        if statuses != None:
+            functions.is_valid_float_filters(statuses)
+            for status in statuses:
+                op = arithmetic_operators[status["op"]]
+                params.append(op(ReportStatus.status, status["float"]))
+            # end for
+        # end if
+
+        query = self.session.query(Report)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Report." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Report." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
+        log_query(query)
+
+        reports = []
+        if delete:
+            reports = query.all()
+            self.session.query(Report).filter(Report.report_uuid.in_([report.report_uuid for report in reports])).delete(synchronize_session=False)
+            self.session.commit()
+        else:
+            reports = query.all()
+        # end if
+
+        return reports
+
     def get_gauges(self, gauge_uuids = None, names = None, systems = None, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the gauges entities filtered by the received parameters

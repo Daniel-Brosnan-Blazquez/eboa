@@ -3,7 +3,7 @@ Engine definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module eboa
+module rboa
 """
 
 # Import python utilities
@@ -326,15 +326,16 @@ class Engine():
         self.session.commit()
         
         # Log that the file has been ingested correctly
-        self._insert_report_status(exit_codes["OK"]["status"],True)
-        logger.info(exit_codes["OK"]["message"].format(
+        log = exit_codes["OK"]["message"].format(
             self.report.name,
             self.report.generator, 
             self.report.generator_version,
             0,
             0,
             0,
-            0))
+            0)
+        self._insert_report_status(exit_codes["OK"]["status"],True, message = log)
+        logger.info(log)
 
         # Indicate that the ingestion of metadata has finished
         self._insert_ingestion_progress(100)
