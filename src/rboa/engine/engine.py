@@ -34,7 +34,7 @@ from rboa.datamodel.alerts import ReportAlert
 from eboa.engine.query import Query
 
 # Import exceptions
-from eboa.engine.errors import WrongPeriod, ErrorParsingDictionary, WrongValue, OddNumberOfCoordinates, FilePathDoesNotExist
+from eboa.engine.errors import WrongPeriod, ErrorParsingDictionary, WrongValue, OddNumberOfCoordinates, FilePathDoesNotExist, DuplicatedValues, WrongGeometry
 from rboa.engine.errors import WrongGenerationPeriod
 
 # Import parsing module
@@ -87,9 +87,9 @@ exit_codes = {
         "status": 7,
         "message": "The metadata of the report {} associated to the generator {} with version {} defines duplicated values. The exception raised has been the following: {}"
     },
-    "GENERATOR_DOES_NOT_EXIST": {
+    "PROCESSOR_DOES_NOT_EXIST": {
         "status": 8,
-        "message": "The report {} was going to be generated with the generator {} which does not exist. Reported error: {}"
+        "message": "The report {} was going to be generated with the processor {} which does not exist. Reported error: {}"
     },
     "GENERATION_ENDED_UNEXPECTEDLY": {
         "status": 9,
@@ -270,9 +270,7 @@ class Engine():
         # Get the general report entry (processor = None, version = None, report group = PENDING_GENERATION)
         # This is when using the command rboa_generation.py for generation control purposes
         self.general_report_progress = self.session_progress.query(Report).join(ReportGroup).filter(Report.name == self.operation.get("report").get("name"),
-                                                                                  ReportGroup.name == "PENDING_GENERATION",
-                                                                                  Report.generator_version == "",
-                                                                                  Report.generator == "").first()
+                                                                                  ReportGroup.name == "PENDING_GENERATION").first()
 
         if not self.general_report_progress:
             self.general_report_progress = self.report_progress
@@ -300,26 +298,27 @@ class Engine():
 
         logger.debug("Alerts inserted for the report file {} associated to the generator {} with version {}".format(self.report.name, self.report.generator, self.report.generator_version))
 
-        try:
-            self._archive_report()
-            log_info = exit_codes["REPORT_ARCHIVED"]["message"].format(
-                self.report.name,
-                self.report.generator, 
-                self.report.generator_version)
-            self._insert_report_status(exit_codes["REPORT_ARCHIVED"]["status"],
-                                       message = log_info)
-            # Log that the ingestion of the metadata of the report file has been started
-            logger.info(log_info)
-        except FilePathDoesNotExist as e:
-            self.session.rollback()
-            self._insert_report_status(exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = str(e))
-            # Log that the report file has a wrong specified validity as the stop is lower than the start
-            logger.error(e)
-            # Insert content in the DDBB
-            self.session.commit()
-            return exit_codes["FILE_DOES_NOT_EXIST"]["status"]
-        # end try
-
+        if not self.operation.get("report").get("ingested") == "false":
+            try:
+                self._archive_report()
+                log_info = exit_codes["REPORT_ARCHIVED"]["message"].format(
+                    self.report.name,
+                    self.report.generator, 
+                    self.report.generator_version)
+                self._insert_report_status(exit_codes["REPORT_ARCHIVED"]["status"],
+                                           message = log_info)
+                # Log that the ingestion of the metadata of the report file has been started
+                logger.info(log_info)
+            except FilePathDoesNotExist as e:
+                self.session.rollback()
+                self._insert_report_status(exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = str(e))
+                # Log that the report file has a wrong specified validity as the stop is lower than the start
+                logger.error(e)
+                # Insert content in the DDBB
+                self.session.commit()
+                return exit_codes["FILE_DOES_NOT_EXIST"]["status"]
+            # end try
+        # end if
         
         # At this point all the information has been inserted, commit data twice as there was a begin nested initiated
         self.session.commit()
@@ -465,11 +464,11 @@ class Engine():
                     self.session.bulk_insert_mappings(ReportGeometry, list_values["geometries"])
                 except InternalError as e:
                     self.session.rollback()
-                    raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                    raise WrongGeometry(exit_codes["WRONG_GEOMETRY"]["message"].format(self.report.name, self.report.generator, self.report.generator_version, e))
             # end if
         except IntegrityError as e:
             self.session.rollback()
-            raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+            raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.report.name, self.report.generator, self.report.generator_version, e))
         # end try
 
         return

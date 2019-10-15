@@ -3137,12 +3137,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_texts" type="uq-constr" table="eboa.report_texts">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_texts" type="uq-constr" table="eboa.report_texts">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="report_doubles">
@@ -3164,12 +3158,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_doubles" type="uq-constr" table="eboa.report_doubles">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_doubles" type="uq-constr" table="eboa.report_doubles">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="report_objects">
@@ -3188,12 +3176,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_objects" type="uq-constr" table="eboa.report_objects">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_objects" type="uq-constr" table="eboa.report_objects">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="report_geometries">
@@ -3215,12 +3197,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_geometries" type="uq-constr" table="eboa.report_geometries">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_geometries" type="uq-constr" table="eboa.report_geometries">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="report_booleans" hide-ext-attribs="true">
@@ -3242,12 +3218,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_booleans" type="uq-constr" table="eboa.report_booleans">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_booleans" type="uq-constr" table="eboa.report_booleans">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="report_timestamps">
@@ -3269,12 +3239,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-	<constraint name="unique_value_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
-		<columns names="name,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="unique_value_position_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
-		<columns names="position,parent_level,parent_position" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <index name="idx_report_boolean_value" table="eboa.report_booleans"
@@ -3487,5 +3451,47 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="eboa.report_geometries"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
+
+<constraint name="unique_value_report_texts" type="uq-constr" table="eboa.report_texts">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_texts" type="uq-constr" table="eboa.report_texts">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_report_doubles" type="uq-constr" table="eboa.report_doubles">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_doubles" type="uq-constr" table="eboa.report_doubles">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_report_objects" type="uq-constr" table="eboa.report_objects">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_objects" type="uq-constr" table="eboa.report_objects">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_report_geometries" type="uq-constr" table="eboa.report_geometries">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_geometries" type="uq-constr" table="eboa.report_geometries">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_report_booleans" type="uq-constr" table="eboa.report_booleans">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_booleans" type="uq-constr" table="eboa.report_booleans">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+
+<constraint name="unique_value_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
+  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
+<constraint name="unique_value_position_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
+  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+</constraint>
 
 </dbmodel>

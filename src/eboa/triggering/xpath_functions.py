@@ -18,15 +18,20 @@ def match(dummy, node, input_text):
     :param dummy: parameter not used by lxml
     :type dummy: None
     :param node: node with text for matching
-    :type node: Etree element
+    :type node: Etree element or attribute
     :param input_text: string with text to match
     :type input_text: str
 
     :return: True if there is match, False if not
     :rtype: str
 
-    """    
-    match = re.match(node[0].text, input_text)
+    """
+    try:
+        match = re.match(node[0].text, input_text)
+    except AttributeError:
+        match = re.match(node[0], input_text)
+    # end try
+    
     if match:
         return True
     # end if

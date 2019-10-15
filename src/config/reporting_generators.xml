@@ -1,0 +1,10 @@
+<reporting_generators>
+  <generator name="Generator1" description="Description for report 1">
+    <command add_begin_end_parameters="false">echo "Executing command for generator Generator1"</command>
+    <name_format>BOA_TEST_GENERATOR1_%C_%B_%E.html</name_format>
+  </generator>
+  <generator name="Generator2" description="Description for report 2">
+    <command>echo "Executing command for generator Generator2"</command>
+    <name_format>BOA_TEST_GENERATOR2_%C_%B_%E.html</name_format>
+  </generator>
+</reporting_generators>

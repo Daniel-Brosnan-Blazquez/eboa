@@ -11,6 +11,9 @@ from dateutil import parser
 import re
 import random
 
+# Import SQLalchemy entities
+from sqlalchemy.exc import IntegrityError, InternalError
+
 # Import exceptions
 from eboa.engine.errors import WrongValue, OddNumberOfCoordinates
 

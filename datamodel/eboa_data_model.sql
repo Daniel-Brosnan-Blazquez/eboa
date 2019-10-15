@@ -2551,10 +2551,7 @@ CREATE TABLE eboa.report_texts(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_texts UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_texts UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_texts OWNER TO eboa;
@@ -2568,10 +2565,7 @@ CREATE TABLE eboa.report_doubles(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_doubles UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_doubles UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_doubles OWNER TO eboa;
@@ -2584,10 +2578,7 @@ CREATE TABLE eboa.report_objects(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_objects UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_objects UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_objects OWNER TO eboa;
@@ -2601,10 +2592,7 @@ CREATE TABLE eboa.report_geometries(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_geometries UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_geometries UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_geometries OWNER TO eboa;
@@ -2618,10 +2606,7 @@ CREATE TABLE eboa.report_booleans(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_booleans UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_booleans UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_booleans OWNER TO eboa;
@@ -2635,10 +2620,7 @@ CREATE TABLE eboa.report_timestamps(
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
 	parent_position integer NOT NULL,
-	report_uuid uuid NOT NULL,
-	CONSTRAINT unique_value_report_timestamps UNIQUE (name,parent_level,parent_position),
-	CONSTRAINT unique_value_position_report_timestamps UNIQUE ("position",parent_level,parent_position)
-
+	report_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.report_timestamps OWNER TO eboa;
@@ -2846,6 +2828,66 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE eboa.report_geometries ADD CONSTRAINT reports_fk FOREIGN KEY (report_uuid)
 REFERENCES eboa.reports (report_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: unique_value_report_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_texts DROP CONSTRAINT IF EXISTS unique_value_report_texts CASCADE;
+ALTER TABLE eboa.report_texts ADD CONSTRAINT unique_value_report_texts UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_texts | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_texts DROP CONSTRAINT IF EXISTS unique_value_position_report_texts CASCADE;
+ALTER TABLE eboa.report_texts ADD CONSTRAINT unique_value_position_report_texts UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_report_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_doubles DROP CONSTRAINT IF EXISTS unique_value_report_doubles CASCADE;
+ALTER TABLE eboa.report_doubles ADD CONSTRAINT unique_value_report_doubles UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_doubles | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_doubles DROP CONSTRAINT IF EXISTS unique_value_position_report_doubles CASCADE;
+ALTER TABLE eboa.report_doubles ADD CONSTRAINT unique_value_position_report_doubles UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_report_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_objects DROP CONSTRAINT IF EXISTS unique_value_report_objects CASCADE;
+ALTER TABLE eboa.report_objects ADD CONSTRAINT unique_value_report_objects UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_objects | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_objects DROP CONSTRAINT IF EXISTS unique_value_position_report_objects CASCADE;
+ALTER TABLE eboa.report_objects ADD CONSTRAINT unique_value_position_report_objects UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_report_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_geometries DROP CONSTRAINT IF EXISTS unique_value_report_geometries CASCADE;
+ALTER TABLE eboa.report_geometries ADD CONSTRAINT unique_value_report_geometries UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_geometries | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_geometries DROP CONSTRAINT IF EXISTS unique_value_position_report_geometries CASCADE;
+ALTER TABLE eboa.report_geometries ADD CONSTRAINT unique_value_position_report_geometries UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_report_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_booleans DROP CONSTRAINT IF EXISTS unique_value_report_booleans CASCADE;
+ALTER TABLE eboa.report_booleans ADD CONSTRAINT unique_value_report_booleans UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_booleans | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_booleans DROP CONSTRAINT IF EXISTS unique_value_position_report_booleans CASCADE;
+ALTER TABLE eboa.report_booleans ADD CONSTRAINT unique_value_position_report_booleans UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_report_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_timestamps DROP CONSTRAINT IF EXISTS unique_value_report_timestamps CASCADE;
+ALTER TABLE eboa.report_timestamps ADD CONSTRAINT unique_value_report_timestamps UNIQUE (name,parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: unique_value_position_report_timestamps | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_report_timestamps CASCADE;
+ALTER TABLE eboa.report_timestamps ADD CONSTRAINT unique_value_position_report_timestamps UNIQUE ("position",parent_level,parent_position,report_uuid);
 -- ddl-end --
 
 

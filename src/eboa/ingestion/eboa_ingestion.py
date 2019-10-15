@@ -150,28 +150,19 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
     successes = [returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
 
-    if len(failures) == 0:
-        for success in successes:
-            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
-                                                                                                                                           success["dim_signature"],
-                                                                                                                                           success["processor"]))
-        # end for
+    for failure in failures:
+        logger.error("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
+                                                                                                                                                      failure["dim_signature"],
+                                                                                                                                                      failure["processor"],
+                                                                                                                                                      failure["status"]))
+    # end for
+    for success in successes:
+        logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
+                                                                                                                                       success["dim_signature"],
+                                                                                                                                       success["processor"]))
+    # end for                    
 
-    else:
-        for failure in failures:
-            logger.error("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
-                                                                                                                                                          failure["dim_signature"],
-                                                                                                                                                          failure["processor"],
-                                                                                                                                                          failure["status"]))
-        # end for
-        for success in successes:
-            logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
-                                                                                                                                           success["dim_signature"],
-                                                                                                                                           success["processor"]))
-        # end for                    
-    # end if
-
-    if output_path == None:
+    if output_path == None and len(failures) == 0:
         # Remove the entry associated to the notification of pending ingestions
         query.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, processors = {"filter": "", "op": "=="}, processor_version_filters = [{"filter": "", "op": "=="}], delete = True)
         logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))

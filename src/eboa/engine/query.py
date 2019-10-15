@@ -609,7 +609,7 @@ class Query():
             functions.is_valid_text_filter(report_groups)
             if report_groups["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[report_groups["op"]]
-                params.append(op(DimSignature.report_group, report_groups["filter"]))
+                params.append(op(ReportGroup.name, report_groups["filter"]))
             else:
                 filter = eval('ReportGroup.name.' + text_operators[report_groups["op"]])
                 params.append(filter(report_groups["filter"]))

@@ -20,12 +20,12 @@ def validate_data_dictionary(data):
     
     # Check that the operations key exists
     if len(data.keys()) != 1 or not "operations" in data.keys():
-        raise ErrorParsingDictionary("Operations key does not exist or there are other defined keys in the dictionary")
+        raise ErrorParsingDictionary("operations key does not exist or there are other defined keys in the dictionary")
     # end if
 
     # Check that the operations key contains a list
     if type(data["operations"]) != list:
-        raise ErrorParsingDictionary("Operations key does not contain a list")
+        raise ErrorParsingDictionary("operations key does not contain a list")
     # end if
 
     for item in data["operations"]:
@@ -76,9 +76,9 @@ def _validate_report(data):
         raise ErrorParsingDictionary("The tag report must be a dictionary")
     # end if
     
-    check_items = [item in ["name", "group", "group_description", "path", "compress", "generation_mode", "validity_start", "validity_stop", "triggering_time", "generation_start", "generation_stop", "generator", "generator_version", "alerts", "event_alerts", "source_alerts", "explicit_ref_alerts", "values"] for item in data.keys()]
+    check_items = [item in ["name", "group", "group_description", "path", "compress", "generation_mode", "validity_start", "validity_stop", "triggering_time", "generation_start", "generation_stop", "generator", "generator_version", "ingested", "values"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside report structure are: name, group, group_description, path, compress, generation_mode, validity_start, validity_stop, triggering_time, generation_start, generation_stop, generator, generator_version, alerts, event_alerts, source_alerts, explicit_ref_alerts and values")
+        raise ErrorParsingDictionary("The allowed tags inside report structure are: name, group, group_description, path, compress, generation_mode, validity_start, validity_stop, triggering_time, generation_start, generation_stop, generator, generator_version, ingested and values")
     # end if
 
     # Mandatory tags
@@ -161,7 +161,12 @@ def _validate_report(data):
     if not type(data["generator_version"]) == str:
         raise ErrorParsingDictionary("The tag generator_version inside report structure has to be of type string")
     # end if
-    
+
+    # Optional tags
+    if "ingested" in data and not data["ingested"].lower() in ["false", "true"]:
+        raise ErrorParsingDictionary("The tag ingested has to have one of the following values: false or true")
+    # end if
+
     return
 
 def _validate_alerts(data):
