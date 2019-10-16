@@ -1,10 +1,10 @@
 <reporting_generators>
-  <generator name="Generator1" description="Description for report 1">
-    <command add_begin_end_parameters="false">echo "Executing command for generator Generator1"</command>
-    <name_format>BOA_TEST_GENERATOR1_%C_%B_%E.html</name_format>
+  <generator name="BOA health generator" description="Generator for providing reporting about the health of the BOA system">
+    <command>rboa_reporting.py -p vboa.boa_health.boa_health_generator</command>
+    <name_format>BOA_REP__BOA_HEALTH_%C_%B_%E.html</name_format>
   </generator>
-  <generator name="Generator2" description="Description for report 2">
-    <command>echo "Executing command for generator Generator2"</command>
-    <name_format>BOA_TEST_GENERATOR2_%C_%B_%E.html</name_format>
+  <generator name="Ingestion control generator" description="Generator for providing reporting about the ingestion chain of the BOA system">
+    <command>rboa_reporting.py -p vboa.ingestion_control.ingestion_control_generator</command>
+    <name_format>BOA_REP__INGESTCONT_%C_%B_%E.html</name_format>
   </generator>
 </reporting_generators>

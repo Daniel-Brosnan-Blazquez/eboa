@@ -17,7 +17,7 @@ from lxml import etree
 import json
 import traceback
 import datetime
-from shutil import copyfile
+from shutil import move
 
 # Import logging
 from eboa.logging import Log
@@ -26,9 +26,6 @@ from eboa.logging import Log
 import rboa.engine.engine as rboa_engine
 from rboa.engine.engine import Engine
 from eboa.engine.query import Query
-
-# Import vboa app creator
-from vboa import create_app
 
 logging_module = Log(name = os.path.basename(__file__))
 logger = logging_module.logger
@@ -89,17 +86,16 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
     
     try:
         generation_start = datetime.datetime.now()
-        app = create_app()
-        html_file_path = processor_module.generate_report(app, begin, end, metadata)
+        html_file_path = processor_module.generate_report(begin, end, metadata)
         generation_stop = datetime.datetime.now()
     except Exception as e:
-        logger.error("The insertion of the metadata of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
+        logger.error("The generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
         traceback.print_exc(file=sys.stdout)
         # Log status
         query_log_status = Query()
         reports = query_log_status.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="})
         if len(reports) > 0:
-            rboa_engine.insert_report_status(query_log_status.session, reports[0], rboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"], error = True, message = rboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["message"].format(filename, processor, str(e)))
+            rboa_engine.insert_report_status(query_log_status.session, reports[0], rboa_engine.exit_codes["GENERATION_ENDED_UNEXPECTEDLY"]["status"], error = True, message = rboa_engine.exit_codes["GENERATION_ENDED_UNEXPECTEDLY"]["message"].format(report_name, processor, str(e)))
             # end if
         query_log_status.close_session()
 
@@ -107,21 +103,50 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
     # end try
 
     # Validate data
-    returned_statuses = [{
-        "report": report_name,
-        "generator": processor,
-        "status": rboa_engine.exit_codes["OK"]["status"]
-    }]
-    
-    if output_path == None:
-        engine_rboa = Engine()
+    if html_file_path == None:
+        # Log status
+        log = rboa_engine.exit_codes["HTML_FILE_NOT_GENERATED"]["message"].format(report_name, processor)
+        logger.error(log)
+        query_log_status = Query()
+        reports = query_log_status.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="})
+        if len(reports) > 0:
+            rboa_engine.insert_report_status(query_log_status.session, reports[0], rboa_engine.exit_codes["HTML_FILE_NOT_GENERATED"]["status"], error = True, message = log)
+            # end if
+        query_log_status.close_session()
+
+        exit(-1)
+    elif output_path == None:
 
         metadata["operations"][0]["report"]["generation_start"] = generation_start.isoformat()
         metadata["operations"][0]["report"]["generation_stop"] = generation_stop.isoformat()
         metadata["operations"][0]["report"]["path"] = html_file_path
 
         try:
+            engine_rboa = Engine()
             returned_statuses = insert_data_into_DDBB(metadata, report_name, engine_rboa)
+            engine_rboa.close_session()
+    
+            failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [rboa_engine.exit_codes["OK"]["status"]]]
+            successes = [returned_status for returned_status in returned_statuses if returned_status["status"] in [rboa_engine.exit_codes["OK"]["status"]]]
+
+            for failure in failures:
+                logger.error("The ingestion of the metadata of the report {} has failed using the generator {} with status {}".format(report_name,
+                                                                                                                                      processor,
+                                                                                                                                      failure["status"]))
+            # end for
+            for success in successes:
+                logger.info("The ingestion of the metadata of the report {} has been performed correctly using the processor {}".format(report_name,
+                                                                                                                                               success["generator"]))
+            # end for                    
+
+            if output_path == None and len(failures) == 0:
+                query = Query()
+                # Remove the entry associated to the notification of pending ingestions
+                query.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="}, delete = True)
+                logger.info("The associated alert for notifying about the pending generation of the report {} is going to be deleted from DDBB".format(report_name))
+                query.close_session()
+            # end if
+
         except Exception as e:
             logger.error("The insertion of the metadata related to the generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
             # Log status
@@ -135,32 +160,10 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
             exit(-1)
         # end try
     else:
-        copyfile(html_file_path, output_path)
+        move(html_file_path, output_path)
+        logger.info("The generated file {} has been moved to {}".format(html_file_path, output_path))
     # end if
 
-    engine_rboa.close_session()
-    
-    failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [rboa_engine.exit_codes["OK"]["status"]]]
-    successes = [returned_status for returned_status in returned_statuses if returned_status["status"] in [rboa_engine.exit_codes["OK"]["status"]]]
-
-    for failure in failures:
-        logger.error("The ingestion of the metadata of the report {} has failed using the generator {} with status {}".format(report_name,
-                                                                                                                              processor,
-                                                                                                                              failure["status"]))
-    # end for
-    for success in successes:
-        logger.info("The ingestion of the metadata of the report {} has been performed correctly using the processor {}".format(report_name,
-                                                                                                                                       success["generator"]))
-    # end for                    
-
-    if output_path == None and len(failures) == 0:
-        query = Query()
-        # Remove the entry associated to the notification of pending ingestions
-        query.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="}, delete = True)
-        logger.info("The associated alert for notifying about the pending generation of the report {} is going to be deleted from DDBB".format(report_name))
-        query.close_session()
-    # end if
-    
     return
 
 if __name__ == "__main__":
