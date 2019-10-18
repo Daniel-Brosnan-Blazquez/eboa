@@ -75,7 +75,7 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     # Check configuration
     reporting_xpath = get_reporting_conf()
 
-    generator_xpath = reporting_xpath("/reporting_generators/generator[match(@name, $generator)]", generator = generator)[0]
+    generator_xpath = reporting_xpath("/reporting_generators/generator[@name = $generator]", generator = generator)[0]
 
     report_name_format = generator_xpath.xpath("name_format")[0].text
 
@@ -85,6 +85,8 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     
     report_name = report_name_format.replace("%C", creation_date).replace("%B", validity_start).replace("%E", validity_stop)
 
+    command = generator_xpath.xpath("command")[0].text
+    
     # Execute the associated command
     add_report_name_parameter = generator_xpath.xpath("command/@add_report_name_parameter")
     add_report_name_parameter_flag = True
@@ -94,10 +96,9 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
         # end if
     # end if
     if add_report_name_parameter_flag:
-        command = generator_xpath.xpath("command")[0].text + " -n " + report_name
-    else:
-        command = generator_xpath.xpath("command")[0].text
+        command += " -n " + report_name
     # end if
+
     add_begin_end_parameters = generator_xpath.xpath("command/@add_begin_end_parameters")
     add_begin_end_parameters_flag = True
     if len(add_begin_end_parameters) > 0:
@@ -106,10 +107,9 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
         # end if
     # end if
     if add_begin_end_parameters_flag:
-        command = generator_xpath.xpath("command")[0].text + " -b " + begin + " -e " + end
-    else:
-        command = generator_xpath.xpath("command")[0].text
+        command += " -b " + begin + " -e " + end
     # end if
+
     add_generation_mode_parameter = generator_xpath.xpath("command/@add_generation_mode_parameter")
     add_generation_mode_parameter_flag = True
     if len(add_generation_mode_parameter) > 0:
@@ -118,13 +118,11 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
         # end if
     # end if
     if add_generation_mode_parameter_flag:
-        command = generator_xpath.xpath("command")[0].text + " -g " + generation_mode
-    else:
-        command = generator_xpath.xpath("command")[0].text
+        command += " -m " + generation_mode
     # end if
 
     if output_path:
-        command = command + " -o " + output_path
+        command += " -o " + output_path
     # end if
     
     if output_path == None:
@@ -183,7 +181,7 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
         exit(-1)
     # end if
 
-    print(output)
+    logger.info("The command {} has been successfully executed".format(command))
     
     return
 
