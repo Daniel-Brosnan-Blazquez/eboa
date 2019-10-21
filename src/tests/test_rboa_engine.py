@@ -662,7 +662,7 @@ class TestEngine(unittest.TestCase):
         report_statuses.sort(key=lambda x:x.time_stamp)
 
         assert report_statuses[-1].status == rboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"]
-        assert report_statuses[-1].log == "The report with path /eboa/src/tests/rboa_tests/html_inputs/non_existent_file.html does not exist"
+        assert report_statuses[-1].log == "The report with path /eboa/src/tests/html_inputs/non_existent_file.html does not exist"
         assert report_statuses[0].report_uuid == reports[0].report_uuid
         
         alert_groups = self.session.query(AlertGroup).all()
