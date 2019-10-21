@@ -3,8 +3,8 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1" author="Daniel Brosnan Blazquez" last-position="357,1191" last-zoom="0.9"
-	 default-schema="public" default-owner="postgres">
+<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,333" last-zoom="0.6" max-obj-count="56"
+	 default-owner="postgres">
 <role name="eboa"
       inherit="true"
       login="true">
@@ -13,10 +13,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <database name="eboadb" is-template="false" allow-conns="true">
 </database>
 
-<schema name="public" fill-color="#e1e1e1" sql-disabled="true" faded-out="true">
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true" faded-out="true">
 </schema>
 
-<schema name="eboa" fill-color="#e1e1e1" faded-out="true">
+<schema name="eboa" layer="0" fill-color="#e1e1e1" faded-out="true">
 	<role name="eboa"/>
 </schema>
 
@@ -24,7 +24,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<schema name="eboa"/>
 </extension>
 
-<table name="events">
+<table name="events" layer="0" collapse-mode="2" max-obj-count="9">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1040" y="1040"/>
@@ -49,21 +49,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="unique_event" type="uq-constr" table="eboa.events">
 		<columns names="event_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="explicit_ref_uuid" index="6"/>
-		<object name="gauge_uuid" index="5"/>
-		<object name="source_uuid" index="7"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="explicit_refs_fk" index="3"/>
-		<object name="gauges_fk" index="2"/>
-		<object name="sources_fk" index="4"/>
-	</customidxs>
 </table>
 
-<table name="gauges">
+<table name="gauges" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1040" y="840"/>
@@ -82,17 +70,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="gauge_cnfs_pk" type="pk-constr" table="eboa.gauges">
 		<columns names="gauge_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="dim_signatures_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="sources">
+<table name="sources" layer="0" collapse-mode="2" max-obj-count="24">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1020" y="1220"/>
@@ -156,17 +136,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="sources_pk" type="pk-constr" table="eboa.sources">
 		<columns names="source_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="19"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="dim_signatures_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="dim_signatures">
+<table name="dim_signatures" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1440" y="740"/>
@@ -184,7 +156,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="explicit_refs">
+<table name="explicit_refs" layer="0" collapse-mode="2" max-obj-count="4">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1420" y="1160"/>
@@ -203,17 +175,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="unique_explicit_ref" type="uq-constr" table="eboa.explicit_refs">
 		<columns names="explicit_ref" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="expl_ref_cnf_uuid" index="3"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="explicit_ref_cnfs_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="event_texts">
+<table name="event_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="700" y="840"/>
@@ -232,17 +196,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="event_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="events_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="event_doubles">
+<table name="event_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="680" y="980"/>
@@ -261,17 +217,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="event_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="events_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="event_objects">
+<table name="event_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="660" y="1260"/>
@@ -287,17 +235,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="event_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="events_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="event_geometries">
+<table name="event_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="660" y="1380"/>
@@ -316,17 +256,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="event_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="events_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotations">
+<table name="annotations" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1420" y="940"/>
@@ -345,21 +277,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="unique_annotation" type="uq-constr" table="eboa.annotations">
 		<columns names="annotation_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="annotation_cnf_uuid" index="5"/>
-		<object name="explicit_ref_uuid" index="3"/>
-		<object name="source_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotation_cnfs_fk" index="2"/>
-		<object name="explicit_refs_fk" index="3"/>
-		<object name="sources_fk" index="4"/>
-	</customidxs>
 </table>
 
-<table name="annotation_texts">
+<table name="annotation_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="840"/>
@@ -378,17 +298,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="annotation_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotations_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotation_doubles">
+<table name="annotation_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="980"/>
@@ -407,17 +319,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="annotation_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotations_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotation_objects">
+<table name="annotation_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="1260"/>
@@ -433,17 +337,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="annotation_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotations_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotation_geometries">
+<table name="annotation_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="1380"/>
@@ -462,17 +358,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="annotation_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotations_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotation_cnfs">
+<table name="annotation_cnfs" layer="0" collapse-mode="2" pagination="true" attribs-page="0" ext-attribs-page="0" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1420" y="820"/>
@@ -491,17 +379,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="annotation_cnfs_pk" type="pk-constr" table="eboa.annotation_cnfs">
 		<columns names="annotation_cnf_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="dim_signatures_fk" index="2"/>
-	</customidxs>
 </table>
 
-<table name="event_links">
+<table name="event_links" layer="0" collapse-mode="2" pagination="true" attribs-page="0" ext-attribs-page="0" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1040" y="960"/>
@@ -511,17 +391,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="event_uuid" index="2"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="events_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="explicit_ref_cnfs">
+<table name="explicit_ref_cnfs" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1420" y="1260"/>
@@ -539,7 +411,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="explicit_ref_links">
+<table name="explicit_ref_links" layer="0" collapse-mode="2" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1420" y="1080"/>
@@ -552,17 +424,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="explicit_ref_linkss_pk" type="pk-constr" table="eboa.explicit_ref_links">
 		<columns names="explicit_ref_uuid_link" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="explicit_ref_uuid" index="2"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="explicit_refs_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="source_statuses">
+<table name="source_statuses" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1020" y="1560"/>
@@ -581,17 +445,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="source_statuses_pk" type="pk-constr" table="eboa.source_statuses">
 		<columns names="source_status_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="source_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="sources_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="event_booleans" hide-ext-attribs="true">
+<table name="event_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="700" y="700"/>
@@ -620,7 +476,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="events_has_many_event_booleans" type="rel1n"
+<relationship name="events_has_many_event_booleans" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -630,7 +486,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<table name="annotation_booleans">
+<table name="annotation_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="700"/>
@@ -649,17 +505,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="parent_position" not-null="true">
 		<type name="integer" length="1"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="annotation_uuid" index="5"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="annotations_fk" index="0"/>
-	</customidxs>
 </table>
 
-<table name="annotation_timestamps">
+<table name="annotation_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1980" y="1120"/>
@@ -688,7 +536,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="annotations_has_many_annotation_timestamps" type="rel1n"
+<relationship name="annotations_has_many_annotation_timestamps" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -698,7 +546,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annotations_has_many_annotation_booleans" type="rel1n"
+<relationship name="annotations_has_many_annotation_booleans" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -708,7 +556,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="sources_has_many_source_statuss" type="rel1n"
+<relationship name="sources_has_many_source_statuss" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -722,7 +570,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="explicit_refs_has_many_annotations" type="rel1n"
+<relationship name="explicit_refs_has_many_annotations" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -732,7 +580,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="gauge_cnfs_has_many_events" type="rel1n"
+<relationship name="gauge_cnfs_has_many_events" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -746,7 +594,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="sources_has_many_events" type="rel1n"
+<relationship name="sources_has_many_events" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -760,7 +608,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="event_keys">
+<table name="event_keys" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1040" y="740"/>
@@ -770,19 +618,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="visible" not-null="true">
 		<type name="boolean" length="0"/>
 	</column>
-
-	<customidxs object-type="column">
-		<object name="dim_signature_uuid" index="3"/>
-		<object name="event_uuid" index="2"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="dim_signatures_fk" index="2"/>
-		<object name="events_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="event_timestamps">
+<table name="event_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="660" y="1120"/>
@@ -811,7 +649,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="events_has_many_event_timestamps" type="rel1n"
+<relationship name="events_has_many_event_timestamps" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -821,7 +659,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_doubles" type="rel1n"
+<relationship name="events_has_many_event_doubles" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -831,7 +669,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_strings" type="rel1n"
+<relationship name="events_has_many_event_strings" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -841,7 +679,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_objects" type="rel1n"
+<relationship name="events_has_many_event_objects" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -855,7 +693,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="events_has_many_event_geometries" type="rel1n"
+<relationship name="events_has_many_event_geometries" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -865,7 +703,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annotations_has_many_annotation_strings" type="rel1n"
+<relationship name="annotations_has_many_annotation_strings" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -875,7 +713,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annotations_has_many_annotation_objects" type="rel1n"
+<relationship name="annotations_has_many_annotation_objects" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -885,7 +723,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="annotations_has_many_annotation_doubles" type="rel1n"
+<relationship name="annotations_has_many_annotation_doubles" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -899,7 +737,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="annotations_has_many_annotation_geometries" type="rel1n"
+<relationship name="annotations_has_many_annotation_geometries" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -909,7 +747,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_refs_has_many_events" type="rel1n"
+<relationship name="explicit_refs_has_many_events" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -923,7 +761,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="sources_has_many_annotations" type="rel1n"
+<relationship name="sources_has_many_annotations" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -937,7 +775,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="annotation_cnfs_has_many_annotations" type="rel1n"
+<relationship name="annotation_cnfs_has_many_annotations" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -947,7 +785,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_linkss" type="rel1n"
+<relationship name="events_has_many_event_linkss" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -957,7 +795,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_ref_cnfs_has_many_explicit_refs" type="rel1n"
+<relationship name="explicit_ref_cnfs_has_many_explicit_refs" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -967,7 +805,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="false" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="dim_signatures_has_many_sources" type="rel1n"
+<relationship name="dim_signatures_has_many_sources" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -979,9 +817,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<label ref-type="dst-label">
 		<position x="0" y="0"/>
 	</label>
+	<label ref-type="name-label">
+		<position x="3.72874" y="8.13934"/>
+	</label>
 </relationship>
 
-<relationship name="dim_signatures_has_many_annotation_cnfs" type="rel1n"
+<relationship name="dim_signatures_has_many_annotation_cnfs" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -991,7 +832,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="dim_signatures_has_many_gauge_cnfs" type="rel1n"
+<relationship name="dim_signatures_has_many_gauge_cnfs" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1001,7 +842,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_refs_has_many_explicit_ref_linkss" type="rel1n"
+<relationship name="explicit_refs_has_many_explicit_ref_linkss" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1595,7 +1436,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="name,processor_version,dim_signature_uuid,processor" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="events_has_many_event_keyss" type="rel1n"
+<relationship name="events_has_many_event_keyss" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1609,7 +1450,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="dim_signatures_has_many_event_keyss" type="rel1n"
+<relationship name="dim_signatures_has_many_event_keyss" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1775,7 +1616,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
-<table name="event_alerts">
+<table name="event_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1340" y="1340"/>
@@ -1809,19 +1650,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="event_alerts_pk" type="pk-constr" table="eboa.event_alerts">
 		<columns names="event_alert_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="alert_uuid" index="9"/>
-		<object name="event_uuid" index="10"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="alerts_fk" index="0"/>
-		<object name="events_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="alerts">
+<table name="alerts" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1660" y="1560"/>
@@ -1843,17 +1674,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="alerts_pk" type="pk-constr" table="eboa.alerts">
 		<columns names="alert_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="alert_group_uuid" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="alert_groups_fk" index="2"/>
-	</customidxs>
 </table>
 
-<table name="source_alerts">
+<table name="source_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1340" y="1540"/>
@@ -1887,19 +1710,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="source_alerts_pk" type="pk-constr" table="eboa.source_alerts">
 		<columns names="source_alert_uuid" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="alert_uuid" index="9"/>
-		<object name="source_uuid" index="10"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="alerts_fk" index="0"/>
-		<object name="sources_fk" index="1"/>
-	</customidxs>
 </table>
 
-<table name="explicit_ref_alerts">
+<table name="explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1640" y="1340"/>
@@ -1936,16 +1749,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 
 	<customidxs object-type="column">
 		<object name="alert_uuid" index="9"/>
-		<object name="explicit_ref_uuid" index="10"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
 		<object name="alerts_fk" index="0"/>
-		<object name="explicit_refs_fk" index="1"/>
 	</customidxs>
 </table>
 
-<relationship name="alerts_has_many_explicit_ref_alerts" type="rel1n"
+<relationship name="alerts_has_many_explicit_ref_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1955,7 +1766,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="alerts_has_many_sources_alerts" type="rel1n"
+<relationship name="alerts_has_many_sources_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1965,7 +1776,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="alerts_has_many_event_alerts" type="rel1n"
+<relationship name="alerts_has_many_event_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1979,7 +1790,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<relationship name="events_has_many_event_alerts" type="rel1n"
+<relationship name="events_has_many_event_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1989,7 +1800,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="false" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n"
+<relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1999,7 +1810,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="false" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="sources_has_many_sources_alerts" type="rel1n"
+<relationship name="sources_has_many_sources_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2013,7 +1824,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="alert_groups">
+<table name="alert_groups" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1680" y="1680"/>
@@ -2031,7 +1842,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<relationship name="alert_groups_has_many_alerts" type="rel1n"
+<relationship name="alert_groups_has_many_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2584,7 +2395,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<table name="reports">
+<table name="reports" layer="0" collapse-mode="2" max-obj-count="22">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="960" y="1680"/>
@@ -2778,7 +2589,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<table name="report_groups">
+<table name="report_groups" layer="0" collapse-mode="2" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1360" y="2020"/>
@@ -2816,7 +2627,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<relationship name="report_groups_has_many_reports" type="rel1n"
+<relationship name="report_groups_has_many_reports" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2826,7 +2637,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<table name="report_event_alerts">
+<table name="report_event_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1340" y="1740"/>
@@ -2846,7 +2657,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="event_alerts_has_many_report_alert_events" type="rel1n"
+<relationship name="event_alerts_has_many_report_alert_events" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2860,7 +2671,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="report_explicit_ref_alerts">
+<table name="report_explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1680" y="1760"/>
@@ -2880,7 +2691,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="explicit_ref_alerts_has_many_report_explicit_ref_alerts" type="rel1n"
+<relationship name="explicit_ref_alerts_has_many_report_explicit_ref_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2890,7 +2701,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<table name="report_source_alerts">
+<table name="report_source_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1680" y="1840"/>
@@ -2910,7 +2721,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</customidxs>
 </table>
 
-<relationship name="source_alerts_has_many_report_explicit_ref_alerts" type="rel1n"
+<relationship name="source_alerts_has_many_report_explicit_ref_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -2924,7 +2735,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="report_alerts">
+<table name="report_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1340" y="1800"/>
@@ -2960,12 +2771,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="alert_uuid" index="10"/>
 		<object name="report_uuid" index="9"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="alerts_fk" index="2"/>
 		<object name="reports_fk" index="1"/>
 	</customidxs>
 </table>
@@ -3035,7 +2844,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<relationship name="reports_has_many_report_alerts" type="rel1n"
+<relationship name="reports_has_many_report_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3045,7 +2854,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="false" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="alerts_has_many_report_alerts" type="rel1n"
+<relationship name="alerts_has_many_report_alerts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3059,7 +2868,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="report_statuses">
+<table name="report_statuses" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="1000" y="2000"/>
@@ -3104,7 +2913,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<relationship name="reports_has_many_report_statuses" type="rel1n"
+<relationship name="reports_has_many_report_statuses" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3118,7 +2927,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="report_texts">
+<table name="report_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="640" y="1680"/>
@@ -3139,7 +2948,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="report_doubles">
+<table name="report_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="620" y="1820"/>
@@ -3160,7 +2969,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="report_objects">
+<table name="report_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="620" y="2100"/>
@@ -3178,7 +2987,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="report_geometries">
+<table name="report_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="620" y="2220"/>
@@ -3199,7 +3008,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="report_booleans" hide-ext-attribs="true">
+<table name="report_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="640" y="1540"/>
@@ -3220,7 +3029,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 </table>
 
-<table name="report_timestamps">
+<table name="report_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
 	<position x="620" y="1960"/>
@@ -3392,7 +3201,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		</idxelement>
 </index>
 
-<relationship name="reports_has_many_report_booleans" type="rel1n"
+<relationship name="reports_has_many_report_booleans" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3402,7 +3211,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="reports_has_many_report_texts" type="rel1n"
+<relationship name="reports_has_many_report_texts" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3412,7 +3221,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="reports_has_many_report_doubles" type="rel1n"
+<relationship name="reports_has_many_report_doubles" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3422,7 +3231,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="reports_has_many_report_timestamps" type="rel1n"
+<relationship name="reports_has_many_report_timestamps" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3432,7 +3241,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="reports_has_many_report_objects" type="rel1n"
+<relationship name="reports_has_many_report_objects" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3442,7 +3251,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="reports_has_many_report_geometries" type="rel1n"
+<relationship name="reports_has_many_report_geometries" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -3453,45 +3262,51 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	del-action="CASCADE"/>
 
 <constraint name="unique_value_report_texts" type="uq-constr" table="eboa.report_texts">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_texts" type="uq-constr" table="eboa.report_texts">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_report_doubles" type="uq-constr" table="eboa.report_doubles">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_doubles" type="uq-constr" table="eboa.report_doubles">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_report_objects" type="uq-constr" table="eboa.report_objects">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_objects" type="uq-constr" table="eboa.report_objects">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_report_geometries" type="uq-constr" table="eboa.report_geometries">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_geometries" type="uq-constr" table="eboa.report_geometries">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_report_booleans" type="uq-constr" table="eboa.report_booleans">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_booleans" type="uq-constr" table="eboa.report_booleans">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 <constraint name="unique_value_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
-  <columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="name,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
 <constraint name="unique_value_position_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
-  <columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
+	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
 
 </dbmodel>

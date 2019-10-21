@@ -1,8 +1,8 @@
 -- Database generated with pgModeler (PostgreSQL Database Modeler).
--- pgModeler  version: 0.9.1
--- PostgreSQL version: 10.0
+-- pgModeler  version: 0.9.2-beta1
+-- PostgreSQL version: 11.0
 -- Project Site: pgmodeler.io
--- Model Author: Daniel Brosnan Blazquez
+-- Model Author: Daniel Brosnan Blázquez
 
 -- object: eboa | type: ROLE --
 -- DROP ROLE IF EXISTS eboa;
@@ -33,20 +33,20 @@ SET search_path TO pg_catalog,public,eboa;
 -- object: postgis | type: EXTENSION --
 -- DROP EXTENSION IF EXISTS postgis CASCADE;
 CREATE EXTENSION postgis
-      WITH SCHEMA eboa;
+WITH SCHEMA eboa;
 -- ddl-end --
 
 -- object: eboa.events | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.events CASCADE;
-CREATE TABLE eboa.events(
+CREATE TABLE eboa.events (
 	event_uuid uuid NOT NULL,
 	start timestamp NOT NULL,
 	stop timestamp NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
 	gauge_uuid uuid NOT NULL,
-	explicit_ref_uuid uuid,
 	source_uuid uuid NOT NULL,
+	explicit_ref_uuid uuid,
 	CONSTRAINT events_pk PRIMARY KEY (event_uuid),
 	CONSTRAINT unique_event UNIQUE (event_uuid)
 
@@ -57,7 +57,7 @@ ALTER TABLE eboa.events OWNER TO eboa;
 
 -- object: eboa.gauges | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.gauges CASCADE;
-CREATE TABLE eboa.gauges(
+CREATE TABLE eboa.gauges (
 	gauge_uuid uuid NOT NULL,
 	system text,
 	name text NOT NULL,
@@ -72,7 +72,7 @@ ALTER TABLE eboa.gauges OWNER TO eboa;
 
 -- object: eboa.sources | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.sources CASCADE;
-CREATE TABLE eboa.sources(
+CREATE TABLE eboa.sources (
 	source_uuid uuid NOT NULL,
 	name text NOT NULL,
 	validity_start timestamp,
@@ -102,7 +102,7 @@ ALTER TABLE eboa.sources OWNER TO eboa;
 
 -- object: eboa.dim_signatures | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.dim_signatures CASCADE;
-CREATE TABLE eboa.dim_signatures(
+CREATE TABLE eboa.dim_signatures (
 	dim_signature_uuid uuid NOT NULL,
 	dim_signature text NOT NULL,
 	CONSTRAINT dim_signatures_pk PRIMARY KEY (dim_signature_uuid),
@@ -115,7 +115,7 @@ ALTER TABLE eboa.dim_signatures OWNER TO eboa;
 
 -- object: eboa.explicit_refs | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.explicit_refs CASCADE;
-CREATE TABLE eboa.explicit_refs(
+CREATE TABLE eboa.explicit_refs (
 	explicit_ref_uuid uuid NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	explicit_ref text NOT NULL,
@@ -130,7 +130,7 @@ ALTER TABLE eboa.explicit_refs OWNER TO eboa;
 
 -- object: eboa.event_texts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_texts CASCADE;
-CREATE TABLE eboa.event_texts(
+CREATE TABLE eboa.event_texts (
 	name text NOT NULL,
 	value text NOT NULL,
 	"position" integer NOT NULL,
@@ -144,7 +144,7 @@ ALTER TABLE eboa.event_texts OWNER TO eboa;
 
 -- object: eboa.event_doubles | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_doubles CASCADE;
-CREATE TABLE eboa.event_doubles(
+CREATE TABLE eboa.event_doubles (
 	name text NOT NULL,
 	value double precision NOT NULL,
 	"position" integer NOT NULL,
@@ -158,7 +158,7 @@ ALTER TABLE eboa.event_doubles OWNER TO eboa;
 
 -- object: eboa.event_objects | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_objects CASCADE;
-CREATE TABLE eboa.event_objects(
+CREATE TABLE eboa.event_objects (
 	name text NOT NULL,
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
@@ -171,7 +171,7 @@ ALTER TABLE eboa.event_objects OWNER TO eboa;
 
 -- object: eboa.event_geometries | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_geometries CASCADE;
-CREATE TABLE eboa.event_geometries(
+CREATE TABLE eboa.event_geometries (
 	name text NOT NULL,
 	value geometry NOT NULL,
 	"position" integer NOT NULL,
@@ -185,7 +185,7 @@ ALTER TABLE eboa.event_geometries OWNER TO eboa;
 
 -- object: eboa.annotations | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotations CASCADE;
-CREATE TABLE eboa.annotations(
+CREATE TABLE eboa.annotations (
 	annotation_uuid uuid NOT NULL,
 	ingestion_time timestamp NOT NULL,
 	visible boolean NOT NULL,
@@ -202,7 +202,7 @@ ALTER TABLE eboa.annotations OWNER TO eboa;
 
 -- object: eboa.annotation_texts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_texts CASCADE;
-CREATE TABLE eboa.annotation_texts(
+CREATE TABLE eboa.annotation_texts (
 	name text NOT NULL,
 	value text NOT NULL,
 	"position" integer NOT NULL,
@@ -216,7 +216,7 @@ ALTER TABLE eboa.annotation_texts OWNER TO eboa;
 
 -- object: eboa.annotation_doubles | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_doubles CASCADE;
-CREATE TABLE eboa.annotation_doubles(
+CREATE TABLE eboa.annotation_doubles (
 	name text NOT NULL,
 	value double precision NOT NULL,
 	"position" integer NOT NULL,
@@ -230,7 +230,7 @@ ALTER TABLE eboa.annotation_doubles OWNER TO eboa;
 
 -- object: eboa.annotation_objects | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_objects CASCADE;
-CREATE TABLE eboa.annotation_objects(
+CREATE TABLE eboa.annotation_objects (
 	name text NOT NULL,
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
@@ -243,7 +243,7 @@ ALTER TABLE eboa.annotation_objects OWNER TO eboa;
 
 -- object: eboa.annotation_geometries | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_geometries CASCADE;
-CREATE TABLE eboa.annotation_geometries(
+CREATE TABLE eboa.annotation_geometries (
 	name text NOT NULL,
 	value geometry NOT NULL,
 	"position" integer NOT NULL,
@@ -257,7 +257,7 @@ ALTER TABLE eboa.annotation_geometries OWNER TO eboa;
 
 -- object: eboa.annotation_cnfs | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_cnfs CASCADE;
-CREATE TABLE eboa.annotation_cnfs(
+CREATE TABLE eboa.annotation_cnfs (
 	annotation_cnf_uuid uuid NOT NULL,
 	name text NOT NULL,
 	system text,
@@ -272,7 +272,7 @@ ALTER TABLE eboa.annotation_cnfs OWNER TO eboa;
 
 -- object: eboa.event_links | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_links CASCADE;
-CREATE TABLE eboa.event_links(
+CREATE TABLE eboa.event_links (
 	event_uuid_link uuid NOT NULL,
 	name text NOT NULL,
 	event_uuid uuid NOT NULL
@@ -283,7 +283,7 @@ ALTER TABLE eboa.event_links OWNER TO eboa;
 
 -- object: eboa.explicit_ref_cnfs | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.explicit_ref_cnfs CASCADE;
-CREATE TABLE eboa.explicit_ref_cnfs(
+CREATE TABLE eboa.explicit_ref_cnfs (
 	expl_ref_cnf_uuid uuid NOT NULL,
 	name text NOT NULL,
 	CONSTRAINT explicit_ref_cnfs_pk PRIMARY KEY (expl_ref_cnf_uuid),
@@ -296,7 +296,7 @@ ALTER TABLE eboa.explicit_ref_cnfs OWNER TO eboa;
 
 -- object: eboa.explicit_ref_links | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.explicit_ref_links CASCADE;
-CREATE TABLE eboa.explicit_ref_links(
+CREATE TABLE eboa.explicit_ref_links (
 	explicit_ref_uuid_link uuid NOT NULL,
 	name text NOT NULL,
 	explicit_ref_uuid uuid NOT NULL,
@@ -309,7 +309,7 @@ ALTER TABLE eboa.explicit_ref_links OWNER TO eboa;
 
 -- object: eboa.source_statuses | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.source_statuses CASCADE;
-CREATE TABLE eboa.source_statuses(
+CREATE TABLE eboa.source_statuses (
 	source_status_uuid uuid NOT NULL,
 	time_stamp timestamp NOT NULL,
 	status integer NOT NULL,
@@ -324,7 +324,7 @@ ALTER TABLE eboa.source_statuses OWNER TO eboa;
 
 -- object: eboa.event_booleans | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_booleans CASCADE;
-CREATE TABLE eboa.event_booleans(
+CREATE TABLE eboa.event_booleans (
 	name text NOT NULL,
 	value boolean NOT NULL,
 	"position" integer NOT NULL,
@@ -345,7 +345,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.annotation_booleans | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_booleans CASCADE;
-CREATE TABLE eboa.annotation_booleans(
+CREATE TABLE eboa.annotation_booleans (
 	name text NOT NULL,
 	value boolean NOT NULL,
 	"position" integer NOT NULL,
@@ -359,7 +359,7 @@ ALTER TABLE eboa.annotation_booleans OWNER TO eboa;
 
 -- object: eboa.annotation_timestamps | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.annotation_timestamps CASCADE;
-CREATE TABLE eboa.annotation_timestamps(
+CREATE TABLE eboa.annotation_timestamps (
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	"position" integer NOT NULL,
@@ -415,7 +415,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.event_keys | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_keys CASCADE;
-CREATE TABLE eboa.event_keys(
+CREATE TABLE eboa.event_keys (
 	event_key text NOT NULL,
 	visible boolean NOT NULL,
 	event_uuid uuid NOT NULL,
@@ -427,7 +427,7 @@ ALTER TABLE eboa.event_keys OWNER TO eboa;
 
 -- object: eboa.event_timestamps | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_timestamps CASCADE;
-CREATE TABLE eboa.event_timestamps(
+CREATE TABLE eboa.event_timestamps (
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	"position" integer NOT NULL,
@@ -1424,7 +1424,7 @@ ALTER TABLE eboa.annotation_geometries ADD CONSTRAINT unique_value_position_anno
 
 -- object: eboa.event_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.event_alerts CASCADE;
-CREATE TABLE eboa.event_alerts(
+CREATE TABLE eboa.event_alerts (
 	event_alert_uuid uuid NOT NULL,
 	message text NOT NULL,
 	validated boolean,
@@ -1445,7 +1445,7 @@ ALTER TABLE eboa.event_alerts OWNER TO eboa;
 
 -- object: eboa.alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.alerts CASCADE;
-CREATE TABLE eboa.alerts(
+CREATE TABLE eboa.alerts (
 	alert_uuid uuid NOT NULL,
 	name text NOT NULL,
 	severity integer NOT NULL,
@@ -1461,7 +1461,7 @@ ALTER TABLE eboa.alerts OWNER TO eboa;
 
 -- object: eboa.source_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.source_alerts CASCADE;
-CREATE TABLE eboa.source_alerts(
+CREATE TABLE eboa.source_alerts (
 	source_alert_uuid uuid NOT NULL,
 	message text NOT NULL,
 	validated boolean,
@@ -1482,7 +1482,7 @@ ALTER TABLE eboa.source_alerts OWNER TO eboa;
 
 -- object: eboa.explicit_ref_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.explicit_ref_alerts CASCADE;
-CREATE TABLE eboa.explicit_ref_alerts(
+CREATE TABLE eboa.explicit_ref_alerts (
 	explicit_ref_alert_uuid uuid NOT NULL,
 	message text NOT NULL,
 	validated boolean,
@@ -1545,7 +1545,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.alert_groups | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.alert_groups CASCADE;
-CREATE TABLE eboa.alert_groups(
+CREATE TABLE eboa.alert_groups (
 	name text,
 	alert_group_uuid uuid NOT NULL,
 	CONSTRAINT alert_groups_pk PRIMARY KEY (alert_group_uuid),
@@ -1575,7 +1575,7 @@ CREATE INDEX idx_processing_dim_signature_id ON eboa.sources
 -- object: pg_trgm | type: EXTENSION --
 -- DROP EXTENSION IF EXISTS pg_trgm CASCADE;
 CREATE EXTENSION pg_trgm
-      WITH SCHEMA eboa;
+WITH SCHEMA eboa;
 -- ddl-end --
 
 -- -- object: eboa.gin_trgm_ops | type: OPERATOR CLASS --
@@ -2138,7 +2138,7 @@ CREATE INDEX idx_alerts_alert_group_uuid ON eboa.alerts
 
 -- object: eboa.reports | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.reports CASCADE;
-CREATE TABLE eboa.reports(
+CREATE TABLE eboa.reports (
 	report_uuid uuid NOT NULL,
 	name text NOT NULL,
 	generation_mode text,
@@ -2302,7 +2302,7 @@ CREATE INDEX idx_report_generation_error ON eboa.reports
 
 -- object: eboa.report_groups | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_groups CASCADE;
-CREATE TABLE eboa.report_groups(
+CREATE TABLE eboa.report_groups (
 	name text,
 	description text,
 	report_group_uuid uuid NOT NULL,
@@ -2341,7 +2341,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_event_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_event_alerts CASCADE;
-CREATE TABLE eboa.report_event_alerts(
+CREATE TABLE eboa.report_event_alerts (
 	report_uuid uuid NOT NULL,
 	event_alert_uuid uuid NOT NULL,
 	CONSTRAINT report_alert_events_pk PRIMARY KEY (report_uuid)
@@ -2360,7 +2360,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_explicit_ref_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_explicit_ref_alerts CASCADE;
-CREATE TABLE eboa.report_explicit_ref_alerts(
+CREATE TABLE eboa.report_explicit_ref_alerts (
 	report_uuid uuid NOT NULL,
 	explicit_ref_alert_uuid uuid NOT NULL,
 	CONSTRAINT report_alert_explicit_ref_pk PRIMARY KEY (report_uuid)
@@ -2379,7 +2379,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_source_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_source_alerts CASCADE;
-CREATE TABLE eboa.report_source_alerts(
+CREATE TABLE eboa.report_source_alerts (
 	report_uuid uuid NOT NULL,
 	source_alert_uuid uuid NOT NULL,
 	CONSTRAINT report_alert_sources_pk PRIMARY KEY (report_uuid)
@@ -2398,7 +2398,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_alerts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_alerts CASCADE;
-CREATE TABLE eboa.report_alerts(
+CREATE TABLE eboa.report_alerts (
 	report_alert_uuid uuid NOT NULL,
 	message text NOT NULL,
 	validated boolean,
@@ -2505,7 +2505,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_statuses | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_statuses CASCADE;
-CREATE TABLE eboa.report_statuses(
+CREATE TABLE eboa.report_statuses (
 	report_status_uuid uuid NOT NULL,
 	time_stamp timestamp NOT NULL,
 	status integer NOT NULL,
@@ -2545,7 +2545,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- object: eboa.report_texts | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_texts CASCADE;
-CREATE TABLE eboa.report_texts(
+CREATE TABLE eboa.report_texts (
 	name text NOT NULL,
 	value text NOT NULL,
 	"position" integer NOT NULL,
@@ -2559,7 +2559,7 @@ ALTER TABLE eboa.report_texts OWNER TO eboa;
 
 -- object: eboa.report_doubles | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_doubles CASCADE;
-CREATE TABLE eboa.report_doubles(
+CREATE TABLE eboa.report_doubles (
 	name text NOT NULL,
 	value double precision NOT NULL,
 	"position" integer NOT NULL,
@@ -2573,7 +2573,7 @@ ALTER TABLE eboa.report_doubles OWNER TO eboa;
 
 -- object: eboa.report_objects | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_objects CASCADE;
-CREATE TABLE eboa.report_objects(
+CREATE TABLE eboa.report_objects (
 	name text NOT NULL,
 	"position" integer NOT NULL,
 	parent_level integer NOT NULL,
@@ -2586,7 +2586,7 @@ ALTER TABLE eboa.report_objects OWNER TO eboa;
 
 -- object: eboa.report_geometries | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_geometries CASCADE;
-CREATE TABLE eboa.report_geometries(
+CREATE TABLE eboa.report_geometries (
 	name text NOT NULL,
 	value geometry NOT NULL,
 	"position" integer NOT NULL,
@@ -2600,7 +2600,7 @@ ALTER TABLE eboa.report_geometries OWNER TO eboa;
 
 -- object: eboa.report_booleans | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_booleans CASCADE;
-CREATE TABLE eboa.report_booleans(
+CREATE TABLE eboa.report_booleans (
 	name text NOT NULL,
 	value boolean NOT NULL,
 	"position" integer NOT NULL,
@@ -2614,7 +2614,7 @@ ALTER TABLE eboa.report_booleans OWNER TO eboa;
 
 -- object: eboa.report_timestamps | type: TABLE --
 -- DROP TABLE IF EXISTS eboa.report_timestamps CASCADE;
-CREATE TABLE eboa.report_timestamps(
+CREATE TABLE eboa.report_timestamps (
 	name text NOT NULL,
 	value timestamp NOT NULL,
 	"position" integer NOT NULL,
