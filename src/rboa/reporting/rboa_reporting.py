@@ -150,6 +150,7 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
         except Exception as e:
             logger.error("The insertion of the metadata related to the generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
             # Log status
+            traceback.print_exc(file=sys.stdout)
             query_log_status = Query()
             reports = query_log_status.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="})
             if len(reports) > 0:
