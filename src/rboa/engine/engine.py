@@ -659,7 +659,7 @@ class Engine():
         """
         report = self.operation.get("report")
         path = report.get("path")
-        file_name = os.path.basename(path)
+        file_name = self.report.name
         file_name_no_extension, extension = os.path.splitext(file_name)
         compress = report.get("compress")
         triggering_time = self.report.triggering_time
