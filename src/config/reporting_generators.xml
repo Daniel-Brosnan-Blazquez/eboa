@@ -7,4 +7,8 @@
     <command>rboa_reporting.py -p vboa.ingestion_control.ingestion_control_generator</command>
     <name_format>BOA_REP__INGESTCONT_%C_%B_%E.html</name_format>
   </generator>
+  <generator name="Reporting control generator" description="Generator for providing reporting about the reporting chain of the BOA system">
+    <command>rboa_reporting.py -p vboa.reporting_control.reporting_control_generator</command>
+    <name_format>BOA_REP__REPORTCONT_%C_%B_%E.html</name_format>
+  </generator>
 </reporting_generators>
