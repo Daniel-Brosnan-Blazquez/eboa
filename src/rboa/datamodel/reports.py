@@ -102,45 +102,45 @@ class Report(Base):
             "report_group_uuid": self.report_group_uuid
         }
 
-    def get_ingestion_progress(self):
+    def get_metadata_ingestion_progress(self):
 
-        ingestion_progress = 0
-        if self.ingestion_progress:
-            ingestion_progress = self.ingestion_progress
+        metadata_ingestion_progress = 0
+        if self.metadata_ingestion_progress:
+            metadata_ingestion_progress = self.metadata_ingestion_progress
         # end if
         
-        return ingestion_progress
+        return metadata_ingestion_progress
 
-    def get_processor_progress(self):
+    def get_generation_progress(self):
 
-        processor_progress = 0
-        if self.processor_progress:
-            processor_progress = self.processor_progress
+        generation_progress = 0
+        if self.generation_progress:
+            generation_progress = self.generation_progress
         # end if
         
-        return processor_progress
+        return generation_progress
 
     def get_general_progress(self):
 
-        ingestion_progress = 0
-        if self.ingestion_progress:
-            ingestion_progress = self.ingestion_progress
+        metadata_ingestion_progress = 0
+        if self.metadata_ingestion_progress:
+            metadata_ingestion_progress = self.metadata_ingestion_progress
         # end if
-        processor_progress = 0
-        if self.processor_progress:
-            processor_progress = self.processor_progress
-        # end if
-        
-        return (ingestion_progress + processor_progress) / 2
-
-    def get_triggering_duration(self):
-
-        triggering_duration = None
-        if self.reception_time and self.ingestion_time:
-            triggering_duration = self.ingestion_time - self.reception_time
+        generation_progress = 0
+        if self.generation_progress:
+            generation_progress = self.generation_progress
         # end if
         
-        return triggering_duration
+        return (metadata_ingestion_progress + generation_progress) / 2
+
+    def get_generation_duration(self):
+
+        generation_duration = None
+        if self.generation_start and self.generation_stop:
+            generation_duration = self.generation_stop - self.generation_start
+        # end if
+        
+        return generation_duration
 
 class ReportStatus(Base):
     __tablename__ = 'report_statuses'
