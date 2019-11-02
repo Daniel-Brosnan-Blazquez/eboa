@@ -278,7 +278,7 @@ def is_valid_text_filter(text_filter):
     if text_filter["op"] in ["in", "notin"] and type(text_filter["filter"]) == list:
         not_str_filters = [text_filter for text_filter in text_filter["filter"] if type(text_filter) != str and type(text_filter) != uuid.UUID]
         if len(not_str_filters) > 0:
-            raise InputError("The specified filter inside the list must be a string when the op is 'in' or 'notin' (received filters have type: {}).".format(not_str_filters))
+            raise InputError("The specified filter inside the list must be a string when the op is 'in' or 'notin' (received filters are: {}).".format(not_str_filters))
         # end if
     # end if
 
