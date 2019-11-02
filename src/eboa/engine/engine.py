@@ -2077,7 +2077,6 @@ class Engine():
                                                                                                                   Event.start < validity_stop,
                                                                                                                   Event.stop > validity_start).first()
 
-                    logger.info("The ingestion of the source file {} with processor {} is going to execute the method _remove_deprecated_events_by_insert_and_erase_per_event for the gauge_uuid {} with max_generation_time {} for the period {}_{}".format(self.source.name, self.source.processor, gauge_uuid, max_generation_time[0].isoformat(), validity_start, validity_stop))
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                Event.gauge_uuid == gauge_uuid,
