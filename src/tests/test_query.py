@@ -229,9 +229,13 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
-        sources = self.query.get_sources(statuses = [{"float": 0, "op": "=="}])
+        sources = self.query.get_sources(statuses = {"filter": "0", "op": "=="})
 
         assert len(sources) == 2
+
+        sources = self.query.get_sources(statuses = {"filter": "200", "op": "=="})
+
+        assert len(sources) == 0
 
         dim_sig_name = data["operations"][0]["dim_signature"]["name"]
         source = self.query.get_sources(dim_signatures = {"filter": dim_sig_name, "op": "like"})
@@ -248,7 +252,7 @@ class TestQuery(unittest.TestCase):
                                         ingestion_duration_filters = [{"float": 10, "op": "<"}],
                                         processor_version_filters = [{"filter": "0.0", "op": ">"}],
                                         dim_signatures = {"filter": dim_sig_name, "op": "like"},
-        statuses = [{"float": 0, "op": "=="}])
+        statuses = {"filter": "0", "op": "=="})
 
         assert len(source) == 1
 
