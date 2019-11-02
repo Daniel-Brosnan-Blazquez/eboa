@@ -344,11 +344,15 @@ class Query():
 
         # status filters
         if statuses != None:
-            functions.is_valid_float_filters(statuses)
-            for status in statuses:
-                op = arithmetic_operators[status["op"]]
-                params.append(op(SourceStatus.status, status["float"]))
-            # end for
+            functions.is_valid_text_filter(statuses)
+            if statuses["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[statuses["op"]]
+                params.append(op(SourceStatus.status, statuses["filter"]))
+            else:
+                filter = eval('SourceStatus.status.' + text_operators[statuses["op"]])
+                params.append(filter(statuses["filter"]))
+            # end if
+            tables.append(SourceStatus)
         # end if
 
         # DIM signatures
@@ -669,6 +673,74 @@ class Query():
 
         return reports
 
+    def get_report_groups(self, report_group_uuids = None, names = None, order_by = None, limit = None, offset = None):
+        """
+        Method to obtain the DIM signature entities filtered by the received parameters
+
+        :param report_group_uuids: list of DIM signature identifiers
+        :type report_group_uuids: text_filter
+        :param names: name filters
+        :type names: text_filter
+
+        :return: found DIM signatures
+        :rtype: list
+        """
+        params = []
+
+        # DIM signature UUIDs
+        if report_group_uuids != None:
+            functions.is_valid_text_filter(report_group_uuids)
+            if report_group_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[report_group_uuids["op"]]
+                params.append(op(ReportGroup.report_group_uuid, report_group_uuids["filter"]))
+            else:
+                filter = eval('ReportGroup.report_group_uuid.' + text_operators[report_group_uuids["op"]])
+                params.append(filter(report_group_uuids["filter"]))
+            # end if
+        # end if
+
+        # DIM signatures
+        if names != None:
+            functions.is_valid_text_filter(names)
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(ReportGroup.name, names["filter"]))
+            else:
+                filter = eval('ReportGroup.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
+        # end if
+
+        query = self.session.query(ReportGroup).filter(*params)
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("ReportGroup." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("ReportGroup." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+        
+        log_query(query)
+        report_groups = query.all()
+
+        return report_groups
+    
     def get_gauges(self, gauge_uuids = None, names = None, systems = None, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the gauges entities filtered by the received parameters
@@ -989,7 +1061,6 @@ class Query():
 
         query = query.filter(*params)
 
-
         # Order by
         if order_by != None:
             functions.is_valid_order_by(order_by)
@@ -1018,7 +1089,7 @@ class Query():
 
         return events
 
-    def get_event_keys(self, event_uuids = None, dim_signature_uuids = None, keys = None):
+    def get_event_keys(self, event_uuids = None, dim_signature_uuids = None, keys = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -1060,6 +1131,30 @@ class Query():
         # end if
 
         query = self.session.query(EventKey).filter(*params)
+        
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("EventKey." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("EventKey." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
         log_query(query)
         event_keys = query.all()
 
@@ -1788,7 +1883,7 @@ class Query():
 
         return explicit_refs
 
-    def get_explicit_refs_groups(self, group_ids = None, names = None):
+    def get_explicit_refs_groups(self, group_ids = None, names = None, order_by = None, limit = None, offset = None):
         """
         """
         params = []
@@ -1817,6 +1912,30 @@ class Query():
         # end if
 
         query = self.session.query(ExplicitRefGrp).filter(*params)
+
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("ExplicitRefGrp." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("ExplicitRefGrp." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
         log_query(query)
         expl_groups = query.all()
 
