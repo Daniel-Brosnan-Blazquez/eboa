@@ -14,6 +14,7 @@ import argparse
 import os
 import random
 import json
+import glob
 
 # Import auxiliary functions
 from eboa.datamodel.functions import read_configuration
@@ -591,7 +592,13 @@ def main():
     # FOLDERs
     ###
     for folder in health_xpath("/health/folders/folder"):
-        number_of_files = len(os.listdir(folder.get("path")))
+        recursive = folder.get("recursive")
+        if recursive != None and recursive.lower() == "true":
+            files_inside_dir = [file for file in glob.glob(folder.get("path") + "/**", recursive=True) if os.path.isfile(file)]
+            number_of_files = len(files_inside_dir)
+        else:
+            number_of_files = len(os.listdir(folder.get("path")))
+        # end if
         values.append({
             "name": "information_for_folder_" + folder.get("name"),
             "type": "object",
