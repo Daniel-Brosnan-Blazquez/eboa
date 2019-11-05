@@ -344,8 +344,8 @@ def main():
             result = triggering(file_path, reception_time)
             if args.remove_input:
                 try:
-                    logger.info("The received file {} is going to be removed".format(file_path))
                     os.remove(file_path)
+                    logger.info("The received file {} is going to be removed".format(file_path))
                 except FileNotFoundError:
                     pass
                 # end try

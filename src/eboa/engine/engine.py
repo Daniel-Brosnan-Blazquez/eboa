@@ -446,6 +446,7 @@ class Engine():
     #####################
     # INSERTION METHODS #
     #####################
+    @debug
     def _validate_data(self, data, source = None):
         """
         Method to validate the data structure
@@ -471,6 +472,7 @@ class Engine():
 
         return True
 
+    @debug
     def treat_data(self, data = None, source = None, validate = True, processing_duration = None):
         """
         Method to treat the data stored in self.data
@@ -1142,6 +1144,7 @@ class Engine():
         declared_explicit_refs = [i.get("name") for i in self.operation.get("explicit_references") or []]
         linked_explicit_refs = [link.get("link") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("links") for link in explicit_ref.get("links")]
         explicit_references = sorted(set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs))
+        
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
 
@@ -1500,16 +1503,20 @@ class Engine():
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
             if not (explicit_ref, annotation_cnf.annotation_cnf_uuid) in self.annotations:
-                self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
-                                                           "annotation_cnf": annotation_cnf
-                                                       })
-
+                visible = True
+                if "insertion_type" in annotation_cnf_info and annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE":
+                    self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
+                                                               "annotation_cnf": annotation_cnf
+                    })
+                    visible = False
+                # end if
+                    
                 # Insert the annotation into the list for bulk ingestion
                 list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
                                              annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
                                              explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
                                              source_uuid = self.source.source_uuid,
-                                             visible = False))
+                                             visible = visible))
                 # Insert values
                 if "values" in annotation:
                     entity_uuid = {"name": "annotation_uuid",

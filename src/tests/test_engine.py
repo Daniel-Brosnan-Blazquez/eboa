@@ -2466,8 +2466,10 @@ class TestEngine(unittest.TestCase):
                            "validity_stop": "2018-06-05T08:07:36"},
                 "annotations": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
-                    "annotation_cnf": {"name": "NAME",
-                                       "system": "SYSTEM"},
+                    "annotation_cnf": {
+                        "insertion_type": "INSERT_and_ERASE",
+                        "name": "NAME",
+                        "system": "SYSTEM"},
                             "values": [{"name": "VALUES",
                                        "type": "object",
                                        "values": [
@@ -2759,8 +2761,10 @@ class TestEngine(unittest.TestCase):
                            "validity_stop": "2018-06-05T08:07:36"},
                 "annotations": [{
                     "explicit_reference": "EXPLICIT_REFERENCE_ANNOTATION",
-                    "annotation_cnf": {"name": "NAME",
-                                       "system": "SYSTEM"},
+                    "annotation_cnf": {
+                        "insertion_type": "INSERT_and_ERASE",
+                        "name": "NAME",
+                        "system": "SYSTEM"},
                     "values": [{"name": "VALUES",
                                 "type": "object",
                                 "values": [
