@@ -1542,7 +1542,7 @@ class Query():
             functions.is_valid_text_filter(sources)
             if sources["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[sources["op"]]
-                params.append(op(Source.source, sources["filter"]))
+                params.append(op(Source.name, sources["filter"]))
             else:
                 filter = eval('Source.name.' + text_operators[sources["op"]])
                 params.append(filter(sources["filter"]))
