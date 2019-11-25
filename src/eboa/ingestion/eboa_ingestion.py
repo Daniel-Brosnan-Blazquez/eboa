@@ -53,7 +53,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     try:
         processor_module = import_module(processor)
     except ImportError as e:
-        logger.error("The specified processor {} for processing the file {} does not exist. Return error: {}".format(processor, file_path, str(e)))
+        logger.error("The specified processor {} for processing the file {} does not exist. Returned error: {}".format(processor, file_path, str(e)))
         # Log status
         query_log_status = Query()
         sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
