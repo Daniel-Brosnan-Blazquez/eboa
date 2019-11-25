@@ -40,7 +40,7 @@ In order to check that the component has been correctly installed, run the follo
 
 $ vagrant ssh centos
 $ cd /vagrant/src/
-$ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov=eboa tests
+$ py.test -v --cov-report html:tests/tmp/code_coverage_analysis --cov-branch --cov=eboa --cov=rboa tests
 
 \end{lstlisting}
 
