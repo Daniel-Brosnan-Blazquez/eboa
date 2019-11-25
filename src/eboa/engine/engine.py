@@ -16,6 +16,7 @@ from oslo_concurrency import lockutils
 import json
 import jsonschema
 import re
+from importlib import import_module
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -143,6 +144,10 @@ exit_codes = {
     "FILE_DOES_NOT_EXIST": {
         "status": 19,
         "message": "The source file with path {} does not exist"
+    },
+    "FILE_DOES_NOT_HAVE_A_TRIGGERING_RULE": {
+        "status": 20,
+        "message": "The source file with path {} does not have any triggering rule associated"
     }
 }
 
@@ -1776,7 +1781,7 @@ class Engine():
                         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                         self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
                                            gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
+                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                         self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
                         self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
                         # Remove event
@@ -1812,7 +1817,7 @@ class Engine():
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                             self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
                                                gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                             self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             list_events_to_be_removed.append(event.event_uuid)
@@ -1870,7 +1875,7 @@ class Engine():
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                             self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
                                                gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                             self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                         # end if
@@ -1923,7 +1928,46 @@ class Engine():
         return
 
     @debug
-    def _replicate_event_values(self, from_event_uuid, to_event_uuid, list_values_to_be_created):
+    def _replicate_event_values(self, from_event_uuid, to_event_uuid, to_event, list_values_to_be_created):
+        """
+        Method to replicate the values associated to events that were overwritten partially by other events
+
+        :param from_event_uuid: original event where to get the associated values from
+        :type from_event_uuid: uuid
+        :param to_event_uuid: new event to associate the values
+        :type to_event_uuid: uuid
+        :param list_values_to_be_created: list of values to be stored later inside the DDBB
+        :type list_values_to_be_created: list
+        """
+        if "REPLICATE_EVENT_VALUES_MODULE" in config and config["REPLICATE_EVENT_VALUES_MODULE"] != "":
+            try:
+                processor_module = import_module(config["REPLICATE_EVENT_VALUES_MODULE"])
+                # Use an auxiliar list to be resiliant to failures when calling to replicate with no external module
+                list_values_to_be_created_aux = {}                
+                processor_module.replicate_event_values(self.query, from_event_uuid, to_event_uuid, to_event, list_values_to_be_created_aux)
+                for type in list_values_to_be_created_aux:
+                    if not type in list_values_to_be_created:
+                        list_values_to_be_created[type] = []
+                    # end if
+                    for value in list_values_to_be_created_aux[type]:
+                        list_values_to_be_created[type].append(value)
+                    # end for
+                # end for
+            except ImportError as e:
+                logger.error("The specified module {} for replicating the values of events does not exist. Returned error: {}".format(config["REPLICATE_EVENT_VALUES_MODULE"], str(e)))
+                self._replicate_event_values_no_external_module(from_event_uuid, to_event_uuid, list_values_to_be_created)
+            except Exception as e:
+                logger.error("An error occurred when calling to the method replicate_event_values of the specified module {}. Returned error: {}".format(config["REPLICATE_EVENT_VALUES_MODULE"], str(e)))
+                self._replicate_event_values_no_external_module(from_event_uuid, to_event_uuid, list_values_to_be_created)
+        else:
+            self._replicate_event_values_no_external_module(from_event_uuid, to_event_uuid, list_values_to_be_created)
+        # end if
+        
+        return
+
+
+    @debug
+    def _replicate_event_values_no_external_module(self, from_event_uuid, to_event_uuid, list_values_to_be_created):
         """
         Method to replicate the values associated to events that were overwritten partially by other events
 
@@ -2032,15 +2076,16 @@ class Engine():
         """
         Method to remove events that were overwritten by other events due to INSERT and ERASE per EVENT insertion mode
         """
-        list_events_to_be_created = {"events": [],
-                                     "values": {},
-                                     "keys": [],
-                                     "links": []}
-        list_event_uuids_aliases = {}
-        list_events_to_be_removed = []
 
         for gauge_uuid in self.insert_and_erase_per_event_gauges:
             for segment in self.insert_and_erase_per_event_gauges[gauge_uuid]:
+                list_events_to_be_created = {"events": [],
+                                             "values": {},
+                                             "keys": [],
+                                             "links": []}
+                list_event_uuids_aliases = {}
+                list_events_to_be_removed = []
+
                 list_events_to_be_created_not_ending_on_period = {}
                 list_split_events = {}
 
@@ -2067,7 +2112,7 @@ class Engine():
                             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                             self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
                                                gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["values"])
+                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                             self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
                             self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
                             # Remove event
@@ -2103,7 +2148,7 @@ class Engine():
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
                                                    gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                                 list_events_to_be_removed.append(event.event_uuid)
@@ -2162,7 +2207,7 @@ class Engine():
                                 id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                                 self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
                                                    gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["values"])
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
                                 self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
                                 self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
                             # end if
@@ -2178,40 +2223,41 @@ class Engine():
                         # end if
                     # end for
                 # end for
+
+                # Bulk insert events
+                self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
+                # Bulk insert keys
+                self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+                # Bulk insert links
+                self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
+                self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+                # Remove the events that were partially affected by the insert and erase operation
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+                self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+                # Bulk insert values
+                if EventObject in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+                # end if
+                if EventBoolean in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+                # end if
+                if EventText in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+                # end if
+                if EventDouble in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+                # end if
+                if EventTimestamp in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+                # end if
+                if EventGeometry in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+                # end if
+
             # end for
-
         # end for
-        # Bulk insert events
-        self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
-        # Bulk insert keys
-        self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
-        # Bulk insert links
-        self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
-        self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
-
-        # Remove the events that were partially affected by the insert and erase operation
-        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
-        self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
-
-        # Bulk insert values
-        if EventObject in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
-        # end if
-        if EventBoolean in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
-        # end if
-        if EventText in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
-        # end if
-        if EventDouble in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
-        # end if
-        if EventTimestamp in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
-        # end if
-        if EventGeometry in list_events_to_be_created["values"]:
-            self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
-        # end if
 
         return
 
