@@ -907,7 +907,7 @@ class Query():
             functions.is_valid_text_filter(event_uuids)
             if event_uuids["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[event_uuids["op"]]
-                params.append(op(DimSignature.event_uuid, event_uuids["filter"]))
+                params.append(op(Event.event_uuid, event_uuids["filter"]))
             else:
                 filter = eval('Event.event_uuid.' + text_operators[event_uuids["op"]])
                 params.append(filter(event_uuids["filter"]))
