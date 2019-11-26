@@ -861,9 +861,6 @@ class Engine():
         # Commit data
         self.session.commit()
 
-        self.session.close()
-        self.session = self.Scoped_session()
-
         return exit_codes["OK"]["status"]
         
     @debug
