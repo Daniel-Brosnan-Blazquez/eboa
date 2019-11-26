@@ -8,7 +8,7 @@
             <xs:sequence>
               <xs:element name="source_mask" minOccurs="1" maxOccurs="1"/>
               <xs:element name="source_type" minOccurs="1" maxOccurs="1"/>
-              <xs:element name="tool" minOccurs="1" maxOccurs="1">
+              <xs:element name="tool" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
                     <xs:element name="command" minOccurs="1" maxOccurs="1"/>
@@ -23,6 +23,7 @@
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
+            <xs:attribute name="skip" type="xs:boolean"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>

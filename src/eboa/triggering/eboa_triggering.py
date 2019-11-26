@@ -171,7 +171,7 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
     return
 
 @debug
-def triggering(file_path, reception_time, output_path = None):
+def triggering(file_path, reception_time, engine_eboa, output_path = None):
     """
     Method to trigger commands depending on the matched configuration to the file_path
     
@@ -192,13 +192,14 @@ def triggering(file_path, reception_time, output_path = None):
     # Check configuration
     triggering_xpath = get_triggering_conf()
 
-    matching_rules = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name)]", file_name = file_name)
+    matching_rules_without_skip = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name) and (not(boolean(@skip)) or @skip = 'false')]", file_name = file_name)
+    matching_rules_with_skip = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name) and @skip = 'true']", file_name = file_name)
 
-    logger.info("Found {} rule/s for the file {}".format(len(matching_rules), file_name))
+    logger.info("Found {} rule/s for the file {} with tool execution".format(len(matching_rules_without_skip), file_name))
 
-    if len(matching_rules) > 0:
+    if len(matching_rules_without_skip) > 0:
         # File register into the configuration
-        for rule in matching_rules:
+        for rule in matching_rules_without_skip:
             dependencies = None
             if output_path == None:
                 dependencies = rule.xpath("dependencies/source_type")
@@ -234,10 +235,41 @@ def triggering(file_path, reception_time, output_path = None):
                 block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this)
             # end if
             
-            # Register an alert if the tool didn't succeed
         # end for
+    elif len(matching_rules_with_skip) > 0:
+        logger.info("Found {} rule/s for the file {} with no tool execution".format(len(matching_rules_with_skip), file_name))
+
+        # Insert an associated alert for checking pending ingestions
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "SOURCES_NOT_PROCESSED",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": os.path.basename(file_path),
+                       "reception_time": reception_time,
+                       "generation_time": reception_time,
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"}
+        }]
+        }
+        engine_eboa.treat_data(data)
+        
+        # Remove the metadata indicating the pending ingestion
+        query_remove = Query()
+        query_remove.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
+
+        query_remove.close_session()
+
     else:
         # File not register into the configuration
+        query_log_status = Query()
+        sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+        if len(sources) > 0:
+            eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_HAVE_A_TRIGGERING_RULE"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_HAVE_A_TRIGGERING_RULE"]["message"].format(file_path))
+        # end if
+        query_log_status.close_session()
+
         # Register the associated alert
         logger.error("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
         raise FileDoesNotMatchAnyRule("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
@@ -279,7 +311,8 @@ def main():
             exit(-1)
         # end if
 
-        triggering(file_path, reception_time, output_path)
+        engine_eboa = Engine()
+        triggering(file_path, reception_time, engine_eboa, output_path)
         if args.remove_input:
             try:
                 logger.info("The received file {} is going to be removed".format(file_path))
@@ -289,41 +322,6 @@ def main():
             # end try
         # end if
     else:
-        engine_eboa = Engine()
-        
-        # Insert an associated alert for checking pending ingestions
-        data = {"operations": [{
-            "mode": "insert",
-            "dim_signature": {"name": "PENDING_SOURCES",
-                              "exec": "",
-                              "version": ""},
-            "source": {"name": os.path.basename(file_path),
-                       "reception_time": reception_time,
-                       "generation_time": reception_time,
-                       "validity_start": datetime.datetime.now().isoformat(),
-                       "validity_stop": datetime.datetime.now().isoformat(),
-                       "ingested": "false"},
-            "alerts": [{
-                "message": "The input {} has been received to be ingested".format(file_path),
-                "generator": os.path.basename(__file__),
-                "notification_time": (datetime.datetime.now() + datetime.timedelta(hours=2)).isoformat(),
-                "alert_cnf": {
-                    "name": "PENDING_INGESTION_OF_SOURCE",
-                    "severity": "fatal",
-                    "description": "Alert refers to the pending ingestion of the relative input",
-                    "group": "INGESTION_CONTROL"
-                },
-                "entity": {
-                    "reference_mode": "by_ref",
-                    "reference": os.path.basename(file_path),
-                    "type": "source"
-                }
-            }]
-        }]
-        }
-        engine_eboa.treat_data(data)
-        
-        engine_eboa.close_session()
 
         # Check if file exists
         if not os.path.isfile(file_path):
@@ -341,7 +339,41 @@ def main():
         newpid = os.fork()
         result = 0
         if newpid == 0:
-            result = triggering(file_path, reception_time)
+            engine_eboa = Engine()
+
+            # Insert an associated alert for checking pending ingestions
+            data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "PENDING_SOURCES",
+                                  "exec": "",
+                                  "version": ""},
+                "source": {"name": os.path.basename(file_path),
+                           "reception_time": reception_time,
+                           "generation_time": reception_time,
+                           "validity_start": datetime.datetime.now().isoformat(),
+                           "validity_stop": datetime.datetime.now().isoformat(),
+                           "ingested": "false"},
+                "alerts": [{
+                    "message": "The input {} has been received to be ingested".format(file_path),
+                    "generator": os.path.basename(__file__),
+                    "notification_time": (datetime.datetime.now() + datetime.timedelta(hours=2)).isoformat(),
+                    "alert_cnf": {
+                        "name": "PENDING_INGESTION_OF_SOURCE",
+                        "severity": "fatal",
+                        "description": "Alert refers to the pending ingestion of the relative input",
+                        "group": "INGESTION_CONTROL"
+                    },
+                    "entity": {
+                        "reference_mode": "by_ref",
+                        "reference": os.path.basename(file_path),
+                        "type": "source"
+                    }
+                }]
+            }]
+            }
+            engine_eboa.treat_data(data)
+
+            result = triggering(file_path, reception_time, engine_eboa)
             if args.remove_input:
                 try:
                     os.remove(file_path)
@@ -350,6 +382,9 @@ def main():
                     pass
                 # end try
             # end if
+
+            engine_eboa.close_session()
+
         # end if
     # end if
 
