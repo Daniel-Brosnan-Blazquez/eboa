@@ -83,7 +83,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element ref="values" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="values" type="root_values" minOccurs="0" maxOccurs="1"/>
     </xs:all>
     <xs:attribute name="start" type="xs:dateTime" use="required"/>
     <xs:attribute name="stop" type="xs:dateTime" use="required"/>
@@ -131,7 +131,7 @@
           <xs:attribute name="description" type="xs:string"/>
         </xs:complexType>
       </xs:element>
-      <xs:element ref="values" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="values" type="root_values" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
     <xs:attribute name="explicit_reference" type="xs:string"/>
   </xs:complexType>
@@ -141,11 +141,19 @@
     <xs:attribute name="mode" type="xs:string" fixed="update" use="required"/>
   </xs:complexType>
 
+  <!-- Define the root_values type -->
+  <xs:complexType name="root_values">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="value" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element ref="values" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+
   <!-- Define the values element -->
   <xs:element name="values">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element ref="value" minOccurs="1" maxOccurs="unbounded"/>
+        <xs:element ref="value" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="values" minOccurs="0" maxOccurs="unbounded"/>
       </xs:choice>
       <xs:attribute name="name" type="xs:string" use="required"/>

@@ -431,18 +431,18 @@ class Engine():
         :param parent: list of values
         :type parent: list
         """
-        parent_object = {"name": node.get("name"),
-                         "type": "object",
-                         "values": []
-                     }
-        parent.append(parent_object)
         for child_node in node.xpath("child::*"):
             if child_node.tag == "value":
-                parent_object["values"].append({"name": child_node.get("name"),
-                                         "type": child_node.get("type"),
-                                         "value": child_node.text
-                                     })
+                parent.append({"name": child_node.get("name"),
+                               "type": child_node.get("type"),
+                               "value": child_node.text
+                })
             else:
+                parent_object = {"name": child_node.get("name"),
+                                 "type": "object",
+                                 "values": []
+                }
+                parent.append(parent_object)
                 self._parse_values_from_xml(child_node, parent_object["values"])
             # end if
         # end for
@@ -1338,7 +1338,7 @@ class Engine():
                 entity_uuid = {"name": "event_uuid",
                                "id": id
                 }
-                self._insert_values(event.get("values")[0], entity_uuid, list_values)
+                self._insert_values(event.get("values"), entity_uuid, list_values)
             # end if
             # Build links by reference for later ingestion
             if "links" in event:
@@ -1524,7 +1524,7 @@ class Engine():
                     entity_uuid = {"name": "annotation_uuid",
                                    "id": id
                     }
-                    self._insert_values(annotation.get("values")[0], entity_uuid, list_values)
+                    self._insert_values(annotation.get("values"), entity_uuid, list_values)
                 # end if
 
                 self.annotations[(explicit_ref, annotation_cnf.annotation_cnf_uuid)] = None
@@ -2370,22 +2370,24 @@ class Engine():
                    }
 
         values_name = values["name"]
-        object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name, EventObject.event_uuid == event_uuid).first()
-        while not object:
+        value_entity = EventObject
+        if values["type"] == "booleans":
+            value_entity = EventBoolean
+        elif values["type"] == "texts":
+            value_entity = EventTexts
+        elif values["type"] == "doubles":
+            value_entity = EventDoubles
+        elif values["type"] == "timestamps":
+            value_entity = EventTimestamps
+        elif values["type"] == "geometries":
+            value_entity = EventGeometries
+        # end if
+        item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == values_name, value_entity.event_uuid == event_uuid).first()
+        while not item:
             list_values = {}
-            first_object = self.session.query(EventObject).filter(EventObject.parent_level == -1, EventObject.parent_position == 0, EventObject.event_uuid == event_uuid).first()
-            if not first_object:
-                new_structure_values = {
-                    "name": "values",
-                    "type": "object",
-                    "values": [values]
-                }
-                self._insert_values(new_structure_values, entity_uuid, list_values)
-            else:
-                event_values = self.query.get_event_values(event_uuids = [event_uuid])
-                event_values_first_level = [value for value in event_values if value.parent_level == 0 and value.parent_position == 0]
-                self._insert_values(values, entity_uuid, list_values, position = len(event_values_first_level), parent_level = 0, parent_position = 0)
-            # end if
+            event_values = self.query.get_event_values(event_uuids = [event_uuid])
+            event_values_first_level = [value for value in event_values if value.parent_level == -1 and value.parent_position == 0]
+            self._insert_values([values], entity_uuid, list_values, position = len(event_values_first_level), parent_level = -1, parent_position = 0)
 
             continue_with_values_ingestion = True
             self.session.begin_nested()
@@ -2447,7 +2449,7 @@ class Engine():
                 self.session.commit()
             # end if
 
-            object = self.session.query(EventObject).filter(EventObject.parent_level == 0, EventObject.parent_position == 0, EventObject.name == values_name, EventObject.event_uuid == event_uuid).first()
+            item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == values_name, value_entity.event_uuid == event_uuid).first()
         # end for
         
         return exit_status

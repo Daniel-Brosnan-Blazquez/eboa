@@ -52,24 +52,22 @@ def insert_values(values, entity_uuid, list_values, position = 0, parent_level =
     if positions == None:
         positions = {}
     # end if
-    if not "objects" in list_values:
-        list_values["objects"] = []
-    # end if
-    list_values["objects"].append(dict([("name", values.get("name")),
-                                       ("position",  position),
-                                       ("parent_level",  parent_level),
-                                       ("parent_position",  parent_position),
-                                       (entity_uuid["name"], entity_uuid["id"])]
-    ))
-    parent_level += 1
-    parent_position = position
     if not parent_level in positions:
         # List for keeping track of the positions occupied in the level (parent_level = level - 1)
-        positions[parent_level] = 0
+        positions[parent_level] = position
     # end if
-    for item in values["values"]:
+    for item in values:
         if item["type"] == "object":
-            insert_values(item, entity_uuid, list_values, positions[parent_level], parent_level, parent_position, positions)
+            if not "objects" in list_values:
+                list_values["objects"] = []
+            # end if
+            list_values["objects"].append(dict([("name", item.get("name")),
+                                               ("position",  positions[parent_level]),
+                                               ("parent_level",  parent_level),
+                                               ("parent_position",  parent_position),
+                                               (entity_uuid["name"], entity_uuid["id"])]
+            ))
+            insert_values(item["values"], entity_uuid, list_values, 0, parent_level + 1, positions[parent_level], positions)
         else:
             value = bool(str(item.get("value")))
             if item["type"] == "boolean":

@@ -443,7 +443,7 @@ class Engine():
             entity_uuid = {"name": "report_uuid",
                            "id": id
             }
-            self._insert_values(report.get("values")[0], entity_uuid, list_values)
+            self._insert_values(report.get("values"), entity_uuid, list_values)
         # end if
 
         # Bulk insert values

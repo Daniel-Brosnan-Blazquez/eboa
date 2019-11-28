@@ -988,8 +988,6 @@ class TestEngine(unittest.TestCase):
 
         event_uuid2 = events[0].event_uuid
 
-        print(event_uuid2)
-        
         data3 = {"operations": [{
             "mode": "insert",
             "dim_signature": {"name": "dim_signature",
@@ -1025,8 +1023,6 @@ class TestEngine(unittest.TestCase):
         assert len(events) == 1
 
         event_uuid2 = events[0].event_uuid
-
-        print(event_uuid2)
 
         data4 = {"operations": [{
             "mode": "insert",
@@ -4827,9 +4823,13 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_objects) == 1
 
-        event_objects = self.session.query(EventObject).filter(EventObject.position == 0, EventObject.parent_level == 0, EventObject.parent_position == 0).all()
+        event_objects = self.session.query(EventObject).filter(EventObject.position == 0, EventObject.parent_level == -1, EventObject.parent_position == 0).all()
 
         assert len(event_objects) == 1
+
+        event_objects = self.session.query(EventObject).all()
+
+        assert len(event_objects) == 3
 
     def test_insert_event_values_all_types(self):
         """
@@ -5057,7 +5057,7 @@ class TestEngine(unittest.TestCase):
 
         event_values = self.query_eboa.get_event_values(event_uuids=[event_uuid1])
 
-        assert len(event_values) == 2
+        assert len(event_values) == 1
 
         exit_status = self.engine_eboa.insert_event_values(event_uuid2, values)
         self.engine_eboa.session.commit()
@@ -5066,7 +5066,7 @@ class TestEngine(unittest.TestCase):
 
         event_values = self.query_eboa.get_event_values(event_uuids=[event_uuid2])
 
-        assert len(event_values) == 2
+        assert len(event_values) == 1
 
     def test_insert_duplicated_values_inside_event(self):
         """
