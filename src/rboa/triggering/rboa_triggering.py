@@ -145,14 +145,11 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
                        "generator": generator,
                        "generator_version": "",
                        "ingested": "false",
-                       "values": [{"name": "details",
-                                   "type": "object",
-                                   "values": [
-                                       {"type": "text",
-                                        "name": "command",
-                                        "value": command}
-                                   ]
-                       }]
+                       "values": [
+                           {"type": "text",
+                            "name": "command",
+                            "value": command}
+                       ]
             },
             "alerts": [{
                 "message": "The report {} using generator {} is going to be produced".format(report_name, generator),

@@ -1,10 +1,10 @@
 
 <health>
   <alerts>
-    <alert id="general_cpu_max_threshold" threshold="90"/>
-    <alert id="particular_cpu_max_threshold" threshold="90"/>
+    <alert id="general_cpu_max_threshold" threshold="110"/>
+    <alert id="particular_cpu_max_threshold" threshold="110"/>
     <alert id="memory_max_threshold" threshold="75"/>
-    <alert id="swap_max_threshold" threshold="1"/>
+    <alert id="swap_max_threshold" threshold="110"/>
     <alert id="ddbb_connections_max_threshold" threshold="300"/>
     <alert id="disk_max_threshold" threshold="90"/>
   </alerts>

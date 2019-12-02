@@ -333,10 +333,10 @@ class TestDatamodel(unittest.TestCase):
         }]
 
 
-        # Test that if the coordinates are related to a non object the returned list is empty
+        # Test that if the coordinates are related to a non object the returned list is not empty
         values = event1.get_structured_values(position = 0, parent_level = 0, parent_position = 0)
 
-        assert values == []
+        assert values == [{"name": "TEXT", "type": "text", "value": "TEXT"}]
 
         # Test that the export returns inner objects
         values = event1.get_structured_values(position = 2, parent_level = 0, parent_position = 0)

@@ -149,11 +149,7 @@ def main():
             },
             "start": now,
             "stop": now,
-            "values": [{
-                "name": "details",
-                "type": "object",
-                "values": values,
-            }]
+            "values": values
         }],
         "alerts": alerts
     }]}
@@ -222,25 +218,27 @@ def main():
     general_usage = 0
     for i, cpu_times_percent in enumerate(cpu_times_percent_per_cpu):
 
-        if (100 - cpu_times_percent.idle) >= particular_cpu_max_threshold:
-            alerts.append({
-                "message": "CPU {}: maximum usage threshold ({}) reached with a value of {} %".format(i, particular_cpu_max_threshold, 100 - cpu_times_percent.idle),
-                "generator": os.path.basename(__file__),
-                "notification_time": now,
-                "alert_cnf": {
-                    "name": "PARTICULAR_CPU_MAX_THRESHOLD_REACHED",
-                    "severity": "warning",
-                    "description": "Alert refers to a high CPU usage value in a particular node",
-                    "group": "BOA_HEALTH"
-                },
-                "entity": {
-                    "reference_mode": "by_ref",
-                    "reference": "boa_health_" + str(id),
-                    "type": "event"
-                }
-            })
-        # end if
-
+        ### Commented on 20191202 for reducing the amount of not needed information inserted 
+        # if (100 - cpu_times_percent.idle) >= particular_cpu_max_threshold:
+        #     alerts.append({
+        #         "message": "CPU {}: maximum usage threshold ({}) reached with a value of {} %".format(i, particular_cpu_max_threshold, 100 - cpu_times_percent.idle),
+        #         "generator": os.path.basename(__file__),
+        #         "notification_time": now,
+        #         "alert_cnf": {
+        #             "name": "PARTICULAR_CPU_MAX_THRESHOLD_REACHED",
+        #             "severity": "warning",
+        #             "description": "Alert refers to a high CPU usage value in a particular node",
+        #             "group": "BOA_HEALTH"
+        #         },
+        #         "entity": {
+        #             "reference_mode": "by_ref",
+        #             "reference": "boa_health_" + str(id),
+        #             "type": "event"
+        #         }
+        #     })
+        # # end if
+        ### End Commented on 20191202 for reducing the amount of not needed information inserted
+        
         general_usage += (100 - cpu_times_percent.idle)
         cpu_user += cpu_times_percent.user
         cpu_nice += cpu_times_percent.nice
@@ -253,50 +251,52 @@ def main():
         cpu_guest += cpu_times_percent.guest
         cpu_guest_nice += cpu_times_percent.guest_nice
 
-        values.append({
-            "name": "information_for_cpu_" + str(i),
-            "type": "object",
-            "values": [
-                {"name": "cpu_number",
-                 "type": "double",
-                 "value": str(i)},
-                {"name": "cpu_" + str(i) + "_user",
-                 "type": "double",
-                 "value": str(cpu_times_percent.user)},
-                {"name": "cpu_" + str(i) + "_nice",
-                 "type": "double",
-                 "value": str(cpu_times_percent.nice)},
-                {"name": "cpu_" + str(i) + "_system",
-                 "type": "double",
-                 "value": str(cpu_times_percent.system)},
-                {"name": "cpu_" + str(i) + "_idle",
-                 "type": "double",
-                 "value": str(cpu_times_percent.idle)},
-                {"name": "cpu_" + str(i) + "_iowait",
-                 "type": "double",
-                 "value": str(cpu_times_percent.iowait)},
-                {"name": "cpu_" + str(i) + "_irq",
-                 "type": "double",
-                 "value": str(cpu_times_percent.irq)},
-                {"name": "cpu_" + str(i) + "_softirq",
-                 "type": "double",
-                 "value": str(cpu_times_percent.softirq)},
-                {"name": "cpu_" + str(i) + "_steal",
-                 "type": "double",
-                 "value": str(cpu_times_percent.steal)},
-                {"name": "cpu_" + str(i) + "_guest",
-                 "type": "double",
-                 "value": str(cpu_times_percent.guest)},
-                {"name": "cpu_" + str(i) + "_guest_nice",
-                 "type": "double",
-                 "value": str(cpu_times_percent.guest_nice)},
-                {"name": "cpu_" + str(i) + "_usage_percentage",
-                 "type": "double",
-                 "value": str(100 - cpu_times_percent.idle)}
-            ]
-        })
+        ### Commented on 20191202 for reducing the amount of not needed information inserted 
+    #     values.append({
+    #         "name": "information_for_cpu_" + str(i),
+    #         "type": "object",
+    #         "values": [
+    #             {"name": "cpu_number",
+    #              "type": "double",
+    #              "value": str(i)},
+    #             {"name": "cpu_" + str(i) + "_user",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.user)},
+    #             {"name": "cpu_" + str(i) + "_nice",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.nice)},
+    #             {"name": "cpu_" + str(i) + "_system",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.system)},
+    #             {"name": "cpu_" + str(i) + "_idle",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.idle)},
+    #             {"name": "cpu_" + str(i) + "_iowait",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.iowait)},
+    #             {"name": "cpu_" + str(i) + "_irq",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.irq)},
+    #             {"name": "cpu_" + str(i) + "_softirq",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.softirq)},
+    #             {"name": "cpu_" + str(i) + "_steal",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.steal)},
+    #             {"name": "cpu_" + str(i) + "_guest",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.guest)},
+    #             {"name": "cpu_" + str(i) + "_guest_nice",
+    #              "type": "double",
+    #              "value": str(cpu_times_percent.guest_nice)},
+    #             {"name": "cpu_" + str(i) + "_usage_percentage",
+    #              "type": "double",
+    #              "value": str(100 - cpu_times_percent.idle)}
+    #         ]
+    #     })
+        ### End Commented on 20191202 for reducing the amount of not needed information inserted
     # end for
-
+        
     values.append({
         "name": "general_cpu_information",
         "type": "object",
