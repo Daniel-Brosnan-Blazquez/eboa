@@ -16,54 +16,76 @@ logger = logging.logger
 def build_values_structure(values, structure, position = 0, parent_level = -1, parent_position = 0):
     """
     """
-    object_entity_list = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position and value.position == position]
-    
-    if len(object_entity_list) > 0:
-        object_entity = object_entity_list[0]
-        if str(type(object_entity)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
-            object_entity_structure = {"name": object_entity.name,
+    if position == 0 and parent_level == -1 and parent_position == 0:
+        build_object_structure(values, structure, parent_level, parent_position)
+    else:
+        value = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position and value.position == position]
+        if len(value) > 0:
+            value = value[0]
+            if str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
+                object_entity_structure = {"name": value.name,
+                                           "type": "object",
+                                           "values": []
+                }
+                structure.append(object_entity_structure)
+
+                build_object_structure(values, object_entity_structure["values"], parent_level + 1, position)
+            else:
+                insert_values(values, [value], structure)
+            # end if
+        # end if
+    # end if
+
+    return
+
+def build_object_structure(values, structure, parent_level, parent_position):
+
+    searched_values = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position]
+    insert_values(values, searched_values, structure)
+
+def insert_values(all_values, values_to_insert, structure):
+
+    sorted_values = sorted(values_to_insert, key=lambda x: x.position)
+    for value in sorted_values:
+        if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
+            value_type = "boolean"
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
+            value_type = "double"
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
+            value_type = "timestamp"
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
+            value_type = "geometry"
+        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
+            value_type = "object"
+        else:
+            value_type = "text"
+        # end if
+
+        if value_type != "object":
+            value_content = str(value.value)
+            if value_type == "geometry":
+                value_content = to_shape(value.value).wkt
+            # end if
+            elif value_type == "timestamp":
+                value_content = value.value.isoformat()
+            # end if
+
+            structure.append({"name": value.name,
+                              "type": value_type,
+                              "value": value_content
+            })
+        else:
+            object_entity_structure = {"name": value.name,
                                        "type": "object",
                                        "values": []
             }
-
-            child_values = sorted([value for value in values if value.parent_level == parent_level + 1 and value.parent_position == position], key=lambda x: x.position)
             structure.append(object_entity_structure)
-            for value in child_values:
-                if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
-                    value_type = "boolean"
-                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
-                    value_type = "double"
-                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
-                    value_type = "timestamp"
-                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
-                    value_type = "geometry"
-                elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
-                    value_type = "object"
-                else:
-                    value_type = "text"
-                # end if
 
-                if value_type != "object":
-                    value_content = str(value.value)
-                    if value_type == "geometry":
-                        value_content = to_shape(value.value).wkt
-                    # end if
-                    elif value_type == "timestamp":
-                        value_content = value.value.isoformat()
-                    # end if
-
-                    object_entity_structure["values"].append({"name": value.name,
-                                                              "type": value_type,
-                                                              "value": value_content
-                                                          })
-                else:
-                    build_values_structure(values, object_entity_structure["values"], value.position, parent_level + 1, position)
-                # end if
-            # end for
+            build_object_structure(all_values, object_entity_structure["values"], value.parent_level + 1, value.position)
         # end if
-    # end if
-    return
+    # end for
 
+    
     # def get_source(self, name):
     #     """
     #     """
