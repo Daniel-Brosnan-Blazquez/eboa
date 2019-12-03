@@ -269,3 +269,9 @@ class AnnotationGeometry(Base):
             "parent_level": self.parent_level,
             "parent_position": self.parent_position,
         }
+
+    def to_wkt(self):
+        return {
+            "value": to_shape(self.value).wkt,
+            "name": self.name
+        }
