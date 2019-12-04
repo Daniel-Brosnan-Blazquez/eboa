@@ -337,7 +337,7 @@ def get_greater_segment(timeline):
 # Functions using the timelines with the structure of data to be inserted into the EBOA
 ###########
 
-def convert_input_events_to_date_segments(timeline):
+def convert_input_events_to_date_segments(timeline, input_id = None):
     """
     Method to convert from events to be inserted into EBOA to segments to be managed by this component
     Input: list of events with a structure accepted by EBOA
@@ -351,7 +351,15 @@ def convert_input_events_to_date_segments(timeline):
     """
     # Validate the format of the timeline
 
-    date_segments = [{"id": event["link_ref"], "start": parser.parse(event["start"]), "stop": parser.parse(event["stop"])} for event in timeline]
+    if input_id not None:
+        id = input_id
+    elif "link_ref" in event:
+        id = event["link_ref"]
+    else:
+        id = "INVENTED_ID"
+    # end if
+        
+    date_segments = [{"id": id, "start": parser.parse(event["start"]), "stop": parser.parse(event["stop"])} for event in timeline]
 
     return sorted(date_segments, key=lambda segment: segment["start"])
 
