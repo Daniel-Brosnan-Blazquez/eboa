@@ -351,7 +351,7 @@ def convert_input_events_to_date_segments(timeline, input_id = None):
     """
     # Validate the format of the timeline
 
-    if input_id not None:
+    if input_id:
         id = input_id
     elif "link_ref" in event:
         id = event["link_ref"]
