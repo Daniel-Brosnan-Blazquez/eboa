@@ -10,9 +10,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Import exceptions
-from eboa.datamodel.errors import EboaResourcesPathNotAvailable
-
 # Import auxiliary functions
 from eboa.datamodel.functions import read_configuration
 
