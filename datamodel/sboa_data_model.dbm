@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,348" last-zoom="1" max-obj-count="4"
+	 default-schema="sboa" default-owner="postgres">
+<role name="sboa"
+      inherit="true"
+      login="true">
+</role>
+
+<database name="sboadb" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="sboa" layer="0" rect-visible="true" fill-color="#e1e1e1">
+	<role name="sboa"/>
+</schema>
+
+<table name="rules" layer="0" collapse-mode="2" max-obj-count="7">
+	<schema name="sboa"/>
+	<role name="sboa"/>
+	<position x="600" y="400"/>
+	<column name="rule_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="periodicity" not-null="true">
+		<type name="double precision" length="0"/>
+	</column>
+	<column name="window_delay" not-null="true">
+		<type name="double precision" length="0"/>
+	</column>
+	<column name="window_size" not-null="true">
+		<type name="double precision" length="0"/>
+	</column>
+	<column name="triggering_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="rules_pk" type="pk-constr" table="sboa.rules">
+		<columns names="rule_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_rule" type="uq-constr" table="sboa.rules">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="tasks" layer="0" collapse-mode="2" pagination="true" attribs-page="0" ext-attribs-page="0" max-obj-count="4">
+	<schema name="sboa"/>
+	<role name="sboa"/>
+	<position x="1060" y="420"/>
+	<column name="task_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="command" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="tasks_pk" type="pk-constr" table="sboa.tasks">
+		<columns names="task_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_task" type="uq-constr" table="sboa.tasks">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="rule_uuid" index="3"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="rules_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="rules_has_many_tasks" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#a24b6d"
+	 src-table="sboa.rules"
+	 dst-table="sboa.tasks"
+	 src-required="true" dst-required="false"
+	 del-action="CASCADE"/>
+
+<table name="triggerings" layer="0" collapse-mode="2" max-obj-count="3">
+	<schema name="sboa"/>
+	<role name="sboa"/>
+	<position x="840" y="580"/>
+	<column name="triggering_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="date" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="triggerings_pk" type="pk-constr" table="sboa.triggerings">
+		<columns names="triggering_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="task_uuid" index="2"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="tasks_fk" index="0"/>
+	</customidxs>
+</table>
+
+<relationship name="tasks_has_many_triggerings" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#455cfe"
+	 src-table="sboa.tasks"
+	 dst-table="sboa.triggerings"
+	 src-required="true" dst-required="false"
+	 del-action="CASCADE"/>
+
+<index name="idx_rule_name" table="sboa.rules"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_rule_name_gin" table="sboa.rules"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_triggering_time" table="sboa.rules"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="triggering_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_task_name" table="sboa.tasks"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_task_name_gin" table="sboa.tasks"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="name"/>
+		</idxelement>
+</index>
+
+<index name="idx_triggering_date" table="sboa.triggerings"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="date"/>
+		</idxelement>
+</index>
+
+</dbmodel>

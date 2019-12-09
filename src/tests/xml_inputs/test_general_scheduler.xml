@@ -1,0 +1,68 @@
+<rules>
+  <rule name="ECHO_1">
+    <!-- periodicity is set to 1 minute -->
+    <periodicity>0.000694</periodicity>
+    <!-- window_delay is set to 1 day -->
+    <window_delay>1</window_delay>
+    <!-- window_size is set to 1 day -->
+    <window_size>1</window_size>
+    <date>
+      <time>10:00:00</time>
+      <weekday>monday</weekday>
+    </date>
+    <tasks>
+      <task name="ECHO_1">
+        <command>echo "Executing task 1..."</command>
+      </task>
+    </tasks>
+  </rule>
+  <rule name="ECHO_2">
+    <!-- periodicity is set to 1 minute -->
+    <periodicity>0.000694</periodicity>
+    <!-- window_delay is set to 1 day -->
+    <window_delay>1</window_delay>
+    <!-- window_size is set to 1 day -->
+    <window_size>1</window_size>
+    <date>
+      <time>10:00:00</time>
+    </date>
+    <tasks>
+      <task name="ECHO_2">
+        <command>echo "Executing task 2..."</command>
+      </task>
+    </tasks>
+  </rule>
+  <rule name="ECHO_3">
+    <!-- periodicity is set to 1 minute -->
+    <periodicity>0.000694</periodicity>
+    <!-- window_delay is set to 1 day -->
+    <window_delay>1</window_delay>
+    <!-- window_size is set to 1 day -->
+    <window_size>1</window_size>
+    <date_specific>
+      <date>2019-12-10T10:00:00</date>
+    </date_specific>
+    <tasks>
+      <task name="ECHO_3_1">
+        <command>echo "Executing task 3.1..."</command>
+      </task>
+      <task name="ECHO_3_2">
+        <command>echo "Executing task 3.2..."</command>
+      </task>
+    </tasks>
+  </rule>
+  <rule name="SKIP" skip="true">
+    <!-- periodicity is set to 1 minute -->
+    <periodicity>0.000694</periodicity>
+    <!-- window_delay is set to 1 day -->
+    <window_delay>1</window_delay>
+    <!-- window_size is set to 1 day -->
+    <window_size>1</window_size>
+    <date>
+      <time>10:00:00</time>
+      <weekday>monday</weekday>
+    </date>
+    <tasks>
+    </tasks>
+  </rule>
+</rules>

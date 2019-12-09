@@ -1,0 +1,13 @@
+{
+    "DDBB_CONFIGURATION" : {
+        "user": "sboa",
+        "host": "localhost",
+        "port": 5432,
+        "database": "sboadb",
+        "db_api": "postgresql",
+        "pool_size": 1000,
+        "max_overflow": 1000
+    },
+    "MAXIMUM_PARALLEL_INGESTIONS": 20
+}
+

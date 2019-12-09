@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="rules">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="rule" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <!-- the following elements are considered to be in days -->
+              <xs:element name="periodicity" minOccurs="1" maxOccurs="1" type="xs:double"/>
+              <xs:element name="window_delay" minOccurs="1" maxOccurs="1" type="xs:double"/>
+              <xs:element name="window_size" minOccurs="1" maxOccurs="1" type="xs:double"/>
+              <xs:choice minOccurs="1" maxOccurs="1">
+                <!-- type date_specific is not recommended unless you really accept a complicated management of the configuration -->
+                <xs:element name="date_specific" type="date_specific"/>
+                <xs:element name="date" type="date"/>
+              </xs:choice>
+              <xs:element name="tasks" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="task" minOccurs="0" maxOccurs="unbounded">                    
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="command" minOccurs="1" maxOccurs="1"/>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string"/>
+                        <xs:attribute name="skip" type="xs:boolean"/>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="skip" type="xs:boolean"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Define the date_specific type -->
+  <xs:complexType name="date_specific">
+      <xs:sequence>
+        <xs:element name="date" minOccurs="1" maxOccurs="1" type="xs:dateTime"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define the date type -->
+  <xs:complexType name="date">
+      <xs:sequence>
+        <xs:element name="time" minOccurs="1" maxOccurs="1" type="xs:time"/>
+        <xs:element name="weekday" minOccurs="0" maxOccurs="1" type="weekday"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <!-- Define weekday type -->
+  <xs:simpleType name="weekday">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="monday"/>
+      <xs:enumeration value="tuesday"/>
+      <xs:enumeration value="wednesday"/>
+      <xs:enumeration value="thursday"/>
+      <xs:enumeration value="friday"/>
+      <xs:enumeration value="saturday"/>
+      <xs:enumeration value="sunday"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
