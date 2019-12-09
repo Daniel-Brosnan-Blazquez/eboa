@@ -47,7 +47,7 @@ class TestEngine(unittest.TestCase):
         filename = "test_general_scheduler.xml"
         path_to_scheduler = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename
         t0 = parser.parse("2019-12-09")
-        returned_value = self.engine_sboa.insert_configuration(t0, path_to_scheduler)
+        returned_value = self.engine_sboa.insert_configuration(t0, path_to_scheduler)["status"]
 
         assert returned_value == sboa_engine.exit_codes["OK"]["status"]
 

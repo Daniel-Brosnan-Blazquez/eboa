@@ -72,6 +72,10 @@ exit_codes = {
     "T0_IS_NOT_DATETIME": {
         "status": 4,
         "message": "The T0 parameter ({}) is not an instance of datetime"
+    },
+    "RULES_AND_TASKS_GENERATED": {
+        "status": 5,
+        "message": "Rules and tasks have been generated"
     }
 }
 
@@ -107,15 +111,20 @@ class Engine():
 
         list_rules = []
         list_tasks = []
-        self.generate_rules_and_tasks(list_rules, list_tasks, t0, configuration_path)
+        returned_status = self.generate_rules_and_tasks(list_rules, list_tasks, t0, configuration_path)
+
+        if returned_status["status"] != exit_codes["RULES_AND_TASKS_GENERATED"]["status"]:
+            return returned_status
+        # end if
         
         # Bulk insert mappings
         self.session.bulk_insert_mappings(Rule, list_rules)
         self.session.bulk_insert_mappings(Task, list_tasks)
         self.session.commit()
-        
-        logger.error(exit_codes["OK"]["message"].format(configuration_path))
-        return exit_codes["OK"]["status"]
+
+        message = exit_codes["OK"]["message"].format(configuration_path)
+        logger.error(message)
+        return {"status": exit_codes["OK"]["status"], "message": message}
 
     # end def
 
@@ -123,14 +132,15 @@ class Engine():
 
         # Check if file exists
         if not isinstance(t0, datetime.date):
-            logger.error(exit_codes["T0_IS_NOT_DATETIME"]["message"].format(t0))
-            return exit_codes["T0_IS_NOT_DATETIME"]["status"]
+            message = exit_codes["T0_IS_NOT_DATETIME"]["message"].format(t0)
+            logger.error(message)
+            return {"status": exit_codes["T0_IS_NOT_DATETIME"]["status"], "message": message}
         # end if
 
         # Check if file exists
         if not os.path.isfile(configuration_path):
             logger.error(exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["message"].format(configuration_path))
-            return exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["status"]
+            return {"status": exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["status"], "message": message}
         # end if
         
         # Get schema
@@ -144,14 +154,14 @@ class Engine():
         except etree.XMLSyntaxError as e:
 
             logger.error(exit_codes["FILE_NOT_READABLE"]["message"].format(configuration_path))
-            return exit_codes["FILE_NOT_READABLE"]["status"]
+            return {"status": exit_codes["FILE_NOT_READABLE"]["status"], "message": message}
         # end try
         
         # Check configuration against the schema
         valid = schema.validate(scheduler_xml)
         if not valid:
             logger.error(exit_codes["FILE_NOT_VALID"]["message"].format(configuration_path, get_schemas_path() + "/sboa_schema.xsd"))
-            return exit_codes["FILE_NOT_VALID"]["status"]
+            return {"status": exit_codes["FILE_NOT_VALID"]["status"], "message": message}
         # end if
 
         # Obtain the xpath evaluator
@@ -217,6 +227,7 @@ class Engine():
                 list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, rule_uuid = rule_uuid))
             # end for
         # end for
+        return {"status": exit_codes["RULES_AND_TASKS_GENERATED"]["status"], "message": exit_codes["RULES_AND_TASKS_GENERATED"]["message"]}
     # end def
     
     def close_session (self):
