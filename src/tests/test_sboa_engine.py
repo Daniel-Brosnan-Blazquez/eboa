@@ -55,15 +55,25 @@ class TestEngine(unittest.TestCase):
 
         assert len(rules) == 3
 
-        rules = self.query_sboa.get_rules(names={"filter": "ECHO_1", "op": "=="}, window_size_filters=[{"float": 1, "op": "=="}])
+        weekday_number = 3
+        current_weekday = t0.isoweekday()
+        if current_weekday > weekday_number:
+            sum_days = 7 + weekday_number - current_weekday
+        else:
+            sum_days = weekday_number - current_weekday
+        # end if
+        triggering_date = datetime.datetime(t0.year, t0.month, t0.day).date() + datetime.timedelta(days=sum_days)
+        triggering_time = triggering_date.isoformat() + "T10:00:00"
+
+        rules = self.query_sboa.get_rules(names={"filter": "ECHO_1", "op": "=="}, window_size_filters=[{"float": 7, "op": "=="}], triggering_time_filters=[{"date": triggering_time, "op": "=="}])
 
         assert len(rules) == 1
 
-        rules = self.query_sboa.get_rules(names={"filter": "ECHO_2", "op": "=="}, window_size_filters=[{"float": 1, "op": "=="}])
+        rules = self.query_sboa.get_rules(names={"filter": "ECHO_2", "op": "=="}, window_size_filters=[{"float": 1, "op": "=="}], triggering_time_filters=[{"date": "2019-12-09T10:00:00", "op": "=="}])
 
         assert len(rules) == 1
 
-        rules = self.query_sboa.get_rules(names={"filter": "ECHO_3", "op": "=="}, window_size_filters=[{"float": 1, "op": "=="}])
+        rules = self.query_sboa.get_rules(names={"filter": "ECHO_3", "op": "=="}, window_size_filters=[{"float": 1, "op": "=="}], triggering_time_filters=[{"date": "2019-12-10T10:00:00", "op": "=="}])
 
         assert len(rules) == 1
 

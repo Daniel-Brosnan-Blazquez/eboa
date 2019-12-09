@@ -105,6 +105,22 @@ class Engine():
     #####################
     def insert_configuration(self, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
 
+        list_rules = []
+        list_tasks = []
+        self.generate_rules_and_tasks(list_rules, list_tasks, t0, configuration_path)
+        
+        # Bulk insert mappings
+        self.session.bulk_insert_mappings(Rule, list_rules)
+        self.session.bulk_insert_mappings(Task, list_tasks)
+        self.session.commit()
+        
+        logger.error(exit_codes["OK"]["message"].format(configuration_path))
+        return exit_codes["OK"]["status"]
+
+    # end def
+
+    def generate_rules_and_tasks(self, list_rules, list_tasks, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
+
         # Check if file exists
         if not isinstance(t0, datetime.date):
             logger.error(exit_codes["T0_IS_NOT_DATETIME"]["message"].format(t0))
@@ -144,8 +160,6 @@ class Engine():
         # Remove previous agenda
         self.session.query(Rule).delete(synchronize_session=False)
         
-        list_rules = []
-        list_tasks = []
         for rule in scheduler_xpath("/rules/rule[not(boolean(@skip)) and not(@skip = true)]"):
             # Get metadata of the rule
             name = rule.xpath("@name")[0]
@@ -166,17 +180,17 @@ class Engine():
                     if weekday_literal == "monday":
                         weekday_number = 1
                     elif weekday_literal == "tuesday":
-                        weekday_number = 1
+                        weekday_number = 2
                     elif weekday_literal == "wednesday":
-                        weekday_number = 1
+                        weekday_number = 3
                     elif weekday_literal == "thursday":
-                        weekday_number = 1
+                        weekday_number = 4
                     elif weekday_literal == "friday":
-                        weekday_number = 1
+                        weekday_number = 5
                     elif weekday_literal == "saturday":
-                        weekday_number = 1
-                    else:
                         weekday_number = 6
+                    else:
+                        weekday_number = 7
                     # end if
                     current_weekday = t0.isoweekday()
                     if current_weekday > weekday_number:
@@ -185,11 +199,11 @@ class Engine():
                         sum_days = weekday_number - current_weekday
                     # end if
 
-                    triggering_date = t0.date() + datetime.timedelta(days=sum_days)
+                    triggering_date = datetime.datetime(t0.year, t0.month, t0.day).date() + datetime.timedelta(days=sum_days)
                     
                     triggering_time = triggering_date.isoformat() + "T" + time
                 else:
-                    triggering_time = t0.date().isoformat() + "T" + time
+                    triggering_time = datetime.datetime(t0.year, t0.month, t0.day).date().isoformat() + "T" + time
                 # end if
 
             # end if
@@ -203,17 +217,8 @@ class Engine():
                 list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, rule_uuid = rule_uuid))
             # end for
         # end for
-
-        # Bulk insert mappings
-        self.session.bulk_insert_mappings(Rule, list_rules)
-        self.session.bulk_insert_mappings(Task, list_tasks)
-        self.session.commit()
-        
-        logger.error(exit_codes["OK"]["message"].format(configuration_path))
-        return exit_codes["OK"]["status"]
-
     # end def
-
+    
     def close_session (self):
         """
         Method to close the session

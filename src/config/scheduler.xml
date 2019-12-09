@@ -1,14 +1,14 @@
 <rules>
   <rule name="ECHO_1">
-    <!-- periodicity is set to 1 minute -->
-    <periodicity>0.000694</periodicity>
-    <!-- window_delay is set to 1 day -->
-    <window_delay>1</window_delay>
+    <!-- periodicity is set to 1 week -->
+    <periodicity>7</periodicity>
+    <!-- window_delay is set to 4 hours -->
+    <window_delay>0.166666667</window_delay>
     <!-- window_size is set to 1 day -->
-    <window_size>1</window_size>
+    <window_size>7</window_size>
     <date>
       <time>10:00:00</time>
-      <weekday>monday</weekday>
+      <weekday>wednesday</weekday>
     </date>
     <tasks>
       <task name="ECHO_1">
@@ -17,10 +17,10 @@
     </tasks>
   </rule>
   <rule name="ECHO_2">
-    <!-- periodicity is set to 1 minute -->
-    <periodicity>0.000694</periodicity>
-    <!-- window_delay is set to 1 day -->
-    <window_delay>1</window_delay>
+    <!-- periodicity is set to 1 day -->
+    <periodicity>1</periodicity>
+    <!-- window_delay is set to 4 hours -->
+    <window_delay>0.166666667</window_delay>
     <!-- window_size is set to 1 day -->
     <window_size>1</window_size>
     <date>
@@ -33,10 +33,10 @@
     </tasks>
   </rule>
   <rule name="ECHO_3">
-    <!-- periodicity is set to 1 minute -->
-    <periodicity>0.000694</periodicity>
-    <!-- window_delay is set to 1 day -->
-    <window_delay>1</window_delay>
+    <!-- periodicity is set to 1 day -->
+    <periodicity>1</periodicity>
+    <!-- window_delay is set to 4 hours -->
+    <window_delay>0.166666667</window_delay>
     <!-- window_size is set to 1 day -->
     <window_size>1</window_size>
     <date_specific>
