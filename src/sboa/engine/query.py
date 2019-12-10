@@ -26,7 +26,7 @@ from eboa.engine.errors import InputError
 import eboa.engine.functions as functions
 
 # Import logging
-from eboa.logging import Log
+from sboa.logging import Log
 
 # Import query printing facilities
 from eboa.engine.query import log_query
@@ -60,7 +60,7 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_rules(self, rule_uuids = None, names = None, triggering_time_filters = None, window_size_filters = None, order_by = None, limit = None, offset = None):
+    def get_rules(self, rule_uuids = None, names = None, window_size_filters = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the rule entities filtered by the received parameters
 
@@ -68,8 +68,6 @@ class Query():
         :type rule_uuids: text_filter
         :param names: name filters
         :type names: text_filter
-        :param triggering_time_filters: list of triggering time filters
-        :type triggering_time_filters: date_filters
         :param window_size_filters: list of window size filters
         :type window_size_filters: float_filters
 
@@ -100,15 +98,6 @@ class Query():
                 filter = eval('Rule.name.' + text_operators[names["op"]])
                 params.append(filter(names["filter"]))
             # end if
-        # end if
-
-        # triggering_time filters
-        if triggering_time_filters != None:
-            functions.is_valid_date_filters(triggering_time_filters)
-            for triggering_time_filter in triggering_time_filters:
-                op = arithmetic_operators[triggering_time_filter["op"]]
-                params.append(op(Rule.triggering_time, triggering_time_filter["date"]))
-            # end for
         # end if
 
         # window size filters
@@ -150,7 +139,7 @@ class Query():
 
         return rules
 
-    def get_tasks(self, task_uuids = None, names = None, order_by = None, limit = None, offset = None):
+    def get_tasks(self, task_uuids = None, names = None, triggering_time_filters = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the task entities filtered by the received parameters
 
@@ -163,7 +152,7 @@ class Query():
         :rtype: list
         """
         params = []
-
+        
         # Task UUIDs
         if task_uuids != None:
             functions.is_valid_text_filter(task_uuids)
@@ -186,6 +175,15 @@ class Query():
                 filter = eval('Task.name.' + text_operators[names["op"]])
                 params.append(filter(names["filter"]))
             # end if
+        # end if
+
+        # triggering_time filters
+        if triggering_time_filters != None:
+            functions.is_valid_date_filters(triggering_time_filters)
+            for triggering_time_filter in triggering_time_filters:
+                op = arithmetic_operators[triggering_time_filter["op"]]
+                params.append(op(Task.triggering_time, triggering_time_filter["date"]))
+            # end for
         # end if
 
         query = self.session.query(Task).filter(*params)
@@ -219,7 +217,7 @@ class Query():
         return tasks
 
 
-    def get_triggerings(self, triggering_uuids = None, names = None, order_by = None, limit = None, offset = None):
+    def get_triggerings(self, triggering_uuids = None, date_filters = None, triggered = None, task_names = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the triggering entities filtered by the received parameters
 
@@ -227,12 +225,15 @@ class Query():
         :type triggering_uuids: text_filter
         :param date_filters: list of triggering time filters
         :type date_filters: date_filters
+        :param task_names: name of tasks filters
+        :type task_names: text_filter
 
         :return: found triggerings
         :rtype: list
         """
         params = []
-
+        tables = []
+        
         # Triggering UUIDs
         if triggering_uuids != None:
             functions.is_valid_text_filter(triggering_uuids)
@@ -254,7 +255,31 @@ class Query():
             # end for
         # end if
 
-        query = self.session.query(Triggering).filter(*params)
+        # triggered filter
+        if triggered != None:
+            functions.is_valid_bool_filter(triggered)
+            params.append(Triggering.triggered == triggered)
+        # end if
+        
+        # Names
+        if task_names != None:
+            functions.is_valid_text_filter(task_names)
+            if task_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[task_names["op"]]
+                params.append(op(Task.name, task_names["filter"]))
+            else:
+                filter = eval('Task.name.' + text_operators[task_names["op"]])
+                params.append(filter(task_names["filter"]))
+            # end if
+            tables.append(Task)
+        # end if
+
+        query = self.session.query(Triggering)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
 
         # Order by
         if order_by != None:

@@ -40,7 +40,7 @@
     <!-- window_size is set to 1 day -->
     <window_size>1</window_size>
     <date_specific>
-      <date>2019-12-10T10:00:00</date>
+      <date>2019-12-01T10:00:00</date>
     </date_specific>
     <tasks>
       <task name="ECHO_3_1">

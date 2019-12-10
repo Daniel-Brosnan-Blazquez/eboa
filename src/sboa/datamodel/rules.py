@@ -20,15 +20,13 @@ class Rule(Base):
     periodicity = Column(Float)
     window_delay = Column(Float)
     window_size = Column(Float)    
-    triggering_time = Column(DateTime)
 
-    def __init__(self, rule_uuid, name, periodicity, window_delay, window_size, triggering_time):
+    def __init__(self, rule_uuid, name, periodicity, window_delay, window_size):
         self.rule_uuid = report_uuid
         self.name = name
         self.periodicity = periodicity
         self.window_delay = window_delay
         self.window_size = window_size
-        self.triggering_time = triggering_time
 
     def jsonify(self):
         return {
@@ -36,8 +34,7 @@ class Rule(Base):
             "name": self.name,
             "periodicity": self.periodicity,
             "window_delay": self.window_delay,
-            "window_size": self.window_size,
-            "triggering_time": str(self.triggering_time).replace(" ", "T")
+            "window_size": self.window_size
         }
 
 class Task(Base):
@@ -46,13 +43,15 @@ class Task(Base):
     task_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     name = Column(Text)
     command = Column(Text)
+    triggering_time = Column(DateTime)
     rule_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('rules.rule_uuid'))
     rule = relationship("Rule", backref="tasks")
 
-    def __init__(self, task_uuid, name, command, rule_uuid):
+    def __init__(self, task_uuid, name, command, triggering_time, rule_uuid):
         self.task_uuid = task_uuid
         self.name = name
         self.command = command
+        self.triggering_time = triggering_time
         self.rule_uuid = rule_uuid
 
     def jsonify(self):
@@ -60,6 +59,7 @@ class Task(Base):
             "task_uuid": self.task_uuid,
             "name": self.name,
             "command": self.command,
+            "triggering_time": str(self.triggering_time).replace(" ", "T"),
             "rule_uuid": self.rule.rule_uuid
         }
 
@@ -68,12 +68,14 @@ class Triggering(Base):
 
     triggering_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     date = Column(DateTime)
+    triggered = Column(Boolean)    
     task_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('tasks.task_uuid'))
     tasks = relationship("Task", backref="triggerings")
 
-    def __init__(self, triggering_uuid, date, task_uuid):
+    def __init__(self, triggering_uuid, date, triggered, task_uuid):
         self.triggering_uuid = triggering_uuid
         self.date = date
+        self.triggered = triggered
         self.task_uuid = task_uuid
 
     def jsonify(self):

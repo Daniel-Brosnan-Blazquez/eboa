@@ -29,7 +29,9 @@ setup(name="eboa",
           "xmlschema",
           "jsonschema",
           "psutil",
-          "inotify"
+          "inotify",
+          "daemon",
+          "lockfile"
       ],
       extras_require={
           "tests" :[

@@ -38,7 +38,6 @@ CREATE TABLE sboa.rules (
 	periodicity double precision NOT NULL,
 	window_delay double precision NOT NULL,
 	window_size double precision NOT NULL,
-	triggering_time timestamp NOT NULL,
 	CONSTRAINT rules_pk PRIMARY KEY (rule_uuid),
 	CONSTRAINT unique_rule UNIQUE (name)
 
@@ -53,6 +52,7 @@ CREATE TABLE sboa.tasks (
 	task_uuid uuid NOT NULL,
 	name text NOT NULL,
 	command text NOT NULL,
+	triggering_time timestamp NOT NULL,
 	rule_uuid uuid NOT NULL,
 	CONSTRAINT tasks_pk PRIMARY KEY (task_uuid),
 	CONSTRAINT unique_task UNIQUE (name)
@@ -74,6 +74,7 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE TABLE sboa.triggerings (
 	triggering_uuid uuid NOT NULL,
 	date timestamp NOT NULL,
+	triggered bool NOT NULL,
 	task_uuid uuid NOT NULL,
 	CONSTRAINT triggerings_pk PRIMARY KEY (triggering_uuid)
 
@@ -109,7 +110,7 @@ CREATE INDEX idx_rule_name_gin ON sboa.rules
 
 -- object: idx_triggering_time | type: INDEX --
 -- DROP INDEX IF EXISTS sboa.idx_triggering_time CASCADE;
-CREATE INDEX idx_triggering_time ON sboa.rules
+CREATE INDEX idx_triggering_time ON sboa.tasks
 	USING btree
 	(
 	  triggering_time

@@ -35,9 +35,6 @@ from eboa.debugging import debug, race_condition
 from sboa.datamodel.base import Session
 from sboa.datamodel.rules import Rule, Task, Triggering
 
-# Import parsing module
-import rboa.engine.parsing as parsing
-
 # Import auxiliary functions
 from eboa.engine.common_functions import insert_values, insert_alert_groups, insert_alert_cnfs
 
@@ -45,7 +42,7 @@ from eboa.engine.common_functions import insert_values, insert_alert_groups, ins
 from rboa.engine.functions import get_rboa_archive_path
 
 # Import logging
-from eboa.logging import Log
+from sboa.logging import Log
 
 logging = Log(name = __name__)
 logger = logging.logger
@@ -76,7 +73,19 @@ exit_codes = {
     "RULES_AND_TASKS_GENERATED": {
         "status": 5,
         "message": "Rules and tasks have been generated"
-    }
+    },
+    "DATE_IS_NOT_DATETIME": {
+        "status": 6,
+        "message": "Triggering date is not a valid datetime for the task {}"
+    },
+    "TASK_UUID_DOES_NOT_EXIST": {
+        "status": 7,
+        "message": "The task uuid provided does not correspond to any task stored"
+    },
+    "OK_TRIGGERING": {
+        "status": 0,
+        "message": "The triggering for the task ({}) has been registered"
+    }    
 }
 
 class Engine():
@@ -99,7 +108,6 @@ class Engine():
         self.data = data
         self.Scoped_session = scoped_session(Session)
         self.session = self.Scoped_session()
-        self.session_progress = self.Scoped_session()
         self.operation = None
     
         return
@@ -107,6 +115,7 @@ class Engine():
     #####################
     # INSERTION METHODS #
     #####################
+    @debug
     def insert_configuration(self, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
 
         list_rules = []
@@ -128,6 +137,7 @@ class Engine():
 
     # end def
 
+    @debug
     def generate_rules_and_tasks(self, list_rules, list_tasks, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
 
         # Check if file exists
@@ -218,18 +228,72 @@ class Engine():
 
             # end if
 
-            list_rules.append(dict(rule_uuid = rule_uuid, name = name, periodicity = periodicity, window_delay = window_delay, window_size = window_size, triggering_time = triggering_time))
+            list_rules.append(dict(rule_uuid = rule_uuid, name = name, periodicity = periodicity, window_delay = window_delay, window_size = window_size))
 
             for task in rule.xpath("tasks/task"):
                 name = task.xpath("@name")[0]
                 command = task.xpath("command")[0].text
                 task_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, rule_uuid = rule_uuid))
+                list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, triggering_time = triggering_time, rule_uuid = rule_uuid))
             # end for
         # end for
         return {"status": exit_codes["RULES_AND_TASKS_GENERATED"]["status"], "message": exit_codes["RULES_AND_TASKS_GENERATED"]["message"]}
     # end def
-    
+
+    @debug
+    def insert_triggering(self, date, task_uuid):
+
+        task = self.session.query(Task).filter(Task.task_uuid == task_uuid).first()
+        if not task:
+            logger.error(exit_codes["TASK_UUID_DOES_NOT_EXIST"]["message"])
+            returned_information = {
+                "triggering_uuid": "",
+                "status": exit_codes["TASK_UUID_DOES_NOT_EXIST"]["status"]
+            }
+            return returned_information
+        # end if
+
+        if not isinstance(date, datetime.datetime):
+            # Log the error
+            logger.error(exit_codes["DATE_IS_NOT_DATETIME"]["message"].format(task.name))
+            returned_information = {
+                "triggering_uuid": "",
+                "status": exit_codes["DATE_IS_NOT_DATETIME"]["status"]
+            }
+            return returned_information
+        # end if
+
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+
+        triggering = Triggering(id, date, False, task.task_uuid)
+        
+        self.session.add(triggering)
+        self.session.commit()
+        logger.info(exit_codes["OK_TRIGGERING"]["message"].format(task.name))        
+        returned_information = {
+            "triggering_uuid": id,
+            "status": exit_codes["OK_TRIGGERING"]["status"]
+        }
+        return returned_information
+
+    @debug
+    def triggering_done(self, triggering_uuid):
+
+        triggering = self.session.query(Triggering).filter(Triggering.triggering_uuid == triggering_uuid).first()
+        triggering.triggered = True
+        self.session.commit()
+
+        return
+
+    @debug
+    def set_triggering_time(self, task_uuid, triggering_time):
+
+        task = self.session.query(Task).filter(Task.task_uuid == task_uuid).first()
+        task.triggering_time = triggering_time
+        self.session.commit()
+
+        return
+
     def close_session (self):
         """
         Method to close the session
