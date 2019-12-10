@@ -41,6 +41,9 @@ from eboa.engine.common_functions import insert_values, insert_alert_groups, ins
 # Import auxiliary functions
 from rboa.engine.functions import get_rboa_archive_path
 
+# Import BOA scheduler
+import sboa.scheduler.boa_scheduler_functions as boa_scheduler
+
 # Import logging
 from sboa.logging import Log
 
@@ -118,6 +121,9 @@ class Engine():
     @debug
     def insert_configuration(self, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
 
+        # Switch off scheduler
+        boa_scheduler.stop_scheduler()
+
         list_rules = []
         list_tasks = []
         returned_status = self.generate_rules_and_tasks(list_rules, list_tasks, t0, configuration_path)
@@ -125,6 +131,9 @@ class Engine():
         if returned_status["status"] != exit_codes["RULES_AND_TASKS_GENERATED"]["status"]:
             return returned_status
         # end if
+
+        # Remove previous agenda
+        self.session.query(Rule).delete(synchronize_session=False)
         
         # Bulk insert mappings
         self.session.bulk_insert_mappings(Rule, list_rules)
@@ -176,9 +185,6 @@ class Engine():
 
         # Obtain the xpath evaluator
         scheduler_xpath = etree.XPathEvaluator(scheduler_xml)
-
-        # Remove previous agenda
-        self.session.query(Rule).delete(synchronize_session=False)
         
         for rule in scheduler_xpath("/rules/rule[not(boolean(@skip)) and not(@skip = true)]"):
             # Get metadata of the rule

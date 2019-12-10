@@ -68,7 +68,7 @@ class Triggering(Base):
 
     triggering_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
     date = Column(DateTime)
-    triggered = Column(Boolean)    
+    triggered = Column(Boolean)
     task_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('tasks.task_uuid'))
     tasks = relationship("Task", backref="triggerings")
 
@@ -81,6 +81,7 @@ class Triggering(Base):
     def jsonify(self):
         return {
             "triggering_uuid": self.triggering_uuid,
-            "date": self.date,
+            "date": str(self.date).replace(" ", "T"),
+            "triggered": self.triggered,
             "task_uuid": self.task.task_uuid
         }

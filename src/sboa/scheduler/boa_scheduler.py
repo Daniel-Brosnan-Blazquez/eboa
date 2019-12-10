@@ -20,8 +20,8 @@ import shlex
 from subprocess import Popen, PIPE
 from multiprocessing import Pool
 
-# Get eboa auxiliary functions
-from eboa.engine.functions import get_resources_path
+# Get boa scheduler functions
+import sboa.scheduler.boa_scheduler_functions as functions
 
 # Import logging
 from sboa.logging import Log
@@ -33,7 +33,7 @@ from sboa.engine.engine import Engine
 # Import engine
 import sboa.engine.engine as sboa_engine
 
-pid_file = get_resources_path() + "/boa_scheduler.pid"
+pid_file = functions.pid_file
 
 # Import auxiliary functions
 from sboa.datamodel.functions import read_configuration
@@ -54,13 +54,23 @@ def execute_task(parameters):
     
 # end def
 
-def query_and_execute_tasks():
+def query_and_execute_tasks(logger = None):
 
-    query = Query()
+    if not logger:
+        logging = Log(name = __name__)
+        logger = logging.logger
+    # end if
     
-    on_going_triggerings = query.get_triggerings(triggered = False)
+    query = Query()
 
+    stop = datetime.datetime.now()
+    start = stop + datetime.timedelta(minutes=-30)
+    on_going_triggerings = query.get_triggerings(triggered = False,
+                                                 date_filters=[{"date": start.isoformat(), "op": ">"},
+                                                               {"date": stop.isoformat(), "op": "<="}])
+    
     if len(on_going_triggerings) == maximum_parallel_tasks:
+        logger.error("The system has reached the maximum number of parallel tasks set as {}".format(maximum_parallel_tasks))
         return
     # end if
 
@@ -102,49 +112,42 @@ def start_scheduler():
     while True:
         time.sleep(1)
         logger.info("BOA scheduler is going to review tasks for triggerig")
-        query_and_execute_tasks()    
+        query_and_execute_tasks(logger)    
     # end while
 
 def stop_scheduler():
 
-    print("BOA scheduler is going to be stopped...")
-    logging = Log(name = __name__)
-    logger = logging.logger
-    logger.info("BOA scheduler is going to be stopped...")
-    pid = pidfile.TimeoutPIDLockFile(pid_file).read_pid()
-    p = psutil.Process(pid)
-    p.terminate()
-    logger.info("BOA scheduler stopped")
-    print("BOA scheduler stopped")    
-
+    functions.stop_scheduler()
+    
 def status_scheduler():
 
-    if pidfile.TimeoutPIDLockFile(pid_file).is_locked():
-        message = "BOA scheduler is running..."
-        print(message)
-        return {"status": 0, "message": message}
-    else:
-        message = "BOA scheduler is not running..."
-        print(message)
-        return {"status": -1, "message": message}
-    # end if
+    return functions.status_scheduler()
     
 if __name__ == "__main__":
 
     args_parser = argparse.ArgumentParser(description="BOA scheduler.")
     args_parser.add_argument("-c", dest="command", type=str, nargs=1,
                              help="command to execute (start, stop or status)", required=True)
+    args_parser.add_argument("-o", "--no_output",
+                             help="execute daemon without redirecting stdout and stderr to sys.stdout", action="store_true")
     
     args = args_parser.parse_args()
     command = args.command[0]
 
     if command == "start":
-        if not pidfile.TimeoutPIDLockFile(pid_file).is_locked():
+        if not pidfile.TimeoutPIDLockFile(pid_file).is_locked() and not args.no_output:
             print("BOA scheduler is going to be started...")
             with daemon.DaemonContext(
                     working_directory="/tmp",
                     pidfile=pidfile.TimeoutPIDLockFile(pid_file),
                     stdout=sys.stdout, stderr=sys.stdout) as context:
+                start_scheduler()
+            # end with
+        elif not pidfile.TimeoutPIDLockFile(pid_file).is_locked():
+            print("BOA scheduler is going to be started...")
+            with daemon.DaemonContext(
+                    working_directory="/tmp",
+                    pidfile=pidfile.TimeoutPIDLockFile(pid_file)) as context:
                 start_scheduler()
             # end with
         else:
