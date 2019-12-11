@@ -11,64 +11,64 @@
     </date_specific>
     <tasks>
       <task name="SLEEP_1" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_2" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_3" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_4" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_5" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_6" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_7" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_8" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_9" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_10" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_11" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_12" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_13" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_14" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_15" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_16" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_17" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_18" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_19" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
       <task name="SLEEP_20" add_window_arguments="false">
-        <command>sleep 1</command>
+        <command>sleep 5</command>
       </task>
     </tasks>
   </rule>

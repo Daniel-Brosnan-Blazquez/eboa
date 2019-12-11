@@ -159,15 +159,15 @@ class TestEngine(unittest.TestCase):
 
         scheduler.query_and_execute_tasks()
 
-        time.sleep(1)        
+        time.sleep(3)        
 
         scheduler.query_and_execute_tasks()
 
-        time.sleep(2)
+        time.sleep(6)
 
         scheduler.query_and_execute_tasks()
 
-        time.sleep(2)
+        time.sleep(6)
         
         triggerings = self.query_sboa.get_triggerings()
 

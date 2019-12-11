@@ -67,7 +67,7 @@ def query_and_execute_tasks(logger = None):
                                                  date_filters=[{"date": start.isoformat(), "op": ">"},
                                                                {"date": stop.isoformat(), "op": "<="}])
     
-    if len(on_going_triggerings) == maximum_parallel_tasks:
+    if len(on_going_triggerings) >= maximum_parallel_tasks:
         logger.error("The system has reached the maximum number of parallel tasks set as {}".format(maximum_parallel_tasks))
         return
     # end if
