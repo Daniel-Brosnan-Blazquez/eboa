@@ -12,6 +12,7 @@ import shlex
 from subprocess import Popen, PIPE
 from daemon import pidfile
 import os
+import errno
 
 # Get eboa auxiliary functions
 from eboa.engine.functions import get_resources_path
@@ -24,6 +25,15 @@ from sboa.engine.query import Query
 
 pid_file = get_resources_path() + "/boa_scheduler.pid"
 pid_files_folder = get_resources_path() + "/on_going_triggerings/"
+
+try:
+    os.makedirs(pid_files_folder)
+except OSError as exc:
+    if exc.errno != errno.EEXIST:
+        raise
+    # end if
+    pass
+# end try
 
 def stop_scheduler():
 

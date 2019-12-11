@@ -44,14 +44,16 @@ class Task(Base):
     name = Column(Text)
     command = Column(Text)
     triggering_time = Column(DateTime)
+    add_window_arguments = Column(Boolean)
     rule_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('rules.rule_uuid'))
     rule = relationship("Rule", backref="tasks")
 
-    def __init__(self, task_uuid, name, command, triggering_time, rule_uuid):
+    def __init__(self, task_uuid, name, command, triggering_time, add_window_arguments, rule_uuid):
         self.task_uuid = task_uuid
         self.name = name
         self.command = command
         self.triggering_time = triggering_time
+        self.add_window_arguments = add_window_arguments
         self.rule_uuid = rule_uuid
 
     def jsonify(self):
@@ -60,6 +62,7 @@ class Task(Base):
             "name": self.name,
             "command": self.command,
             "triggering_time": str(self.triggering_time).replace(" ", "T"),
+            "triggering_time": self.add_window_arguments,
             "rule_uuid": self.rule.rule_uuid
         }
 

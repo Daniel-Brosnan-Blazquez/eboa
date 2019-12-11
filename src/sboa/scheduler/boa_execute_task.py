@@ -64,9 +64,11 @@ def execute_task(task_uuid):
             new_triggering_time = task.triggering_time + datetime.timedelta(days=float(task.rule.periodicity))
             engine.set_triggering_time(task_uuid, new_triggering_time)
 
-            command = command + " -b '" + start.isoformat() + "' -e '" + stop.isoformat() + "'"
-
-            logger.info("The command '{}' is going to be executed".format(command))
+            if task.add_window_arguments:
+                command = command + " -b '" + start.isoformat() + "' -e '" + stop.isoformat() + "'"
+            # end if
+                
+            logger.info("The command '{}' is going to be executed with triggering time {} and window arguments (if applied) -b {} -e {}".format(command, task.triggering_time, start.isoformat(), stop.isoformat()))
             
             command_split = shlex.split(command)
             program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -98,7 +100,6 @@ if __name__ == "__main__":
     task_uuid = args.task_uuid[0]
 
     newpid = os.fork()
-    result = 0
     if newpid == 0:
         execute_task(task_uuid)
     # end if

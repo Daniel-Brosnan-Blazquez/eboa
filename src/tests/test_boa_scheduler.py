@@ -14,6 +14,7 @@ import uuid
 import random
 import before_after
 from dateutil import parser
+import time
 
 # Import engine of the DDBB
 import sboa.engine.engine as sboa_engine
@@ -59,7 +60,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(rules) == 3
 
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
 
         assert len(tasks) == 1
 
@@ -70,7 +71,7 @@ class TestEngine(unittest.TestCase):
         assert len(triggerings) == 1
 
         self.query_sboa.session.expunge_all()
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
 
         assert len(tasks) == 1
 
@@ -95,20 +96,44 @@ class TestEngine(unittest.TestCase):
 
         scheduler.query_and_execute_tasks()
 
-        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1", "ECHO_3_2"], "op": "in"})
+        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"})
 
         assert len(triggerings) == 2
 
         self.query_sboa.session.expunge_all()
 
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_2", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_2_ECHO_3", "op": "=="})
 
         assert len(tasks) == 1
 
         assert tasks[0].triggering_time.isoformat() == "2019-12-02T10:00:00"
         
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
 
         assert len(tasks) == 1
 
         assert tasks[0].triggering_time.isoformat() == "2019-12-02T10:00:00"
+
+    def test_execute_10_tasks_2_times(self):
+
+        filename = "test_10_tasks.xml"
+        path_to_scheduler = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename
+        t0 = parser.parse("2019-12-09")
+        returned_value = self.engine_sboa.insert_configuration(t0, path_to_scheduler)["status"]
+
+        assert returned_value == sboa_engine.exit_codes["OK"]["status"]
+
+        rules = self.query_sboa.get_rules()
+
+        assert len(rules) == 1
+
+        tasks = self.query_sboa.get_tasks()
+
+        assert len(tasks) == 10
+
+        scheduler.query_and_execute_tasks()
+        scheduler.query_and_execute_tasks()
+        
+        triggerings = self.query_sboa.get_triggerings()
+
+        assert len(triggerings) == 20

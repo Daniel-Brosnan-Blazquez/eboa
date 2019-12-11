@@ -53,6 +53,7 @@ CREATE TABLE sboa.tasks (
 	name text NOT NULL,
 	command text NOT NULL,
 	triggering_time timestamp NOT NULL,
+	add_window_arguments bool NOT NULL,
 	rule_uuid uuid NOT NULL,
 	CONSTRAINT tasks_pk PRIMARY KEY (task_uuid),
 	CONSTRAINT unique_task UNIQUE (name)

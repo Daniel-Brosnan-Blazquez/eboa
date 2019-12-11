@@ -23,15 +23,16 @@
                         <xs:sequence>
                           <xs:element name="command" minOccurs="1" maxOccurs="1"/>
                         </xs:sequence>
-                        <xs:attribute name="name" type="xs:string"/>
+                        <xs:attribute name="name" type="xs:string" use="required"/>
                         <xs:attribute name="skip" type="xs:boolean"/>
+                        <xs:attribute name="add_window_arguments" type="xs:boolean"/>
                       </xs:complexType>
                     </xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="skip" type="xs:boolean"/>
           </xs:complexType>
         </xs:element>

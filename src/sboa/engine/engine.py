@@ -59,19 +59,19 @@ exit_codes = {
     },
     "FILE_NOT_READABLE": {
         "status": 1,
-        "message": "The scheduler configuration file ({}) cannot be read"
+        "message": "The scheduler configuration could not be loaded. The scheduler configuration file ({}) cannot be read"
     },
     "FILE_NOT_VALID": {
         "status": 2,
-        "message": "The scheduler configuration file ({}) does not pass the schema verification ({})"
+        "message": "The scheduler configuration could not be loaded. The scheduler configuration file ({}) does not pass the schema verification ({})"
     },
     "CONFIG_FILE_DOES_NOT_EXIST": {
         "status": 3,
-        "message": "The scheduler configuration file ({}) does not exist"
+        "message": "The scheduler configuration could not be loaded. The scheduler configuration file ({}) does not exist"
     },
     "T0_IS_NOT_DATETIME": {
         "status": 4,
-        "message": "The T0 parameter ({}) is not an instance of datetime"
+        "message": "The scheduler configuration could not be loaded. The T0 parameter ({}) is not an instance of datetime"
     },
     "RULES_AND_TASKS_GENERATED": {
         "status": 5,
@@ -88,6 +88,14 @@ exit_codes = {
     "OK_TRIGGERING": {
         "status": 0,
         "message": "The triggering for the task ({}) has been registered"
+    },
+    "DUPLICATED_RULE_NAMES": {
+        "status": 8,
+        "message": "The scheduler configuration could not be loaded. There are names of rules duplicated. List of rule names {} / list of unique rule names {}"
+    },
+    "DUPLICATED_TASK_NAMES": {
+        "status": 9,
+        "message": "The scheduler configuration could not be loaded. There are names of tasks duplicated. List of task names {} / list of unique task names {}"
     }    
 }
 
@@ -185,8 +193,25 @@ class Engine():
 
         # Obtain the xpath evaluator
         scheduler_xpath = etree.XPathEvaluator(scheduler_xml)
+
+        # Check uniqueness of names
+        rule_names = [rule for rule in scheduler_xpath("/rules/rule[not(boolean(@skip)) and not(@skip = 'true')]/@name")]
+        unique_rule_names = set(rule_names)
+        if len(rule_names) != len(unique_rule_names):
+            message = exit_codes["DUPLICATED_RULE_NAMES"]["message"].format(rule_names, unique_rule_names)
+            logger.error(message)
+            return {"status": exit_codes["DUPLICATED_RULE_NAMES"]["status"], "message": message}
+        # end if
+
+        task_names = [task.xpath("@name")[0] + "_" + task.xpath("../../@name")[0] for task in scheduler_xpath("/rules/rule/tasks/task[not(boolean(@skip)) and not(@skip = 'true')]")]
+        unique_task_names = set(task_names)
+        if len(task_names) != len(unique_task_names):
+            message = exit_codes["DUPLICATED_TASK_NAMES"]["message"].format(task_names, unique_task_names)
+            logger.error(message)
+            return {"status": exit_codes["DUPLICATED_TASK_NAMES"]["status"], "message": message}
+        # end if
         
-        for rule in scheduler_xpath("/rules/rule[not(boolean(@skip)) and not(@skip = true)]"):
+        for rule in scheduler_xpath("/rules/rule[not(boolean(@skip)) and not(@skip = 'true')]"):
             # Get metadata of the rule
             name = rule.xpath("@name")[0]
             periodicity = rule.xpath("periodicity")[0].text
@@ -236,11 +261,18 @@ class Engine():
 
             list_rules.append(dict(rule_uuid = rule_uuid, name = name, periodicity = periodicity, window_delay = window_delay, window_size = window_size))
 
-            for task in rule.xpath("tasks/task"):
-                name = task.xpath("@name")[0]
+            for task in rule.xpath("tasks/task[not(boolean(@skip)) and not(@skip = 'true')]"):
+                name = task.xpath("@name")[0] + "_" + task.xpath("../../@name")[0]
                 command = task.xpath("command")[0].text
+
+                add_window_arguments = True
+                add_window_arguments_xml = task.xpath("@add_window_arguments")
+                if len(add_window_arguments_xml) > 0 and add_window_arguments_xml[0] == "false":
+                    add_window_arguments = False
+                # end if
+                    
                 task_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, triggering_time = triggering_time, rule_uuid = rule_uuid))
+                list_tasks.append(dict(task_uuid = task_uuid, name = name, command = command, triggering_time = triggering_time, add_window_arguments = add_window_arguments, rule_uuid = rule_uuid))
             # end for
         # end for
         return {"status": exit_codes["RULES_AND_TASKS_GENERATED"]["status"], "message": exit_codes["RULES_AND_TASKS_GENERATED"]["message"]}
