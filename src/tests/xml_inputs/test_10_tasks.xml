@@ -1,0 +1,45 @@
+<rules>
+  <rule name="SLEEP">
+    <!-- periodicity is set to 1 day -->
+    <periodicity>1</periodicity>
+    <!-- window_delay is set to 4 hours -->
+    <window_delay>0.166666667</window_delay>
+    <!-- window_size is set to 1 day -->
+    <window_size>1</window_size>
+    <date_specific>
+      <date>2017-12-01T10:00:00</date>
+    </date_specific>
+    <tasks>
+      <task name="SLEEP_1" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_2" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_3" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_4" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_5" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_6" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_7" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_8" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_9" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+      <task name="SLEEP_10" add_window_arguments="false">
+        <command>sleep 5</command>
+      </task>
+    </tasks>
+  </rule>
+</rules>
