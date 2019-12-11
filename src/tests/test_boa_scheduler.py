@@ -96,6 +96,8 @@ class TestEngine(unittest.TestCase):
 
         scheduler.query_and_execute_tasks()
 
+        time.sleep(1)
+
         triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"})
 
         assert len(triggerings) == 2
