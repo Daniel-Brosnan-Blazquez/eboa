@@ -149,7 +149,7 @@ class Engine():
         self.session.commit()
 
         message = exit_codes["OK"]["message"].format(configuration_path)
-        logger.error(message)
+        logger.info(message)
         return {"status": exit_codes["OK"]["status"], "message": message}
 
     # end def

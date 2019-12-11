@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,0" last-zoom="1" max-obj-count="4"
+<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,346" last-zoom="1" max-obj-count="4"
 	 default-schema="sboa" default-owner="postgres">
 <role name="sboa"
       inherit="true"
@@ -19,6 +19,19 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <schema name="sboa" layer="0" rect-visible="true" fill-color="#e1e1e1">
 	<role name="sboa"/>
 </schema>
+
+<extension name="pg_trgm">
+	<schema name="sboa"/>
+</extension>
+
+<opclass  name="gin_trgm_ops" index-type="gin" default="false" sql-disabled="true">
+	<schema name="sboa"/>
+	<role name="postgres"/>
+	<type name="text" length="0"/>
+	<element type="storage">
+		<type name="text" length="0"/>
+	</element>
+</opclass>
 
 <table name="rules" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="sboa"/>
@@ -141,6 +154,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 index-type="gin" factor="0">
 		<idxelement use-sorting="false">
 			<column name="name"/>
+			<opclass  signature="sboa.gin_trgm_ops USING gin"/>
 		</idxelement>
 </index>
 
@@ -165,6 +179,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 index-type="gin" factor="0">
 		<idxelement use-sorting="false">
 			<column name="name"/>
+			<opclass  signature="sboa.gin_trgm_ops USING gin"/>
 		</idxelement>
 </index>
 

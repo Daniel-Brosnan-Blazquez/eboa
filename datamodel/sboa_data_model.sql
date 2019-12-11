@@ -30,6 +30,21 @@ ALTER SCHEMA sboa OWNER TO sboa;
 SET search_path TO pg_catalog,public,sboa;
 -- ddl-end --
 
+-- object: pg_trgm | type: EXTENSION --
+-- DROP EXTENSION IF EXISTS pg_trgm CASCADE;
+CREATE EXTENSION pg_trgm
+WITH SCHEMA sboa;
+-- ddl-end --
+
+-- -- object: sboa.gin_trgm_ops | type: OPERATOR CLASS --
+-- -- DROP OPERATOR CLASS IF EXISTS sboa.gin_trgm_ops USING gin CASCADE;
+-- CREATE OPERATOR CLASS sboa.gin_trgm_ops FOR TYPE text
+--  USING gin AS
+-- 	STORAGE	text;
+-- -- ddl-end --
+-- ALTER OPERATOR CLASS sboa.gin_trgm_ops USING gin OWNER TO postgres;
+-- -- ddl-end --
+-- 
 -- object: sboa.rules | type: TABLE --
 -- DROP TABLE IF EXISTS sboa.rules CASCADE;
 CREATE TABLE sboa.rules (
@@ -105,7 +120,7 @@ CREATE INDEX idx_rule_name ON sboa.rules
 CREATE INDEX idx_rule_name_gin ON sboa.rules
 	USING gin
 	(
-	  name
+	  name sboa.gin_trgm_ops
 	);
 -- ddl-end --
 
@@ -132,7 +147,7 @@ CREATE INDEX idx_task_name ON sboa.tasks
 CREATE INDEX idx_task_name_gin ON sboa.tasks
 	USING gin
 	(
-	  name
+	  name sboa.gin_trgm_ops
 	);
 -- ddl-end --
 

@@ -47,8 +47,6 @@ def execute_task(parameters):
     command = "boa_execute_task.py -u " + parameters["task_uuid"]
     command_split = shlex.split(command)
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output, error = program.communicate()        
-    return_code = program.returncode
 
     return
     
