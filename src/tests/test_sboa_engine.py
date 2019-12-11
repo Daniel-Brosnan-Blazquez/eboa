@@ -81,18 +81,18 @@ class TestEngine(unittest.TestCase):
 
         assert len(tasks) == 4        
 
-        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_1", "op": "=="}, triggering_time_filters=[{"date": triggering_time, "op": "=="}])
+        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_1_ECHO_1", "op": "=="}, triggering_time_filters=[{"date": triggering_time, "op": "=="}])
 
         assert len(tasks) == 1
 
-        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_2", "op": "=="}, triggering_time_filters=[{"date": "2019-12-09T10:00:00", "op": "=="}])
+        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_2_ECHO_2", "op": "=="}, triggering_time_filters=[{"date": "2019-12-09T10:00:00", "op": "=="}])
 
         assert len(tasks) == 1
 
-        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_3_1", "op": "=="}, triggering_time_filters=[{"date": "2019-12-01T10:00:00", "op": "=="}])
+        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_3_1_ECHO_3", "op": "=="}, triggering_time_filters=[{"date": "2019-12-01T10:00:00", "op": "=="}])
 
         assert len(tasks) == 1
 
-        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_3_2", "op": "=="}, triggering_time_filters=[{"date": "2019-12-01T10:00:00", "op": "=="}])
+        tasks = self.query_sboa.get_tasks(names={"filter": "ECHO_3_2_ECHO_3", "op": "=="}, triggering_time_filters=[{"date": "2019-12-01T10:00:00", "op": "=="}])
 
         assert len(tasks) == 1
