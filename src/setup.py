@@ -30,8 +30,8 @@ setup(name="eboa",
           "jsonschema",
           "psutil",
           "inotify",
-          "daemon",
-          "lockfile"
+          "lockfile",
+          "python-daemon"
       ],
       extras_require={
           "tests" :[
