@@ -42,9 +42,9 @@ config = read_configuration()
 maximum_parallel_tasks = config["MAXIMUM_PARALLEL_TASKS"]
 
 # Function to execute the command
-def execute_task(parameters):
+def execute_triggering(parameters):
 
-    command = "boa_execute_task.py -u " + parameters["task_uuid"]
+    command = "boa_execute_triggering.py -u " + parameters["triggering_uuid"] + " -b '" + parameters["start"] + "' -e '" + parameters["stop"] + "'"
     command_split = shlex.split(command)
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -60,6 +60,7 @@ def query_and_execute_tasks(logger = None):
     # end if
     
     query = Query()
+    engine = Engine()
 
     stop = datetime.datetime.now()
     start = stop + datetime.timedelta(minutes=-30)
@@ -84,13 +85,32 @@ def query_and_execute_tasks(logger = None):
         # end if
         parameters = []
         for task in tasks[:tasks_to_trigger]:
-            parameters.append({
-                "task_uuid": str(task.task_uuid)
-            })
+            date = datetime.datetime.now()
+            triggering_info = engine.insert_triggering(date, task.task_uuid)
+            if triggering_info["status"] == sboa_engine.exit_codes["OK_TRIGGERING"]["status"]:
+                stop = task.triggering_time - datetime.timedelta(days=float(task.rule.window_delay))
+                start = stop - datetime.timedelta(days=float(task.rule.window_size))            
+
+                new_triggering_time = task.triggering_time + datetime.timedelta(days=float(task.rule.periodicity))
+                engine.set_triggering_time(task.task_uuid, new_triggering_time)
+
+                parameters.append({
+                    "triggering_uuid": str(triggering_info["triggering_uuid"]),
+                    "start": start.isoformat(),
+                    "stop": stop.isoformat()
+                })
+            else:
+                parameters.append({
+                    "triggering_uuid": None,
+                    "start": start.isoformat(),
+                    "stop": stop.isoformat()
+                })                
+            # end if
+        # end for
         # Trigger parallel generation of reports
         pool = Pool(tasks_to_trigger)
         try:
-            pool.map(execute_task, parameters)
+            pool.map(execute_triggering, parameters)
         finally:
             pool.close()
             pool.join()
@@ -98,6 +118,7 @@ def query_and_execute_tasks(logger = None):
     # end if
 
     query.close_session()
+    engine.close_session()    
     
     return
 

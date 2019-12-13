@@ -73,7 +73,7 @@ class Triggering(Base):
     date = Column(DateTime)
     triggered = Column(Boolean)
     task_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('tasks.task_uuid'))
-    tasks = relationship("Task", backref="triggerings")
+    task = relationship("Task", backref="triggerings")
 
     def __init__(self, triggering_uuid, date, triggered, task_uuid):
         self.triggering_uuid = triggering_uuid

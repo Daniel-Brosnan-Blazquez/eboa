@@ -27,7 +27,7 @@ from eboa.logging import Log
 
 # Import scheduler
 import sboa.scheduler.boa_scheduler as scheduler
-import sboa.scheduler.boa_execute_task as execute
+import sboa.scheduler.boa_execute_triggering as execute
 
 class TestEngine(unittest.TestCase):
     def setUp(self):
@@ -47,7 +47,7 @@ class TestEngine(unittest.TestCase):
         self.query_sboa.close_session()
         self.session.close()
 
-    def test_execute_task(self):
+    def test_execute_triggering(self):
 
         filename = "test_general_scheduler.xml"
         path_to_scheduler = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename
@@ -64,9 +64,14 @@ class TestEngine(unittest.TestCase):
 
         assert len(tasks) == 1
 
-        execute.execute_task(tasks[0].task_uuid)
+        date = datetime.datetime.now()
+        triggering_info = self.engine_sboa.insert_triggering(date, tasks[0].task_uuid)
+        stop = tasks[0].triggering_time - datetime.timedelta(days=float(tasks[0].rule.window_delay))
+        start = stop - datetime.timedelta(days=float(tasks[0].rule.window_size))            
 
-        triggerings = self.query_sboa.get_triggerings()
+        execute.execute_triggering(triggering_info["triggering_uuid"], start.isoformat(), stop.isoformat())
+
+        triggerings = self.query_sboa.get_triggerings(triggered = True)
 
         assert len(triggerings) == 1
 
@@ -75,7 +80,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(tasks) == 1
 
-        assert tasks[0].triggering_time.isoformat() == "2019-12-02T10:00:00"
+        assert tasks[0].triggering_time.isoformat() == "2019-12-01T10:00:00"
 
     def test_query_and_execute_task(self):
 
@@ -98,12 +103,12 @@ class TestEngine(unittest.TestCase):
 
         time.sleep(1)
 
-        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"})
+        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"}, triggered = True)
 
         assert len(triggerings) == 2
 
         self.query_sboa.session.expunge_all()
-
+        
         tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_2_ECHO_3", "op": "=="})
 
         assert len(tasks) == 1
@@ -136,9 +141,9 @@ class TestEngine(unittest.TestCase):
         scheduler.query_and_execute_tasks()
         scheduler.query_and_execute_tasks()
 
-        time.sleep(6)
+        time.sleep(10)
         
-        triggerings = self.query_sboa.get_triggerings()
+        triggerings = self.query_sboa.get_triggerings(triggered = True)
 
         assert len(triggerings) == 20
 
@@ -172,6 +177,6 @@ class TestEngine(unittest.TestCase):
 
     #     time.sleep(6)
         
-    #     triggerings = self.query_sboa.get_triggerings()
+    #     triggerings = self.query_sboa.get_triggerings(triggered = True)
 
     #     assert len(triggerings) == 40
