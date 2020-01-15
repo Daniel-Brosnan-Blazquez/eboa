@@ -1632,7 +1632,7 @@ class Query():
         """
         params = []
 
-        tables = []
+        tables = {}
 
         query_of_events_or_annotations = False
 
@@ -1682,7 +1682,7 @@ class Query():
                 filter = eval('ExplicitRefGrp.name.' + text_operators[groups["op"]])
                 params.append(filter(groups["filter"]))
             # end if
-            tables.append(ExplicitRefGrp)
+            tables[ExplicitRefGrp] = ExplicitRefGrp.expl_ref_cnf_uuid==ExplicitRef.expl_ref_cnf_uuid
         # end if
 
         # explicit references ingestion_time filters
@@ -1694,34 +1694,279 @@ class Query():
             # end for
         # end if
 
-        # Events
-        explicit_ref_uuids_events = []
-        if event_uuids or start_filters or stop_filters or event_ingestion_time_filters or event_value_filters or gauge_uuids or source_uuids or sources or gauge_names or gauge_systems or keys or duration_filters:
-            query_of_events_or_annotations = True
-            events = self.get_events(event_uuids = event_uuids, start_filters = start_filters, stop_filters = stop_filters, ingestion_time_filters = event_ingestion_time_filters, value_filters = event_value_filters, gauge_uuids = gauge_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, duration_filters = duration_filters)
-
-            explicit_ref_uuids_events = [str(event.explicit_ref_uuid) for event in events]
-        # end if
-
-        # Annotations
-        explicit_ref_uuids_annotations = []
-        if source_uuids or annotation_cnf_uuids or annotation_ingestion_time_filters or annotation_uuids or sources or annotation_cnf_names or annotation_cnf_systems or annotation_value_filters:
-            query_of_events_or_annotations = True
-            annotations = self.get_annotations(source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, annotation_cnf_uuids = annotation_cnf_uuids, ingestion_time_filters = annotation_ingestion_time_filters, annotation_uuids = annotation_uuids, sources = sources, explicit_refs = explicit_refs, annotation_cnf_names = annotation_cnf_names, annotation_cnf_systems = annotation_cnf_systems, value_filters = annotation_value_filters)
-
-            explicit_ref_uuids_annotations = [str(annotation.explicit_ref_uuid) for annotation in annotations]
-        # end if
-
-        # explicit references uuids
-        explicit_ref_uuids = set (explicit_ref_uuids_events + explicit_ref_uuids_annotations)
-        if query_of_events_or_annotations:
-            params.append(ExplicitRef.explicit_ref_uuid.in_(explicit_ref_uuids))
-        # end if
-
+        print("explicit_refs")
         query = self.session.query(ExplicitRef)
-        for table in set(tables):
-            query = query.join(table)
+        print(tables)
+        for table in tables:
+            print(table)
+            query = query.join(table, tables[table])
         # end for
+
+        join_tables = False
+        tables = {}
+        
+        # Events
+        # event_uuids
+        if event_uuids != None:
+            functions.is_valid_text_filter(event_uuids)
+            if event_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_uuids["op"]]
+                params.append(op(Event.event_uuid, event_uuids["filter"]))
+            else:
+                filter = eval('Event.event_uuid.' + text_operators[event_uuids["op"]])
+                params.append(filter(event_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # source_uuids
+        if source_uuids != None:
+            functions.is_valid_text_filter(source_uuids)
+            if source_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_uuids["op"]]
+                params.append(op(Event.source_uuid, source_uuids["filter"]))
+            else:
+                filter = eval('Event.source_uuid.' + text_operators[source_uuids["op"]])
+                params.append(filter(source_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+        # Sources
+        if sources != None:
+            functions.is_valid_text_filter(sources)
+            if sources["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[sources["op"]]
+                params.append(op(Source.name, sources["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[sources["op"]])
+                params.append(filter(sources["filter"]))
+            # end if
+            join_tables = True
+            tables[Source] = Source.source_uuid==Event.source_uuid
+        # end if
+
+        # gauge_uuids
+        if gauge_uuids != None:
+            functions.is_valid_text_filter(gauge_uuids)
+            if gauge_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_uuids["op"]]
+                params.append(op(Event.gauge_uuid, gauge_uuids["filter"]))
+            else:
+                filter = eval('Event.gauge_uuid.' + text_operators[gauge_uuids["op"]])
+                params.append(filter(gauge_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Gauge names
+        if gauge_names != None:
+            functions.is_valid_text_filter(gauge_names)
+            if gauge_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_names["op"]]
+                params.append(op(Gauge.name, gauge_names["filter"]))
+            else:
+                filter = eval('Gauge.name.' + text_operators[gauge_names["op"]])
+                params.append(filter(gauge_names["filter"]))
+            # end if
+            join_tables = True
+            tables[Gauge] = Gauge.gauge_uuid==Event.gauge_uuid
+        # end if
+
+        # Gauge systems
+        if gauge_systems != None:
+            functions.is_valid_text_filter(gauge_systems)
+            if gauge_systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[gauge_systems["op"]]
+                params.append(op(Gauge.system, gauge_systems["filter"]))
+            else:
+                filter = eval('Gauge.system.' + text_operators[gauge_systems["op"]])
+                params.append(filter(gauge_systems["filter"]))
+            # end if
+            join_tables = True
+            tables[Gauge] = Gauge.gauge_uuid==Event.gauge_uuid
+        # end if
+
+        # keys
+        if keys != None:
+            functions.is_valid_text_filter(keys)
+            if keys["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[keys["op"]]
+                params.append(op(EventKey.event_key, keys["filter"]))
+            else:
+                filter = eval('EventKey.event_key.' + text_operators[keys["op"]])
+                params.append(filter(keys["filter"]))
+            # end if
+            join_tables = True
+            tables[EventKey] = EventKey.event_uuid==Event.event_uuid
+        # end if
+
+        # start filters
+        if start_filters != None:
+            functions.is_valid_date_filters(start_filters)
+            for start_filter in start_filters:
+                op = arithmetic_operators[start_filter["op"]]
+                params.append(op(Event.start, start_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # stop filters
+        if stop_filters != None:
+            functions.is_valid_date_filters(stop_filters)
+            for stop_filter in stop_filters:
+                op = arithmetic_operators[stop_filter["op"]]
+                params.append(op(Event.stop, stop_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # duration filters
+        if duration_filters != None:
+            functions.is_valid_float_filters(duration_filters)
+            for duration_filter in duration_filters:
+                op = arithmetic_operators[duration_filter["op"]]
+                params.append(op((extract("epoch", Event.stop) - extract("epoch", Event.start)), duration_filter["float"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # ingestion_time filters
+        if event_ingestion_time_filters != None:
+            functions.is_valid_date_filters(event_ingestion_time_filters)
+            for ingestion_time_filter in event_ingestion_time_filters:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(Event.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # Event value filters
+        tables_values = []
+        self.prepare_query_values(event_value_filters, event_value_entities, params, tables_values)
+        for table in set(tables_values):
+            tables[table] = Event.event_uuid==table.event_uuid
+        # end for
+
+        if len(tables) > 0 or join_tables:
+            query = query.join(Event, ExplicitRef.explicit_ref_uuid==Event.explicit_ref_uuid)
+            print("events")
+            print(tables)
+            for table in tables:
+                print(table)
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}
+        
+        # Annotations
+        # annotation_uuids
+        if annotation_uuids != None:
+            functions.is_valid_text_filter(annotation_uuids)
+            if annotation_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_uuids["op"]]
+                params.append(op(Annotation.annotation_uuid, annotation_uuids["filter"]))
+            else:
+                filter = eval('Annotation.annotation_uuid.' + text_operators[annotation_uuids["op"]])
+                params.append(filter(annotation_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # source_uuids
+        if source_uuids != None:
+            functions.is_valid_text_filter(source_uuids)
+            if source_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_uuids["op"]]
+                params.append(op(Annotation.source_uuid, source_uuids["filter"]))
+            else:
+                filter = eval('Annotation.source_uuid.' + text_operators[source_uuids["op"]])
+                params.append(filter(source_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+        # Sources
+        if sources != None:
+            functions.is_valid_text_filter(sources)
+            if sources["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[sources["op"]]
+                params.append(op(Source.name, sources["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[sources["op"]])
+                params.append(filter(sources["filter"]))
+            # end if
+            join_tables = True
+            tables[Source] = Source.source_uuid==Annotation.source_uuid
+        # end if
+
+        # annotation_cnf_uuids
+        if annotation_cnf_uuids != None:
+            functions.is_valid_text_filter(annotation_cnf_uuids)
+            if annotation_cnf_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_uuids["op"]]
+                params.append(op(Annotation.annotation_cnf_uuid, annotation_cnf_uuids["filter"]))
+            else:
+                filter = eval('Annotation.annotation_cnf_uuid.' + text_operators[annotation_cnf_uuids["op"]])
+                params.append(filter(annotation_cnf_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # ingestion_time filters
+        if annotation_ingestion_time_filters != None:
+            functions.is_valid_date_filters(annotation_ingestion_time_filters)
+            for ingestion_time_filter in annotation_ingestion_time_filters:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(Annotation.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # Annotation configuration names
+        if annotation_cnf_names != None:
+            functions.is_valid_text_filter(annotation_cnf_names)
+            if annotation_cnf_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_names["op"]]
+                params.append(op(AnnotationCnf.name, annotation_cnf_names["filter"]))
+            else:
+                filter = eval('AnnotationCnf.name.' + text_operators[annotation_cnf_names["op"]])
+                params.append(filter(annotation_cnf_names["filter"]))
+            # end if
+            join_tables = True
+            tables[AnnotationCnf] = AnnotationCnf.annotation_cnf_uuid==Annotation.annotation_cnf_uuid
+        # end if
+
+        # Annotation configuration systems
+        if annotation_cnf_systems != None:
+            functions.is_valid_text_filter(annotation_cnf_systems)
+            if annotation_cnf_systems["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_cnf_systems["op"]]
+                params.append(op(AnnotationCnf.system, annotation_cnf_systems["filter"]))
+            else:
+                filter = eval('AnnotationCnf.system.' + text_operators[annotation_cnf_systems["op"]])
+                params.append(filter(annotation_cnf_systems["filter"]))
+            # end if
+            join_tables = True
+            tables[AnnotationCnf] = AnnotationCnf.annotation_cnf_uuid==Annotation.annotation_cnf_uuid
+        # end if
+
+        # Annotation value filters
+        tables_values = []
+        self.prepare_query_values(annotation_value_filters, annotation_value_entities, params, tables_values)
+        for table in set(tables_values):
+            tables[table] = Annotation.annotation_uuid==table.annotation_uuid
+        # end for
+
+        if len(tables) > 0 or join_tables:
+            query = query.join(Annotation, ExplicitRef.explicit_ref_uuid==Annotation.explicit_ref_uuid)
+            print("annotations")
+            print(tables)
+            for table in tables:
+                print(table)
+                query = query.join(table, tables[table])
+            # end for
+        # end if
 
         query = query.filter(*params)
 
