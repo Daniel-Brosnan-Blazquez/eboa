@@ -147,6 +147,8 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
                 query.close_session()
             # end if
 
+            os.remove(html_file_path)
+
         except Exception as e:
             logger.error("The insertion of the metadata related to the generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
             # Log status
