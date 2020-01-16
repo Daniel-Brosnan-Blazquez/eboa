@@ -83,3 +83,28 @@ def status_scheduler():
         print(message)
         return {"status": "off", "message": message}
     # end if
+
+def command_start_scheduler():
+
+    command = "boa_scheduler.py -c start -o"
+
+    command_split = shlex.split(command)
+    try:
+        program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, error = program.communicate()
+        return_code = program.returncode
+        command_status = {"command": command,
+                          "output": output.decode("utf-8"),
+                          "error": error.decode("utf-8"),
+                          "return_code": return_code}
+    except FileNotFoundError:
+        output = ""
+        error = "Command {} not found".format(command)
+        return_code = -1
+        command_status = {"command": command,
+                          "output": output,
+                          "error": error,
+                          "return_code": return_code}
+    # end if
+
+    return command_status

@@ -96,6 +96,10 @@ exit_codes = {
     "DUPLICATED_TASK_NAMES": {
         "status": 9,
         "message": "The scheduler configuration could not be loaded. There are names of tasks duplicated. List of task names {} / list of unique task names {}"
+    },
+    "BOA_SCHEDULER_COULD_NOT_START": {
+        "status": 10,
+        "message": "BOA scheduler could not start. Output of command was {}, output error {} and return code {}"
     }    
 }
 
@@ -127,7 +131,7 @@ class Engine():
     # INSERTION METHODS #
     #####################
     @debug
-    def insert_configuration(self, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml"):
+    def insert_configuration(self, t0 = datetime.datetime.now().date(), configuration_path = get_resources_path() + "/scheduler.xml", start_scheduler = False):
 
         # Switch off scheduler
         boa_scheduler.stop_scheduler()
@@ -148,6 +152,17 @@ class Engine():
         self.session.bulk_insert_mappings(Task, list_tasks)
         self.session.commit()
 
+        # Switch on scheduler
+        if start_scheduler:
+            command_status = boa_scheduler.command_start_scheduler()
+
+            if command_status["return_code"] != 0:
+                message = exit_codes["BOA_SCHEDULER_COULD_NOT_START"]["message"].format(command_status["output"], command_status["error"], command_status["return_code"])
+                logger.error(message)
+                return {"status": exit_codes["BOA_SCHEDULER_COULD_NOT_START"]["status"], "message": message}
+            # end if
+        # end if            
+        
         message = exit_codes["OK"]["message"].format(configuration_path)
         logger.info(message)
         return {"status": exit_codes["OK"]["status"], "message": message}
