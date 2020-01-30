@@ -10,5 +10,6 @@
   </alerts>
   <folders>
     <folder name="ROOT" path="/" threshold_num_files="100"/>
+    <folder name="TMP" path="/tmp" recursive="true" threshold_num_files="100"/>
   </folders>
 </health>
