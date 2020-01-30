@@ -291,6 +291,8 @@ def main():
     file_path = args.file_path[0]
     
     logger.info("Received file {}".format(file_path))
+
+    exit_code = 0
     
     output_path = None
     if args.output_path != None:
@@ -326,14 +328,7 @@ def main():
         # Check if file exists
         if not os.path.isfile(file_path):
             logger.error("The specified file {} does not exist".format(file_path))
-            query_log_status = Query()
-            sources = query_log_status.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
-            if len(sources) > 0:
-                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(file_path))
-            # end if
-            query_log_status.close_session()
-
-            exit(-1)
+            exit_code = -1
         # end if
         
         newpid = os.fork()
@@ -373,6 +368,20 @@ def main():
             }
             engine_eboa.treat_data(data)
 
+            # Check if file exists
+            if not os.path.isfile(file_path):
+                logger.error("The specified file {} does not exist and will be marked in the DDBB".format(file_path))
+                query_log_status = Query()
+                sources = query_log_status.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+                if len(sources) > 0:
+                    eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(file_path))
+                # end if
+                query_log_status.close_session()
+
+                exit(-1)
+            # end if
+
+
             result = triggering(file_path, reception_time, engine_eboa)
             if args.remove_input:
                 try:
@@ -388,7 +397,7 @@ def main():
         # end if
     # end if
 
-    exit(0)    
+    exit(exit_code)    
 
 if __name__ == "__main__":
 
