@@ -1,0 +1,16 @@
+<triggering_rules>
+  <rule>
+    <source_mask>matching_source</source_mask>
+    <source_type>MATCHING</source_type>
+    <tool>
+      <command>echo matching</command>
+    </tool>
+  </rule>
+  <rule skip="true">
+    <source_mask>matching_source_skip</source_mask>
+    <source_type>MATCHING_SKIP</source_type>
+    <tool>
+      <command>echo "matching skip"</command>
+    </tool>
+  </rule>
+</triggering_rules>

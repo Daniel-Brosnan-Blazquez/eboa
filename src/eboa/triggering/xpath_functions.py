@@ -27,11 +27,12 @@ def match(dummy, node, input_text):
 
     """
     try:
-        match = re.match(node[0].text, input_text)
+        match_text = "^" + node[0].text + "$"
+        match = re.match(match_text, input_text)
     except AttributeError:
-        match = re.match(node[0], input_text)
-    # end try
-    
+        match_text = "^" + node[0] + "$"
+        match = re.match(match_text, input_text)
+    # end try    
     if match:
         return True
     # end if

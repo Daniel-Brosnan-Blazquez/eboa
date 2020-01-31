@@ -164,7 +164,8 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
 
     if output_path == None and len(failures) == 0:
         # Remove the entry associated to the notification of pending ingestions
-        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, processors = {"filter": "", "op": "=="}, processor_version_filters = [{"filter": "", "op": "=="}], delete = True)
+        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="}, delete = True)
+        query.get_sources(names = {"filter": os.path.basename(file_path), "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
         logger.info("The associated alert for notifying about the pending ingestion of the file {} is going to be deleted from DDBB".format(filename))
     # end if
         
