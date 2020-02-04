@@ -24,12 +24,12 @@ config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 
-def execute_command(command, success_message):
+def execute_command(command, success_message, check_error = True):
     command_split = shlex.split(command)
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
     output, error = program.communicate()
     return_code = program.returncode
-    if return_code != 0:
+    if check_error and return_code != 0:
         print("The execution of the command {} has ended unexpectedly with the following error: {} and the following output: {}".format(command, str(error), str(output)))
         exit(-1)
     else:
@@ -54,7 +54,16 @@ def main():
         print("No worries! The initialization is going to be aborted :-)")
         exit(0)
     # end if
+
+    continue_orc_initialization_flag = input("\n" +
+                          "You selected also to initialize ORC environment\n" +
+                          "This operation will erase all the information in ORC DDBB, would you still want to continue? [Ny]")
     
+    if continue_orc_initialization_flag != "y":
+        print("No worries! The initialization is going to be aborted :-)")
+        exit(0)
+    # end if
+
     args = args_parser.parse_args()
 
     # Default path for the docker environment
@@ -95,13 +104,13 @@ def main():
     
     if args.initialize_orc:
 
+        print("The ORC database is going to be deleted...")
+        command = "createdb s2boa_orc"
+        execute_command(command, "The MINARC database has been successfully created :-)", check_error = False)
+
         print("The ORC database is going to be created...")
         command = "createdb s2boa_orc"
         execute_command(command, "The MINARC database has been successfully created :-)")
-
-        print("The MINARC database is going to be initialize...")
-        command = "minArcDB --drop-tables"
-        execute_command(command, "The MINARC database has been erased successfully :-)")
 
         command = "minArcDB --create-tables"
         execute_command(command, "The MINARC database has been initialized successfully :-)")
@@ -109,10 +118,6 @@ def main():
         print("The MINARC archive is going to be initialize...")
         command = "minArcPurge -Y"
         execute_command(command, "The MINARC archive has been initialized successfully :-)")
-
-        print("The ORC database is going to be initialize...")
-        command = "orcManageDB --drop-tables"
-        execute_command(command, "The ORC database has been erased successfully :-)")
 
         command = "orcManageDB --create-tables"
         execute_command(command, "The ORC database has been initialized successfully :-)")
