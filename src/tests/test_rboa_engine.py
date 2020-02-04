@@ -139,7 +139,7 @@ class TestEngine(unittest.TestCase):
 
         assert reports[0].name == "report.html"
         assert reports[0].generation_mode == "MANUAL"
-        assert reports[0].relative_path == "2018/07/05/report.tgz"
+        assert reports[0].relative_path == "2018/07/05/" + str(reports[0].report_uuid) + "_report.tgz"
         assert reports[0].validity_start.isoformat() == "2018-06-05T02:07:03"
         assert reports[0].validity_stop.isoformat() == "2018-06-05T08:07:36"
         assert reports[0].triggering_time.isoformat() == "2018-07-05T02:07:03"

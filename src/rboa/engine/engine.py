@@ -663,6 +663,7 @@ class Engine():
         file_name_no_extension, extension = os.path.splitext(file_name)
         compress = report.get("compress")
         triggering_time = self.report.triggering_time
+        report_uuid = self.report.report_uuid
         
         # Check if file exists
         if not os.path.isfile(path):
@@ -689,12 +690,12 @@ class Engine():
         # end try
         
         if do_compression:
-            relative_path = year + "/" + month + "/" + day +  "/" + file_name_no_extension + ".tgz"
+            relative_path = year + "/" + month + "/" + day +  "/" + str(report_uuid) + "_" + file_name_no_extension + ".tgz"
             tar = tarfile.open(archive_path + "/" + relative_path, "w:gz")
             tar.add(path, arcname=file_name)
             tar.close()
         else:
-            relative_path = year + "/" + month + "/" + day +  "/" + file_name
+            relative_path = year + "/" + month + "/" + day +  "/" + str(report_uuid) + "_" + file_name
             copyfile(path, archive_path + "/" + relative_path)
         # end if
 
