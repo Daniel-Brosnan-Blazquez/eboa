@@ -105,7 +105,7 @@ def main():
     if args.initialize_orc:
 
         print("The ORC database is going to be deleted...")
-        command = "createdb s2boa_orc"
+        command = "dropdb s2boa_orc"
         execute_command(command, "The MINARC database has been successfully created :-)", check_error = False)
 
         print("The ORC database is going to be created...")
