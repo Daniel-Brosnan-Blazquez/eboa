@@ -42,7 +42,7 @@ def insert_data_into_DDBB(data, report_name, engine):
 
     return returned_statuses
 
-def command_generate_reporting(report_name, processor, generation_mode, begin, end, output_path = None):
+def command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path = None):
 
     # Import the processor module
     try:
@@ -75,7 +75,7 @@ def command_generate_reporting(report_name, processor, generation_mode, begin, e
                    "triggering_time": creation_date,
                    "generation_start": "",
                    "generation_stop": "",
-                   "generator": "",
+                   "generator": generator,
                    "generator_version": ""
         }
     }]
@@ -175,6 +175,8 @@ if __name__ == "__main__":
                         help="report name", required=True)
     args_parser.add_argument("-p", dest="processor", type=str, nargs=1,
                         help="processor module", required=True)
+    args_parser.add_argument("-g", dest="generator", type=str, nargs=1,
+                        help="generator module", required=True)
     args_parser.add_argument("-m", dest="generation_mode", type=str, nargs=1,
                         help="generator mode", required=True)
     args_parser.add_argument("-b", dest="begin", type=str, nargs=1,
@@ -188,6 +190,7 @@ if __name__ == "__main__":
 
     report_name = args.report_name[0]
     processor = args.processor[0]
+    generator = args.generator[0]    
     generation_mode = args.generation_mode[0]
     begin = args.begin[0]
     end = args.end[0]
@@ -196,7 +199,7 @@ if __name__ == "__main__":
         output_path = args.output_path[0]
     # end if
 
-    command_generate_reporting(report_name, processor, generation_mode, begin, end, output_path)
+    command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path)
 
     exit(0)
     

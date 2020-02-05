@@ -86,6 +86,9 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     report_name = report_name_format.replace("%C", creation_date).replace("%B", validity_start).replace("%E", validity_stop)
 
     command = generator_xpath.xpath("command")[0].text
+
+    # Add generator
+    command += " -g '" + generator + "'"
     
     # Execute the associated command
     add_report_name_parameter = generator_xpath.xpath("command/@add_report_name_parameter")
