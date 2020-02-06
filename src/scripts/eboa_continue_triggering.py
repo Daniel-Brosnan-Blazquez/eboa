@@ -34,6 +34,7 @@ def main():
     start = stop + datetime.timedelta(minutes=-30)
     sources = query.get_sources(ingested = False,
                                 ingestion_error = {"filter": True, "op": "!="},
+                                dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="},
                                 generation_time_filters = [{"date": start.isoformat(), "op": ">"},
                                                                              {"date": stop.isoformat(), "op": "<"}])
 
