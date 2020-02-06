@@ -1,6 +1,6 @@
 <triggering_rules>
   <rule>
-    <source_mask>S2_OPER_DEC_F_RECV_........T......_........T......_.....*</source_mask>
+    <source_mask>S2__OPER_DEC_F_RECV_2BOA_........T......_V........T......_........T.......*</source_mask>
     <source_type>REP_DEC_F_RECV</source_type>
     <tool>
       <command>eboa_ingestion.py -p eboa.ingestions.ingestion_dec.ingestion_dec -f </command>
