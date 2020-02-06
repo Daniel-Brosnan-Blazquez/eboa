@@ -403,7 +403,7 @@ class Query():
         sources = []
         if delete:
             sources = query.all()
-            self.session.query(Source).filter(Source.source_uuid.in_([source.source_uuid for source in sources])).delete(synchronize_session=False)
+            self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])).delete(synchronize_session=False)
             self.session.commit()
         else:
             sources = query.all()
@@ -665,7 +665,7 @@ class Query():
         reports = []
         if delete:
             reports = query.all()
-            self.session.query(Report).filter(Report.report_uuid.in_([report.report_uuid for report in reports])).delete(synchronize_session=False)
+            self.session.query(Report).with_for_update().filter(Report.report_uuid.in_([report.report_uuid for report in reports])).delete(synchronize_session=False)
             self.session.commit()
         else:
             reports = query.all()

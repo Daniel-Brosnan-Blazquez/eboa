@@ -2366,3 +2366,31 @@ class TestQuery(unittest.TestCase):
         # end try
 
         assert result == True
+
+
+    def test_delete_source(self):
+
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"}
+            }]}
+        self.engine_eboa.treat_data(data)
+
+        query = Query(session = self.engine_eboa.session)
+
+        sources = query.get_sources()
+
+        assert len(sources) == 1
+
+        query.get_sources(delete = True)
+        sources = query.get_sources()
+
+        assert len(sources) == 0
+
