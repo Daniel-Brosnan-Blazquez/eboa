@@ -47,6 +47,9 @@ from eboa.engine.printing import literal_query
 # Import operators
 from eboa.engine.operators import arithmetic_operators, text_operators
 
+# Import SQLalchemy exceptions
+from sqlalchemy.orm.exc import StaleDataError
+
 logging = Log(name = __name__)
 logger = logging.logger
 
@@ -97,6 +100,19 @@ class Query():
             engine.execute(table.delete())
         # end for
 
+    def delete(self, query):
+        query_executed = False
+        while not query_executed:
+            try:
+                query.delete(synchronize_session=False)
+                self.session.commit()
+                query_executed = True
+            except StaleDataError:
+                pass
+            # end try
+        # end while
+    # end def
+        
     def get_dim_signatures(self, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the DIM signature entities filtered by the received parameters
@@ -403,8 +419,7 @@ class Query():
         sources = []
         if delete:
             sources = query.all()
-            self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])).delete(synchronize_session=False)
-            self.session.commit()
+            self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])))
         else:
             sources = query.all()
         # end if
@@ -665,8 +680,7 @@ class Query():
         reports = []
         if delete:
             reports = query.all()
-            self.session.query(Report).with_for_update().filter(Report.report_uuid.in_([report.report_uuid for report in reports])).delete(synchronize_session=False)
-            self.session.commit()
+            self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid.in_([report.report_uuid for report in reports])))
         else:
             reports = query.all()
         # end if
