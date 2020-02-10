@@ -138,6 +138,8 @@ def process_file(file_path, engine, query, reception_time):
         # Remove the alert as it could not be remove by the ingestion chain (race condition)
         query.get_sources(names = {"filter": sources_to_remove, "op": "in"}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="}, delete = True)
     # end if
+
+    # Register ingestion of the file being processed
     data = {"operations": [{
         "mode": "insert",
         "dim_signature": {
