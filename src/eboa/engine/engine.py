@@ -862,7 +862,27 @@ class Engine():
         self.session.commit()
 
         return exit_codes["OK"]["status"]
-        
+
+    def _bulk_insert_mappings(self, entity, mappings):
+        self.session.begin_nested()
+        try:
+            self.session.bulk_insert_mappings(entity, mappings)
+        except IntegrityError:
+            self.session.rollback()
+            for mapping in mappings:
+                self.session.begin_nested()
+                try:
+                    self.session.bulk_insert_mappings(entity, [mapping])
+                except IntegrityError as e:
+                    logger.info("Mapping ##{}## is skipped because the following exception was raised ##{}##".format(mapping, str(e)))
+                    self.session.rollback()
+                # end try
+                self.session.commit()
+            # end for
+        # end try
+        self.session.commit()
+    # end def
+
     @debug
     def _insert_dim_signature(self):
         """
@@ -1652,13 +1672,13 @@ class Engine():
             
         # Bulk insert alerts
         if len(list_event_alerts) > 0:
-            self.session.bulk_insert_mappings(EventAlert, list_event_alerts)
+            self._bulk_insert_mappings(EventAlert, list_event_alerts)
         # end if
         if len(list_source_alerts) > 0:
-            self.session.bulk_insert_mappings(SourceAlert, list_source_alerts)
+            self._bulk_insert_mappings(SourceAlert, list_source_alerts)
         # end if
         if len(list_explicit_ref_alerts) > 0:
-            self.session.bulk_insert_mappings(ExplicitRefAlert, list_explicit_ref_alerts)
+            self._bulk_insert_mappings(ExplicitRefAlert, list_explicit_ref_alerts)
         # end if
 
         return

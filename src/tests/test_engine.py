@@ -5324,3 +5324,147 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources) == 0
 
+    def test_insert_alerts_by_uuid_which_does_not_exist(self):
+
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "link_ref": "EVENT_REF",
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }],
+            "alerts": [{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_uuid",
+                    "reference": str(id),
+                    "type": "source"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "source.json",
+                    "type": "source"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_uuid",
+                    "reference": str(id),
+                    "type": "event"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "EVENT_REF",
+                    "type": "event"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_uuid",
+                    "reference": str(id),
+                    "type": "explicit_ref"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "EXPLICIT_REFERENCE_EVENT",
+                    "type": "explicit_ref"
+                }
+            }]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        explicit_refs = self.session.query(ExplicitRef).all()
+
+        assert len(explicit_refs) == 1
+
+        source_alerts = self.session.query(SourceAlert).all()
+
+        assert len(source_alerts) == 1
+
+        event_alerts = self.session.query(EventAlert).all()
+
+        assert len(event_alerts) == 1
+
+        explicit_ref_alerts = self.session.query(ExplicitRefAlert).all()
+
+        assert len(explicit_ref_alerts) == 1
+
