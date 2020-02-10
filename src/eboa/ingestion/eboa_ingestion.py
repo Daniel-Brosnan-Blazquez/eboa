@@ -83,6 +83,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
             processing_duration = stop - start
         except Exception as e:
             logger.error("The processing of the file {} has ended unexpectedly with the following error: {}".format(file_path, str(e)))
+            logger.error(traceback.print_exc(file=sys.stdout))
             traceback.print_exc(file=sys.stdout)
             # Log status
             query_log_status = Query()
