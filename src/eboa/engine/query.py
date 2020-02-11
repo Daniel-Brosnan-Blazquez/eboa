@@ -433,13 +433,14 @@ class Query():
                 for source in sources:
                     name = source.name
                     uuid = source.source_uuid
+                    dim_signature_uuid = source.dim_signature_uuid
                     lock = "treat_data_" + source.name
                     @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
                     def _delete_source(self, source):
                         self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid == source.source_uuid))
                     # end def
                     _delete_source(self, source)
-                    logger.info("The source with name {} and uuid {} has been removed".format(name, uuid))
+                    logger.info("The source with name {}, UUID {} and DIM signature UUID {} has been removed".format(name, uuid, dim_signature_uuid))
                 # end for
             else:
                 sources = query.all()
@@ -708,14 +709,15 @@ class Query():
                 reports = sorted(query.all(), key=lambda x:(x.name))
                 for report in reports:
                     name = report.name
-                    uuid = report.report_uuid                    
+                    uuid = report.report_uuid
+                    report_group_uuid = report.report_group_uuid
                     lock = "treat_data_" + report.name
                     @self.synchronized_rboa(lock, external=True, lock_path="/dev/shm")
                     def _delete_report(self, report):
                         self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid == report.report_uuid))
                     # end def
                     _delete_report(self, report)
-                    logger.info("The report with name {} and uuid {} has been removed".format(name, uuid))
+                    logger.info("The report with name {}, UUID {} and report group UUID has been removed".format(name, uuid, report_group_uuid))
                 # end for
             else:
                 reports = query.all()

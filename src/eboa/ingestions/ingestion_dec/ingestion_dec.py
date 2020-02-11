@@ -125,10 +125,8 @@ def process_file(file_path, engine, query, reception_time):
 
     sources_to_remove = []
     for received_file_by_dec_to_be_processed in received_files_by_dec_to_be_processed:
-        pending_source_information = [source for source in sources_information if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] == "PENDING_SOURCES"]
-        received_source_information = [source for source in sources_information if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] == "PENDING_RECEIVED_SOURCES_BY_DEC"]
-        processed_source_information = [source for source in sources_information if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] not in ["PENDING_SOURCES", "PENDING_RECEIVED_SOURCES_BY_DEC"]]
-        if len(pending_source_information) == 0 and len(received_source_information) > 0 and len(processed_source_information) > 0:
+        processing_source_information = [source for source in sources_information if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] not in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
+        if len(processing_source_information) > 0:
             # Remove the alert as it could not be remove by the ingestion chain (race condition)
             sources_to_remove.append(received_file_by_dec_to_be_processed)
         # end if
