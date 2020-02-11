@@ -520,22 +520,28 @@ class Engine():
 
         returned_values = []
         for self.operation in self.data.get("operations") or []:
-            returned_value = -1
-            self.all_gauges_for_insert_and_erase = False
-            if self.operation.get("mode") == "insert_and_erase":
-                self.all_gauges_for_insert_and_erase = True
-            # end if
 
-            if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
-                returned_value = self._insert_data(processing_duration = processing_duration)
-                returned_information = {
-                    "source": self.operation.get("source").get("name"),
-                    "dim_signature": self.operation.get("dim_signature").get("name"),
-                    "processor": self.operation.get("dim_signature").get("exec"),
-                    "status": returned_value
-                }
-                returned_values.append(returned_information)
-            # end if
+            lock = "treat_data_" + self.operation.get("source").get("name")
+            @self.synchronized(lock, external=True, lock_path="/dev/shm")
+            def treat_operation_data(self, processing_duration, returned_values):
+                returned_value = -1
+                self.all_gauges_for_insert_and_erase = False
+                if self.operation.get("mode") == "insert_and_erase":
+                    self.all_gauges_for_insert_and_erase = True
+                # end if
+
+                if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
+                    returned_value = self._insert_data(processing_duration = processing_duration)
+                    returned_information = {
+                        "source": self.operation.get("source").get("name"),
+                        "dim_signature": self.operation.get("dim_signature").get("name"),
+                        "processor": self.operation.get("dim_signature").get("exec"),
+                        "status": returned_value
+                    }
+                    returned_values.append(returned_information)
+                # end if
+            # end def
+            treat_operation_data(self, processing_duration, returned_values)
         # end for
         return returned_values
 

@@ -10,6 +10,7 @@ import datetime
 from datetime import timedelta
 from lxml import etree
 import uuid
+from oslo_concurrency import lockutils
 
 # Import GEOalchemy entities
 from geoalchemy2 import functions
@@ -78,6 +79,15 @@ def log_query(query):
     return
 
 class Query():
+    """Class for querying data to the eboa module
+
+    Provides access to the logic for querying
+    the information stored into the DDBB
+    """
+
+    # Set the synchronized module
+    synchronized_eboa = lockutils.synchronized_with_prefix('eboa-')
+    synchronized_rboa = lockutils.synchronized_with_prefix('rboa-')
 
     def __init__(self, session = None):
         """
@@ -419,7 +429,14 @@ class Query():
         sources = []
         if delete:
             sources = query.all()
-            self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])))
+            for source in sources:
+                lock = "treat_data_" + source.name
+                @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
+                def _delete_source(self, source):
+                    self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid == source.source_uuid))
+                # end def
+                _delete_source(self, source)
+            # end for
         else:
             sources = query.all()
         # end if
@@ -680,7 +697,14 @@ class Query():
         reports = []
         if delete:
             reports = query.all()
-            self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid.in_([report.report_uuid for report in reports])))
+            for report in reports:
+                lock = "treat_data_" + report.name
+                @self.synchronized_rboa(lock, external=True, lock_path="/dev/shm")
+                def _delete_report(self, report):
+                    self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid == report.report_uuid))
+                # end def
+                _delete_report(self, report)
+            # end for            
         else:
             reports = query.all()
         # end if
