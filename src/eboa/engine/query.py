@@ -191,7 +191,7 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False, order_by = None, limit = None, offset = None):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False, synchronize_deletion = True, order_by = None, limit = None, offset = None):
         """
         Method to obtain the sources entities filtered by the received parameters
 
@@ -428,22 +428,27 @@ class Query():
 
         sources = []
         if delete:
-            sources = sorted(query.all(), key=lambda x:(x.name))
-            for source in sources:
-                lock = "treat_data_" + source.name
-                @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
-                def _delete_source(self, source):
-                    self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid == source.source_uuid))
-                # end def
-                _delete_source(self, source)
-            # end for
+            if synchronize_deletion:
+                sources = sorted(query.all(), key=lambda x:(x.name))
+                for source in sources:
+                    lock = "treat_data_" + source.name
+                    @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
+                    def _delete_source(self, source):
+                        self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid == source.source_uuid))
+                    # end def
+                    _delete_source(self, source)
+                # end for
+            else:
+                sources = query.all()
+                self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])))
+            # end if
         else:
             sources = query.all()
         # end if
 
         return sources
 
-    def get_reports(self, names = None, generation_modes = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, triggering_time_filters = None, generation_start_filters = None, generation_stop_filters = None, metadata_ingestion_duration_filters = None, generated = None, compressed = None, generators = None, generator_version_filters = None, generation_error = None, report_group_uuids = None, report_uuids = None, report_groups = None, statuses = None, delete = False, order_by = None, limit = None, offset = None):
+    def get_reports(self, names = None, generation_modes = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, triggering_time_filters = None, generation_start_filters = None, generation_stop_filters = None, metadata_ingestion_duration_filters = None, generated = None, compressed = None, generators = None, generator_version_filters = None, generation_error = None, report_group_uuids = None, report_uuids = None, report_groups = None, statuses = None, delete = False, synchronize_deletion = True, order_by = None, limit = None, offset = None):
         """
         Method to obtain the reports entities filtered by the received parameters
 
@@ -696,15 +701,20 @@ class Query():
 
         reports = []
         if delete:
-            reports = sorted(query.all(), key=lambda x:(x.name))
-            for report in reports:
-                lock = "treat_data_" + report.name
-                @self.synchronized_rboa(lock, external=True, lock_path="/dev/shm")
-                def _delete_report(self, report):
-                    self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid == report.report_uuid))
-                # end def
-                _delete_report(self, report)
-            # end for            
+            if synchronize_deletion:
+                reports = sorted(query.all(), key=lambda x:(x.name))
+                for report in reports:
+                    lock = "treat_data_" + report.name
+                    @self.synchronized_rboa(lock, external=True, lock_path="/dev/shm")
+                    def _delete_report(self, report):
+                        self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid == report.report_uuid))
+                    # end def
+                    _delete_report(self, report)
+                # end for
+            else:
+                reports = query.all()
+                self.delete(self.session.query(Report).with_for_update().filter(Report.report_uuid.in_([report.report_uuid for report in reports])))
+            # end if
         else:
             reports = query.all()
         # end if
