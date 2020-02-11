@@ -428,7 +428,7 @@ class Query():
 
         sources = []
         if delete:
-            sources = query.all()
+            sources = sorted(query.all(), key=lambda x:(x.name))
             for source in sources:
                 lock = "treat_data_" + source.name
                 @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
@@ -696,7 +696,7 @@ class Query():
 
         reports = []
         if delete:
-            reports = query.all()
+            reports = sorted(query.all(), key=lambda x:(x.name))
             for report in reports:
                 lock = "treat_data_" + report.name
                 @self.synchronized_rboa(lock, external=True, lock_path="/dev/shm")
