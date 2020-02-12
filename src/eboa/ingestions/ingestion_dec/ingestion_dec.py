@@ -11,7 +11,13 @@ import datetime
 
 # Import xml parser
 from lxml import etree
+
+# Import ingestion_functions.helpers
 import eboa.triggering.xpath_functions as xpath_functions
+import s2boa.ingestions.functions as functions
+
+# Import query
+from eboa.engine.query import Query
 
 # Import triggering conf
 from eboa.triggering.eboa_triggering import get_triggering_conf
@@ -78,6 +84,21 @@ def process_file(file_path, engine, query, reception_time):
         "validity_stop": validity_stop
     }
 
+    # Get the general source entry (processor = None, version = None, DIM signature = PENDING_SOURCES)
+    # This is for registrering the ingestion progress
+    query_general_source = Query()
+    session_progress = query_general_source.session
+    general_source_progress = query_general_source.get_sources(names = {"filter": file_name_dec_f_recv, "op": "=="},
+                                                               dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="},
+                                                               processors = {"filter": "", "op": "=="},
+                                                               processor_version_filters = [{"filter": "", "op": "=="}])
+
+    if len(general_source_progress) > 0:
+        general_source_progress = general_source_progress[0]
+    # end if
+
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 10)    
+
     # Get triggering configuration
     triggering_xpath = get_triggering_conf()
 
@@ -91,9 +112,13 @@ def process_file(file_path, engine, query, reception_time):
         # end if
     # end for
 
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 20)
+    
     # Get the sources already registered in DDBB
     sources_registered_in_ddbb = get_sources_from_list(query, received_files_by_dec_to_be_queried)
     sources_already_processed = [source["name"] for source in sources_registered_in_ddbb if source["dim_signature_name"] not in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
+
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 40)
 
     # Insert the corresponding alerts for notifying about pending processing of files
     list_of_operations = []
@@ -138,11 +163,15 @@ def process_file(file_path, engine, query, reception_time):
         # end if
     # end for
 
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 60)
+    
     if len(list_of_operations) > 0:
         data = {"operations": list_of_operations}
         engine.treat_data(data)
     # end if
 
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 80)
+    
     race_condition()
     
     if len(received_files_by_dec_to_be_processed) > 0:
@@ -171,6 +200,8 @@ def process_file(file_path, engine, query, reception_time):
             query.get_sources(names = {"filter": sources_to_remove, "op": "in"}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="}, delete = True)
         # end if
     # end if
+
+    functions.insert_ingestion_progress(session_progress, general_source_progress, 90)
     
     # Register ingestion of the file being processed
     data = {"operations": [{
