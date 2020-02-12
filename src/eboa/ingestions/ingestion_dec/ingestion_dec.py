@@ -19,10 +19,24 @@ from eboa.triggering.eboa_triggering import get_triggering_conf
 # Import logging
 from eboa.logging import Log
 
+# Import debugging
+from eboa.debugging import race_condition
+
 logging_module = Log(name = __name__)
 logger = logging_module.logger
 
 version = "1.0"
+
+def get_sources_from_list(query, list_of_sources):
+    sources = [source.__dict__ for source in query.get_sources(names = {"filter": list_of_sources, "op": "in"})]
+    dim_signatures = query.get_dim_signatures(dim_signature_uuids = {"filter": list(set([source["dim_signature_uuid"] for source in sources])), "op": "in"})
+    
+    for source in sources:
+        dim_signature = [dim_signature for dim_signature in dim_signatures if dim_signature.dim_signature_uuid == source["dim_signature_uuid"]]
+        source["dim_signature_name"] = dim_signature[0].dim_signature
+    # end for
+
+    return sources
 
 def process_file(file_path, engine, query, reception_time):
     """
@@ -38,7 +52,7 @@ def process_file(file_path, engine, query, reception_time):
     :param reception_time: time of the reception of the file by the triggering
     :type reception_time: str
     """
-    file_name = os.path.basename(file_path)
+    file_name_dec_f_recv = os.path.basename(file_path)
 
     # Register needed xpath functions
     ns = etree.FunctionNamespace(None)
@@ -57,25 +71,39 @@ def process_file(file_path, engine, query, reception_time):
 
     # Source for the main operation
     source= {
-        "name": file_name,
+        "name": file_name_dec_f_recv,
         "reception_time": reception_time,
         "generation_time": creation_date,
         "validity_start": validity_start,
         "validity_stop": validity_stop
     }
 
-    list_of_operations = []
-    received_files_by_dec_to_be_processed = []
-
-    # Check configuration
+    # Get triggering configuration
     triggering_xpath = get_triggering_conf()
 
+    received_files_by_dec_to_be_queried = []    
     for file_name_node in xpath_xml("/Earth_Explorer_File/Data_Block/List_of_Files/Filename"):
         file_name = file_name_node.text
         matching_rules_without_skip = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name) and (not(boolean(@skip)) or @skip = 'false')]", file_name = file_name)
         if len(matching_rules_without_skip) > 0:
-            received_files_by_dec_to_be_processed.append(file_name)
+            logger.info("The file {} has been received by DEC (reported in file {}) and should be processed by BOA. Its processing will be checked".format(file_name, file_name_dec_f_recv))
+            received_files_by_dec_to_be_queried.append(file_name)
+        # end if
+    # end for
 
+    # Get the sources already registered in DDBB
+    sources_registered_in_ddbb = get_sources_from_list(query, received_files_by_dec_to_be_queried)
+    sources_already_processed = [source["name"] for source in sources_registered_in_ddbb if source["dim_signature_name"] not in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
+
+    # Insert the corresponding alerts for notifying about pending processing of files
+    list_of_operations = []
+    received_files_by_dec_to_be_processed = []
+    for file_name in received_files_by_dec_to_be_queried:
+        if file_name not in sources_already_processed:
+            logger.info("The file {} has not been processed yet by BOA. The corresponding alert is going to be inserted".format(file_name))
+            
+            received_files_by_dec_to_be_processed.append(file_name)
+            
             # Insert an associated alert for checking pending ingestions
             list_of_operations.append({
                 "mode": "insert",
@@ -105,38 +133,45 @@ def process_file(file_path, engine, query, reception_time):
                     }
                 }]
             })
+        else:
+            logger.info("The file {} has been already processed by BOA. No alert will be inserted".format(file_name))
         # end if
     # end for
 
-    data = {"operations": list_of_operations}
-    engine.treat_data(data)
-    
-    # Query status of received sources in DDBB to remove the alert due to race conditions:
-    # If this ingestion finishes after the ingestion of the related files, the alert could remain
-    # because the ingestion could not remove it
-
-    # Queries done to extract all information just in case sources are removed
-    sources_information = [source.__dict__ for source in query.get_sources(names = {"filter": received_files_by_dec_to_be_processed, "op": "in"})]
-    dim_signatures = query.get_dim_signatures(dim_signature_uuids = {"filter": list(set([source["dim_signature_uuid"] for source in sources_information])), "op": "in"})
-    for source_information in sources_information:
-        dim_signature = [dim_signature for dim_signature in dim_signatures if dim_signature.dim_signature_uuid == source_information["dim_signature_uuid"]]
-        source_information["dim_signature_name"] = dim_signature[0].dim_signature
-    # end for
-
-    sources_to_remove = []
-    for received_file_by_dec_to_be_processed in received_files_by_dec_to_be_processed:
-        processing_source_information = [source for source in sources_information if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] not in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
-        if len(processing_source_information) > 0:
-            # Remove the alert as it could not be remove by the ingestion chain (race condition)
-            sources_to_remove.append(received_file_by_dec_to_be_processed)
-        # end if
-    # end for
-    
-    if len(sources_to_remove) > 0:
-        # Remove the alert as it could not be remove by the ingestion chain (race condition)
-        query.get_sources(names = {"filter": sources_to_remove, "op": "in"}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="}, delete = True)
+    if len(list_of_operations) > 0:
+        data = {"operations": list_of_operations}
+        engine.treat_data(data)
     # end if
 
+    race_condition()
+    
+    if len(received_files_by_dec_to_be_processed) > 0:
+        # Query status of received sources in DDBB to remove the alert due to race conditions:
+        # If this ingestion finishes after the ingestion of the related files, the alert could remain
+        # because the ingestion could not remove it
+
+        # Queries done to extract all information just in case sources are removed
+        sources_registered_in_ddbb = get_sources_from_list(query, received_files_by_dec_to_be_processed)
+
+        sources_to_remove = []
+        for received_file_by_dec_to_be_processed in received_files_by_dec_to_be_processed:
+            processing_source = [source for source in sources_registered_in_ddbb if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] not in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
+            pending_processing_source = [source for source in sources_registered_in_ddbb if source["name"] == received_file_by_dec_to_be_processed and source["dim_signature_name"] in ["PENDING_RECEIVED_SOURCES_BY_DEC"]]
+            if len(processing_source) > 0 and len(pending_processing_source) > 0:
+                # Remove the alert as it could not be remove by the ingestion chain (race condition)
+                logger.info("The file {} has been or is being processed by BOA. The corresponding alert is going to be removed".format(file_name))
+                sources_to_remove.append(received_file_by_dec_to_be_processed)
+            else:
+                logger.info("The file {} has not been processed yet by BOA. The corresponding alert is not removed".format(file_name))
+            # end if
+        # end for
+
+        if len(sources_to_remove) > 0:
+            # Remove the alert as it could not be remove by the ingestion chain (race condition)
+            query.get_sources(names = {"filter": sources_to_remove, "op": "in"}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="}, delete = True)
+        # end if
+    # end if
+    
     # Register ingestion of the file being processed
     data = {"operations": [{
         "mode": "insert",
