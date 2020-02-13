@@ -55,16 +55,18 @@ def main():
         exit(0)
     # end if
 
-    continue_orc_initialization_flag = input("\n" +
-                          "You selected also to initialize ORC environment\n" +
-                          "This operation will erase all the information in ORC DDBB, would you still want to continue? [Ny]")
-    
-    if continue_orc_initialization_flag != "y":
-        print("No worries! The initialization is going to be aborted :-)")
-        exit(0)
-    # end if
-
     args = args_parser.parse_args()
+
+    if args.initialize_orc:
+        continue_orc_initialization_flag = input("\n" +
+                                                 "You selected also to initialize ORC environment\n" +
+                                                 "This operation will erase all the information in ORC DDBB, would you still want to continue? [Ny]")
+    
+        if continue_orc_initialization_flag != "y":
+            print("No worries! The initialization is going to be aborted :-)")
+            exit(0)
+        # end if
+    # end if
 
     # Default path for the docker environment
     datamodel_path = "/datamodel/eboa_data_model.sql"
@@ -100,7 +102,6 @@ def main():
     except FileNotFoundError:
         pass
     # end try
-        
     
     if args.initialize_orc:
 
