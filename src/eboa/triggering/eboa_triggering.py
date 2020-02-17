@@ -111,7 +111,7 @@ def execute_command(command):
     return
 
 @debug
-def block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this):
+def block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test):
     """
     Method to execute the commands while blocking other processes which would have dependencies
     
@@ -120,8 +120,11 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
     :param command: command to execute inside the mutex
     :type command: str
     """
-    newpid = os.fork()
-    if newpid == 0:
+    newpid = -1
+    if not test:
+        newpid = os.fork()
+    # end if
+    if test or newpid == 0:
         for dependency in dependencies:
             logger.info("The triggering of the file {} has a dependency on: {}".format(file_name, dependency.text))
             # Block process on the related mutex depending on the configuration
@@ -146,7 +149,6 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
         # end try
 
         open(on_going_ingestions_folder + source_type + "/" + file_name,"w+")
-        
         @debug
         @lockutils.synchronized(source_type, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
         def blocking_on_command():
@@ -171,7 +173,7 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
     return
 
 @debug
-def triggering(file_path, reception_time, engine_eboa, output_path = None):
+def triggering(file_path, reception_time, engine_eboa, test, output_path = None):
     """
     Method to trigger commands depending on the matched configuration to the file_path
     
@@ -192,19 +194,42 @@ def triggering(file_path, reception_time, engine_eboa, output_path = None):
     # Check configuration
     triggering_xpath = get_triggering_conf()
 
-    matching_rules_without_skip = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name) and (not(boolean(@skip)) or @skip = 'false')]", file_name = file_name)
-    matching_rules_with_skip = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name) and @skip = 'true']", file_name = file_name)
+    matching_rules = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name)]", file_name = file_name)
+    if len(matching_rules) > 0:
+        rule = matching_rules[0]
+        skip = rule.get("skip")
+        if skip == "true":
+            logger.info("Found a rule for the file {} with no tool execution".format(file_name))
 
-    logger.info("Found {} rule/s for the file {} with tool execution".format(len(matching_rules_without_skip), file_name))
+            # Insert an associated alert for checking pending ingestions
+            data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "SOURCES_NOT_PROCESSED",
+                                  "exec": "",
+                                  "version": ""},
+                "source": {"name": os.path.basename(file_path),
+                           "reception_time": reception_time,
+                           "generation_time": reception_time,
+                           "validity_start": datetime.datetime.now().isoformat(),
+                           "validity_stop": datetime.datetime.now().isoformat(),
+                           "ingested": "false"}
+            }]
+            }
+            engine_eboa.treat_data(data)
 
-    if len(matching_rules_without_skip) > 0:
-        # File register into the configuration
-        for rule in matching_rules_without_skip:
+            # Remove the metadata indicating the pending ingestion
+            query_remove = Query()
+            query_remove.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
+
+            query_remove.close_session()
+        else:
+            logger.info("Found a rule for the file {} with tool execution".format(file_name))
+            # File register into the configuration
             dependencies = None
             if output_path == None:
                 dependencies = rule.xpath("dependencies/source_type")
             # end if
-            
+
             # Execute the associated tool entering on its specific mutex depending on its source type
             add_file_path = rule.xpath("tool/command/@add_file_path")
             add_file_path_content = True
@@ -232,35 +257,9 @@ def triggering(file_path, reception_time, engine_eboa, output_path = None):
             if output_path:
                 execute_command(command)
             else:
-                block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this)
+                block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
             # end if
-            
-        # end for
-    elif len(matching_rules_with_skip) > 0:
-        logger.info("Found {} rule/s for the file {} with no tool execution".format(len(matching_rules_with_skip), file_name))
-
-        # Insert an associated alert for checking pending ingestions
-        data = {"operations": [{
-            "mode": "insert",
-            "dim_signature": {"name": "SOURCES_NOT_PROCESSED",
-                              "exec": "",
-                              "version": ""},
-            "source": {"name": os.path.basename(file_path),
-                       "reception_time": reception_time,
-                       "generation_time": reception_time,
-                       "validity_start": datetime.datetime.now().isoformat(),
-                       "validity_stop": datetime.datetime.now().isoformat(),
-                       "ingested": "false"}
-        }]
-        }
-        engine_eboa.treat_data(data)
-        
-        # Remove the metadata indicating the pending ingestion
-        query_remove = Query()
-        query_remove.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
-
-        query_remove.close_session()
-
+        # end if
     else:
         # File not register into the configuration
         query_log_status = Query()
@@ -277,36 +276,15 @@ def triggering(file_path, reception_time, engine_eboa, output_path = None):
 
     return
 
-def main():
-
-    args_parser = argparse.ArgumentParser(description='EBOA triggering.')
-    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
-                             help='path to the file to process', required=True)
-    args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
-                             help="path to the output file", required=False)
-    args_parser.add_argument("-r", "--remove_input",
-                             help="remove input file when triggering finished", action="store_true")
-    
-    args = args_parser.parse_args()
-    file_path = args.file_path[0]
+def main(file_path, output_path = None, remove_input = False, test = False):
     
     logger.info("Received file {}".format(file_path))
 
     exit_code = 0
     
-    output_path = None
-    if args.output_path != None:
-        output_path = args.output_path[0]
-        # Check if file exists
-        if not os.path.isdir(os.path.dirname(output_path)):
-            logger.error("The specified path to the output file {} does not exist".format(output_path))
-            exit(-1)
-        # end if
-    # end if
-
     reception_time = datetime.datetime.now().isoformat()
 
-    if output_path:
+    if output_path != None:
         # Check if file exists
         if not os.path.isfile(file_path):
             logger.error("The specified file {} does not exist".format(file_path))
@@ -314,8 +292,8 @@ def main():
         # end if
 
         engine_eboa = Engine()
-        triggering(file_path, reception_time, engine_eboa, output_path)
-        if args.remove_input:
+        triggering(file_path, reception_time, engine_eboa, test, output_path)
+        if remove_input:
             try:
                 logger.info("The received file {} is going to be removed".format(file_path))
                 os.remove(file_path)
@@ -330,10 +308,13 @@ def main():
             logger.error("The specified file {} does not exist".format(file_path))
             exit_code = -1
         # end if
-        
-        newpid = os.fork()
+
+        newpid = -1
+        if not test:
+            newpid = os.fork()
+        # end if
         result = 0
-        if newpid == 0:
+        if test or newpid == 0:
             engine_eboa = Engine()
 
             # Insert an associated alert for checking pending ingestions
@@ -382,8 +363,8 @@ def main():
             # end if
 
 
-            result = triggering(file_path, reception_time, engine_eboa)
-            if args.remove_input:
+            result = triggering(file_path, reception_time, engine_eboa, test)
+            if remove_input:
                 try:
                     os.remove(file_path)
                     logger.info("The received file {} is going to be removed".format(file_path))
@@ -401,4 +382,32 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    args_parser = argparse.ArgumentParser(description='EBOA triggering.')
+    args_parser.add_argument('-f', dest='file_path', type=str, nargs=1,
+                             help='path to the file to process', required=True)
+    args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
+                             help="path to the output file", required=False)
+    args_parser.add_argument("-r", "--remove_input",
+                             help="remove input file when triggering finished", action="store_true")
+    
+    args = args_parser.parse_args()
+
+    # File path
+    file_path = args.file_path[0]
+
+    # Output path
+    output_path = None
+    if args.output_path != None:
+        output_path = args.output_path[0]
+        # Check if file exists
+        if not os.path.isdir(os.path.dirname(output_path)):
+            logger.error("The specified path to the output file {} does not exist".format(output_path))
+            exit(-1)
+        # end if
+    # end if
+
+    # Remove input
+    remove_input = False
+    remove_input = args.remove_input
+    
+    main(file_path, output_path, remove_input)

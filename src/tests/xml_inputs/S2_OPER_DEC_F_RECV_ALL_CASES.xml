@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Earth_Explorer_File>
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S2_OPER_DEC_F_RECV_ALL_CASES</File_Name>
+      <File_Description>List of files sent to LOCALHOST_NOT_SECURE</File_Description>
+      <Notes></Notes>
+      <Mission>DEC UNIT TESTS</Mission>
+      <File_Class>Routine Operations</File_Class>
+      <File_Type>DEC_F_RECV</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2020-01-30T16:31:29</Validity_Start>
+        <Validity_Stop>UTC=2020-01-30T16:31:29</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>DEC</System>
+        <Creator>DEC</Creator>
+        <Creator_Version>1.0</Creator_Version>
+        <Creation_Date>UTC=2020-01-30T16:31:29</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header>
+      <Destination>LOCALHOST_NOT_SECURE</Destination>
+      <Date>UTC=2020-01-30T16:31:29</Date>
+    </Variable_Header>
+  </Earth_Explorer_Header>
+  <Data_Block type="xml">
+    <List_of_Files>
+      <Filename>matching_source</Filename>
+      <Filename>matching_source_skip</Filename>
+      <Filename>no_matching_source</Filename>
+    </List_of_Files>
+  </Data_Block>
+</Earth_Explorer_File>

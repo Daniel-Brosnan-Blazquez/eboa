@@ -1,0 +1,37 @@
+<triggering_rules>
+  <rule>
+    <source_mask>.*DEC_F_RECV.*</source_mask>
+    <source_type>DEC_F_RECV</source_type>
+    <tool>
+      <command>eboa_ingestion.py -p eboa.ingestions.ingestion_dec.ingestion_dec -f </command>
+    </tool>
+  </rule>
+  <rule skip="true">
+    <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
+    <source_type>FILE_NOT_TO_PROCESS</source_type>
+    <tool>
+      <command>echo "File should have not been processed"</command>
+    </tool>
+  </rule>
+  <rule>
+    <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
+    <source_type>FILE_NOT_TO_PROCESS</source_type>
+    <tool>
+      <command>echo "File should have not been processed"</command>
+    </tool>
+  </rule>
+  <rule>
+    <source_mask>matching_source</source_mask>
+    <source_type>MATCHING</source_type>
+    <tool>
+      <command>echo matching</command>
+    </tool>
+  </rule>
+  <rule skip="true">
+    <source_mask>matching_source_skip</source_mask>
+    <source_type>MATCHING_SKIP</source_type>
+    <tool>
+      <command>echo "matching skip"</command>
+    </tool>
+  </rule>
+</triggering_rules>
