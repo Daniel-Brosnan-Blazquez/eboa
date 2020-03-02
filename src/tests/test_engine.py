@@ -2515,7 +2515,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_discarded_repeated_annotation(self):
+    def test_repeated_annotation(self):
 
         self.engine_eboa._initialize_context_insert_data()
         data = {"operations": [{
@@ -2543,7 +2543,7 @@ class TestEngine(unittest.TestCase):
 
         annotations_ddbb = self.session.query(Annotation).all()
 
-        assert len(annotations_ddbb) == 1
+        assert len(annotations_ddbb) == 2
 
     def test_remove_deprecated_event_keys(self):
 
