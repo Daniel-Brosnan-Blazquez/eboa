@@ -823,7 +823,7 @@ class Engine():
         self.session.commit()
         self.session.commit()
         self.session.commit()
-        
+
         # Review the inserted events and annotations for removing the
         # information that is deprecated
         self._remove_deprecated_data()
@@ -1530,29 +1530,29 @@ class Engine():
             annotation_cnf = self.annotation_cnfs[(annotation_cnf_info.get("name"), annotation_cnf_info.get("system"))]
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
-            if not (explicit_ref, annotation_cnf.annotation_cnf_uuid) in self.annotations:
-                visible = True
-                if "insertion_type" in annotation_cnf_info and annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE":
-                    self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
-                                                               "annotation_cnf": annotation_cnf
-                    })
-                    visible = False
-                # end if
-                    
-                # Insert the annotation into the list for bulk ingestion
-                list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
-                                             annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
-                                             explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
-                                             source_uuid = self.source.source_uuid,
-                                             visible = visible))
-                # Insert values
-                if "values" in annotation:
-                    entity_uuid = {"name": "annotation_uuid",
-                                   "id": id
-                    }
-                    self._insert_values(annotation.get("values"), entity_uuid, list_values)
-                # end if
+            visible = True
+            if "insertion_type" in annotation_cnf_info and annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE":
+                self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
+                                                           "annotation_cnf": annotation_cnf
+                })
+                visible = False
+            # end if
 
+            # Insert the annotation into the list for bulk ingestion
+            list_annotations.append(dict(annotation_uuid = id, ingestion_time = datetime.datetime.now(),
+                                         annotation_cnf_uuid = annotation_cnf.annotation_cnf_uuid,
+                                         explicit_ref_uuid = explicit_ref.explicit_ref_uuid,
+                                         source_uuid = self.source.source_uuid,
+                                         visible = visible))
+            # Insert values
+            if "values" in annotation:
+                entity_uuid = {"name": "annotation_uuid",
+                               "id": id
+                }
+                self._insert_values(annotation.get("values"), entity_uuid, list_values)
+            # end if
+
+            if not (explicit_ref, annotation_cnf.annotation_cnf_uuid) in self.annotations:
                 self.annotations[(explicit_ref, annotation_cnf.annotation_cnf_uuid)] = None
             # end if
 
