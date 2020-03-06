@@ -124,8 +124,19 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
         command += " -m " + generation_mode
     # end if
 
+    # Add parameters
+    parameters = generator_xpath.xpath("parameters/parameter")
+    if len(parameters) > 0:
+        command += " -a "
+        for parameter in parameters:
+            name = parameter.get("name")
+            value = parameter.text
+            command += name + "=" + "'" + value + "' "
+        # end for
+    # end if
+    
     if output_path:
-        command += " -o " + output_path
+        command += " -o " + "'" + output_path + "'"
     # end if
     
     if output_path == None:
