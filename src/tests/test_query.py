@@ -12,6 +12,7 @@ import unittest
 import datetime
 
 # Import engine of the DDBB
+import eboa.engine.engine as eboa_engine
 from eboa.engine.engine import Engine
 from eboa.engine.query import Query
 from eboa.datamodel.base import Session, engine, Base
@@ -2394,3 +2395,128 @@ class TestQuery(unittest.TestCase):
 
         assert len(sources) == 0
 
+    def test_query_source_alerts(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "alerts": [{
+                "message": "Alert message",
+                "generator": "test",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name1",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "source.json",
+                    "type": "source"
+                }
+            },{
+                "message": "Alert message",
+                "generator": "test1",
+                "notification_time": "2018-06-05T08:07:36",
+                "alert_cnf": {
+                    "name": "alert_name2",
+                    "severity": "critical",
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "entity": {
+                    "reference_mode": "by_ref",
+                    "reference": "source.json",
+                    "type": "source"
+                }
+            }]
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.query.get_sources()
+
+        assert len(sources) == 1
+
+        source_alerts = self.query.get_source_alerts()
+
+        assert len(source_alerts) == 2
+
+        # Source names
+        filters = {"source_names": {"filter": "source.json", "op": "=="}}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Validity period
+        filters = {"validity_start_filters": [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                   "validity_stop_filters": [{"date": "2018-06-05T08:07:36", "op": "=="}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # validity duration
+        filters = {"validity_duration_filters": [{"float": "0", "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Reception time
+        filters = {"reception_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Generation time
+        filters = {"generation_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Source ingestion time
+        filters = {"source_ingestion_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # ingestion duration
+        filters = {"ingestion_duration_filters": [{"float": 0, "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # ingested
+        filters = {"ingested": True}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # DIM signatures
+        filters = {"dim_signatures": {"filter": "dim_signature", "op": "=="}}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Alert groups
+        filters = {"groups": {"filter": "alert_group", "op": "=="}}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        filters = {"delete": True}
+
+        self.query.get_source_alerts(filters)
+
+        source_alerts = self.query.get_source_alerts()
+
+        assert len(source_alerts) == 0
