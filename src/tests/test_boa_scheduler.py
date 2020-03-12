@@ -101,7 +101,7 @@ class TestEngine(unittest.TestCase):
 
         scheduler.query_and_execute_tasks()
 
-        time.sleep(1)
+        time.sleep(10)
 
         triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"}, triggered = True)
 
@@ -141,7 +141,7 @@ class TestEngine(unittest.TestCase):
         scheduler.query_and_execute_tasks()
         scheduler.query_and_execute_tasks()
 
-        time.sleep(10)
+        time.sleep(20)
         
         triggerings = self.query_sboa.get_triggerings(triggered = True)
 
