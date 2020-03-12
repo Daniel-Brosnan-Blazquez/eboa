@@ -31,6 +31,5 @@ class TestDatamodel(unittest.TestCase):
         except:
             assert False == True
 
-        if "EBOA_RESOURCES_PATH" in os.environ.keys():
-            os.environ["EBOA_RESOURCES_PATH"] = eboa_resources_path
-        # end if
+        os.environ["EBOA_RESOURCES_PATH"] = eboa_resources_path
+
