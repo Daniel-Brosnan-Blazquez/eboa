@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,333" last-zoom="0.6" max-obj-count="56"
+<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,498" last-zoom="0.6" max-obj-count="56"
 	 default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -141,7 +141,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="dim_signatures" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1440" y="740"/>
+	<position x="1440" y="720"/>
 	<column name="dim_signature_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -1655,7 +1655,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="alerts" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1660" y="1560"/>
+	<position x="1680" y="1580"/>
 	<column name="alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1679,7 +1679,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="source_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1540"/>
+	<position x="1340" y="1560"/>
 	<column name="source_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1827,7 +1827,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="alert_groups" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1680"/>
+	<position x="1700" y="1740"/>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
@@ -2592,7 +2592,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_groups" layer="0" collapse-mode="2" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1360" y="2020"/>
+	<position x="1380" y="2120"/>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
@@ -2640,7 +2640,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_event_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1740"/>
+	<position x="1340" y="1800"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2674,7 +2674,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1760"/>
+	<position x="1680" y="1840"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2704,7 +2704,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_source_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1840"/>
+	<position x="1720" y="1960"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2738,7 +2738,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_alerts" layer="0" collapse-mode="2" max-obj-count="13">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1800"/>
+	<position x="1340" y="1880"/>
 	<column name="report_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2871,7 +2871,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_statuses" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1000" y="2000"/>
+	<position x="1000" y="2060"/>
 	<column name="report_status_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>

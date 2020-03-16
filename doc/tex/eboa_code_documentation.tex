@@ -53,7 +53,7 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 \index{get\_structured\_values() (eboa.datamodel.annotations.Annotation method)@\spxentry{get\_structured\_values()}\spxextra{eboa.datamodel.annotations.Annotation method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.get_structured_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_structured\_values}}}{\emph{position=0}, \emph{parent\_level=-1}, \emph{parent\_position=0}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.Annotation.get_structured_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_structured\_values}}}{\emph{position=0}, \emph{parent\_level=\sphinxhyphen{}1}, \emph{parent\_position=0}}{}
 Method to obtain the structure of values in a python dictionary format
 
 \end{fulllineitems}
@@ -292,6 +292,12 @@ Bases: \sphinxcode{\sphinxupquote{sqlalchemy.ext.declarative.api.Base}}
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationGeometry.position}}\pysigline{\sphinxbfcode{\sphinxupquote{position}}}
+\end{fulllineitems}
+
+\index{to\_wkt() (eboa.datamodel.annotations.AnnotationGeometry method)@\spxentry{to\_wkt()}\spxextra{eboa.datamodel.annotations.AnnotationGeometry method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.annotations.AnnotationGeometry.to_wkt}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{to\_wkt}}}{}{}
 \end{fulllineitems}
 
 \index{value (eboa.datamodel.annotations.AnnotationGeometry attribute)@\spxentry{value}\spxextra{eboa.datamodel.annotations.AnnotationGeometry attribute}}
@@ -821,7 +827,7 @@ Method to obtain the duration of the event
 \index{get\_structured\_values() (eboa.datamodel.events.Event method)@\spxentry{get\_structured\_values()}\spxextra{eboa.datamodel.events.Event method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.get_structured_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_structured\_values}}}{\emph{position=0}, \emph{parent\_level=-1}, \emph{parent\_position=0}}{}
+\phantomsection\label{\detokenize{eboa.datamodel:eboa.datamodel.events.Event.get_structured_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_structured\_values}}}{\emph{position=0}, \emph{parent\_level=\sphinxhyphen{}1}, \emph{parent\_position=0}}{}
 Method to obtain the structure of values in a python dictionary format
 
 \end{fulllineitems}
@@ -1588,7 +1594,7 @@ Method to parse an xml file for later treatment of its content
 \index{synchronized (eboa.engine.engine.Engine attribute)@\spxentry{synchronized}\spxextra{eboa.engine.engine.Engine attribute}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.engine.Engine.synchronized}}\pysigline{\sphinxbfcode{\sphinxupquote{synchronized}}\sphinxbfcode{\sphinxupquote{ = functools.partial(\textless{}function synchronized\textgreater{}, lock\_file\_prefix='eboa-')}}}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.engine.Engine.synchronized}}\pysigline{\sphinxbfcode{\sphinxupquote{synchronized}}\sphinxbfcode{\sphinxupquote{ = functools.partial(\textless{}function synchronized\textgreater{}, lock\_file\_prefix=\textquotesingle{}eboa\sphinxhyphen{}\textquotesingle{})}}}
 \end{fulllineitems}
 
 \index{treat\_data() (eboa.engine.engine.Engine method)@\spxentry{treat\_data()}\spxextra{eboa.engine.engine.Engine method}}
@@ -1753,6 +1759,21 @@ message \textendash{} explanation of the error
 
 \end{fulllineitems}
 
+\index{FilePathDoesNotExist@\spxentry{FilePathDoesNotExist}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.errors.FilePathDoesNotExist}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{eboa.engine.errors.}}\sphinxbfcode{\sphinxupquote{FilePathDoesNotExist}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{eboa.engine:eboa.engine.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{eboa.engine.errors.Error}}}}}
+
+Exception raised when a file path does not exist.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
 \index{InputError@\spxentry{InputError}}
 
 \begin{fulllineitems}
@@ -1897,10 +1918,22 @@ Export definition for providing formatted extracted data
 Written by DEIMOS Space S.L. (dibb)
 
 module eboa
+\index{build\_object\_structure() (in module eboa.engine.export)@\spxentry{build\_object\_structure()}\spxextra{in module eboa.engine.export}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.export.build_object_structure}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.export.}}\sphinxbfcode{\sphinxupquote{build\_object\_structure}}}{\emph{values}, \emph{structure}, \emph{parent\_level}, \emph{parent\_position}}{}
+\end{fulllineitems}
+
 \index{build\_values\_structure() (in module eboa.engine.export)@\spxentry{build\_values\_structure()}\spxextra{in module eboa.engine.export}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.export.build_values_structure}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.export.}}\sphinxbfcode{\sphinxupquote{build\_values\_structure}}}{\emph{values}, \emph{structure}, \emph{position=0}, \emph{parent\_level=-1}, \emph{parent\_position=0}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.export.build_values_structure}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.export.}}\sphinxbfcode{\sphinxupquote{build\_values\_structure}}}{\emph{values}, \emph{structure}, \emph{position=0}, \emph{parent\_level=\sphinxhyphen{}1}, \emph{parent\_position=0}}{}
+\end{fulllineitems}
+
+\index{insert\_values() (in module eboa.engine.export)@\spxentry{insert\_values()}\spxextra{in module eboa.engine.export}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.export.insert_values}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.export.}}\sphinxbfcode{\sphinxupquote{insert\_values}}}{\emph{all\_values}, \emph{values\_to\_insert}, \emph{structure}}{}
 \end{fulllineitems}
 
 
@@ -1964,25 +1997,19 @@ bool
 \index{is\_valid\_bool\_filter\_with\_op() (in module eboa.engine.functions)@\spxentry{is\_valid\_bool\_filter\_with\_op()}\spxextra{in module eboa.engine.functions}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_bool_filter_with_op}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_bool\_filter\_with\_op}}}{\emph{bool\_filter}, \emph{operators}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_bool_filter_with_op}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_bool\_filter\_with\_op}}}{\emph{bool\_filter}}{}
 \end{fulllineitems}
 
 \index{is\_valid\_date\_filters() (in module eboa.engine.functions)@\spxentry{is\_valid\_date\_filters()}\spxextra{in module eboa.engine.functions}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_date_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_date\_filters}}}{\emph{date\_filters}, \emph{operators}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_date_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_date\_filters}}}{\emph{date\_filters}}{}
 \end{fulllineitems}
 
 \index{is\_valid\_float\_filters() (in module eboa.engine.functions)@\spxentry{is\_valid\_float\_filters()}\spxextra{in module eboa.engine.functions}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_float_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_float\_filters}}}{\emph{float\_filters}, \emph{operators}}{}
-\end{fulllineitems}
-
-\index{is\_valid\_operator\_like() (in module eboa.engine.functions)@\spxentry{is\_valid\_operator\_like()}\spxextra{in module eboa.engine.functions}}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_operator_like}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_operator\_like}}}{\emph{operator\_like}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_float_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_float\_filters}}}{\emph{float\_filters}}{}
 \end{fulllineitems}
 
 \index{is\_valid\_operator\_list() (in module eboa.engine.functions)@\spxentry{is\_valid\_operator\_list()}\spxextra{in module eboa.engine.functions}}
@@ -1991,10 +2018,16 @@ bool
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_operator_list}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_operator\_list}}}{\emph{operator\_list}}{}
 \end{fulllineitems}
 
-\index{is\_valid\_string\_filters() (in module eboa.engine.functions)@\spxentry{is\_valid\_string\_filters()}\spxextra{in module eboa.engine.functions}}
+\index{is\_valid\_order\_by() (in module eboa.engine.functions)@\spxentry{is\_valid\_order\_by()}\spxextra{in module eboa.engine.functions}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_string_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_string\_filters}}}{\emph{string\_filters}, \emph{operators}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_order_by}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_order\_by}}}{\emph{order\_by}}{}
+\end{fulllineitems}
+
+\index{is\_valid\_positive\_integer() (in module eboa.engine.functions)@\spxentry{is\_valid\_positive\_integer()}\spxextra{in module eboa.engine.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_positive_integer}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_positive\_integer}}}{\emph{filter}}{}
 \end{fulllineitems}
 
 \index{is\_valid\_text\_filter() (in module eboa.engine.functions)@\spxentry{is\_valid\_text\_filter()}\spxextra{in module eboa.engine.functions}}
@@ -2006,7 +2039,7 @@ bool
 \index{is\_valid\_value\_filters() (in module eboa.engine.functions)@\spxentry{is\_valid\_value\_filters()}\spxextra{in module eboa.engine.functions}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_value_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_value\_filters}}}{\emph{value\_filters}, \emph{arithmetic\_operators}, \emph{text\_operators}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.functions.is_valid_value_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.functions.}}\sphinxbfcode{\sphinxupquote{is\_valid\_value\_filters}}}{\emph{value\_filters}}{}
 \end{fulllineitems}
 
 \index{read\_configuration() (in module eboa.engine.functions)@\spxentry{read\_configuration()}\spxextra{in module eboa.engine.functions}}
@@ -2019,9 +2052,6 @@ Method to read the configuration of engine submodule of the eboa
 
 
 
-\subsubsection{eboa.engine.ingestion module}
-\label{\detokenize{eboa.engine:eboa-engine-ingestion-module}}
-
 \subsubsection{eboa.engine.parsing module}
 \label{\detokenize{eboa.engine:module-eboa.engine.parsing}}\label{\detokenize{eboa.engine:eboa-engine-parsing-module}}\index{eboa.engine.parsing (module)@\spxentry{eboa.engine.parsing}\spxextra{module}}
 Parsing definition for the engine module
@@ -2029,6 +2059,12 @@ Parsing definition for the engine module
 Written by DEIMOS Space S.L. (dibb)
 
 module eboa
+\index{validate\_alert\_cnf() (in module eboa.engine.parsing)@\spxentry{validate\_alert\_cnf()}\spxextra{in module eboa.engine.parsing}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.parsing.validate_alert_cnf}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.parsing.}}\sphinxbfcode{\sphinxupquote{validate\_alert\_cnf}}}{\emph{data}}{}
+\end{fulllineitems}
+
 \index{validate\_data\_dictionary() (in module eboa.engine.parsing)@\spxentry{validate\_data\_dictionary()}\spxextra{in module eboa.engine.parsing}}
 
 \begin{fulllineitems}
@@ -2053,14 +2089,14 @@ module eboa
 \index{LiteralDialect (class in eboa.engine.printing)@\spxentry{LiteralDialect}\spxextra{class in eboa.engine.printing}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.engine.printing.}}\sphinxbfcode{\sphinxupquote{LiteralDialect}}}{\emph{convert\_unicode=False}, \emph{encoding='utf-8'}, \emph{paramstyle=None}, \emph{dbapi=None}, \emph{implicit\_returning=None}, \emph{supports\_right\_nested\_joins=None}, \emph{case\_sensitive=True}, \emph{supports\_native\_boolean=None}, \emph{empty\_in\_strategy='static'}, \emph{label\_length=None}, \emph{**kwargs}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.engine.printing.}}\sphinxbfcode{\sphinxupquote{LiteralDialect}}}{\emph{convert\_unicode=False}, \emph{encoding=\textquotesingle{}utf\sphinxhyphen{}8\textquotesingle{}}, \emph{paramstyle=None}, \emph{dbapi=None}, \emph{implicit\_returning=None}, \emph{supports\_right\_nested\_joins=None}, \emph{case\_sensitive=True}, \emph{supports\_native\_boolean=None}, \emph{empty\_in\_strategy=\textquotesingle{}static\textquotesingle{}}, \emph{max\_identifier\_length=None}, \emph{label\_length=None}, \emph{**kwargs}}{}
 Bases: \sphinxcode{\sphinxupquote{sqlalchemy.engine.default.DefaultDialect}}
 
 Class to implement the dialect needed for every column type
 \index{colspecs (eboa.engine.printing.LiteralDialect attribute)@\spxentry{colspecs}\spxextra{eboa.engine.printing.LiteralDialect attribute}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class 'sqlalchemy.sql.sqltypes.String'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.DateTime'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.sql.sqltypes.NullType'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}, \textless{}class 'sqlalchemy.dialects.postgresql.base.UUID'\textgreater{}: \textless{}class 'eboa.engine.printing.StringLiteral'\textgreater{}\}}}}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.printing.LiteralDialect.colspecs}}\pysigline{\sphinxbfcode{\sphinxupquote{colspecs}}\sphinxbfcode{\sphinxupquote{ = \{\textless{}class \textquotesingle{}sqlalchemy.sql.sqltypes.String\textquotesingle{}\textgreater{}: \textless{}class \textquotesingle{}eboa.engine.printing.StringLiteral\textquotesingle{}\textgreater{}, \textless{}class \textquotesingle{}sqlalchemy.sql.sqltypes.DateTime\textquotesingle{}\textgreater{}: \textless{}class \textquotesingle{}eboa.engine.printing.StringLiteral\textquotesingle{}\textgreater{}, \textless{}class \textquotesingle{}sqlalchemy.sql.sqltypes.NullType\textquotesingle{}\textgreater{}: \textless{}class \textquotesingle{}eboa.engine.printing.StringLiteral\textquotesingle{}\textgreater{}, \textless{}class \textquotesingle{}sqlalchemy.dialects.postgresql.base.UUID\textquotesingle{}\textgreater{}: \textless{}class \textquotesingle{}eboa.engine.printing.StringLiteral\textquotesingle{}\textgreater{}\}}}}
 \end{fulllineitems}
 
 
@@ -2117,6 +2153,11 @@ module eboa
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxcode{\sphinxupquote{eboa.engine.query.}}\sphinxbfcode{\sphinxupquote{Query}}}{\emph{session=None}}{}
 Bases: \sphinxcode{\sphinxupquote{object}}
+
+Class for querying data to the eboa module
+
+Provides access to the logic for querying
+the information stored into the DDBB
 \index{clear\_db() (eboa.engine.query.Query method)@\spxentry{clear\_db()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
@@ -2131,10 +2172,16 @@ Method to close the session
 
 \end{fulllineitems}
 
+\index{delete() (eboa.engine.query.Query method)@\spxentry{delete()}\spxextra{eboa.engine.query.Query method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.delete}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{delete}}}{\emph{query}}{}
+\end{fulllineitems}
+
 \index{get\_annotation\_cnfs() (eboa.engine.query.Query method)@\spxentry{get\_annotation\_cnfs()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs}}}{\emph{dim\_signature\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{names=None}, \emph{systems=None}, \emph{dim\_signatures=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotation_cnfs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotation\_cnfs}}}{\emph{dim\_signature\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{names=None}, \emph{systems=None}, \emph{dim\_signatures=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_annotation\_values() (eboa.engine.query.Query method)@\spxentry{get\_annotation\_values()}\spxextra{eboa.engine.query.Query method}}
@@ -2158,13 +2205,13 @@ Method to close the session
 \index{get\_annotations() (eboa.engine.query.Query method)@\spxentry{get\_annotations()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations}}}{\emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_systems=None}, \emph{value\_filters=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_annotations}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_annotations}}}{\emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{annotation\_cnf\_uuids=None}, \emph{ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_systems=None}, \emph{value\_filters=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_dim\_signatures() (eboa.engine.query.Query method)@\spxentry{get\_dim\_signatures()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_uuids=None}, \emph{dim\_signatures=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_dim_signatures}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_dim\_signatures}}}{\emph{dim\_signature\_uuids=None}, \emph{dim\_signatures=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 Method to obtain the DIM signature entities filtered by the received parameters
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -2189,7 +2236,7 @@ list
 \index{get\_event\_keys() (eboa.engine.query.Query method)@\spxentry{get\_event\_keys()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_keys}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_keys}}}{\emph{event\_uuids=None}, \emph{dim\_signature\_uuids=None}, \emph{keys=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_event_keys}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_event\_keys}}}{\emph{event\_uuids=None}, \emph{dim\_signature\_uuids=None}, \emph{keys=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_event\_links() (eboa.engine.query.Query method)@\spxentry{get\_event\_links()}\spxextra{eboa.engine.query.Query method}}
@@ -2219,7 +2266,7 @@ list
 \index{get\_events() (eboa.engine.query.Query method)@\spxentry{get\_events()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events}}}{\emph{event\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{duration\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{gauge\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{keys=None}, \emph{limit=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_events}}}{\emph{event\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{duration\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{value\_filters=None}, \emph{gauge\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{keys=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_explicit\_ref\_links() (eboa.engine.query.Query method)@\spxentry{get\_explicit\_ref\_links()}\spxextra{eboa.engine.query.Query method}}
@@ -2231,19 +2278,19 @@ list
 \index{get\_explicit\_refs() (eboa.engine.query.Query method)@\spxentry{get\_explicit\_refs()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_uuids=None}, \emph{explicit\_ref\_ingestion\_time\_filters=None}, \emph{explicit\_refs=None}, \emph{groups=None}, \emph{sources=None}, \emph{source\_uuids=None}, \emph{event\_uuids=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{duration\_filters=None}, \emph{event\_ingestion\_time\_filters=None}, \emph{event\_value\_filters=None}, \emph{keys=None}, \emph{annotation\_ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_uuids=None}, \emph{annotation\_value\_filters=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs}}}{\emph{group\_ids=None}, \emph{explicit\_ref\_uuids=None}, \emph{explicit\_ref\_ingestion\_time\_filters=None}, \emph{explicit\_refs=None}, \emph{groups=None}, \emph{sources=None}, \emph{source\_uuids=None}, \emph{event\_uuids=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{duration\_filters=None}, \emph{event\_ingestion\_time\_filters=None}, \emph{event\_value\_filters=None}, \emph{keys=None}, \emph{annotation\_ingestion\_time\_filters=None}, \emph{annotation\_uuids=None}, \emph{annotation\_cnf\_names=None}, \emph{annotation\_cnf\_systems=None}, \emph{annotation\_cnf\_uuids=None}, \emph{annotation\_value\_filters=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_explicit\_refs\_groups() (eboa.engine.query.Query method)@\spxentry{get\_explicit\_refs\_groups()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs_groups}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs\_groups}}}{\emph{group\_ids=None}, \emph{names=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_explicit_refs_groups}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_explicit\_refs\_groups}}}{\emph{group\_ids=None}, \emph{names=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_gauges() (eboa.engine.query.Query method)@\spxentry{get\_gauges()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges}}}{\emph{gauge\_uuids=None}, \emph{names=None}, \emph{systems=None}, \emph{dim\_signature\_uuids=None}, \emph{dim\_signatures=None}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_gauges}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_gauges}}}{\emph{gauge\_uuids=None}, \emph{names=None}, \emph{systems=None}, \emph{dim\_signature\_uuids=None}, \emph{dim\_signatures=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 Method to obtain the gauges entities filtered by the received parameters
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -2277,7 +2324,7 @@ list
 \index{get\_linked\_events() (eboa.engine.query.Query method)@\spxentry{get\_linked\_events()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{event\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{value\_filters=None}, \emph{return\_prime\_events=True}, \emph{keys=None}, \emph{back\_ref=False}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linked_events}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linked\_events}}}{\emph{event\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{value\_filters=None}, \emph{return\_prime\_events=True}, \emph{keys=None}, \emph{back\_ref=False}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 \end{fulllineitems}
 
 \index{get\_linked\_events\_details() (eboa.engine.query.Query method)@\spxentry{get\_linked\_events\_details()}\spxextra{eboa.engine.query.Query method}}
@@ -2307,13 +2354,133 @@ list
 \index{get\_linking\_events\_group\_by\_link\_name() (eboa.engine.query.Query method)@\spxentry{get\_linking\_events\_group\_by\_link\_name()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linking_events_group_by_link_name}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linking\_events\_group\_by\_link\_name}}}{\emph{event\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{value\_filters=None}, \emph{return\_prime\_events=True}, \emph{keys=None}, \emph{back\_ref=False}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_linking_events_group_by_link_name}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_linking\_events\_group\_by\_link\_name}}}{\emph{event\_uuids=None}, \emph{source\_uuids=None}, \emph{explicit\_ref\_uuids=None}, \emph{gauge\_uuids=None}, \emph{start\_filters=None}, \emph{stop\_filters=None}, \emph{link\_names=None}, \emph{sources=None}, \emph{explicit\_refs=None}, \emph{gauge\_names=None}, \emph{gauge\_systems=None}, \emph{value\_filters=None}, \emph{return\_prime\_events=True}, \emph{keys=None}, \emph{back\_ref=False}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
+\end{fulllineitems}
+
+\index{get\_report\_groups() (eboa.engine.query.Query method)@\spxentry{get\_report\_groups()}\spxextra{eboa.engine.query.Query method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_report_groups}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_report\_groups}}}{\emph{report\_group\_uuids=None}, \emph{names=None}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
+Method to obtain the DIM signature entities filtered by the received parameters
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{report\_group\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} list of DIM signature identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{names}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} name filters
+
+\end{itemize}
+
+\item[{Returns}] \leavevmode
+found DIM signatures
+
+\item[{Return type}] \leavevmode
+list
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{get\_reports() (eboa.engine.query.Query method)@\spxentry{get\_reports()}\spxextra{eboa.engine.query.Query method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_reports}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_reports}}}{\emph{names=None}, \emph{generation\_modes=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{validity\_duration\_filters=None}, \emph{triggering\_time\_filters=None}, \emph{generation\_start\_filters=None}, \emph{generation\_stop\_filters=None}, \emph{metadata\_ingestion\_duration\_filters=None}, \emph{generated=None}, \emph{compressed=None}, \emph{generators=None}, \emph{generator\_version\_filters=None}, \emph{generation\_error=None}, \emph{report\_group\_uuids=None}, \emph{report\_uuids=None}, \emph{report\_groups=None}, \emph{statuses=None}, \emph{delete=False}, \emph{synchronize\_deletion=True}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
+Method to obtain the reports entities filtered by the received parameters
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{report\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} list of report identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{names}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} report name filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generation\_modes}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} report name filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validity\_start\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of start filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validity\_stop\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of stop filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{validity\_duration\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filters}}) \textendash{} list of duration filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{triggering\_time\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of triggering time filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generation\_start\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of generation start filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generation\_stop\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{date\_filters}}) \textendash{} list of generation stop filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{metadata\_ingestion\_duration\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filters}}) \textendash{} list of metadata ingestion duration filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generated}} (\sphinxstyleliteralemphasis{\sphinxupquote{boolean\_filter}}) \textendash{} flag to indicate if the report was generated or not
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{compressed}} (\sphinxstyleliteralemphasis{\sphinxupquote{boolean\_filter}}) \textendash{} flag to indicate if the report was compressed or not
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generators}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} generators filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generator\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} list of version filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{generation\_error}} (\sphinxstyleliteralemphasis{\sphinxupquote{boolean\_filter}}) \textendash{} flag to indicate if the report generation ended in error or not
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{report\_group\_uuids}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} list of report group identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{report\_uuids}} \textendash{} list of report identifiers
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{report\_groups}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} report group filters
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{statuses}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filter}}) \textendash{} status filters
+
+\end{itemize}
+
+\item[{Returns}] \leavevmode
+found reports
+
+\item[{Return type}] \leavevmode
+list
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{get\_source\_alerts() (eboa.engine.query.Query method)@\spxentry{get\_source\_alerts()}\spxextra{eboa.engine.query.Query method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_source_alerts}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_source\_alerts}}}{\emph{filters=None}}{}
+Method to obtain the alerts associated to source entities filtered by the received filters
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{dict}}) \textendash{} dictionary with the filters to apply to the query
+
+\item[{Returns}] \leavevmode
+found source\_alerts
+
+\item[{Return type}] \leavevmode
+list
+
+\end{description}\end{quote}
+
 \end{fulllineitems}
 
 \index{get\_sources() (eboa.engine.query.Query method)@\spxentry{get\_sources()}\spxextra{eboa.engine.query.Query method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{validity\_duration\_filters=None}, \emph{reception\_time\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{processors=None}, \emph{ingested=None}, \emph{ingestion\_error=None}, \emph{processor\_version\_filters=None}, \emph{dim\_signature\_uuids=None}, \emph{source\_uuids=None}, \emph{dim\_signatures=None}, \emph{statuses=None}, \emph{delete=False}}{}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.get_sources}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_sources}}}{\emph{names=None}, \emph{validity\_start\_filters=None}, \emph{validity\_stop\_filters=None}, \emph{validity\_duration\_filters=None}, \emph{reception\_time\_filters=None}, \emph{generation\_time\_filters=None}, \emph{ingestion\_time\_filters=None}, \emph{ingestion\_duration\_filters=None}, \emph{processors=None}, \emph{ingested=None}, \emph{ingestion\_error=None}, \emph{processor\_version\_filters=None}, \emph{dim\_signature\_uuids=None}, \emph{source\_uuids=None}, \emph{dim\_signatures=None}, \emph{statuses=None}, \emph{delete=False}, \emph{synchronize\_deletion=True}, \emph{order\_by=None}, \emph{limit=None}, \emph{offset=None}}{}
 Method to obtain the sources entities filtered by the received parameters
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
@@ -2342,7 +2509,7 @@ Method to obtain the sources entities filtered by the received parameters
 \sphinxstyleliteralstrong{\sphinxupquote{ingestion\_duration\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{float\_filters}}) \textendash{} list of ingestion duration filters
 
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{processor\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{string\_filter}}) \textendash{} list of version filters
+\sphinxstyleliteralstrong{\sphinxupquote{processor\_version\_filters}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} list of version filters
 
 \item {} 
 \sphinxstyleliteralstrong{\sphinxupquote{procesors}} (\sphinxstyleliteralemphasis{\sphinxupquote{text\_filter}}) \textendash{} processor filters
@@ -2377,7 +2544,25 @@ list
 \phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.prepare_query_values}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{prepare\_query\_values}}}{\emph{value\_filters}, \emph{value\_entities}, \emph{params}, \emph{tables=None}}{}
 \end{fulllineitems}
 
+\index{synchronized\_eboa (eboa.engine.query.Query attribute)@\spxentry{synchronized\_eboa}\spxextra{eboa.engine.query.Query attribute}}
 
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.synchronized_eboa}}\pysigline{\sphinxbfcode{\sphinxupquote{synchronized\_eboa}}\sphinxbfcode{\sphinxupquote{ = functools.partial(\textless{}function synchronized\textgreater{}, lock\_file\_prefix=\textquotesingle{}eboa\sphinxhyphen{}\textquotesingle{})}}}
+\end{fulllineitems}
+
+\index{synchronized\_rboa (eboa.engine.query.Query attribute)@\spxentry{synchronized\_rboa}\spxextra{eboa.engine.query.Query attribute}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.Query.synchronized_rboa}}\pysigline{\sphinxbfcode{\sphinxupquote{synchronized\_rboa}}\sphinxbfcode{\sphinxupquote{ = functools.partial(\textless{}function synchronized\textgreater{}, lock\_file\_prefix=\textquotesingle{}rboa\sphinxhyphen{}\textquotesingle{})}}}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{check\_key\_in\_filters() (in module eboa.engine.query)@\spxentry{check\_key\_in\_filters()}\spxextra{in module eboa.engine.query}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.engine:eboa.engine.query.check_key_in_filters}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.engine.query.}}\sphinxbfcode{\sphinxupquote{check\_key\_in\_filters}}}{\emph{filters}, \emph{key}}{}
 \end{fulllineitems}
 
 \index{log\_query() (in module eboa.engine.query)@\spxentry{log\_query()}\spxextra{in module eboa.engine.query}}
@@ -2467,6 +2652,419 @@ module eboa
 
 \subsubsection{Module contents}
 \label{\detokenize{eboa.analysis:module-eboa.analysis}}\label{\detokenize{eboa.analysis:module-contents}}\index{eboa.analysis (module)@\spxentry{eboa.analysis}\spxextra{module}}
+
+\subsection{eboa.ingestion package}
+\label{\detokenize{eboa.ingestion:eboa-ingestion-package}}\label{\detokenize{eboa.ingestion::doc}}
+
+\subsubsection{Submodules}
+\label{\detokenize{eboa.ingestion:submodules}}
+
+\subsubsection{eboa.ingestion.eboa\_ingestion module}
+\label{\detokenize{eboa.ingestion:module-eboa.ingestion.eboa_ingestion}}\label{\detokenize{eboa.ingestion:eboa-ingestion-eboa-ingestion-module}}\index{eboa.ingestion.eboa\_ingestion (module)@\spxentry{eboa.ingestion.eboa\_ingestion}\spxextra{module}}
+Ingestion script for helping inserting data to EBOA
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+\index{command\_process\_file() (in module eboa.ingestion.eboa\_ingestion)@\spxentry{command\_process\_file()}\spxextra{in module eboa.ingestion.eboa\_ingestion}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.eboa_ingestion.command_process_file}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.eboa\_ingestion.}}\sphinxbfcode{\sphinxupquote{command\_process\_file}}}{\emph{processor}, \emph{file\_path}, \emph{reception\_time}, \emph{output\_path=None}}{}
+\end{fulllineitems}
+
+\index{insert\_data\_into\_DDBB() (in module eboa.ingestion.eboa\_ingestion)@\spxentry{insert\_data\_into\_DDBB()}\spxextra{in module eboa.ingestion.eboa\_ingestion}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.eboa_ingestion.insert_data_into_DDBB}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.eboa\_ingestion.}}\sphinxbfcode{\sphinxupquote{insert\_data\_into\_DDBB}}}{\emph{data}, \emph{filename}, \emph{engine}, \emph{processing\_duration}}{}
+\end{fulllineitems}
+
+\index{main() (in module eboa.ingestion.eboa\_ingestion)@\spxentry{main()}\spxextra{in module eboa.ingestion.eboa\_ingestion}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.eboa_ingestion.main}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.eboa\_ingestion.}}\sphinxbfcode{\sphinxupquote{main}}}{\emph{file\_path}, \emph{processor}, \emph{output\_path=None}, \emph{reception\_time=None}}{}
+\end{fulllineitems}
+
+
+
+\subsubsection{eboa.ingestion.functions module}
+\label{\detokenize{eboa.ingestion:module-eboa.ingestion.functions}}\label{\detokenize{eboa.ingestion:eboa-ingestion-functions-module}}\index{eboa.ingestion.functions (module)@\spxentry{eboa.ingestion.functions}\spxextra{module}}
+Helper module for managing EBOA entities in the EBOA component
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+\index{convert\_eboa\_events\_to\_date\_segments() (in module eboa.ingestion.functions)@\spxentry{convert\_eboa\_events\_to\_date\_segments()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.convert_eboa_events_to_date_segments}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{convert\_eboa\_events\_to\_date\_segments}}}{\emph{timeline}}{}
+Method to convert from events extracted from EBOA to segments to be managed by this component
+Input: list of events structured as the datamodel of EBOA
+Output: list of elements accepted by this component:
+\{
+“id”: event.event\_uuid,
+“start”: event.start,
+“stop”: event.stop
+\}
+the result is sorted by the start value
+
+\end{fulllineitems}
+
+\index{convert\_input\_events\_to\_date\_segments() (in module eboa.ingestion.functions)@\spxentry{convert\_input\_events\_to\_date\_segments()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.convert_input_events_to_date_segments}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{convert\_input\_events\_to\_date\_segments}}}{\emph{timeline}}{}
+Method to convert from events to be inserted into EBOA to segments to be managed by this component
+Input: list of events with a structure accepted by EBOA
+Output: list of elements accepted by this component:
+\{
+“id”: event{[}“link\_ref”{]},
+“start”: event{[}“start”{]},
+“stop”: event{[}“stop”{]}
+\}
+the result is sorted by the start value
+
+\end{fulllineitems}
+
+\index{dates\_difference() (in module eboa.ingestion.functions)@\spxentry{dates\_difference()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.dates_difference}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{dates\_difference}}}{\emph{minuend}, \emph{subtrahend}}{}
+Method to perform the difference between two dates
+:param minuend: first date in the substruction
+:type date: str
+:param subtrahend: second date in the substruction
+:type date: str
+\begin{quote}\begin{description}
+\item[{Returns}] \leavevmode
+seconds of difference
+
+\item[{Return type}] \leavevmode
+float
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{difference\_timelines() (in module eboa.ingestion.functions)@\spxentry{difference\_timelines()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.difference_timelines}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{difference\_timelines}}}{\emph{timeline1}, \emph{timeline2}}{}
+Method to obtain the difference in segments between the timeline1 and the timeline2
+PRE: the segments of the timelines are ordered in time (by the start value)
+
+\end{fulllineitems}
+
+\index{get\_eboa\_timeline\_duration() (in module eboa.ingestion.functions)@\spxentry{get\_eboa\_timeline\_duration()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.get_eboa_timeline_duration}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{get\_eboa\_timeline\_duration}}}{\emph{timeline}}{}
+Method to get the duration of the timeline (summing up the duration of every event)
+Input: list of events structured as the datamodel of EBOA
+Output: duration of the timeline in seconds
+
+\end{fulllineitems}
+
+\index{get\_greater\_segment() (in module eboa.ingestion.functions)@\spxentry{get\_greater\_segment()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.get_greater_segment}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{get\_greater\_segment}}}{\emph{timeline}}{}
+Method to get the segment corresponding to the greater duration
+Input: list of segments structured for the usage of this component
+Output: segment with the greater duration
+
+\end{fulllineitems}
+
+\index{get\_intersected\_timeline\_with\_idx() (in module eboa.ingestion.functions)@\spxentry{get\_intersected\_timeline\_with\_idx()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.get_intersected_timeline_with_idx}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{get\_intersected\_timeline\_with\_idx}}}{\emph{timeline}, \emph{idx}}{}
+Method to obtain the segments of the timeline result of the intersection operation with id corresponding to the timeline 1 or timeline 2
+PRE: the segments of the timeline have the structured returned by the intersect\_timelines operation
+
+\end{fulllineitems}
+
+\index{get\_timeline\_duration() (in module eboa.ingestion.functions)@\spxentry{get\_timeline\_duration()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.get_timeline_duration}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{get\_timeline\_duration}}}{\emph{timeline}}{}
+Method to get the duration of the timeline (summing up the duration of every event)
+Input: list of segments structured for the usage of this component
+Output: duration of the timeline in seconds
+
+\end{fulllineitems}
+
+\index{insert\_event\_for\_ingestion() (in module eboa.ingestion.functions)@\spxentry{insert\_event\_for\_ingestion()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.insert_event_for_ingestion}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{insert\_event\_for\_ingestion}}}{\emph{event}, \emph{source}, \emph{list\_of\_events}}{}
+Method to insert an event into a list for ingestion so that some checks are performed before
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{event}} (\sphinxstyleliteralemphasis{\sphinxupquote{dict}}) \textendash{} dictionary with the structure of the event to insert
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{source}} (\sphinxstyleliteralemphasis{\sphinxupquote{dict}}) \textendash{} dictionary with the structure of the source to insert
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{list\_of\_events}} \textendash{} list of events
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{intersect\_many\_timelines() (in module eboa.ingestion.functions)@\spxentry{intersect\_many\_timelines()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.intersect_many_timelines}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{intersect\_many\_timelines}}}{\emph{timelines}}{}
+Method to obtain the timeline intersecting all the timelines in the received list
+PRE: the segments of the timelines are ordered in time (by the start value)
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{timelines}} (\sphinxstyleliteralemphasis{\sphinxupquote{list}}) \textendash{} list of timelines
+
+\item[{Returns}] \leavevmode
+timeline
+
+\item[{Return type}] \leavevmode
+timeline with the intersected segments in all timelines
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{intersect\_timelines() (in module eboa.ingestion.functions)@\spxentry{intersect\_timelines()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.intersect_timelines}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{intersect\_timelines}}}{\emph{timeline1}, \emph{timeline2}}{}
+Method to obtain the segments from timeline1 intersecting with timeline2
+PRE: the segments of the timelines are ordered in time (by the start value)
+
+\end{fulllineitems}
+
+\index{merge\_timeline() (in module eboa.ingestion.functions)@\spxentry{merge\_timeline()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.merge_timeline}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{merge\_timeline}}}{\emph{timeline}}{}
+Method to obtain a merged timeline from the given timeline
+PRE: the segments of the given timeline are ordered in time (by the start value)
+
+\end{fulllineitems}
+
+\index{remove\_namespaces() (in module eboa.ingestion.functions)@\spxentry{remove\_namespaces()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.remove_namespaces}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{remove\_namespaces}}}{\emph{file\_path}, \emph{new\_file\_path}, \emph{xml\_declaration=True}}{}
+Method to remove namespaces from XML file
+
+\end{fulllineitems}
+
+\index{sort\_timeline\_by\_start() (in module eboa.ingestion.functions)@\spxentry{sort\_timeline\_by\_start()}\spxextra{in module eboa.ingestion.functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.ingestion:eboa.ingestion.functions.sort_timeline_by_start}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.ingestion.functions.}}\sphinxbfcode{\sphinxupquote{sort\_timeline\_by\_start}}}{\emph{timeline}}{}
+Method to order a timeline of date segments by the start value of each segment
+
+\end{fulllineitems}
+
+
+
+\subsection{eboa.triggering package}
+\label{\detokenize{eboa.triggering:eboa-triggering-package}}\label{\detokenize{eboa.triggering::doc}}
+
+\subsubsection{Submodules}
+\label{\detokenize{eboa.triggering:submodules}}
+
+\subsubsection{eboa.triggering.eboa\_triggering module}
+\label{\detokenize{eboa.triggering:module-eboa.triggering.eboa_triggering}}\label{\detokenize{eboa.triggering:eboa-triggering-eboa-triggering-module}}\index{eboa.triggering.eboa\_triggering (module)@\spxentry{eboa.triggering.eboa\_triggering}\spxextra{module}}
+Triggering definition
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+\index{block\_and\_execute\_command() (in module eboa.triggering.eboa\_triggering)@\spxentry{block\_and\_execute\_command()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.block_and_execute_command}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{block\_and\_execute\_command}}}{\emph{source\_type}, \emph{command}, \emph{file\_name}, \emph{dependencies}, \emph{dependencies\_on\_this}, \emph{test}}{}
+Method to execute the commands while blocking other processes which would have dependencies
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{source\_type}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} lock to use for the mutex
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{command}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} command to execute inside the mutex
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{block\_process() (in module eboa.triggering.eboa\_triggering)@\spxentry{block\_process()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.block_process}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{block\_process}}}{\emph{dependency}, \emph{file\_name}}{}
+Method to block the execution of the process on a mutex
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{dependecy}} \textendash{} dependency where to block the process
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{execute\_command() (in module eboa.triggering.eboa\_triggering)@\spxentry{execute\_command()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.execute_command}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{execute\_command}}}{\emph{command}}{}
+Method to execute the commands while blocking other processes which would have dependencies
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{source\_type}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} lock to use for the mutex
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{command}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} command to execute inside the mutex
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{get\_triggering\_conf() (in module eboa.triggering.eboa\_triggering)@\spxentry{get\_triggering\_conf()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.get_triggering_conf}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{get\_triggering\_conf}}}{}{}
+\end{fulllineitems}
+
+\index{main() (in module eboa.triggering.eboa\_triggering)@\spxentry{main()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.main}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{main}}}{\emph{file\_path}, \emph{output\_path=None}, \emph{remove\_input=False}, \emph{test=False}}{}
+\end{fulllineitems}
+
+\index{triggering() (in module eboa.triggering.eboa\_triggering)@\spxentry{triggering()}\spxextra{in module eboa.triggering.eboa\_triggering}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.eboa_triggering.triggering}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.eboa\_triggering.}}\sphinxbfcode{\sphinxupquote{triggering}}}{\emph{file\_path}, \emph{reception\_time}, \emph{engine\_eboa}, \emph{test}, \emph{output\_path=None}}{}
+Method to trigger commands depending on the matched configuration to the file\_path
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{file\_path}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} path to the input file
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{reception\_time}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} date of reception of the file
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{output\_path}} (\sphinxstyleliteralemphasis{\sphinxupquote{str}}) \textendash{} path to the output file
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+
+\subsubsection{eboa.triggering.errors module}
+\label{\detokenize{eboa.triggering:module-eboa.triggering.errors}}\label{\detokenize{eboa.triggering:eboa-triggering-errors-module}}\index{eboa.triggering.errors (module)@\spxentry{eboa.triggering.errors}\spxextra{module}}
+Errors definition for the triggering module
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+\index{Error@\spxentry{Error}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.errors.Error}}\pysigline{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{eboa.triggering.errors.}}\sphinxbfcode{\sphinxupquote{Error}}}
+Bases: \sphinxcode{\sphinxupquote{Exception}}
+
+Base class for exceptions in this module.
+
+\end{fulllineitems}
+
+\index{FileDoesNotMatchAnyRule@\spxentry{FileDoesNotMatchAnyRule}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.errors.FileDoesNotMatchAnyRule}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{eboa.triggering.errors.}}\sphinxbfcode{\sphinxupquote{FileDoesNotMatchAnyRule}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{eboa.triggering:eboa.triggering.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{eboa.triggering.errors.Error}}}}}
+
+Exception raised when the file does not match any rule inside the triggering configuration.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{TriggeringConfigCannotBeRead@\spxentry{TriggeringConfigCannotBeRead}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.errors.TriggeringConfigCannotBeRead}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{eboa.triggering.errors.}}\sphinxbfcode{\sphinxupquote{TriggeringConfigCannotBeRead}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{eboa.triggering:eboa.triggering.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{eboa.triggering.errors.Error}}}}}
+
+Exception raised when the triggering configuration file cannot be read.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+\index{TriggeringConfigDoesNotPassSchema@\spxentry{TriggeringConfigDoesNotPassSchema}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.errors.TriggeringConfigDoesNotPassSchema}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{exception }}\sphinxcode{\sphinxupquote{eboa.triggering.errors.}}\sphinxbfcode{\sphinxupquote{TriggeringConfigDoesNotPassSchema}}}{\emph{message}}{}
+Bases: {\hyperref[\detokenize{eboa.triggering:eboa.triggering.errors.Error}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{eboa.triggering.errors.Error}}}}}
+
+Exception raised when the triggering configuration does not pass the schema.
+\begin{description}
+\item[{Attributes:}] \leavevmode
+message \textendash{} explanation of the error
+
+\end{description}
+
+\end{fulllineitems}
+
+
+
+\subsubsection{eboa.triggering.xpath\_functions module}
+\label{\detokenize{eboa.triggering:module-eboa.triggering.xpath_functions}}\label{\detokenize{eboa.triggering:eboa-triggering-xpath-functions-module}}\index{eboa.triggering.xpath\_functions (module)@\spxentry{eboa.triggering.xpath\_functions}\spxextra{module}}
+Helper module for the ingestions of files of Sentinel\sphinxhyphen{}2 using functions in XPATH
+
+Written by DEIMOS Space S.L. (dibb)
+
+module eboa
+\index{match() (in module eboa.triggering.xpath\_functions)@\spxentry{match()}\spxextra{in module eboa.triggering.xpath\_functions}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{eboa.triggering:eboa.triggering.xpath_functions.match}}\pysiglinewithargsret{\sphinxcode{\sphinxupquote{eboa.triggering.xpath\_functions.}}\sphinxbfcode{\sphinxupquote{match}}}{\emph{dummy}, \emph{node}, \emph{input\_text}}{}
+Method to check if input\_text matches with node
+:param dummy: parameter not used by lxml
+:type dummy: None
+:param node: node with text for matching
+:type node: Etree element or attribute
+:param input\_text: string with text to match
+:type input\_text: str
+\begin{quote}\begin{description}
+\item[{Returns}] \leavevmode
+True if there is match, False if not
+
+\item[{Return type}] \leavevmode
+str
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
 
 \section{eboa.debugging module}
 \label{\detokenize{eboa:module-eboa.debugging}}\label{\detokenize{eboa:eboa-debugging-module}}\index{eboa.debugging (module)@\spxentry{eboa.debugging}\spxextra{module}}

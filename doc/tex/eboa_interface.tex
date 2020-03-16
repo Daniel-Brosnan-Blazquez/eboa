@@ -75,13 +75,14 @@ And the result would be the insertion of:
 
 \section{Events ingestion}
 
-Events can be inserted following 3 different methods associated to their gauges:
+Events can be inserted using the following methods associated to their gauges:
 
 \begin{itemize}
 \item SIMPLE\_UPDATE: all events are inserted
 \item INSERT\_and\_ERASE: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
+\item INSERT\_and\_ERASE\_per\_EVENT: this method is similar to the method INSERT\_and\_ERASE but, in this case, the method is applied taking as validity period every event's period related to the events just inserted into the DDBB.
 \item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
-\item insert\_and\_erase: this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
+\item insert\_and\_erase (applied at DIM signature level): this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
 \end{itemize}
 
 \subsection {INSERT\_and\_ERASE method}
@@ -156,10 +157,16 @@ The steps are as follows:
 
 \section{Annotations ingestion}
 
-Annotations are inserted associated to their explicit references and their annotation configuration.
-The method followed for inserting annotations is similar to the method used for inserting events using the method EVENT\_KEYS.
-The annotations are firstly inserted flagged as not visible. The method after applying the algorithm described bellow is in charge of deleting the annotations or making them visible.
-The steps are as follows:
+Annotations can be inserted using the following methods associated to their gauges:
+
+\begin{itemize}
+\item SIMPLE\_UPDATE: all annotations are inserted
+\item INSERT\_and\_ERASE: all the annotations are inserted but flagged as not visible. Then the \acrshort{eboa} checks the annotations associated to the configuration and explicit references of the annotations just inserted into the DDBB and keeps the annotations with greatest generation time and removes the rest. This method is similar to the method used for inserting events using the method EVENT\_KEYS.
+\end{itemize}
+
+\subsection {INSERT\_and\_ERASE method}
+
+The steps of the algorithm are as follows:
 
 \begin{enumerate}
 
