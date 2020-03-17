@@ -75,8 +75,15 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     # Check configuration
     reporting_xpath = get_reporting_conf()
 
-    generator_xpath = reporting_xpath("/reporting_generators/generator[@name = $generator]", generator = generator)[0]
+    generator_xpaths = reporting_xpath("/reporting_generators/generator[@name = $generator]", generator = generator)
 
+    if len(generator_xpaths) > 0:
+        generator_xpath = generator_xpaths[0]
+    else:
+        logger.error("The generator '{}' is not registered in the configuration".format(generator))
+        exit(-1)
+    # end if
+    
     report_name_format = generator_xpath.xpath("name_format")[0].text
 
     creation_date = datetime.datetime.now().isoformat().split(".")[0].replace(":", "").replace("-", "")
@@ -138,6 +145,8 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     if output_path:
         command += " -o " + "'" + output_path + "'"
     # end if
+
+    logger.info("The command {} is going to be executed".format(command))
     
     if output_path == None:
         engine_rboa = Engine()

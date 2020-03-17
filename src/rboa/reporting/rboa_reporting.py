@@ -205,15 +205,15 @@ if __name__ == "__main__":
         output_path = args.output_path[0]
     # end if
     parameters = None
-    if len(args.arguments) > 0:
+    if args.arguments and len(args.arguments) > 0:
         parameters = {}
+        for argument in args.arguments:
+            name = argument.split("=")[0]
+            value = argument.split("=")[1]
+            parameters[name] = value
+        # end for
     # end if
-    for argument in args.arguments:
-        name = argument.split("=")[0]
-        value = argument.split("=")[1]
-        parameters[name] = value
-    # end for
-
+    
     command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path, parameters)
 
     exit(0)
