@@ -1095,6 +1095,372 @@ class Query():
 
         return reports
 
+    def get_report_alerts(self, filters = None):
+        """
+        Method to obtain the alerts associated to report entities filtered by the received filters
+
+        :param filters: dictionary with the filters to apply to the query
+        :type filters: dict
+
+        :return: found report_alerts
+        :rtype: list
+        """
+        params = []
+        join_tables = False
+        tables = {}
+
+        # Report UUIDs
+        if check_key_in_filters(filters, "report_uuids"):
+            functions.is_valid_text_filter(filters["report_uuids"])
+            if filters["report_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["report_uuids"]["op"]]
+                params.append(op(ReportAlert.report_uuid, filters["report_uuids"]["filter"]))
+            else:
+                filter = eval('ReportAlert.report_uuid.' + text_operators[filters["report_uuids"]["op"]])
+                params.append(filter(filters["report_uuids"]["filter"]))
+            # end if
+        # end if
+
+        # Report group UUIDs
+        if check_key_in_filters(filters, "report_group_uuids"):
+            functions.is_valid_text_filter(filters["report_group_uuids"])
+            if filters["report_group_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["report_group_uuids"]["op"]]
+                params.append(op(Report.report_group_uuid, filters["report_group_uuids"]["filter"]))
+            else:
+                filter = eval('Report.report_group_uuid.' + text_operators[filters["report_group_uuids"]["op"]])
+                params.append(filter(filters["report_group_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Report names
+        if check_key_in_filters(filters, "report_names"):
+            functions.is_valid_text_filter(filters["report_names"])
+            if filters["report_names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["report_names"]["op"]]
+                params.append(op(Report.name, filters["report_names"]["filter"]))
+            else:
+                filter = eval('Report.name.' + text_operators[filters["report_names"]["op"]])
+                params.append(filter(filters["report_names"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Report generation modes
+        if check_key_in_filters(filters, "generation_modes"):
+            functions.is_valid_text_filter(filters["generation_modes"])
+            if filters["generation_modes"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generation_modes"]["op"]]
+                params.append(op(Report.generation_mode, filters["generation_modes"]["filter"]))
+            else:
+                filter = eval('Report.generation_mode.' + text_operators[filters["generation_modes"]["op"]])
+                params.append(filter(filters["generation_modes"]["filter"]))
+            # end if
+        # end if
+
+        # validity_start filters
+        if check_key_in_filters(filters, "validity_start_filters"):
+            functions.is_valid_date_filters(filters["validity_start_filters"])
+            for validity_start_filter in filters["validity_start_filters"]:
+                op = arithmetic_operators[validity_start_filter["op"]]
+                params.append(op(Report.validity_start, validity_start_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # validity_stop filters
+        if check_key_in_filters(filters, "validity_stop_filters"):
+            functions.is_valid_date_filters(filters["validity_stop_filters"])
+            for validity_stop_filter in filters["validity_stop_filters"]:
+                op = arithmetic_operators[validity_stop_filter["op"]]
+                params.append(op(Report.validity_stop, validity_stop_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # validity duration filters
+        if check_key_in_filters(filters, "validity_duration_filters"):
+            functions.is_valid_float_filters(filters["validity_duration_filters"])
+            for validity_duration_filter in filters["validity_duration_filters"]:
+                op = arithmetic_operators[validity_duration_filter["op"]]
+                params.append(op((extract("epoch", Report.validity_stop) - extract("epoch", Report.validity_start)), validity_duration_filter["float"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # triggering_time filters
+        if check_key_in_filters(filters, "triggering_time_filters"):
+            functions.is_valid_date_filters(filters["triggering_time_filters"])
+            for triggering_time_filter in filters["triggering_time_filters"]:
+                op = arithmetic_operators[triggering_time_filter["op"]]
+                params.append(op(Report.triggering_time, triggering_time_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+        
+        # generation_start filters
+        if check_key_in_filters(filters, "generation_start_filters"):
+            functions.is_valid_date_filters(filters["generation_start_filters"])
+            for generation_start_filter in filters["generation_start_filters"]:
+                op = arithmetic_operators[generation_start_filter["op"]]
+                params.append(op(Report.generation_start, generation_start_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # generation_stop filters
+        if check_key_in_filters(filters, "generation_stop_filters"):
+            functions.is_valid_date_filters(filters["generation_stop_filters"])
+            for generation_stop_filter in filters["generation_stop_filters"]:
+                op = arithmetic_operators[generation_stop_filter["op"]]
+                params.append(op(Report.generation_stop, generation_stop_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # generated filter
+        if check_key_in_filters(filters, "generated"):
+            functions.is_valid_bool_filter(filters["generated"])
+            params.append(Report.generated == filters["generated"])
+            join_tables = True
+        # end if
+
+        # compressed filter
+        if check_key_in_filters(filters, "compressed"):
+            functions.is_valid_bool_filter(filters["compressed"])
+            params.append(Report.compressed == filters["compressed"])
+            join_tables = True
+        # end if
+
+        # generation_error filter
+        if check_key_in_filters(filters, "generation_error"):
+            functions.is_valid_bool_filter_with_op(filters["generation_error"])
+            op = arithmetic_operators[filters["generation_error"]["op"]]
+            params.append(op(Report.generation_error, filters["generation_error"]["filter"]))
+            join_tables = True
+        # end if
+
+        # Generators
+        if check_key_in_filters(filters, "generators"):
+            functions.is_valid_text_filter(filters["generators"])
+            if filters["generators"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generators"]["op"]]
+                params.append(op(Report.generator, filters["generators"]["filter"]))
+            else:
+                filter = eval('Report.generator.' + text_operators[filters["generators"]["op"]])
+                params.append(filter(filters["generators"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # generator_version filters
+        if check_key_in_filters(filters, "generator_version_filters"):
+            for generator_version_filter in filters["generator_version_filters"]:
+                functions.is_valid_text_filter(generator_version_filter)
+
+                if generator_version_filter["op"] in arithmetic_operators.keys():
+                    op = arithmetic_operators[generator_version_filter["op"]]
+                    params.append(op(Report.generator_version, generator_version_filter["filter"]))
+                else:
+                    filter = eval('Report.generator_version.' + text_operators[generator_version_filter["op"]])
+                    params.append(filter(generator_version_filter["filter"]))
+                # end if
+            # end for
+            join_tables = True
+        # end if
+
+        # status filters
+        if check_key_in_filters(filters, "statuses"):
+            functions.is_valid_text_filter(filters["statuses"])
+            if filters["statuses"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["statuses"]["op"]]
+                params.append(op(ReportStatus.status, filters["statuses"]["filter"]))
+            else:
+                filter = eval('ReportStatus.status.' + text_operators[filters["statuses"]["op"]])
+                params.append(filter(filters["statuses"]["filter"]))
+            # end if
+            join_tables = True
+            tables[ReportStatus] = ReportStatus.report_uuid==Report.report_uuid
+        # end if
+
+        # Report groups
+        if check_key_in_filters(filters, "report_groups"):
+            functions.is_valid_text_filter(filters["report_groups"])
+            if filters["report_groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["report_groups"]["op"]]
+                params.append(op(ReportGroup.name, filters["report_groups"]["filter"]))
+            else:
+                filter = eval('ReportGroup.name.' + text_operators[filters["report_groups"]["op"]])
+                params.append(filter(filters["report_groups"]["filter"]))
+            # end if
+            join_tables = True
+            tables[ReportGroup] = ReportGroup.report_group_uuid==Report.report_group_uuid
+        # end if
+
+        query = self.session.query(ReportAlert)
+        if len(tables) > 0 or join_tables:
+            query = query.join(Report, Report.report_uuid==ReportAlert.report_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}        
+
+        # Alert configuration names
+        if check_key_in_filters(filters, "names"):
+            functions.is_valid_text_filter(filters["names"])
+            if filters["names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["names"]["op"]]
+                params.append(op(Alert.name, filters["names"]["filter"]))
+            else:
+                filter = eval('Alert.name.' + text_operators[filters["names"]["op"]])
+                params.append(filter(filters["names"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert severities
+        if check_key_in_filters(filters, "severities"):
+            functions.is_valid_text_filter(filters["severities"])
+            if filters["severities"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["severities"]["op"]]
+                params.append(op(Alert.severity, filters["severities"]["filter"]))
+            else:
+                filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
+                params.append(filter(filters["severities"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert groups
+        if check_key_in_filters(filters, "groups"):
+            functions.is_valid_text_filter(filters["groups"])
+            if filters["groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["groups"]["op"]]
+                params.append(op(AlertGroup.name, filters["groups"]["filter"]))
+            else:
+                filter = eval('AlertGroup.name.' + text_operators[filters["groups"]["op"]])
+                params.append(filter(filters["groups"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
+        # end if
+        
+        if len(tables) > 0 or join_tables:
+            query = query.join(Alert, Alert.alert_uuid==ReportAlert.alert_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+        
+        # Alert UUIDs
+        if check_key_in_filters(filters, "alert_uuids"):
+            functions.is_valid_text_filter(filters["alert_uuids"])
+            if filters["alert_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["alert_uuids"]["op"]]
+                params.append(op(ReportAlert.alert_uuid, filters["alert_uuids"]["filter"]))
+            else:
+                filter = eval('ReportAlert.alert_uuid.' + text_operators[filters["alert_uuids"]["op"]])
+                params.append(filter(filters["alert_uuids"]["filter"]))
+            # end if
+        # end if
+        
+        # validated filter
+        if check_key_in_filters(filters, "validated"):
+            functions.is_valid_bool_filter(filters["validated"])
+            params.append(ReportAlert.validated == filters["validated"])
+        # end if
+        
+        # report alert ingestion_time filters
+        if check_key_in_filters(filters, "report_alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["report_alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["report_alert_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(ReportAlert.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # Generators
+        if check_key_in_filters(filters, "generators"):
+            functions.is_valid_text_filter(filters["generators"])
+            if filters["generators"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generators"]["op"]]
+                params.append(op(ReportAlert.generator, filters["generators"]["filter"]))
+            else:
+                filter = eval('ReportAlert.generator.' + text_operators[filters["generators"]["op"]])
+                params.append(filter(filters["generators"]["filter"]))
+            # end if
+        # end if
+
+        # notified filter
+        if check_key_in_filters(filters, "notified"):
+            functions.is_valid_bool_filter(filters["notified"])
+            params.append(ReportAlert.notified == filters["notified"])
+        # end if
+
+        # solved filter
+        if check_key_in_filters(filters, "solved"):
+            functions.is_valid_bool_filter(filters["solved"])
+            params.append(ReportAlert.solved == filters["solved"])
+        # end if
+
+        # report alert solved time filters
+        if check_key_in_filters(filters, "report_alert_solved_time_filters"):
+            functions.is_valid_date_filters(filters["report_alert_solved_time_filters"])
+            for solved_time_filter in filters["report_alert_solved_time_filters"]:
+                op = arithmetic_operators[solved_time_filter["op"]]
+                params.append(op(ReportAlert.solved_time, solved_time_filter["date"]))
+            # end for
+        # end if
+
+        # report alert notification time filters
+        if check_key_in_filters(filters, "report_alert_notification_time_filters"):
+            functions.is_valid_date_filters(filters["report_alert_notification_time_filters"])
+            for notification_time_filter in filters["report_alert_notification_time_filters"]:
+                op = arithmetic_operators[notification_time_filter["op"]]
+                params.append(op(ReportAlert.notification_time, notification_time_filter["date"]))
+            # end for
+        # end if
+                
+        query = query.filter(*params)
+
+        # Order by
+        if check_key_in_filters(filters, "order_by"):
+            functions.is_valid_order_by(filters["order_by"])
+            if filters["order_by"]["descending"]:
+                order_by_statement = eval("ReportAlert." + filters["order_by"]["field"] + ".desc()")
+            else:
+                order_by_statement = eval("ReportAlert." + filters["order_by"]["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if check_key_in_filters(filters, "limit"):
+            functions.is_valid_positive_integer(filters["limit"])
+            query = query.limit(filters["limit"])
+        # end if
+
+        # Offset
+        if check_key_in_filters(filters, "offset"):
+            functions.is_valid_positive_integer(filters["offset"])
+            query = query.offset(filters["offset"])
+        # end if
+
+        log_query(query)
+
+        report_alerts = []
+        if check_key_in_filters(filters, "delete") and filters["delete"]:
+            self.delete(query)
+        else:
+            report_alerts = query.all()
+        # end if
+
+        return report_alerts
+
     def get_report_groups(self, report_group_uuids = None, names = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the DIM signature entities filtered by the received parameters
