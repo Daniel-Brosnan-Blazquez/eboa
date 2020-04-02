@@ -1,14 +1,14 @@
 <reporting_generators>
   <generator name="BOA health generator" description="Generator for providing reporting about the health of the BOA system">
-    <command>rboa_reporting.py -p vboa.boa_health.boa_health_generator</command>
+    <command>rboa_reporting.py -p vboa.views.boa_health.boa_health_generator</command>
     <name_format>BOA_REP__BOA_HEALTH_%C_%B_%E.html</name_format>
   </generator>
   <generator name="Ingestion control generator" description="Generator for providing reporting about the ingestion chain of the BOA system">
-    <command>rboa_reporting.py -p vboa.ingestion_control.ingestion_control_generator</command>
+    <command>rboa_reporting.py -p vboa.views.ingestion_control.ingestion_control_generator</command>
     <name_format>BOA_REP__INGESTCONT_%C_%B_%E.html</name_format>
   </generator>
   <generator name="Reporting control generator" description="Generator for providing reporting about the reporting chain of the BOA system">
-    <command>rboa_reporting.py -p vboa.reporting_control.reporting_control_generator</command>
+    <command>rboa_reporting.py -p vboa.views.reporting_control.reporting_control_generator</command>
     <name_format>BOA_REP__REPORTCONT_%C_%B_%E.html</name_format>
   </generator>
 </reporting_generators>
