@@ -534,6 +534,62 @@ class TestEngine(unittest.TestCase):
 
         assert len(explicit_reference_link_ddbb) == 1
 
+        explicit_reference_link_ddbb2 = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == "LINK_BACK_REF_NAME",
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_event_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid).all()
+
+        assert len(explicit_reference_link_ddbb2) == 1
+
+    def test_insert_link_to_non_existant_explicit_ref(self):
+        self.engine_eboa._initialize_context_insert_data()
+        data = {"explicit_references": [{
+            "name": "EXPLICIT_REFERENCE",
+            "links": [{"name": "LINK_NAME",
+                       "link": "EXPLICIT_REFERENCE_EVENT",
+                       "back_ref": "LINK_BACK_REF_NAME"},
+                      {"name": "LINK_NAME2",
+                       "link": "EXPLICIT_REFERENCE_EVENT2",
+                       "back_ref": "LINK_BACK_REF_NAME2"}]
+        }]
+        }
+        self.engine_eboa.operation = data
+        self.engine_eboa._insert_explicit_refs()
+        # Call commit as the method uses the nested operation
+        self.engine_eboa.session.commit()
+
+        self.engine_eboa._insert_links_explicit_refs()
+        # Call commit as the method uses the nested operation
+        self.engine_eboa.session.commit()
+
+        explicit_reference_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == data["explicit_references"][0]["name"]).first()
+        explicit_reference_event_ddbb = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == "EXPLICIT_REFERENCE_EVENT").first()
+
+        explicit_reference_link_ddbb = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == data["explicit_references"][0]["links"][0]["name"],
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_event_ddbb.explicit_ref_uuid).all()
+
+        assert len(explicit_reference_link_ddbb) == 1
+
+        explicit_reference_link_ddbb2 = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == "LINK_BACK_REF_NAME",
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_event_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid).all()
+
+        assert len(explicit_reference_link_ddbb2) == 1
+
+        explicit_reference_event_ddbb2 = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == "EXPLICIT_REFERENCE_EVENT2").first()
+
+        explicit_reference_link_ddbb3 = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == "LINK_NAME2",
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_ddbb.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_event_ddbb2.explicit_ref_uuid).all()
+
+        assert len(explicit_reference_link_ddbb3) == 1
+
+        explicit_reference_link_ddbb4 = self.session.query(ExplicitRefLink).filter(ExplicitRefLink.name == "LINK_BACK_REF_NAME2",
+                                                                                  ExplicitRefLink.explicit_ref_uuid_link == explicit_reference_event_ddbb2.explicit_ref_uuid,
+                                                                                  ExplicitRefLink.explicit_ref_uuid == explicit_reference_ddbb.explicit_ref_uuid).all()
+
+        assert len(explicit_reference_link_ddbb4) == 1
+
     def test_insert_race_condition_links_explicit_reference(self):
 
         self.engine_eboa._initialize_context_insert_data()

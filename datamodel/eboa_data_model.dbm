@@ -421,9 +421,6 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_linkss_pk" type="pk-constr" table="eboa.explicit_ref_links">
-		<columns names="explicit_ref_uuid_link" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="source_statuses" layer="0" collapse-mode="2" max-obj-count="6">

@@ -299,9 +299,7 @@ ALTER TABLE eboa.explicit_ref_cnfs OWNER TO eboa;
 CREATE TABLE eboa.explicit_ref_links (
 	explicit_ref_uuid_link uuid NOT NULL,
 	name text NOT NULL,
-	explicit_ref_uuid uuid NOT NULL,
-	CONSTRAINT explicit_ref_linkss_pk PRIMARY KEY (explicit_ref_uuid_link)
-
+	explicit_ref_uuid uuid NOT NULL
 );
 -- ddl-end --
 ALTER TABLE eboa.explicit_ref_links OWNER TO eboa;
