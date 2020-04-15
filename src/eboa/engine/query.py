@@ -2078,10 +2078,10 @@ class Query():
 
         return events
 
-    def get_linking_events(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, value_filters = None, return_prime_events = True, keys = None, back_ref = False):
+    def get_linking_events(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, start_filters = None, stop_filters = None, link_names = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, value_filters = None, return_prime_events = True, keys = None, back_ref = False, order_by = None, limit = None, offset = None):
 
         # Obtain prime events
-        prime_events = self.get_events(event_uuids = event_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters)
+        prime_events = self.get_events(event_uuids = event_uuids, source_uuids = source_uuids, explicit_ref_uuids = explicit_ref_uuids, gauge_uuids = gauge_uuids, sources = sources, explicit_refs = explicit_refs, gauge_names = gauge_names, gauge_systems = gauge_systems, keys = keys, start_filters = start_filters, stop_filters = stop_filters, value_filters = value_filters, order_by = order_by, limit = limit, offset = offset)
 
         prime_event_uuids = [str(event.__dict__["event_uuid"]) for event in prime_events]
 
@@ -2105,11 +2105,11 @@ class Query():
         events["linking_events"] = events_linking
 
         if back_ref:
-            # Obtain the events linking the prime events
+            # Obtain the events linked by the prime events
             links = self.get_event_links(event_uuid_links = {"filter": prime_event_uuids, "op": "in"})
             linked_event_uuids = [str(link.event_uuid) for link in links]
             linked_events = []
-            if len(event_linking_uuids) > 0:
+            if len(linked_event_uuids) > 0:
                 linked_events = self.get_events(event_uuids = {"filter": linked_event_uuids, "op": "in"})
             # end if
 
@@ -2820,10 +2820,10 @@ class Query():
 
         return links
 
-    def get_linked_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, ingestion_time_filters = None, link_names = None, groups = None, return_prime_explicit_refs = True, back_ref = False):
+    def get_linked_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, ingestion_time_filters = None, link_names = None, groups = None, return_prime_explicit_refs = True, back_ref = False, order_by = None, limit = None, offset = None):
 
         # Obtain prime explicit_refs
-        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, groups = groups, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_ingestion_time_filters = ingestion_time_filters)
+        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, groups = groups, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_ingestion_time_filters = ingestion_time_filters, order_by = order_by, limit = limit, offset = offset)
 
         prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
 
@@ -2903,6 +2903,89 @@ class Query():
                 explicit_refs["explicit_refs_linking"].append({"link_name": link_name,
                                                 "explicit_ref": explicit_ref})
             # end for
+        # end if
+
+        return explicit_refs
+
+    def get_linking_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, ingestion_time_filters = None, link_names = None, groups = None, return_prime_explicit_refs = True, back_ref = False, order_by = None, limit = None, offset = None):
+
+        # Obtain prime explicit_refs
+        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, groups = groups, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_ingestion_time_filters = ingestion_time_filters, order_by = order_by, limit = limit, offset = offset)
+
+        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
+
+        # Obtain the links to the prime explicit_refs from other explicit_refs
+        links = []
+        if len(prime_explicit_ref_uuids) > 0:
+            links = self.get_explicit_ref_links(explicit_ref_uuids = {"filter": prime_explicit_ref_uuids, "op": "in"}, link_names = link_names)
+        # end if
+
+        # Obtain the explicit_refs linking the prime explicit_refs
+        explicit_ref_linking_uuids = [str(link.explicit_ref_uuid_link) for link in links]
+        explicit_refs_linking = []
+        if len(explicit_ref_linking_uuids) > 0:
+            explicit_refs_linking = self.get_explicit_refs(explicit_ref_uuids = {"filter": explicit_ref_linking_uuids, "op": "in"})
+        # end if
+
+        explicit_refs = {}
+        if return_prime_explicit_refs:
+            explicit_refs["prime_explicit_refs"] = prime_explicit_refs
+        # end if
+        explicit_refs["linking_explicit_refs"] = explicit_refs_linking
+
+        if back_ref:
+            # Obtain the explicit_refs linked by the prime explicit_refs
+            links = self.get_explicit_ref_links(explicit_ref_uuid_links = {"filter": prime_explicit_ref_uuids, "op": "in"})
+            linked_explicit_ref_uuids = [str(link.explicit_ref_uuid) for link in links]
+            linked_explicit_refs = []
+            if len(linked_explicit_ref_uuids) > 0:
+                linked_explicit_refs = self.get_explicit_refs(explicit_ref_uuids = {"filter": linked_explicit_ref_uuids, "op": "in"})
+            # end if
+
+            explicit_refs["linked_explicit_refs"] = linked_explicit_refs
+        # end if
+
+        return explicit_refs
+
+    def get_linking_explicit_refs_group_by_link_name(self, group_ids = None, explicit_ref_uuids = None, explicit_refs = None, ingestion_time_filters = None, link_names = None, groups = None, return_prime_explicit_refs = True, back_ref = False, order_by = None, limit = None, offset = None):
+
+        # Obtain prime explicit_refs
+        prime_explicit_refs = self.get_explicit_refs(group_ids = group_ids, groups = groups, explicit_ref_uuids = explicit_ref_uuids, explicit_refs = explicit_refs, explicit_ref_ingestion_time_filters = ingestion_time_filters, order_by = order_by, limit = limit, offset = offset)
+
+        prime_explicit_ref_uuids = [str(explicit_ref.explicit_ref_uuid) for explicit_ref in prime_explicit_refs]
+
+        explicit_refs_linking = {}
+        for link_name in link_names["filter"]:
+            # Obtain the links to the prime explicit_refs from other explicit_refs
+            links = []
+            if len(prime_explicit_ref_uuids) > 0:
+                links = self.get_explicit_ref_links(explicit_ref_uuids = {"filter": prime_explicit_ref_uuids, "op": "in"}, link_names = {"filter": [link_name], "op": link_names["op"]})
+            # end if
+
+            # Obtain the explicit_refs linking the prime explicit_refs
+            explicit_ref_linking_uuids = [str(link.explicit_ref_uuid_link) for link in links]
+            explicit_refs_linking[link_name] = []
+            if len(explicit_ref_linking_uuids) > 0:
+                explicit_refs_linking[link_name] = self.get_explicit_refs(explicit_ref_uuids = {"filter": explicit_ref_linking_uuids, "op": "in"})
+            # end if
+        # end for
+        
+        explicit_refs = {}
+        if return_prime_explicit_refs:
+            explicit_refs["prime_explicit_refs"] = prime_explicit_refs
+        # end if
+        explicit_refs["linking_explicit_refs"] = explicit_refs_linking
+
+        if back_ref:
+            # Obtain the explicit_refs linked by the prime explicit_refs
+            links = self.get_explicit_ref_links(explicit_ref_uuid_links = {"filter": prime_explicit_ref_uuids, "op": "in"})
+            linked_explicit_ref_uuids = [str(link.explicit_ref_uuid) for link in links]
+            linked_explicit_refs = []
+            if len(linked_explicit_ref_uuids) > 0:
+                linked_explicit_refs = self.get_explicit_refs(explicit_ref_uuids = {"filter": linked_explicit_ref_uuids, "op": "in"})
+            # end if
+
+            explicit_refs["linked_explicit_refs"] = linked_explicit_refs
         # end if
 
         return explicit_refs
