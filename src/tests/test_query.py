@@ -1580,41 +1580,41 @@ class TestQuery(unittest.TestCase):
             }]}
         self.engine_eboa.treat_data(data)
 
-        dim_signature1 = self.query.get_dim_signatures()
+        dim_signature1 = self.query.get_dim_signatures(dim_signatures = {"filter": "dim_signature", "op": "=="})
 
         annotation_cnf = self.query.get_annotation_cnfs(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf = self.query.get_annotation_cnfs(dim_signatures = {"filter": [data["operations"][0]["dim_signature"]["name"]], "op": "in"})
+        annotation_cnfs = self.query.get_annotation_cnfs()
 
-        assert len(annotation_cnf) == 1
+        assert len(annotation_cnfs) == 2
 
-        annotation_cnf1 = self.query.get_annotation_cnfs()
+        annotation_cnf1 = self.query.get_annotation_cnfs(dim_signatures = {"filter": ["dim_signature"], "op": "in"})
 
-        assert len(annotation_cnf1) == 2
+        assert len(annotation_cnf1) == 1
 
         annotation_cnf = self.query.get_annotation_cnfs(annotation_cnf_uuids = {"filter": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf = self.query.get_annotation_cnfs(names = {"filter": [data["operations"][0]["annotations"][0]["annotation_cnf"]["name"]], "op": "in"})
+        annotation_cnf = self.query.get_annotation_cnfs(names = {"filter": ["ANNOTATION_CNF_NAME"], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf_name = data["operations"][0]["annotations"][0]["annotation_cnf"]["name"][0:4] + "%"
+        annotation_cnf_name = "ANNOT%"
 
-        annotation_cnf = self.query.get_annotation_cnfs(systems = {"filter": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"})
+        annotation_cnf = self.query.get_annotation_cnfs(systems = {"filter": ["ANNOTATION_CNF_SYSTEM"], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
-        annotation_cnf_system = data["operations"][0]["annotations"][0]["annotation_cnf"]["system"][0:4] + "%"
+        annotation_cnf_system = "ANNOT%"
 
         annotation_cnf = self.query.get_annotation_cnfs(dim_signature_uuids = {"filter": [dim_signature1[0].dim_signature_uuid], "op": "in"},
                                         annotation_cnf_uuids = {"filter": [annotation_cnf1[0].annotation_cnf_uuid], "op": "in"},
                                         names = {"filter": annotation_cnf_name, "op": "like"},
-                                                        systems = {"filter": [data["operations"][0]["annotations"][0]["annotation_cnf"]["system"]], "op": "in"},
-        dim_signatures = {"filter": [data["operations"][0]["dim_signature"]["name"]], "op": "in"})
+                                                        systems = {"filter": ["ANNOTATION_CNF_SYSTEM"], "op": "in"},
+        dim_signatures = {"filter": ["dim_signature"], "op": "in"})
 
         assert len(annotation_cnf) == 1
 
