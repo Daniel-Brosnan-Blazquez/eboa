@@ -1754,7 +1754,7 @@ class Engine():
             # Remove events due to EVENT_KEYS insertion mode
             self._remove_deprecated_events_event_keys()
 
-            # Remove annotations due to the generation time
+            # Remove annotations due to INSERT_and_ERASE insertion mode
             self._remove_deprecated_annotations()
 
             # Commit data
