@@ -494,6 +494,10 @@ class Engine():
         :return: exit_codes for every operation with the associated information (DIM signature, processor and source)
         :rtype: list of dictionaries
         """
+
+        # Initialize context
+        self._initialize_context_treat_data()
+
         if data != None:
             self.data = data
         # end if
@@ -545,6 +549,12 @@ class Engine():
         # end for
         return returned_values
 
+    def _initialize_context_treat_data(self):
+        # Initialize context
+        self.event_link_refs = {}
+
+        return
+
     def _initialize_context_insert_data(self):
         # Initialize context
         self.dim_signature = None
@@ -560,7 +570,11 @@ class Engine():
         self.keys_events = {}
         self.alert_cnfs = {}
         self.alert_groups = {}
-        self.event_link_refs = {}
+
+        # This is not necesary needed, just here to avoid a lot of modifications on tests
+        if not hasattr(self, "event_link_refs"):
+            self.event_link_refs = {}
+        # end if
 
         return
 
