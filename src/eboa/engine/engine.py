@@ -19,6 +19,7 @@ import re
 from importlib import import_module
 
 # Import SQLalchemy entities
+from sqlalchemy import or_, and_
 from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.sql import func
 from sqlalchemy.orm import scoped_session
@@ -1798,13 +1799,20 @@ class Engine():
             # Get the sources of events intersecting the validity period
             dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
             sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                  Source.validity_start < self.source.validity_stop,
-                                                                                  Source.validity_stop > self.source.validity_start).all()
+                                                                                  or_(and_(Source.validity_start < self.source.validity_stop,
+                                                                                           Source.validity_stop > self.source.validity_start),
+                                                                                      and_(Source.validity_start == self.source.validity_start,
+                                                                                           Source.validity_stop == self.source.validity_stop))).all()
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
+            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            for source in sources_duration_0:
+                filtered_timeline_points.append(source.validity_stop)
+            # end for
+            
             # Sort list
             filtered_timeline_points.sort()
 
@@ -1832,20 +1840,26 @@ class Engine():
                 next_timestamp += 1
                 # Get the maximum generation time at this moment
                 max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                                            Source.validity_start < validity_stop,
-                                                                                                                            Source.validity_stop > validity_start).first()
+                                                                                                                     or_(and_(Source.validity_start < validity_stop,
+                                                                                                                              Source.validity_stop > validity_start),
+                                                                                                                         and_(Source.validity_start == validity_start,
+                                                                                                                              Source.validity_stop == validity_stop))).first()
 
                 # Get the related source
                 source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
-                                                                                                         DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                         Source.validity_start < validity_stop,
-                                                                                                         Source.validity_stop > validity_start).order_by(Source.ingestion_time.nullslast()).first()
-
+                                                                                                  DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                                                                  or_(and_(Source.validity_start < validity_stop,
+                                                                                                           Source.validity_stop > validity_start),
+                                                                                                      and_(Source.validity_start == validity_start,
+                                                                                                           Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
                                                                               Event.gauge_uuid == gauge_uuid,
-                                                                              Event.start < validity_stop,
-                                                                              Event.stop > validity_start).all()
+                                                                              or_(and_(Event.start < validity_stop,
+                                                                                       Event.stop > validity_start),
+                                                                                  and_(Event.start == validity_start,
+                                                                                       Event.stop == validity_stop))).all()
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -2130,12 +2144,19 @@ class Engine():
                 segment_stop = parser.parse(segment[1])
                 # Get the events intersecting the segment
                 events = self.session.query(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                          Event.start < segment_stop,
-                                                          Event.stop > segment_start).all()
+                                                          or_(and_(Event.start < segment_stop,
+                                                                   Event.stop > segment_start),
+                                                              and_(Event.start == segment_start,
+                                                                   Event.stop == segment_stop))).all()
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
                 filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= segment_start and timestamp <= segment_stop]
+
+                events_duration_0 = [event for event in events if event.start == event.stop]
+                for event in events_duration_0:
+                    filtered_timeline_points.append(event.stop)
+                # end for
 
                 # Sort list
                 filtered_timeline_points.sort()
@@ -2163,20 +2184,26 @@ class Engine():
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
                     max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                                                                                  Event.start < validity_stop,
-                                                                                                                  Event.stop > validity_start).first()
+                                                                                                                  or_(and_(Event.start < validity_stop,
+                                                                                                                           Event.stop > validity_start),
+                                                                                                                      and_(Event.start == validity_start,
+                                                                                                                           Event.stop == validity_stop))).first()
 
                     # Get the related source
                     source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
                                                                                                Event.gauge_uuid == gauge_uuid,
-                                                                                               Event.start < validity_stop,
-                                                                                               Event.stop > validity_start).order_by(Source.ingestion_time.nullslast()).first()
+                                                                                               or_(and_(Event.start < validity_stop,
+                                                                                                        Event.stop > validity_start),
+                                                                                                   and_(Event.start == validity_start,
+                                                                                                        Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
                                                                                   Event.gauge_uuid == gauge_uuid,
-                                                                                  Event.start < validity_stop,
-                                                                                  Event.stop > validity_start).all()
+                                                                                  or_(and_(Event.start < validity_stop,
+                                                                                           Event.stop > validity_start),
+                                                                                      and_(Event.start == validity_start,
+                                                                                           Event.stop == validity_stop))).all()
 
                     # Review events with higher generation time in the period
                     for event in events_max_generation_time:
