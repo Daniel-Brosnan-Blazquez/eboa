@@ -336,7 +336,7 @@ def _validate_gauge(data):
 def _validate_event_links(data):
 
     if type(data) != list:
-        raise ErrorParsingDictionary("The tag links for the items inside the explicit_references structure has to be of type list")
+        raise ErrorParsingDictionary("The tag links for the items inside the events structure has to be of type list")
     # end if
 
     for link in data:
