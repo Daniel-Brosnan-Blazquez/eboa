@@ -2402,59 +2402,61 @@ class Engine():
 
         return
 
-    def insert_event_values(self, event_uuid, values):
+    def insert_event_value(self, event_uuid, value):
         """
-        Method to insert values and associate them to the event related to the UUID received in the position specified
+        Method to associate a value structure to an event related to the UUID received in the position specified
 
         IMPORTANT!!! This method performs the commit
 
         :param event_uuid: event to assiciate the value to
         :type from_event_uuid: uuid
-        :param values: list of values to be inserted
-        :type values: dict
+        :param value: structure of a value to be inserted
+        :type value: dict
 
         """
         exit_status = {
             "error": False,
             "inserted": False,
+            "status": "VALUE_WAS_INGESTED_BY_OTHER_PROCESS"
         }
 
-        # Validate the structure of the values received
+        # Validate the structure of the value received
         try:
-            parsing.validate_values([values])
+            parsing.validate_values([value])
         except ErrorParsingDictionary as e:
             logger.error(str(e))
             exit_status = {
                 "error": True,
                 "inserted": False,
+                "status": "ERROR_PARSING"
             }
             return exit_status
         # end try
 
-        # The event had no values associated
         entity_uuid = {"name": "event_uuid",
                        "id": event_uuid
                    }
 
-        values_name = values["name"]
+        value_name = value["name"]
         value_entity = EventObject
-        if values["type"] == "booleans":
+        if value["type"] == "boolean":
             value_entity = EventBoolean
-        elif values["type"] == "texts":
+        elif value["type"] == "text":
             value_entity = EventTexts
-        elif values["type"] == "doubles":
+        elif value["type"] == "double":
             value_entity = EventDoubles
-        elif values["type"] == "timestamps":
+        elif value["type"] == "timestamp":
             value_entity = EventTimestamps
-        elif values["type"] == "geometries":
+        elif value["type"] == "geometrie":
             value_entity = EventGeometries
         # end if
-        item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == values_name, value_entity.event_uuid == event_uuid).first()
-        while not item:
+        event = self.session.query(Event).filter(Event.event_uuid == event_uuid).first()
+        item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == value_name, value_entity.event_uuid == event_uuid).first()
+        while not item and event:
             list_values = {}
             event_values = self.query.get_event_values(event_uuids = [event_uuid])
             event_values_first_level = [value for value in event_values if value.parent_level == -1 and value.parent_position == 0]
-            self._insert_values([values], entity_uuid, list_values, position = len(event_values_first_level), parent_level = -1, parent_position = 0)
+            self._insert_values([value], entity_uuid, list_values, position = len(event_values_first_level), parent_level = -1, parent_position = 0)
 
             continue_with_values_ingestion = True
             self.session.begin_nested()
@@ -2463,10 +2465,6 @@ class Engine():
                 try:
                     race_condition()
                     self.session.bulk_insert_mappings(EventObject, list_values["objects"])
-                    exit_status = {
-                        "error": False,
-                        "inserted": True,
-                    }
                 except IntegrityError:
                     continue_with_values_ingestion = False
                     # The object has not been ingested because of two possible reasons:
@@ -2497,6 +2495,7 @@ class Engine():
                         exit_status = {
                             "error": True,
                             "inserted": False,
+                            "status": "VALUE_DEFINES_WRONG_GEOMETRY"
                         }
                         return exit_status
                 # end if
@@ -2506,6 +2505,7 @@ class Engine():
                 exit_status = {
                     "error": True,
                     "inserted": False,
+                    "status": "DUPLICATED_VALUES"
                 }
                 return exit_status
             # end try
@@ -2514,10 +2514,24 @@ class Engine():
                 # Two commits because of nested
                 self.session.commit()
                 self.session.commit()
+                exit_status = {
+                    "error": False,
+                    "inserted": True,
+                    "status": "OK"
+                }
             # end if
 
-            item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == values_name, value_entity.event_uuid == event_uuid).first()
-        # end for
+            event = self.session.query(Event).filter(Event.event_uuid == event_uuid).first()
+            item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == value_name, value_entity.event_uuid == event_uuid).first()
+        # end while
+
+        if not event:
+            exit_status = {
+                "error": False,
+                "inserted": False,
+                "status": "EVENT_DOES_NOT_EXIST"
+            }
+        # end if
         
         return exit_status
 

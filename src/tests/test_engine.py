@@ -4921,10 +4921,10 @@ class TestEngine(unittest.TestCase):
         # end if
         logging_module.define_logging_configuration()
 
-    def test_race_condition_insert_event_values_same_name(self):
+    def test_race_condition_insert_event_value_same_name(self):
         """
         Method to test the race condition that could be produced if the
-        values are inserted with the same name by two different processes
+        value are inserted with the same name by two different processes
         """
         data = {"operations": [{
                 "mode": "insert",
@@ -4953,38 +4953,68 @@ class TestEngine(unittest.TestCase):
 
         event_uuid = events[0].event_uuid
         
-        values = {
+        value = {
             "name": "first_object",
             "type": "object",
             "values": []
         }
 
-        def insert_event_values_race_condition():
-            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values)
+        def insert_event_value_race_condition():
+            exit_status = self.engine_eboa_race_conditions.insert_event_value(event_uuid, value)
             self.engine_eboa_race_conditions.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == True
+            assert exit_status["status"] == "OK"
         # end def
 
-        def insert_event_values():
-            exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        def insert_event_value():
+            exit_status = self.engine_eboa.insert_event_value(event_uuid, value)
             self.engine_eboa.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == False
+            assert exit_status["status"] == "VALUE_WAS_INGESTED_BY_OTHER_PROCESS"
         # end def
 
-        with before_after.before("eboa.engine.engine.race_condition", insert_event_values_race_condition):
-            insert_event_values()
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_value_race_condition):
+            insert_event_value()
         # end with
 
         event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object").all()
 
         assert len(event_objects) == 1
 
-    def test_race_condition_insert_event_values_different_names_no_previous_values(self):
+    def test_insert_event_value_event_uuid_not_exists(self):
+        """
+        Method to test the method to associate a value to an event
+        which event_uuid does not exist in DDBB
+        """
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 0
+
+        event_uuid = "1950364a-89d0-11ea-a91e-000000001ddd"
+        
+        value = {
+            "name": "first_object",
+            "type": "object",
+            "values": []
+        }
+
+        exit_status = self.engine_eboa.insert_event_value(event_uuid, value)
+        self.engine_eboa.session.commit()
+        assert exit_status["error"] == False
+        assert exit_status["inserted"] == False
+        assert exit_status["status"] == "EVENT_DOES_NOT_EXIST"
+
+        event_objects = self.session.query(EventObject).all()
+
+        assert len(event_objects) == 0
+
+    def test_race_condition_insert_event_value_different_names_no_previous_values(self):
         """
         Method to test the race condition that could be produced if the
-        values are inserted with no created structure of values by different processes
+        value is inserted with no created structure of value by different processes
         as all of them are going to try to initiate this structure of values
         """
         data = {"operations": [{
@@ -5014,34 +5044,34 @@ class TestEngine(unittest.TestCase):
 
         event_uuid = events[0].event_uuid
         
-        values1 = {
+        value1 = {
             "name": "first_object1",
             "type": "object",
             "values": []
         }
 
-        values2 = {
+        value2 = {
             "name": "first_object2",
             "type": "object",
             "values": []
         }
 
-        def insert_event_values1():
-            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
+        def insert_event_value1():
+            exit_status = self.engine_eboa_race_conditions.insert_event_value(event_uuid, value1)
             self.engine_eboa_race_conditions.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == True
         # end def
 
-        def insert_event_values2():
-            exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
+        def insert_event_value2():
+            exit_status = self.engine_eboa.insert_event_value(event_uuid, value2)
             self.engine_eboa.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == True
         # end def
 
-        with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
-            insert_event_values2()
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_value1):
+            insert_event_value2()
         # end with
 
         event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object1").all()
@@ -5052,10 +5082,10 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_objects) == 1
 
-    def test_race_condition_insert_event_values_different_names_previous_values(self):
+    def test_race_condition_insert_event_value_different_names_previous_values(self):
         """
         Method to test the race condition that could be produced if the
-        several processes try to insert the values even with different name in the same position
+        several processes try to insert the value even with different name in the same position
         """
         data = {"operations": [{
                 "mode": "insert",
@@ -5089,34 +5119,34 @@ class TestEngine(unittest.TestCase):
 
         event_uuid = events[0].event_uuid
         
-        values1 = {
+        value1 = {
             "name": "first_object1",
             "type": "object",
             "values": []
         }
 
-        values2 = {
+        value2 = {
             "name": "first_object2",
             "type": "object",
             "values": []
         }
 
-        def insert_event_values1():
-            exit_status = self.engine_eboa_race_conditions.insert_event_values(event_uuid, values1)
+        def insert_event_value1():
+            exit_status = self.engine_eboa_race_conditions.insert_event_value(event_uuid, value1)
             self.engine_eboa_race_conditions.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == True
         # end def
 
-        def insert_event_values2():
-            exit_status = self.engine_eboa.insert_event_values(event_uuid, values2)
+        def insert_event_value2():
+            exit_status = self.engine_eboa.insert_event_value(event_uuid, value2)
             self.engine_eboa.session.commit()
             assert exit_status["error"] == False
             assert exit_status["inserted"] == True
         # end def
 
-        with before_after.before("eboa.engine.engine.race_condition", insert_event_values1):
-            insert_event_values2()
+        with before_after.before("eboa.engine.engine.race_condition", insert_event_value1):
+            insert_event_value2()
         # end with
 
         event_objects = self.session.query(EventObject).filter(EventObject.name == "first_object1").all()
@@ -5135,9 +5165,9 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_objects) == 3
 
-    def test_insert_event_values_all_types(self):
+    def test_insert_event_value_all_types(self):
         """
-        Method to test that the values can contain all the types
+        Method to test that the value can contain all the types
         """
         data = {"operations": [{
                 "mode": "insert",
@@ -5171,7 +5201,7 @@ class TestEngine(unittest.TestCase):
 
         event_uuid = events[0].event_uuid
         
-        values = {
+        value = {
             "name": "OBJECT",
             "type": "object",
             "values": [
@@ -5196,7 +5226,7 @@ class TestEngine(unittest.TestCase):
             ]
         }
 
-        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        exit_status = self.engine_eboa.insert_event_value(event_uuid, value)
         self.engine_eboa.session.commit()
         assert exit_status["error"] == False
         assert exit_status["inserted"] == True
@@ -5225,9 +5255,9 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_geometries) == 1
 
-    def test_insert_event_values_wrong_format(self):
+    def test_insert_event_value_wrong_format(self):
         """
-        Method to test that the values can contain all the types
+        Method to test that the engine does not allow not admitted values
         """
         data = {"operations": [{
                 "mode": "insert",
@@ -5260,12 +5290,12 @@ class TestEngine(unittest.TestCase):
             "no_valid_structure": "OBJECT"
         }
 
-        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        exit_status = self.engine_eboa.insert_event_value(event_uuid, values)
         self.engine_eboa.session.commit()
         assert exit_status["error"] == True
         assert exit_status["inserted"] == False
 
-    def test_insert_event_values_wrong_geometry(self):
+    def test_insert_event_value_wrong_geometry(self):
         """
         Method to test the treatment of a wrong geomerty value
         """
@@ -5300,7 +5330,7 @@ class TestEngine(unittest.TestCase):
                   "name": "GEOMETRY",
                   "value": "29.012974905944 -118.33483458667"}
 
-        exit_status = self.engine_eboa.insert_event_values(event_uuid, values)
+        exit_status = self.engine_eboa.insert_event_value(event_uuid, values)
         self.engine_eboa.session.commit()
         assert exit_status["error"] == True
         assert exit_status["inserted"] == False
@@ -5354,7 +5384,7 @@ class TestEngine(unittest.TestCase):
             "values": []
         }
 
-        exit_status = self.engine_eboa.insert_event_values(event_uuid1, values)
+        exit_status = self.engine_eboa.insert_event_value(event_uuid1, values)
         self.engine_eboa.session.commit()
         assert exit_status["error"] == False
         assert exit_status["inserted"] == True
@@ -5363,7 +5393,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_values) == 1
 
-        exit_status = self.engine_eboa.insert_event_values(event_uuid2, values)
+        exit_status = self.engine_eboa.insert_event_value(event_uuid2, values)
         self.engine_eboa.session.commit()
         assert exit_status["error"] == False
         assert exit_status["inserted"] == True
