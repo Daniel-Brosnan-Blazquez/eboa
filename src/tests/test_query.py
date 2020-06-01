@@ -2380,7 +2380,42 @@ class TestQuery(unittest.TestCase):
                            "reception_time": "2018-06-06T13:33:29",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"}
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_1",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            },{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_2",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_1",
+                        "link_mode": "by_ref",
+                        "name": "LINK_TO_EVENT_1"
+                    }]
+                }]
             }]}
         self.engine_eboa.treat_data(data)
 
@@ -2388,12 +2423,105 @@ class TestQuery(unittest.TestCase):
 
         sources = query.get_sources()
 
-        assert len(sources) == 1
+        assert len(sources) == 2
 
-        query.get_sources(delete = True)
+        events = query.get_events()
+
+        assert len(events) == 2
+
+        event_links = query.get_event_links()
+
+        assert len(event_links) == 1
+
+        query.get_sources(names = {"filter": "source2.xml", "op": "=="}, delete = True)
         sources = query.get_sources()
 
-        assert len(sources) == 0
+        assert len(sources) == 1
+
+        events = query.get_events()
+
+        assert len(events) == 1
+
+        event_links = query.get_event_links()
+
+        assert len(event_links) == 0
+
+    def test_delete_source_synchronize(self):
+
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_1",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36"
+                }]
+            },{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_2",
+                    "gauge": {
+                        "name": "GAUGE",
+                        "system": "SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_1",
+                        "link_mode": "by_ref",
+                        "name": "LINK_TO_EVENT_1"
+                    }]
+                }]
+            }]}
+        self.engine_eboa.treat_data(data)
+
+        query = Query(session = self.engine_eboa.session)
+
+        sources = query.get_sources()
+
+        assert len(sources) == 2
+
+        events = query.get_events()
+
+        assert len(events) == 2
+
+        event_links = query.get_event_links()
+
+        assert len(event_links) == 1
+
+        query.get_sources(names = {"filter": "source2.xml", "op": "=="}, delete = True, synchronize_deletion = True)
+        sources = query.get_sources()
+
+        assert len(sources) == 1
+
+        events = query.get_events()
+
+        assert len(events) == 1
+
+        event_links = query.get_event_links()
+
+        assert len(event_links) == 0
 
     def test_query_source_alerts(self):
 

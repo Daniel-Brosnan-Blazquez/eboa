@@ -446,6 +446,11 @@ class Query():
                     lock = "treat_data_" + source.name
                     @self.synchronized_eboa(lock, external=True, lock_path="/dev/shm")
                     def _delete_source(self, source):
+                        # Obtain events related to the source
+                        event_uuids_related_to_source = self.session.query(Event.event_uuid).filter(Event.source_uuid == source.source_uuid)
+                        # Remove the event links which source is related to the events associated to the source to be removed
+                        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_related_to_source)).delete(synchronize_session=False)
+                        # Remove source
                         self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid == source.source_uuid))
                     # end def
                     _delete_source(self, source)
@@ -453,6 +458,11 @@ class Query():
                 # end for
             else:
                 sources = query.all()
+                # Obtain events related to the source
+                event_uuids_related_to_sources = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_([source.source_uuid for source in sources]))
+                # Remove the event links which source is related to the events associated to the source to be removed
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_related_to_sources)).delete(synchronize_session=False)
+                # Remove sources
                 self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])))
             # end if
         else:
