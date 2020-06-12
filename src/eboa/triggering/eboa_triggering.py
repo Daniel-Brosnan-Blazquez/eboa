@@ -271,7 +271,7 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
 
         # Register the associated alert
         logger.error("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
-        raise FileDoesNotMatchAnyRule("The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
+        print("\nWARNING: The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
     # end if
 
     return
@@ -367,7 +367,7 @@ def main(file_path, output_path = None, remove_input = False, test = False):
             if remove_input:
                 try:
                     os.remove(file_path)
-                    logger.info("The received file {} is going to be removed".format(file_path))
+                    logger.info("The received file {} has been removed".format(file_path))
                 except FileNotFoundError:
                     pass
                 # end try
