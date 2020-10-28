@@ -73,7 +73,7 @@ def block_process(dependency, file_name):
     """
     @lockutils.synchronized(dependency, lock_file_prefix="eboa-triggering-", external=True, lock_path="/dev/shm", fair=True)
     def block_on_dependecy():
-        logger.debug("The triggering of the file {} has been unblocked by the dependency: {}".format(file_name, dependency))
+        logger.info("The triggering of the file {} has been unblocked by the dependency: {}".format(file_name, dependency))
         return
     # end def
 
@@ -99,16 +99,17 @@ def execute_command(command):
     :param command: command to execute inside the mutex
     :type command: str
     """
+    exit_code = 0
     command_split = shlex.split(command)
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, error = program.communicate()
     return_code = program.returncode
     if return_code != 0:
         logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
-        exit(-1)
+        exit_code = -1
     # end if
     
-    return
+    return exit_code
 
 @debug
 def block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test):
@@ -120,6 +121,9 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
     :param command: command to execute inside the mutex
     :type command: str
     """
+
+    exit_code = 0
+    
     newpid = -1
     if not test:
         newpid = os.fork()
@@ -134,7 +138,7 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
         logger.info("The following command is going to be triggered: {}".format(command))
         logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
 
-        execute_command(command)
+        exit_code = execute_command(command)
         logger.info("The triggering of the file {} has been executed".format(file_name))
     
     else:
@@ -170,7 +174,7 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
 
     # end if
 
-    return
+    return exit_code
 
 @debug
 def triggering(file_path, reception_time, engine_eboa, test, output_path = None):
@@ -185,6 +189,8 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
     :type output_path: str
     """
 
+    exit_code = 0
+    
     file_name = os.path.basename(file_path)
 
     # Register needed xpath functions
@@ -255,12 +261,13 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
             logger.info("Found {} dependecy/ies on the triggering of the file {}".format(len(dependencies_on_this), file_name))
 
             if output_path:
-                execute_command(command)
+                exit_code = execute_command(command)
             else:
-                block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
+                exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
             # end if
         # end if
     else:
+        exit_code = -1
         # File not register into the configuration
         query_log_status = Query()
         sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
@@ -274,7 +281,7 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
         print("\nWARNING: The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
     # end if
 
-    return
+    return exit_code
 
 def main(file_path, output_path = None, remove_input = False, test = False):
     
@@ -358,6 +365,7 @@ def main(file_path, output_path = None, remove_input = False, test = False):
                     eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(file_path))
                 # end if
                 query_log_status.close_session()
+                engine_eboa.close_session()
 
                 exit(-1)
             # end if
