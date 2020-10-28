@@ -3,6 +3,7 @@
 \usepackage{sphinx}
 
 \usepackage[twoside,a4paper,top=2.5cm, left=2cm, width=17cm, height=22.5cm]{geometry}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{float}
@@ -96,6 +97,9 @@ keywordstyle=\mdseries,breaklines,backgroundcolor=\color{white}]$#1$}
   showstringspaces=false
 }
 
+\renewcommand{\_}{%
+    \textunderscore\hspace{0pt}%
+}
 
 \makeglossaries
 
