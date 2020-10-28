@@ -3228,7 +3228,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data["events"][0]["gauge"]["name"], Gauge.system == data["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data["source"]["name"], Source.validity_start == data["source"]["validity_start"], Source.validity_stop == data["source"]["validity_stop"], Source.generation_time == data["source"]["generation_time"], Source.processor_version == data["dim_signature"]["version"], Source.processor == data["dim_signature"]["exec"]).first()
@@ -3466,7 +3466,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -3878,7 +3878,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -4024,7 +4024,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data2["events"][0]["gauge"]["name"], Gauge.system == data2["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data2["source"]["name"], Source.validity_start == data2["source"]["validity_start"], Source.validity_stop == data2["source"]["validity_stop"], Source.generation_time == data2["source"]["generation_time"], Source.processor_version == data2["dim_signature"]["version"], Source.processor == data2["dim_signature"]["exec"]).first()
@@ -4133,7 +4133,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
@@ -4289,7 +4289,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
         self.engine_eboa.session.commit()
-        self.engine_eboa._remove_deprecated_events_by_insert_and_erase()
+        self.engine_eboa._remove_deprecated_events_by_insert_and_erase_at_event_level()
         self.engine_eboa.session.commit()
         gauge_ddbb = self.session.query(Gauge).filter(Gauge.name == data1["events"][0]["gauge"]["name"], Gauge.system == data1["events"][0]["gauge"]["system"]).first()
         source_ddbb = self.session.query(Source).filter(Source.name == data1["source"]["name"], Source.validity_start == data1["source"]["validity_start"], Source.validity_stop == data1["source"]["validity_stop"], Source.generation_time == data1["source"]["generation_time"], Source.processor_version == data1["dim_signature"]["version"], Source.processor == data1["dim_signature"]["exec"]).first()
@@ -5802,3 +5802,173 @@ class TestEngine(unittest.TestCase):
 
         assert len(explicit_ref_alerts) == 1
 
+    def test_remove_deprecated_event_insert_and_erase_dim_signature_more_gauges_lower_generation_time(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
+                    "gauge": {"name": "GAUGE_NAME1",
+                              "system": "GAUGE_SYSTEM1",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN2",
+                                     "value": "false"},
+                                    {"type": "double",
+                                     "name": "DOUBLE",
+                                     "value": "0.9"},
+                                    {"type": "timestamp",
+                                     "name": "TIMESTAMP",
+                                     "value": "20180712T00:00:00"}]
+                }]
+        }]}]}
+        self.engine_eboa.data = data
+        self.engine_eboa.treat_data()
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-04T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT1",
+                    "gauge": {"name": "GAUGE_NAME1",
+                              "system": "GAUGE_SYSTEM1",
+                              "insertion_type": "INSERT_and_ERASE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN2",
+                                     "value": "false"},
+                                    {"type": "double",
+                                     "name": "DOUBLE",
+                                     "value": "0.9"},
+                                    {"type": "timestamp",
+                                     "name": "TIMESTAMP",
+                                     "value": "20180712T00:00:00"}]
+                                }]
+                },
+                           {
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                    "gauge": {"name": "GAUGE_NAME2",
+                              "system": "GAUGE_SYSTEM2",
+                              "insertion_type": "INSERT_and_ERASE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN2",
+                                     "value": "false"},
+                                    {"type": "double",
+                                     "name": "DOUBLE",
+                                     "value": "0.9"},
+                                    {"type": "timestamp",
+                                     "name": "TIMESTAMP",
+                                     "value": "20180712T00:00:00"}]
+                                }]
+                },
+                           {
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT3",
+                    "gauge": {"name": "GAUGE_NAME3",
+                              "system": "GAUGE_SYSTEM3",
+                              "insertion_type": "INSERT_and_ERASE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN2",
+                                     "value": "false"},
+                                    {"type": "double",
+                                     "name": "DOUBLE",
+                                     "value": "0.9"},
+                                    {"type": "timestamp",
+                                     "name": "TIMESTAMP",
+                                     "value": "20180712T00:00:00"}]
+                                }]
+                           },
+                           {
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT4",
+                    "gauge": {"name": "GAUGE_NAME4",
+                              "system": "GAUGE_SYSTEM4",
+                              "insertion_type": "INSERT_and_ERASE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN2",
+                                     "value": "false"},
+                                    {"type": "double",
+                                     "name": "DOUBLE",
+                                     "value": "0.9"},
+                                    {"type": "timestamp",
+                                     "name": "TIMESTAMP",
+                                     "value": "20180712T00:00:00"}]
+                                }]
+                           }]}]}
+        self.engine_eboa.data = data
+        self.engine_eboa.treat_data()
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 4
