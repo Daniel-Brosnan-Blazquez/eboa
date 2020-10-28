@@ -166,7 +166,7 @@ def process_file(file_path, engine, query, reception_time):
                 }]
             })
         else:
-            logger.info("The file {} has been already processed by BOA. No alert will be inserted".format(file_name))
+            logger.info("The file {} has been or is being processed by BOA. No alert will be inserted".format(file_name))
         # end if
     # end for
 
