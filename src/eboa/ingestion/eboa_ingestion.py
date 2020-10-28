@@ -112,6 +112,8 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
                 success = False
 
                 logger.error("The insertion of the data related to file {} has ended unexpectedly with the following error: {}".format(filename, str(e)))
+                logger.error(traceback.format_exc())
+                traceback.print_exc(file=sys.stdout)
                 if number_of_retries >= max_number_of_retries:
                     logger.error("The ingestion of the file {} has exceeded the number of retries {}. Previously related data ingested has been removed".format(filename, max_number_of_retries))
                     # Log status
