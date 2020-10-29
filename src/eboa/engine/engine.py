@@ -973,7 +973,7 @@ class Engine():
         # end if
 
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        if parser.parse(validity_stop) < parser.parse(validity_start):
+        if parser.parse(validity_stop).replace(tzinfo=None) < parser.parse(validity_start).replace(tzinfo=None):
             # The validity period is not correct (stop > start)
             # Create Source for registering the error in the DDBB
             processor_progress = None
@@ -1289,10 +1289,10 @@ class Engine():
         :type source_id: uuid
         """
         if not type(start) == datetime.datetime:
-            start = parser.parse(start)
+            start = parser.parse(start).replace(tzinfo=None)
         # end if
         if not type(stop) == datetime.datetime:
-            stop = parser.parse(stop)
+            stop = parser.parse(stop).replace(tzinfo=None)
         # end if
         if stop < start:
             # The period of the event is not correct (stop > start)
