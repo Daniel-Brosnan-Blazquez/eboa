@@ -67,6 +67,7 @@ pdflatex -output-directory build -halt-on-error -interaction=nonstopmode doc.tex
 if [ -f build/doc.pdf ];
 then
     mv build/doc.pdf $PDF_FILE
+    echo -e "\nSUCCESS: The PDF was correctly generated with the name: "$PDF_FILE"\n"
 else
     echo -e "ERROR: There was an error on the generation of the PDF.\nIs pdflatex installed?"
 fi

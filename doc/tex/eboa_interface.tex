@@ -83,6 +83,18 @@ Events can be inserted using the following methods associated to their gauges:
 \item INSERT\_and\_ERASE\_per\_EVENT: this method is similar to the method INSERT\_and\_ERASE but, in this case, the method is applied taking as validity period every event's period related to the events just inserted into the DDBB.
 \item EVENT\_KEYS: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
 \item insert\_and\_erase (applied at DIM signature level): this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
+  Important note: \newline
+  
+  * \textbf{Use} this method when
+  \begin{itemize}
+  \item The associated \acrshort{dim} Signature is only used in the corresponding processor.
+  \item The associated \acrshort{dim} Signature is used by one or more processors but they have dependencies between them and same gauges are going to be used.
+  \end{itemize}
+
+  * \textbf{Do not use} this method when:
+  \begin{itemize}
+  \item The associated \acrshort{dim} Signature is used in several processors and with different gauges. This could create cases of unintented loss of data.
+  \end{itemize}
 \end{itemize}
 
 \subsection {INSERT\_and\_ERASE method}
