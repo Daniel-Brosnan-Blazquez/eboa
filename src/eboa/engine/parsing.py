@@ -159,7 +159,7 @@ def _validate_source(data):
     # end if
 
     # Optional tags
-    if "ingested" in data and not data["ingested"].lower() in ["false", "true"]:
+    if "ingested" in data and not type(data["ingested"]) == str and not data["ingested"].lower() in ["false", "true"]:
         raise ErrorParsingDictionary("The tag ingested has to have one of the following values: false or true")
     # end if
     if "processing_duration" in data:
@@ -206,8 +206,15 @@ def _validate_ingestion_completeness(data):
     if not "check" in data:
         raise ErrorParsingDictionary("The tag check is mandatory inside ingestion_completeness structure")
     # end if
+    if not type(data["check"]) == str and not data["check"].lower() in ["false", "true"]:
+        raise ErrorParsingDictionary("The tag check inside ingestion_completeness structure has to have one of the following values: false or true")
+    # end if
+    
     if not "message" in data:
         raise ErrorParsingDictionary("The tag message is mandatory inside ingestion_completeness structure")
+    # end if
+    if not type(data["message"]) == str:
+        raise ErrorParsingDictionary("The tag message inside ingestion_completeness structure has to be of type string")
     # end if
 
     return
