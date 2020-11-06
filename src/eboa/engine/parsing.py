@@ -121,9 +121,9 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag source must be a dictionary")
     # end if
     
-    check_items = [item in ["name", "validity_start", "validity_stop", "reception_time", "generation_time", "ingested", "processing_duration"] for item in data.keys()]
+    check_items = [item in ["name", "validity_start", "validity_stop", "reported_validity_start", "reported_validity_stop", "reception_time", "generation_time", "reported_generation_time", "ingested", "processing_duration", "priority", "ingestion_completeness"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, generation_time, reception_time, ingested and processing_duration")
+        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, reported_validity_start, reported_validity_stop, generation_time, reported_generation_time, reception_time, ingested, processing_duration, priority and ingestion_completeness")
     # end if
 
     # Mandatory tags        
@@ -169,7 +169,47 @@ def _validate_source(data):
             raise ErrorParsingDictionary("The tag processing_duration (" + str(data["processing_duration"]) + ") inside source structure has to be convertable to float")
         # end try
     # end if
+    if "reported_validity_start" in data and not is_datetime(data["reported_validity_start"]):
+        raise ErrorParsingDictionary("The tag reported_validity_start inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+    # end if
+    if "reported_validity_stop" in data and not is_datetime(data["reported_validity_stop"]):
+        raise ErrorParsingDictionary("The tag reported_validity_stop inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+    # end if
+    if "reported_generation_time" in data and not is_datetime(data["reported_generation_time"]):
+        raise ErrorParsingDictionary("The tag reported_generation_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+    # end if
+    if "priority" in data:
+        try:
+            float(data["priority"])
+        except (ValueError, TypeError):
+            raise ErrorParsingDictionary("The tag priority (" + str(data["priority"]) + ") inside source structure has to be convertable to float")
+        # end try
+    # end if
+    if "ingestion_completeness" in data:
+        _validate_ingestion_completeness(data["ingestion_completeness"])
+    # end if
     
+    return
+
+def _validate_ingestion_completeness(data):
+
+    if type(data) != dict:
+        raise ErrorParsingDictionary("The ingestion_completeness tag inside the source structure has to be of type dict")
+    # end if
+
+    check_items = [item in ["check", "message"] for item in data.keys()]
+    if False in check_items:
+        raise ErrorParsingDictionary("The allowed tags inside gauge structure are: check and message")
+    # end if
+
+    # Mandatory tags
+    if not "check" in data:
+        raise ErrorParsingDictionary("The tag check is mandatory inside ingestion_completeness structure")
+    # end if
+    if not "message" in data:
+        raise ErrorParsingDictionary("The tag message is mandatory inside ingestion_completeness structure")
+    # end if
+
     return
 
 def _validate_explicit_references(data):
@@ -489,7 +529,7 @@ def validate_values(data):
         if "value" in value and value["type"] == "double":
             try:
                 float(value["value"])
-            except ValueError:
+            except (ValueError, TypeError):
                 raise ErrorParsingDictionary("The tag value (" + str(value["value"]) + ") inside values structure has to be convertable to float")
             # end try
         # end if
@@ -509,9 +549,9 @@ def _validate_alerts(data):
             raise ErrorParsingDictionary("The alert inside the alerts structure have to be of type dict")
         # end if
 
-        check_items = [item in ["message", "generator", "notification_time", "entity", "alert_cnf"] for item in alert.keys()]
+        check_items = [item in ["message", "generator", "notification_time", "entity", "alert_cnf", "justification"] for item in alert.keys()]
         if False in check_items:
-            raise ErrorParsingDictionary("The allowed tags inside alerts structure are: message, generator, notification_time, entity and alert_cnf")
+            raise ErrorParsingDictionary("The allowed tags inside alerts structure are: message, generator, notification_time, entity, alert_cnf and justification")
         # end if
 
         # Mandatory tags
@@ -536,6 +576,11 @@ def _validate_alerts(data):
 
         _validate_alert_entity(alert["entity"])        
         validate_alert_cnf(alert["alert_cnf"])
+
+        # Optional tags
+        if "justification" in alert and not type(alert["justification"]) == str:
+            raise ErrorParsingDictionary("The tag justification inside alerts structure has to be of type string")
+        # end if
 
     # end for
 

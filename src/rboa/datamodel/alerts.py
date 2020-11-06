@@ -24,6 +24,7 @@ class ReportAlert(Base):
     solved = Column(Boolean)
     solved_time = Column(DateTime)
     notification_time = Column(DateTime)
+    justification = Column(Text)
     alert_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('alerts.alert_uuid'))
     report_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('reports.report_uuid'))
     report = relationship("Report", backref="alerts")
