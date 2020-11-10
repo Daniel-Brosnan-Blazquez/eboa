@@ -42,19 +42,25 @@ class Source(Base):
     dim_signature_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('dim_signatures.dim_signature_uuid'))
     dimSignature = relationship("DimSignature", backref="sources")
 
-    def __init__(self, source_uuid, name, reception_time, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None, processing_duration = None, processor_progress = None):
+    def __init__(self, source_uuid, name, reception_time, generation_time = None, processor_version = None, dim_signature = None, validity_start = None, validity_stop = None, ingestion_time = None, processor = None, processing_duration = None, processor_progress = None, reported_generation_time = None, reported_validity_start = None, reported_validity_stop = None, priority = None, ingestion_completeness = None, ingestion_completeness_message = None):
         self.source_uuid = source_uuid
         self.name = name
         self.validity_start = validity_start
         self.validity_stop = validity_stop
+        self.reported_validity_start = reported_validity_start
+        self.reported_validity_stop = reported_validity_stop
         self.reception_time = reception_time
         self.generation_time = generation_time
+        self.reported_generation_time = reported_generation_time
         self.ingestion_time = ingestion_time
         self.processor_version = processor_version
         self.processor = processor
         self.dimSignature = dim_signature
         self.processing_duration = processing_duration
         self.processor_progress = processor_progress
+        self.priority = priority
+        self.ingestion_completeness = ingestion_completeness
+        self.ingestion_completeness_message = ingestion_completeness_message
 
     def jsonify(self):
         return {

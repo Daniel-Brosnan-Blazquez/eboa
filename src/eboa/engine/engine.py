@@ -29,7 +29,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference, PriorityNotDefined
 
 # Import datamodel
 from eboa.datamodel.base import Session
@@ -149,6 +149,10 @@ exit_codes = {
     "FILE_DOES_NOT_HAVE_A_TRIGGERING_RULE": {
         "status": 20,
         "message": "The source file with path {} does not have any triggering rule associated"
+    },
+    "PRIORITY_NOT_DEFINED": {
+        "status": 21,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
     }
 }
 
@@ -566,6 +570,8 @@ class Engine():
         self.explicit_refs = {}
         self.insert_and_erase_gauges = {}
         self.insert_and_erase_per_event_gauges = {}
+        self.insert_and_erase_with_priority_gauges = {}
+        self.insert_and_erase_per_event_with_priority_gauges = {}
         self.annotation_cnfs_explicit_refs = []
         self.annotations = {}
         self.keys_events = {}
@@ -959,15 +965,37 @@ class Engine():
         :param processing_duration: duration of the processing which generated the data to be treated
         :type processing_duration: interval
         """
+        # Obtain all attributes of the source
         version = self.operation.get("dim_signature").get("version")
         processor = self.operation.get("dim_signature").get("exec")
         source = self.operation.get("source")
         name = source.get("name")
         reception_time = source.get("reception_time")
         generation_time = source.get("generation_time")
+        reported_generation_time = source.get("reported_generation_time")
+        if not reported_generation_time:
+            reported_generation_time = reception_time
+        # end if
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
+        reported_validity_start = source.get("reported_validity_start")
+        if not reported_validity_start:
+            reported_validity_start = validity_start
+        # end if
+        reported_validity_stop = source.get("reported_validity_stop")
+        if not reported_validity_stop:
+            reported_validity_stop = validity_stop
+        # end if
         processing_duration_from_input_data = source.get("processing_duration")
+        priority = source.get("priority")
+        ingestion_completeness = source.get("ingestion_completeness")
+        ingestion_completeness_check = None
+        ingestion_completeness_message = None
+        if ingestion_completeness:
+            ingestion_completeness_check = bool(str(ingestion_completeness.get("check")))
+            ingestion_completeness_message = ingestion_completeness.get("message")
+        # end if
+        
         if processing_duration_from_input_data:
             processing_duration = datetime.timedelta(seconds=float(processing_duration_from_input_data))
         # end if
@@ -981,8 +1009,9 @@ class Engine():
                 processor_progress = 100
             # end if
             self.source = Source(id, name, reception_time, generation_time,
-                                        version, self.dim_signature, processor = processor,
-                                 processing_duration = processing_duration, processor_progress = processor_progress)
+                                 version, self.dim_signature, processor = processor,
+                                 processing_duration = processing_duration, processor_progress = processor_progress,
+                                 reported_generation_time = reported_generation_time)
             self.session.add(self.source)
             try:
                 race_condition()
@@ -1012,9 +1041,15 @@ class Engine():
             # Upadte the information
             self.source.validity_start = parser.parse(validity_start)
             self.source.validity_stop = parser.parse(validity_stop)
+            self.source.reported_validity_start = parser.parse(reported_validity_start)
+            self.source.reported_validity_stop = parser.parse(reported_validity_stop)
             self.source.reception_time = parser.parse(reception_time)
             self.source.generation_time = parser.parse(generation_time)
+            self.source.reported_generation_time = parser.parse(reported_generation_time)
             self.source.processing_duration = processing_duration
+            self.source.priority = priority
+            self.source.ingestion_completeness = ingestion_completeness_check
+            self.source.ingestion_completeness_message = ingestion_completeness_message
             processor_progress = None
             if not self.operation.get("source").get("ingested") == "false":
                 self.source.processor_progress = 100
@@ -1034,9 +1069,13 @@ class Engine():
         # end if
 
         self.source = Source(id, name, parser.parse(reception_time),
-                                    parser.parse(generation_time), version, self.dim_signature,
-                                    parser.parse(validity_start), parser.parse(validity_stop), processor = processor,
-                             processing_duration = processing_duration, processor_progress = processor_progress)
+                             parser.parse(generation_time), version, self.dim_signature,
+                             parser.parse(validity_start), parser.parse(validity_stop),
+                             processor = processor, processing_duration = processing_duration,
+                             processor_progress = processor_progress, reported_generation_time = reported_generation_time,
+                             reported_validity_start = reported_validity_start,
+                             reported_validity_stop = reported_validity_stop, priority = priority,
+                             ingestion_completeness = ingestion_completeness_check, ingestion_completeness_message = ingestion_completeness_message)
         self.session.add(self.source)
         try:
             race_condition()
@@ -1347,6 +1386,9 @@ class Engine():
             # end if
             key = event.get("key")
             visible = False
+            if gauge_info["insertion_type"] in ["INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY"] and not self.source.priority:
+                raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+            # end if
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
                 visible = True
             elif gauge_info["insertion_type"] == "INSERT_and_ERASE":
@@ -1357,6 +1399,14 @@ class Engine():
                     self.insert_and_erase_per_event_gauges[gauge.gauge_uuid] = []
                 # end if
                 self.insert_and_erase_per_event_gauges[gauge.gauge_uuid].append((start, stop))
+            elif gauge_info["insertion_type"] == "INSERT_and_ERASE_with_PRIORITY":
+                self.insert_and_erase_with_priority_gauges[gauge.gauge_uuid] = None
+            elif gauge_info["insertion_type"] == "INSERT_and_ERASE_per_EVENT_with_PRIORITY":
+                if gauge.gauge_uuid not in self.insert_and_erase_per_event_with_priority_gauges:
+                    # Initialize the list of segments to be reviewed
+                    self.insert_and_erase_per_event_with_priority_gauges[gauge.gauge_uuid] = []
+                # end if
+                self.insert_and_erase_per_event_with_priority_gauges[gauge.gauge_uuid].append((start, stop))
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
@@ -1760,15 +1810,22 @@ class Engine():
         @self.synchronized(lock, external=True, lock_path="/dev/shm")
         def _remove_deprecated_data_synchronize(self):
 
-            # Remove events due to INSERT_and_ERASE insertion mode
             if hasattr(self, "all_gauges_for_insert_and_erase") and self.all_gauges_for_insert_and_erase:
+                # Remove events due to insert_and_erase insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_at_dim_signature_level()
             else:
+                # Remove events due to INSERT_and_ERASE insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_at_event_level()
+
+                # Remove events due to INSERT_and_ERASE_with_PRIORITY insertion mode
+                self._remove_deprecated_events_by_insert_and_erase_with_priority_at_event_level()
             # end if
             
             # Remove events due to INSERT_and_ERASE_per_EVENT insertion mode
             self._remove_deprecated_events_by_insert_and_erase_per_event()
+
+            # Remove events due to INSERT_and_ERASE_per_EVENT_with_PRIORITY insertion mode
+            self._remove_deprecated_events_by_insert_and_erase_per_event_with_priority()
 
             # Remove events due to EVENT_KEYS insertion mode
             self._remove_deprecated_events_event_keys()
@@ -1985,7 +2042,7 @@ class Engine():
     @debug
     def _remove_deprecated_events_by_insert_and_erase_at_event_level(self):
         """
-        Method to remove events that were overwritten by other events due to insert and erase at dim signature level insertion mode
+        Method to remove events that were overwritten by other events due to insert and erase at event level insertion mode
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
@@ -2113,6 +2170,218 @@ class Engine():
                                                                                                                Event.stop > validity_stop,
                                                                                                                Event.source_uuid != source_max_generation_time.source_uuid).all()
 
+                events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
+                for event in events_not_staying:
+                    if not event.event_uuid in list_split_events:
+                        if event.start < validity_start:
+                            if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            else:
+                                start = event.start
+                            # end if
+                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                            self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
+                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                        # end if
+                        if event.stop > validity_stop:
+                            event.visible = False
+                            list_split_events[event.event_uuid] = event
+                        else:
+                            list_events_to_be_removed.append(event.event_uuid)
+                        # end if
+                    elif event.event_uuid in list_split_events and event.stop <= validity_stop:
+                        list_events_to_be_removed.append(event.event_uuid)
+                        del list_split_events[event.event_uuid]
+                    # end if
+                # end for
+            # end for
+
+        # end for
+        # Bulk insert events
+        self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
+        # Bulk insert keys
+        self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+        # Bulk insert links
+        self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
+        self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+        # Remove the events that were partially affected by the insert and erase operation
+        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+        self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+        # Bulk insert values
+        if EventObject in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+        # end if
+        if EventBoolean in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+        # end if
+        if EventText in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+        # end if
+        if EventDouble in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+        # end if
+        if EventTimestamp in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+        # end if
+        if EventGeometry in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+        # end if
+
+        return
+
+    @debug
+    def _remove_deprecated_events_by_insert_and_erase_with_priority_at_event_level(self):
+        """
+        Method to remove events that were overwritten by other events due to insert and erase with priority at event level insertion mode
+        """
+        list_events_to_be_created = {"events": [],
+                                     "values": {},
+                                     "keys": [],
+                                     "links": []}
+        list_event_uuids_aliases = {}
+        list_events_to_be_removed = []
+        for gauge_uuid in self.insert_and_erase_with_priority_gauges:
+            list_events_to_be_created_not_ending_on_period = {}
+            list_split_events = {}
+
+            # Get the sources of events intersecting the validity period with priority equal or minor to the priority defined for the current source
+            sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                    or_(and_(Source.validity_start < self.source.validity_stop,
+                                                                             Source.validity_stop > self.source.validity_start),
+                                                                        and_(Source.validity_start == self.source.validity_start,
+                                                                             Source.validity_stop == self.source.validity_stop))).all()
+            # Get the timeline of validity periods intersecting
+            timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
+
+            filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
+
+            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            for source in sources_duration_0:
+                filtered_timeline_points.append(source.validity_stop)
+            # end for
+            
+            # Sort list
+            filtered_timeline_points.sort()
+
+            # Iterate through the periods
+            next_timestamp = 1
+            for timestamp in filtered_timeline_points:
+                # Check if for the last period there are pending splits
+                if next_timestamp == len(filtered_timeline_points):
+                    for event_uuid in list_split_events:
+                        event = list_split_events[event_uuid]
+                        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                        self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
+                                           gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                        self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
+                        self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                        # Remove event
+                        list_events_to_be_removed.append(event_uuid)
+                    # end for
+                    break
+                # end if
+
+                validity_start = timestamp
+                validity_stop = filtered_timeline_points[next_timestamp]
+                next_timestamp += 1
+
+                # Get the maximum priority at this moment
+                max_priority = self.session.query(func.max(Source.priority)).join(Event).filter(Source.priority >= self.source.priority,
+                                                                                                Event.gauge_uuid == gauge_uuid,
+                                                                                                or_(and_(Source.validity_start < validity_stop,
+                                                                                                         Source.validity_stop > validity_start),
+                                                                                                    and_(Source.validity_start == validity_start,
+                                                                                                         Source.validity_stop == validity_stop))).first()
+                # Get the maximum generation time at this moment
+                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                              Source.priority == max_priority,
+                                                                                                              or_(and_(Source.validity_start < validity_stop,
+                                                                                                                       Source.validity_stop > validity_start),
+                                                                                                                  and_(Source.validity_start == validity_start,
+                                                                                                                       Source.validity_stop == validity_stop))).first()
+                
+                # Get the related source
+                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                           Source.priority == max_priority,
+                                                                                           Event.gauge_uuid == gauge_uuid,
+                                                                                           or_(and_(Source.validity_start < validity_stop,
+                                                                                                    Source.validity_stop > validity_start),
+                                                                                               and_(Source.validity_start == validity_start,
+                                                                                                    Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                
+                # Events related to the DIM processing with the maximum generation time
+                events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
+                                                                              Event.gauge_uuid == gauge_uuid,
+                                                                              or_(and_(Event.start < validity_stop,
+                                                                                       Event.stop > validity_start),
+                                                                                  and_(Event.start == validity_start,
+                                                                                       Event.stop == validity_stop))).all()
+
+                # Review events with higher generation time in the period
+                for event in events_max_generation_time:
+                    if event.event_uuid in list_split_events:
+                        if event.stop <= validity_stop:
+                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                            self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
+                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            list_events_to_be_removed.append(event.event_uuid)
+                        else:
+                            list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
+                        # end if
+                        del list_split_events[event.event_uuid]
+                    else:
+                        event.visible = True
+                        if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                            event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                        # end if
+                    # end if
+                # end for
+
+                # Delete deprecated events fully contained into the validity period
+                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                     Source.priority <= max_priority),
+                                                                                                                Source.priority < max_priority),
+                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
+                                                                                                            Event.gauge_uuid == gauge_uuid,
+                                                                                                            Event.start >= validity_start,
+                                                                                                            Event.stop <= validity_stop)
+                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
+                                                                                                     Event.gauge_uuid == gauge_uuid,
+                                                                                                     Event.start >= validity_start,
+                                                                                                     Event.stop <= validity_stop)
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
+                event_uuids_to_be_removed.delete(synchronize_session=False)
+
+                # Get the events ending on the current period to be removed
+                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                             Source.priority <= max_priority),
+                                                                                                        Source.priority < max_priority),
+                                                                                                    Event.gauge_uuid == gauge_uuid,
+                                                                                                    Event.start <= validity_start,
+                                                                                                    Event.stop > validity_start,
+                                                                                                    Event.stop <= validity_stop,
+                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
+
+                # Get the events ending on the current period to be removed
+                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                 Source.priority <= max_priority),
+                                                                                                            Source.priority < max_priority),
+                                                                                                        Event.gauge_uuid == gauge_uuid,
+                                                                                                        Event.start < validity_stop,
+                                                                                                        Event.stop > validity_stop,
+                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
+                
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
                     if not event.event_uuid in list_split_events:
@@ -2458,6 +2727,225 @@ class Engine():
                                                                                                                    Event.stop > validity_stop,
                                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
 
+                    events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
+                    for event in events_not_staying:
+                        if not event.event_uuid in list_split_events:
+                            if event.start < validity_start:
+                                if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                    start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                else:
+                                    start = event.start
+                                # end if
+                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
+                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            # end if
+                            if event.stop > validity_stop:
+                                event.visible = False
+                                list_split_events[event.event_uuid] = event
+                            else:
+                                list_events_to_be_removed.append(event.event_uuid)
+                            # end if
+                        elif event.event_uuid in list_split_events and event.stop <= validity_stop:
+                            list_events_to_be_removed.append(event.event_uuid)
+                            del list_split_events[event.event_uuid]
+                        # end if
+                    # end for
+                # end for
+
+                # Bulk insert events
+                self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
+                # Bulk insert keys
+                self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+                # Bulk insert links
+                self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
+                self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+                # Remove the events that were partially affected by the insert and erase operation
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+                self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+                # Bulk insert values
+                if EventObject in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+                # end if
+                if EventBoolean in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+                # end if
+                if EventText in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+                # end if
+                if EventDouble in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+                # end if
+                if EventTimestamp in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+                # end if
+                if EventGeometry in list_events_to_be_created["values"]:
+                    self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+                # end if
+
+            # end for
+        # end for
+
+        return
+
+    @debug
+    def _remove_deprecated_events_by_insert_and_erase_per_event_with_priority(self):
+        """
+        Method to remove events that were overwritten by other events due to INSERT and ERASE per EVENT with priority insertion mode
+        """
+
+        for gauge_uuid in self.insert_and_erase_per_event_with_priority_gauges:
+            for segment in self.insert_and_erase_per_event_with_priority_gauges[gauge_uuid]:
+                list_events_to_be_created = {"events": [],
+                                             "values": {},
+                                             "keys": [],
+                                             "links": []}
+                list_event_uuids_aliases = {}
+                list_events_to_be_removed = []
+
+                list_events_to_be_created_not_ending_on_period = {}
+                list_split_events = {}
+
+                segment_start = parser.parse(segment[0])
+                segment_stop = parser.parse(segment[1])
+                # Get the events intersecting the segment
+                events = self.session.query(Event).join(Source).filter(Event.gauge_uuid == gauge_uuid,
+                                                                       or_(and_(Event.start < segment_stop,
+                                                                                Event.stop > segment_start),
+                                                                           and_(Event.start == segment_start,
+                                                                                Event.stop == segment_stop))).all()
+                # Get the timeline of validity periods intersecting
+                timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
+
+                filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= segment_start and timestamp <= segment_stop]
+
+                events_duration_0 = [event for event in events if event.start == event.stop]
+                for event in events_duration_0:
+                    filtered_timeline_points.append(event.stop)
+                # end for
+
+                # Sort list
+                filtered_timeline_points.sort()
+                # Iterate through the periods
+                next_timestamp = 1
+                for timestamp in filtered_timeline_points:
+                    # Check if for the last period there are pending splits
+                    if next_timestamp == len(filtered_timeline_points):
+                        for event_uuid in list_split_events:
+                            event = list_split_events[event_uuid]
+                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                            self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
+                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                            self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
+                            self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                            # Remove event
+                            list_events_to_be_removed.append(event_uuid)
+                        # end for
+                        break
+                    # end if
+
+                    validity_start = timestamp
+                    validity_stop = filtered_timeline_points[next_timestamp]
+                    next_timestamp += 1
+
+                    # Get the maximum priority at this moment
+                    max_priority = self.session.query(func.max(Source.priority)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                    Source.priority >= self.source.priority,
+                                                                                                    or_(and_(Event.start < validity_stop,
+                                                                                                             Event.stop > validity_start),
+                                                                                                        and_(Event.start == validity_start,
+                                                                                                             Event.stop == validity_stop))).first()
+                    # Get the maximum generation time at this moment
+                    max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                                  Source.priority == max_priority,
+                                                                                                                  or_(and_(Event.start < validity_stop,
+                                                                                                                           Event.stop > validity_start),
+                                                                                                                      and_(Event.start == validity_start,
+                                                                                                                           Event.stop == validity_stop))).first()
+
+                    # Get the related source
+                    source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                               Source.priority == max_priority,
+                                                                                               Event.gauge_uuid == gauge_uuid,
+                                                                                               or_(and_(Event.start < validity_stop,
+                                                                                                        Event.stop > validity_start),
+                                                                                                   and_(Event.start == validity_start,
+                                                                                                        Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+
+                    # Events related to the DIM processing with the maximum generation time
+                    events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
+                                                                                  Event.gauge_uuid == gauge_uuid,
+                                                                                  or_(and_(Event.start < validity_stop,
+                                                                                           Event.stop > validity_start),
+                                                                                      and_(Event.start == validity_start,
+                                                                                           Event.stop == validity_stop))).all()
+
+                    # Review events with higher generation time in the period
+                    for event in events_max_generation_time:
+                        if event.event_uuid in list_split_events:
+                            if event.stop <= validity_stop:
+                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                                self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
+                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                list_events_to_be_removed.append(event.event_uuid)
+                            else:
+                                list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
+                            # end if
+                            del list_split_events[event.event_uuid]
+                        else:
+                            event.visible = True
+                            if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            # end if
+
+                        # end if
+                    # end for
+
+                    # Delete deprecated events fully contained into the validity period
+                    sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                     Source.priority <= max_priority),
+                                                                                                                Source.priority < max_priority),
+                                                                                                                Event.source_uuid != source_max_generation_time.source_uuid,
+                                                                                                                Event.gauge_uuid == gauge_uuid,
+                                                                                                                Event.start >= validity_start,
+                                                                                                                Event.stop <= validity_stop)
+                    event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
+                                                                                            Event.gauge_uuid == gauge_uuid,
+                                                                                            Event.start >= validity_start,
+                                                                                            Event.stop <= validity_stop)
+                    self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
+                    event_uuids_to_be_removed.delete(synchronize_session=False)
+
+                    # Get the events ending on the current period to be removed
+                    events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                 Source.priority <= max_priority),
+                                                                                                            Source.priority < max_priority),
+                                                                                                        Event.gauge_uuid == gauge_uuid,
+                                                                                                        Event.start <= validity_start,
+                                                                                                        Event.stop > validity_start,
+                                                                                                        Event.stop <= validity_stop,
+                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
+
+                    # Get the events not ending on the current period to be removed
+                    events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                     Source.priority <= max_priority),
+                                                                                                            Source.priority < max_priority),
+                                                                                                            Event.gauge_uuid == gauge_uuid,
+                                                                                                            Event.start < validity_stop,
+                                                                                                            Event.stop > validity_stop,
+                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid).all()
+                    
                     events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                     for event in events_not_staying:
                         if not event.event_uuid in list_split_events:

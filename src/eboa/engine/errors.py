@@ -169,3 +169,14 @@ class FilePathDoesNotExist(Error):
 
     def __init__(self, message):
         self.message = message
+
+class PriorityNotDefined(Error):
+    """Exception raised when there is one or more events with the insertion type ...with_PRIORITY
+    and the related source has not defined the priority.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
