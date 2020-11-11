@@ -17,6 +17,7 @@ import json
 import jsonschema
 import re
 from importlib import import_module
+from distutils import util
 
 # Import SQLalchemy entities
 from sqlalchemy import or_, and_
@@ -974,7 +975,7 @@ class Engine():
         generation_time = source.get("generation_time")
         reported_generation_time = source.get("reported_generation_time")
         if not reported_generation_time:
-            reported_generation_time = reception_time
+            reported_generation_time = generation_time
         # end if
         validity_start = source.get("validity_start")
         validity_stop = source.get("validity_stop")
@@ -992,7 +993,7 @@ class Engine():
         ingestion_completeness_check = None
         ingestion_completeness_message = None
         if ingestion_completeness:
-            ingestion_completeness_check = bool(str(ingestion_completeness.get("check")))
+            ingestion_completeness_check = bool(util.strtobool(ingestion_completeness.get("check")))
             ingestion_completeness_message = ingestion_completeness.get("message")
         # end if
         

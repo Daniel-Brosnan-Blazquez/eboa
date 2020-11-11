@@ -200,30 +200,46 @@ class Query():
 
         return dim_signatures
 
-    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, ingestion_time_filters = None, ingestion_duration_filters = None, processors = None, ingested = None, ingestion_error = None, processor_version_filters = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False, synchronize_deletion = True, order_by = None, limit = None, offset = None):
+    def get_sources(self, names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reported_validity_start_filters = None, reported_validity_stop_filters = None, reported_validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, reported_generation_time_filters = None, ingestion_time_filters = None, processing_duration_filters = None, ingestion_duration_filters = None, processors = None, processor_version_filters = None, ingestion_completeness = None, ingested = None, ingestion_error = None, dim_signature_uuids = None, source_uuids = None, dim_signatures = None, statuses = None, delete = False, synchronize_deletion = True, order_by = None, limit = None, offset = None):
         """
         Method to obtain the sources entities filtered by the received parameters
 
-        :param source_uuids: list of source identifiers
-        :type source_uuids: text_filter
         :param names: source name filters
         :type names: text_filter
-        :param validity_start_filters: list of start filters
+        :param validity_start_filters: list of validity start filters
         :type validity_start_filters: date_filters
-        :param validity_stop_filters: list of stop filters
+        :param validity_stop_filters: list of validity stop filters
         :type validity_stop_filters: date_filters
+        :param validity_duration_filters: list of validity duration filters
+        :type validity_duration_filters: float_filters
+        :param reported_validity_start_filters: list of reported validity start filters
+        :type reported_validity_start_filters: date_filters
+        :param reported_validity_stop_filters: list of reported validity stop filters
+        :type reported_validity_stop_filters: date_filters
+        :param reported_validity_duration_filters: list of reported validity duration filters
+        :type reported_validity_duration_filters: float_filters
         :param reception_time_filters: list of reception time filters
         :type reception_time_filters: date_filters
         :param generation_time_filters: list of generation time filters
         :type generation_time_filters: date_filters
+        :param reported_generation_time_filters: list of reported generation time filters
+        :type reported_generation_time_filters: date_filters
         :param ingestion_time_filters: list of ingestion time filters
         :type ingestion_time_filters: date_filters
+        :param processing_duration_filters: list of processing duration filters
+        :type processing_duration_filters: float_filters
         :param ingestion_duration_filters: list of ingestion duration filters
         :type ingestion_duration_filters: float_filters
-        :param processor_version_filters: list of version filters
-        :type processor_version_filters: text_filter
         :param procesors: processor filters
         :type procesors: text_filter
+        :param processor_version_filters: list of version filters
+        :type processor_version_filters: text_filter
+        :param ingestion_completeness: flag to indicate if the ingestion is complete (all dependencies met)
+        :type ingestion_completeness: boolean_filter
+        :param ingested: flag to indicate if file was processed and ingested
+        :type ingested: boolean_filter
+        :param ingestion_error: flag to indicate if ingestion ended up in error
+        :type ingestion_error: boolean_filter
         :param dim_signature_uuids: list of DIM signature identifiers
         :type dim_signature_uuids: text_filter
         :param source_uuids: list of source identifiers
@@ -232,6 +248,16 @@ class Query():
         :type dim_signatures: text_filter
         :param statuses: status filters
         :type statuses: float_filter
+        :param delete: flag to indicate if the sources found by the query have to be deleted
+        :type delete: bool
+        :param synchronize_deletion: flag to indicate if the deletion process has to be synchronized to avoid race conditions
+        :type synchronize_deletion: bool
+        :param order_by: field to order by
+        :type order_by: order_by statement
+        :param limit: Positive integer to limit the number of results of the query
+        :type limit: Positive integer
+        :param offset: Positive integer to offset the pointer to the list of results
+        :type offset: Positive integer
 
         :return: found sources
         :rtype: list
@@ -301,6 +327,33 @@ class Query():
             # end for
         # end if
 
+        # reported_validity_start filters
+        if reported_validity_start_filters != None:
+            functions.is_valid_date_filters(reported_validity_start_filters)
+            for reported_validity_start_filter in reported_validity_start_filters:
+                op = arithmetic_operators[reported_validity_start_filter["op"]]
+                params.append(op(Source.reported_validity_start, reported_validity_start_filter["date"]))
+            # end for
+        # end if
+
+        # reported_validity_stop filters
+        if reported_validity_stop_filters != None:
+            functions.is_valid_date_filters(reported_validity_stop_filters)
+            for reported_validity_stop_filter in reported_validity_stop_filters:
+                op = arithmetic_operators[reported_validity_stop_filter["op"]]
+                params.append(op(Source.reported_validity_stop, reported_validity_stop_filter["date"]))
+            # end for
+        # end if
+
+        # reported_validity duration filters
+        if reported_validity_duration_filters != None:
+            functions.is_valid_float_filters(reported_validity_duration_filters)
+            for reported_validity_duration_filter in reported_validity_duration_filters:
+                op = arithmetic_operators[reported_validity_duration_filter["op"]]
+                params.append(op((extract("epoch", Source.reported_validity_stop) - extract("epoch", Source.reported_validity_start)), reported_validity_duration_filter["float"]))
+            # end for
+        # end if
+
         # reception_time filters
         if reception_time_filters != None:
             functions.is_valid_date_filters(reception_time_filters)
@@ -319,12 +372,30 @@ class Query():
             # end for
         # end if
 
+        # reported_generation_time filters
+        if reported_generation_time_filters != None:
+            functions.is_valid_date_filters(reported_generation_time_filters)
+            for reported_generation_time_filter in reported_generation_time_filters:
+                op = arithmetic_operators[reported_generation_time_filter["op"]]
+                params.append(op(Source.reported_generation_time, reported_generation_time_filter["date"]))
+            # end for
+        # end if
+
         # ingestion_time filters
         if ingestion_time_filters != None:
             functions.is_valid_date_filters(ingestion_time_filters)
             for ingestion_time_filter in ingestion_time_filters:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(Source.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # processing_duration filters
+        if processing_duration_filters != None:
+            functions.is_valid_float_filters(processing_duration_filters)
+            for processing_duration_filter in processing_duration_filters:
+                op = arithmetic_operators[processing_duration_filter["op"]]
+                params.append(op(Source.processing_duration, timedelta(seconds = processing_duration_filter["float"])))
             # end for
         # end if
 
@@ -335,6 +406,12 @@ class Query():
                 op = arithmetic_operators[ingestion_duration_filter["op"]]
                 params.append(op(Source.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
             # end for
+        # end if
+
+        # ingestion_completeness filter
+        if ingestion_completeness != None:
+            functions.is_valid_bool_filter(ingestion_completeness)
+            params.append(Source.ingestion_completeness == ingestion_completeness)
         # end if
 
         # ingested filter

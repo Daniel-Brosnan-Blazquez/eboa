@@ -168,7 +168,11 @@ class TestQuery(unittest.TestCase):
                            "reception_time": "2018-06-06T13:33:29",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36"}
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "ingestion_completeness": {
+                               "check": "true",
+                               "message": ""
+                           }}
         },
 {
                 "mode": "insert",
@@ -179,9 +183,13 @@ class TestQuery(unittest.TestCase):
                            "reception_time": "2018-06-06T13:33:29",
                            "generation_time": "2017-07-05T02:07:03",
                            "validity_start": "2017-06-05T02:07:03",
-                           "validity_stop": "2017-06-05T08:07:36"}
+                           "validity_stop": "2017-06-05T08:07:36",
+                           "ingestion_completeness": {
+                               "check": "false",
+                               "message": "MISSING DEPENDENCIES"
+                           }}
         }]}
-        self.engine_eboa.treat_data(data)
+        self.engine_eboa.treat_data(data, processing_duration = datetime.timedelta(seconds=1))
 
         dim_signature1 = self.query.get_dim_signatures(dim_signatures = {"filter": "dim_signature", "op": "like"})
 
@@ -206,18 +214,38 @@ class TestQuery(unittest.TestCase):
 
         assert len(source) == 1
 
+        source = self.query.get_sources(validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
+
+        assert len(source) == 1
+
+        source = self.query.get_sources(reported_validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}])
+
+        assert len(source) == 1
+        
         source = self.query.get_sources(validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}])
 
         assert len(source) == 1
 
+        source = self.query.get_sources(reported_validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}])
+
+        assert len(source) == 1
+        
         source = self.query.get_sources(generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}])
 
         assert len(source) == 1
 
-        sources = self.query.get_sources(ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
+        source = self.query.get_sources(reported_generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}])
+
+        assert len(source) == 1
+
+        sources = self.query.get_sources(reported_generation_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}])
 
         assert len(sources) == 2
 
+        sources = self.query.get_sources(processing_duration_filters = [{"float": 10, "op": "<"}])
+
+        assert len(sources) == 2
+        
         sources = self.query.get_sources(ingestion_duration_filters = [{"float": 10, "op": "<"}])
 
         assert len(sources) == 2
@@ -238,6 +266,22 @@ class TestQuery(unittest.TestCase):
 
         assert len(sources) == 0
 
+        sources = self.query.get_sources(ingested = True)
+
+        assert len(sources) == 2
+
+        sources = self.query.get_sources(ingested = False)
+
+        assert len(sources) == 0
+
+        sources = self.query.get_sources(ingestion_completeness = False)
+
+        assert len(sources) == 1
+
+        sources = self.query.get_sources(ingestion_completeness = True)
+
+        assert len(sources) == 1
+
         dim_sig_name = data["operations"][0]["dim_signature"]["name"]
         source = self.query.get_sources(dim_signatures = {"filter": dim_sig_name, "op": "like"})
 
@@ -248,7 +292,10 @@ class TestQuery(unittest.TestCase):
                                         names = {"filter": name, "op": "like"},
                                         validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
                                         validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                        reported_validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                                        reported_validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
                                         generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}],
+                                        reported_generation_time_filters = [{"date": "2018-07-05T02:07:03", "op": "=="}],
                                         ingestion_time_filters = [{"date": "1960-07-05T02:07:03", "op": ">"}],
                                         ingestion_duration_filters = [{"float": 10, "op": "<"}],
                                         processor_version_filters = [{"filter": "0.0", "op": ">"}],
