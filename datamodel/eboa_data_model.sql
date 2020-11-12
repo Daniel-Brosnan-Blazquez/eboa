@@ -1,5 +1,5 @@
 -- Database generated with pgModeler (PostgreSQL Database Modeler).
--- pgModeler  version: 0.9.2-beta1
+-- pgModeler  version: 0.9.2
 -- PostgreSQL version: 11.0
 -- Project Site: pgmodeler.io
 -- Model Author: Daniel Brosnan Blázquez
@@ -77,8 +77,11 @@ CREATE TABLE eboa.sources (
 	name text NOT NULL,
 	validity_start timestamp,
 	validity_stop timestamp,
+	reported_validity_start timestamp,
+	reported_validity_stop timestamp,
 	reception_time timestamp NOT NULL,
 	generation_time timestamp,
+	reported_generation_time timestamp,
 	ingestion_time timestamp,
 	ingested bool,
 	ingestion_error bool,
@@ -91,7 +94,9 @@ CREATE TABLE eboa.sources (
 	parse_error text,
 	processor_progress decimal(5,2),
 	ingestion_progress decimal(5,2),
-	ingestion_completeness integer,
+	ingestion_completeness bool,
+	ingestion_completeness_message text,
+	priority integer,
 	dim_signature_uuid uuid,
 	CONSTRAINT sources_pk PRIMARY KEY (source_uuid)
 
@@ -1432,6 +1437,7 @@ CREATE TABLE eboa.event_alerts (
 	solved bool,
 	solved_time timestamp,
 	notification_time timestamp NOT NULL,
+	justification text,
 	alert_uuid uuid NOT NULL,
 	event_uuid uuid,
 	CONSTRAINT event_alerts_pk PRIMARY KEY (event_alert_uuid)
@@ -1469,6 +1475,7 @@ CREATE TABLE eboa.source_alerts (
 	solved bool,
 	solved_time timestamp,
 	notification_time timestamp NOT NULL,
+	justification text,
 	alert_uuid uuid NOT NULL,
 	source_uuid uuid,
 	CONSTRAINT source_alerts_pk PRIMARY KEY (source_alert_uuid)
@@ -1490,6 +1497,7 @@ CREATE TABLE eboa.explicit_ref_alerts (
 	solved bool,
 	solved_time timestamp,
 	notification_time timestamp NOT NULL,
+	justification text,
 	alert_uuid uuid NOT NULL,
 	explicit_ref_uuid uuid,
 	CONSTRAINT explicit_ref_alerts_pk PRIMARY KEY (explicit_ref_alert_uuid)
@@ -1582,7 +1590,7 @@ WITH SCHEMA eboa;
 --  USING gin AS
 -- 	STORAGE	text;
 -- -- ddl-end --
--- ALTER OPERATOR CLASS eboa.gin_trgm_ops USING gin OWNER TO postgres;
+-- -- ALTER OPERATOR CLASS eboa.gin_trgm_ops USING gin OWNER TO postgres;
 -- -- ddl-end --
 -- 
 -- object: idx_event_boolean_name_gin | type: INDEX --
@@ -2406,6 +2414,7 @@ CREATE TABLE eboa.report_alerts (
 	solved bool,
 	solved_time timestamp,
 	notification_time timestamp NOT NULL,
+	justification text,
 	report_uuid uuid,
 	alert_uuid uuid NOT NULL,
 	CONSTRAINT report_alerts_pk PRIMARY KEY (report_alert_uuid)
@@ -2886,6 +2895,87 @@ ALTER TABLE eboa.report_timestamps ADD CONSTRAINT unique_value_report_timestamps
 -- object: unique_value_position_report_timestamps | type: CONSTRAINT --
 -- ALTER TABLE eboa.report_timestamps DROP CONSTRAINT IF EXISTS unique_value_position_report_timestamps CASCADE;
 ALTER TABLE eboa.report_timestamps ADD CONSTRAINT unique_value_position_report_timestamps UNIQUE ("position",parent_level,parent_position,report_uuid);
+-- ddl-end --
+
+-- object: idx_source_reported_validity_start | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_reported_validity_start CASCADE;
+CREATE INDEX idx_source_reported_validity_start ON eboa.sources
+	USING btree
+	(
+	  reported_validity_start
+	);
+-- ddl-end --
+
+-- object: idx_source_reported_validity_stop | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_reported_validity_stop CASCADE;
+CREATE INDEX idx_source_reported_validity_stop ON eboa.sources
+	USING btree
+	(
+	  reported_validity_stop
+	);
+-- ddl-end --
+
+-- object: idx_source_reported_generation_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_reported_generation_time CASCADE;
+CREATE INDEX idx_source_reported_generation_time ON eboa.sources
+	USING btree
+	(
+	  reported_generation_time
+	);
+-- ddl-end --
+
+-- object: idx_event_alerts_justification | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_event_alerts_justification CASCADE;
+CREATE INDEX idx_event_alerts_justification ON eboa.event_alerts
+	USING gin
+	(
+	  justification eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_explicit_ref_alerts_justification | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_explicit_ref_alerts_justification CASCADE;
+CREATE INDEX idx_explicit_ref_alerts_justification ON eboa.explicit_ref_alerts
+	USING gin
+	(
+	  justification eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_source_alerts_justification | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_alerts_justification CASCADE;
+CREATE INDEX idx_source_alerts_justification ON eboa.source_alerts
+	USING gin
+	(
+	  justification eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_report_alerts_justification | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_report_alerts_justification CASCADE;
+CREATE INDEX idx_report_alerts_justification ON eboa.report_alerts
+	USING gin
+	(
+	  justification eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_source_priority | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_priority CASCADE;
+CREATE INDEX idx_source_priority ON eboa.sources
+	USING btree
+	(
+	  priority
+	);
+-- ddl-end --
+
+-- object: idx_source_ingestion_completeness | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_source_ingestion_completeness CASCADE;
+CREATE INDEX idx_source_ingestion_completeness ON eboa.sources
+	USING btree
+	(
+	  ingestion_completeness
+	);
 -- ddl-end --
 
 

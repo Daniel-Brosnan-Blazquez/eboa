@@ -30,7 +30,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference, PriorityNotDefined
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference, PriorityNotDefined, WrongReportedValidityPeriod
 
 # Import datamodel
 from eboa.datamodel.base import Session
@@ -154,6 +154,10 @@ exit_codes = {
     "PRIORITY_NOT_DEFINED": {
         "status": 21,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
+    },
+    "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
+        "status": 22,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a reported validity period which its stop ({}) is lower than its start ({})"
     }
 }
 
@@ -990,7 +994,7 @@ class Engine():
         processing_duration_from_input_data = source.get("processing_duration")
         priority = source.get("priority")
         ingestion_completeness = source.get("ingestion_completeness")
-        ingestion_completeness_check = None
+        ingestion_completeness_check = True
         ingestion_completeness_message = None
         if ingestion_completeness:
             ingestion_completeness_check = bool(util.strtobool(ingestion_completeness.get("check")))
@@ -1002,7 +1006,7 @@ class Engine():
         # end if
 
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-        if parser.parse(validity_stop).replace(tzinfo=None) < parser.parse(validity_start).replace(tzinfo=None):
+        if parser.parse(validity_stop).replace(tzinfo=None) < parser.parse(validity_start).replace(tzinfo=None) or parser.parse(reported_validity_stop).replace(tzinfo=None) < parser.parse(reported_validity_start).replace(tzinfo=None):
             # The validity period is not correct (stop > start)
             # Create Source for registering the error in the DDBB
             processor_progress = None
@@ -1025,7 +1029,11 @@ class Engine():
                                                                        Source.processor_version == version,
                 Source.processor == processor).first()
             # end try
-            raise WrongPeriod(exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start))
+            if parser.parse(validity_stop).replace(tzinfo=None) < parser.parse(validity_start).replace(tzinfo=None):
+                raise WrongPeriod(exit_codes["WRONG_SOURCE_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start))
+            else:
+                raise WrongReportedValidityPeriod(exit_codes["WRONG_SOURCE_REPORTED_VALIDITY_PERIOD"]["message"].format(name, self.dim_signature.dim_signature, processor, version, reported_validity_stop, reported_validity_start))
+            # end if
         # end if
 
         self.source = self.session.query(Source).filter(Source.name == name,

@@ -29,6 +29,16 @@ class WrongPeriod(Error):
     def __init__(self, message):
         self.message = message
 
+class WrongReportedValidityPeriod(Error):
+    """Exception raised when the reported validity period is defined with a stop date lower than the start date.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class UndefinedEventLink(Error):
     """Exception raised when a link has been defined for an event which does not exist with the corresponding link reference.
 
