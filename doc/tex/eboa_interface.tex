@@ -81,6 +81,8 @@ Events can be inserted using the following methods associated to their gauges:
 \item \textbf{SIMPLE\_UPDATE}: all events are inserted
 \item \textbf{INSERT\_and\_ERASE}: all the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events falling in the validity period of the source of the events just inserted into the DDBB, with the same gauge and keeps the events with greatest generation time and removes the rest. In case an event does not fully fall in the validity period and has to be removed, the event is split so that the part not falling into the validity period remains.
 \item \textbf{INSERT\_and\_ERASE\_per\_EVENT}: this method is similar to the method INSERT\_and\_ERASE but, in this case, the method is applied taking as validity period every event's period related to the events just inserted into the DDBB.
+\item \textbf{INSERT\_and\_ERASE\_with\_PRIORITY}: same method as INSERT\_and\_ERASE but using also a priority value associated to the source to determine which source is the more relevant.
+\item \textbf{INSERT\_and\_ERASE\_per\_EVENT\_with\_PRIORITY}: same method as INSERT\_and\_ERASE\_per\_EVENT but using also a priority value associated to the source to determine which source is the more relevant.
 \item \textbf{EVENT\_KEYS}: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
 \item \textbf{insert\_and\_erase} (applied at DIM signature level): this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
   Important note: \newline  
@@ -102,7 +104,9 @@ Events can be inserted using the following methods associated to their gauges:
 \item SIMPLE\_UPDATE
 \item insert\_and\_erase
 \item INSERT\_and\_ERASE
+\item INSERT\_and\_ERASE\_with\_PRIORITY
 \item INSERT\_and\_ERASE\_per\_EVENT
+\item INSERT\_and\_ERASE\_per\_EVENT\_with\_PRIORITY
 \item EVENT\_KEYS
 \end{enumerate}
 
@@ -189,6 +193,7 @@ Annotations can be inserted using the following methods associated to their gaug
 \begin{itemize}
 \item SIMPLE\_UPDATE: all annotations are inserted
 \item INSERT\_and\_ERASE: all the annotations are inserted but flagged as not visible. Then the \acrshort{eboa} checks the annotations associated to the configuration and explicit references of the annotations just inserted into the DDBB and keeps the annotations with greatest generation time and removes the rest. This method is similar to the method used for inserting events using the method EVENT\_KEYS.
+\item INSERT\_and\_ERASE\_with\_PRIORITY: same method as INSERT\_and\_ERASE but using also a priority value associated to the source to determine which source is the more relevant.
 \end{itemize}
 
 \subsection {INSERT\_and\_ERASE method}

@@ -479,8 +479,8 @@ def _validate_annotation_cnf(data):
     # end if
 
     # Optional tags
-    if "insertion_type" in data and not data["insertion_type"] in ["SIMPLE_UPDATE", "INSERT_and_ERASE"]:
-        raise ErrorParsingDictionary("The tag insertion_type inside annotation_cnf structure has to be of type string and allowed values are SIMPLE_UPDATE and INSERT_and_ERASE")
+    if "insertion_type" in data and not data["insertion_type"] in ["SIMPLE_UPDATE", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY"]:
+        raise ErrorParsingDictionary("The tag insertion_type inside annotation_cnf structure has to be of type string and allowed values are SIMPLE_UPDATE, INSERT_and_ERASE and INSERT_and_ERASE_with_PRIORITY")
     # end if
     if "system" in data and not type(data["system"]) == str:
         raise ErrorParsingDictionary("The tag system inside annotation_cnf structure has to be of type string")

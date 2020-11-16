@@ -153,7 +153,7 @@ exit_codes = {
     },
     "PRIORITY_NOT_DEFINED": {
         "status": 21,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
     },
     "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
         "status": 22,
@@ -578,6 +578,7 @@ class Engine():
         self.insert_and_erase_with_priority_gauges = {}
         self.insert_and_erase_per_event_with_priority_gauges = {}
         self.annotation_cnfs_explicit_refs = []
+        self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority = []
         self.annotations = {}
         self.keys_events = {}
         self.alert_cnfs = {}
@@ -1605,11 +1606,21 @@ class Engine():
             explicit_ref = self.explicit_refs[annotation.get("explicit_reference")]
 
             visible = True
-            if "insertion_type" in annotation_cnf_info and annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE":
-                self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
+            if "insertion_type" in annotation_cnf_info:
+                if annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE":
+                    self.annotation_cnfs_explicit_refs.append({"explicit_ref": explicit_ref,
                                                            "annotation_cnf": annotation_cnf
-                })
-                visible = False
+                                                               })
+                    visible = False
+                elif annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE_with_PRIORITY":
+                    if not self.source.priority:
+                        raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+                    # end if
+                    self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority.append({"explicit_ref": explicit_ref,
+                                                               "annotation_cnf": annotation_cnf
+                                                               })
+                    visible = False
+                # end if
             # end if
 
             # Insert the annotation into the list for bulk ingestion
@@ -1841,6 +1852,9 @@ class Engine():
 
             # Remove annotations due to INSERT_and_ERASE insertion mode
             self._remove_deprecated_annotations()
+
+            # Remove annotations due to INSERT_and_ERASE_with_PRIORITY insertion mode
+            self._remove_deprecated_annotations_insert_and_erase_with_priority()
 
             # Commit data
             self.session.commit()
@@ -3099,6 +3113,61 @@ class Engine():
 
         return
 
+    @debug
+    def _remove_deprecated_annotations_insert_and_erase_with_priority(self):
+        """
+        Method to remove annotations that were overwritten by other annotations using INSERT_and_ERASE_with_PRIORITY
+        """
+        annotations_uuids_to_delete = []
+        annotations_uuids_to_update = []
+        for annotation_cnf_explicit_ref in self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority:
+            annotation_cnf = annotation_cnf_explicit_ref["annotation_cnf"]
+            explicit_ref = annotation_cnf_explicit_ref["explicit_ref"]
+
+            max_priority = self.session.query(func.max(Source.priority)).join(Annotation) \
+                                                                        .join(AnnotationCnf). \
+                                                                        join(ExplicitRef).filter(Source.priority >= self.source.priority,
+                                                                                                 AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                                                 ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
+            
+            max_generation_time = self.session.query(func.max(Source.generation_time)).join(Annotation) \
+                                                                                      .join(AnnotationCnf). \
+                                                                                      join(ExplicitRef).filter(Source.priority == max_priority,
+                                                                                                               AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).first()
+
+            source_max_generation_time = self.session.query(Source).join(Annotation) \
+                                                                        .join(AnnotationCnf). \
+                                                                        join(ExplicitRef).filter(Source.generation_time == max_generation_time,
+                                                                                               Source.priority == max_priority,
+                                                                                               AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                                            ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid).order_by(Source.ingestion_time.nullslast()).first()
+
+            annotations_uuids_to_update += self.session.query(Annotation.annotation_uuid) \
+                                                      .join(AnnotationCnf). \
+                                                      join(ExplicitRef).filter(AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid,
+                                                                               Annotation.source_uuid == source_max_generation_time.source_uuid).all()
+
+            annotations_uuids_to_delete += self.session.query(Annotation.annotation_uuid) \
+                                                      .join(AnnotationCnf). \
+                                                      join(ExplicitRef). \
+                                                      join(Source).filter(Source.priority <= max_priority,
+                                                                          AnnotationCnf.annotation_cnf_uuid == annotation_cnf.annotation_cnf_uuid,
+                                                                               ExplicitRef.explicit_ref_uuid == explicit_ref.explicit_ref_uuid,
+                                                                               Annotation.source_uuid != source_max_generation_time.source_uuid).all()
+
+        # end for
+        if len(annotations_uuids_to_delete) > 0:
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_delete)).delete(synchronize_session=False)
+        # end if
+
+        if len(annotations_uuids_to_update) > 0:
+            self.session.query(Annotation).filter(Annotation.annotation_uuid.in_(annotations_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+        # end if
+
+        return
+    
     def insert_event_value(self, event_uuid, value):
         """
         Method to associate a value structure to an event related to the UUID received in the position specified
