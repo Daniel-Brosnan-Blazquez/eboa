@@ -777,6 +777,15 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["DUPLICATED_VALUES"]["status"]
+        except PriorityNotDefined as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["PRIORITY_NOT_DEFINED"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["PRIORITY_NOT_DEFINED"]["status"]
         # end try
 
         self._insert_ingestion_progress(65)
@@ -822,6 +831,15 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["DUPLICATED_VALUES"]["status"]
+        except PriorityNotDefined as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["PRIORITY_NOT_DEFINED"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["PRIORITY_NOT_DEFINED"]["status"]
         # end try
 
         logger.debug("Annotations inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
