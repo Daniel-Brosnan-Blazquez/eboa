@@ -84,6 +84,7 @@ Events can be inserted using the following methods associated to their gauges:
 \item \textbf{INSERT\_and\_ERASE\_with\_PRIORITY}: same method as INSERT\_and\_ERASE but using also a priority value associated to the source to determine which source is the more relevant.
 \item \textbf{INSERT\_and\_ERASE\_per\_EVENT\_with\_PRIORITY}: same method as INSERT\_and\_ERASE\_per\_EVENT but using also a priority value associated to the source to determine which source is the more relevant.
 \item \textbf{EVENT\_KEYS}: the events are inserted but flagged as not visible. Then the \acrshort{eboa} checks the events with the same event key and same DIM signature and keeps the ones with the greatest generation time.
+\item \textbf{EVENT\_KEYS\_with\_PRIORITY}: same method as EVENT\_KEYS but using also a priority value associated to the source to determine which source is more relevant.
 \item \textbf{insert\_and\_erase} (applied at DIM signature level): this method is similar to the method INSERT\_and\_ERASE but, in this case, the method will apply the method to all the events linked to all the gauges associated to the corresponding DIM signature.
   Important note: \newline  
   * \textbf{Use} this method when

@@ -2194,7 +2194,341 @@ class TestEngine(unittest.TestCase):
                                                            EventLink.event_uuid_link == event_uuid2).all()
 
         assert len(event_links) == 1
+
+    def test_insert_event_event_keys_with_priority(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 10},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                },{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).join(ExplicitRef).join(Gauge).filter(Event.start == "2018-06-05T02:07:03",
+                                                      Event.stop == "2018-06-05T08:07:36",
+                                                      Gauge.name == "GAUGE_NAME",
+                                                      ExplicitRef.explicit_ref == "EXPLICIT_REFERENCE_EVENT",
+                                                                                     Event.visible == True).all()
+
+        assert len(events_ddbb) == 2
+
+        event_keys = self.session.query(EventKey).filter(EventKey.event_key == "EVENT_KEY",
+                                                         EventKey.event_uuid == events_ddbb[0].event_uuid,
+                                                         EventKey.visible == True).all()
+
+        assert len(event_keys) == 1
+
+    def test_insert_event_event_keys_with_priority_with_diferent_dim_signature(self):
+
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 10},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        event_ddbb = self.session.query(Event).filter(Event.start == "2018-06-05T02:07:03",
+                                                      Event.stop == "2018-06-05T08:07:36",
+                                                      Event.visible == True).all()
+
+        event_keys = self.session.query(EventKey).filter(EventKey.event_key == "EVENT_KEY",
+                                                         EventKey.event_uuid == event_ddbb[0].event_uuid,
+                                                         EventKey.visible == True).all()
+
+        assert len(event_keys) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature2",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 10},
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                    "gauge": {"name": "GAUGE_NAME2",
+                              "system": "GAUGE_SYSTEM2",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        event_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
+                                                      Event.stop == "2018-06-05T08:07:36",
+                                                      Source.name == "source2.xml",
+                                                      Event.visible == True).all()
+
+        event_keys = self.session.query(EventKey).filter(EventKey.event_key == "EVENT_KEY",
+                                                         EventKey.event_uuid == event_ddbb[0].event_uuid,
+                                                         EventKey.visible == True).all()
+
+        assert len(event_keys) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 2
+
+    def test_insert_same_event_keys_with_priority_same_source_different_processor(self):
+
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 10},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec2",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:04",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 20},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                },{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 2
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 2
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 2
+
+    def test_insert_event_keys_with_priority_with_links(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source0.json",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid1 = events[0].event_uuid
         
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": 10},
+            "events": [{
+                "links": [{
+                    "link": str(event_uuid1),
+                    "link_mode": "by_uuid",
+                    "name": "EVENT_LINK_NAME"
+                }],
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36",
+                "key": "EVENT_KEY"
+            }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 2
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 1
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec2",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:04",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                           "priority": 20},
+                "events": [{
+                    "links": [{
+                        "link": str(event_uuid1),
+                        "link_mode": "by_uuid",
+                        "name": "EVENT_LINK_NAME"
+                    }],
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "key": "EVENT_KEY"
+                },{
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "EVENT_KEYS_with_PRIORITY"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T06:07:36",
+                    "key": "EVENT_KEY"
+                }]
+        }]
+        }
+        self.engine_eboa.treat_data(data)
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 3
+
+        event_keys = self.session.query(EventKey).all()
+
+        assert len(event_keys) == 2
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T02:07:03",
+                                                                           Event.stop == "2018-06-05T08:07:36",
+                                                                           Source.name == "source2.xml").all()
+        assert len(events) == 1
+
+        event_uuid2 = events[0].event_uuid
+
+        event_links = self.session.query(EventLink).all()
+
+        assert len(event_links) == 1
+
+        event_links = self.session.query(EventLink).filter(EventLink.name == "EVENT_LINK_NAME",
+                                                           EventLink.event_uuid == event_uuid1,
+                                                           EventLink.event_uuid_link == event_uuid2).all()
+
+        assert len(event_links) == 1
+
     def test_insert_event_simple_update_values(self):
 
         self.engine_eboa._initialize_context_insert_data()
@@ -8359,7 +8693,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(events) == 1
 
-    def test_insert_event_insert_and_erase_per_event_event_duration_0_in_the_middle_to_stay(self):
+    def test_insert_event_insert_and_erase_per_event_with_priority_event_duration_0_in_the_middle_to_stay(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -8432,7 +8766,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(events) == 3
         
-    def test_insert_event_insert_and_erase_per_event_event_split(self):
+    def test_insert_event_insert_and_erase_per_event_with_priority_event_split(self):
 
         data1 = {"operations": [{
             "mode": "insert",

@@ -153,7 +153,7 @@ exit_codes = {
     },
     "PRIORITY_NOT_DEFINED": {
         "status": 21,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' or 'EVENT_KEYS_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
     },
     "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
         "status": 22,
@@ -581,6 +581,7 @@ class Engine():
         self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority = []
         self.annotations = {}
         self.keys_events = {}
+        self.keys_events_with_priority = {}
         self.alert_cnfs = {}
         self.alert_groups = {}
 
@@ -1414,7 +1415,7 @@ class Engine():
             # end if
             key = event.get("key")
             visible = False
-            if gauge_info["insertion_type"] in ["INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY"] and not self.source.priority:
+            if gauge_info["insertion_type"] in ["INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY", "EVENT_KEYS_with_PRIORITY"] and not self.source.priority:
                 raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
             # end if
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
@@ -1437,6 +1438,8 @@ class Engine():
                 self.insert_and_erase_per_event_with_priority_gauges[gauge.gauge_uuid].append((start, stop))
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
+            elif gauge_info["insertion_type"] == "EVENT_KEYS_with_PRIORITY":
+                self.keys_events_with_priority[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
             explicit_ref_uuid = None
             if explicit_ref != None:
@@ -1867,6 +1870,9 @@ class Engine():
 
             # Remove events due to EVENT_KEYS insertion mode
             self._remove_deprecated_events_event_keys()
+
+            # Remove events due to EVENT_KEYS_with_PRIORITY insertion mode
+            self._remove_deprecated_events_event_keys_with_priority()
 
             # Remove annotations due to INSERT_and_ERASE insertion mode
             self._remove_deprecated_annotations()
@@ -3074,6 +3080,45 @@ class Engine():
                                                                                                                     Source.generation_time <= max_generation_time,
                                                                                                                     EventKey.event_key == key,
                                                                                                                     Source.dim_signature_uuid == dim_signature_uuid)
+            self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(events_uuids_to_delete)).delete(synchronize_session=False)
+            self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_delete)).delete(synchronize_session=False)
+
+            # Make events visible
+            events_uuids_to_update = self.session.query(Event.event_uuid).join(EventKey).filter(Event.source_uuid == event_max_generation_time.source_uuid,
+                                                                                                EventKey.event_key == key)
+            self.session.query(EventKey).filter(EventKey.event_uuid.in_(events_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+            self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_update)).update({"visible": True}, synchronize_session=False)
+        # end for
+
+        return
+
+    @debug
+    def _remove_deprecated_events_event_keys_with_priority(self):
+        """
+        Method to remove events that were overwritten by other events due to EVENT_KEYS_with_PRIORITY insertion mode
+        """
+        for key_pair in self.keys_events_with_priority:
+            key = key_pair[0]
+            dim_signature_uuid = key_pair[1]
+
+            max_priority = self.session.query(func.max(Source.priority)).join(Event).join(EventKey).filter(Source.priority >= self.source.priority,
+                                                                                                                  EventKey.event_key == key,
+                                                                                                                  Source.dim_signature_uuid == dim_signature_uuid).first()
+            max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).join(EventKey).filter(Source.priority == max_priority,
+                                                                                                                         EventKey.event_key == key,
+                                                                                                                         Source.dim_signature_uuid == dim_signature_uuid).first()
+
+            event_max_generation_time = self.session.query(Event).join(Source).join(EventKey).filter(Source.priority == max_priority,
+                                                                                                     Source.generation_time == max_generation_time,
+                                                                                                     EventKey.event_key == key,
+                                                                                                     Source.dim_signature_uuid == dim_signature_uuid).order_by(Source.ingestion_time.nullslast()).first()
+
+            # Delete deprecated events
+            events_uuids_to_delete = self.session.query(Event.event_uuid).join(Source).join(EventKey).filter(Event.source_uuid != event_max_generation_time.source_uuid,
+                                                                                                             Source.priority <= max_priority,
+                                                                                                             Source.generation_time <= max_generation_time,
+                                                                                                             EventKey.event_key == key,
+                                                                                                             Source.dim_signature_uuid == dim_signature_uuid)
             self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(events_uuids_to_delete)).delete(synchronize_session=False)
             self.session.query(Event).filter(Event.event_uuid.in_(events_uuids_to_delete)).delete(synchronize_session=False)
 
