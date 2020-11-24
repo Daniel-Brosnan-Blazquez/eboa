@@ -1860,8 +1860,6 @@ class TestQuery(unittest.TestCase):
             }]}
         self.engine_eboa.treat_data(data)
 
-        self.engine_eboa.treat_data(data)
-
         expl_group1 = self.query.get_explicit_refs_groups()
 
         explicit_ref1 = self.query.get_explicit_refs(group_ids = {"filter": [expl_group1[0].expl_ref_cnf_uuid], "op": "in"})
@@ -1939,6 +1937,181 @@ class TestQuery(unittest.TestCase):
                                                                       groups = {"filter": "EXPL_%", "op": "like"})
 
         assert len(explicit_references) == 1
+
+        explicit_references = self.query.get_explicit_refs(sources = {"filter": "source.xml", "op": "=="})
+
+        assert len(explicit_references) == 1
+
+    def test_query_explicit_ref_by_sources(self):
+
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP"
+            },{
+                "name": "EXPLICIT_REFERENCE_2",
+                "group": "EXPL_GROUP"
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                },{
+                    "explicit_reference": "EXPLICIT_REFERENCE_2",
+                    "gauge": {
+                        "name": "GAUGE_NAME2",
+                        "system": "GAUGE_SYSTEM2",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }],
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE",
+                    "annotation_cnf": {"name": "NAME",
+                                       "system": "SYSTEM"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
+            }]}
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source2.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE_3",
+                "group": "EXPL_GROUP"
+            },{
+                "name": "EXPLICIT_REFERENCE_4",
+                "group": "EXPL_GROUP"
+            }],
+                "events": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_3",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                },{
+                    "explicit_reference": "EXPLICIT_REFERENCE_4",
+                    "gauge": {
+                        "name": "GAUGE_NAME2",
+                        "system": "GAUGE_SYSTEM2",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }],
+                "annotations": [{
+                    "explicit_reference": "EXPLICIT_REFERENCE_5",
+                    "annotation_cnf": {"name": "NAME_5",
+                                       "system": "SYSTEM_5"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"},
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
+            }]}
+
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        explicit_references = self.query.get_explicit_refs(sources = {"filter": "source.xml", "op": "=="}, gauge_names = {"filter": "GAUGE_NAME2", "op": "=="})
+
+        assert len(explicit_references) == 1
+
+        assert explicit_references[0].explicit_ref == "EXPLICIT_REFERENCE_2"
+
+        explicit_references = self.query.get_explicit_refs(sources = {"filter": "source2.xml", "op": "=="}, annotation_cnf_names = {"filter": "NAME_5", "op": "=="})
+
+        assert len(explicit_references) == 0
+
+        explicit_references = self.query.get_explicit_refs(sources = {"filter": "source.xml", "op": "=="}, annotation_cnf_names = {"filter": "NAME", "op": "=="})
+
+        assert len(explicit_references) == 1
+
+        assert explicit_references[0].explicit_ref == "EXPLICIT_REFERENCE"
 
     def test_query_explicit_ref_link(self):
         data = {"operations": [{

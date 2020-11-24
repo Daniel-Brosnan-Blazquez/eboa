@@ -2743,32 +2743,6 @@ class Query():
             join_tables = True
         # end if
 
-        # source_uuids
-        if source_uuids != None:
-            functions.is_valid_text_filter(source_uuids)
-            if source_uuids["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[source_uuids["op"]]
-                params.append(op(Annotation.source_uuid, source_uuids["filter"]))
-            else:
-                filter = eval('Annotation.source_uuid.' + text_operators[source_uuids["op"]])
-                params.append(filter(source_uuids["filter"]))
-            # end if
-            join_tables = True
-        # end if
-        # Sources
-        if sources != None:
-            functions.is_valid_text_filter(sources)
-            if sources["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[sources["op"]]
-                params.append(op(Source.name, sources["filter"]))
-            else:
-                filter = eval('Source.name.' + text_operators[sources["op"]])
-                params.append(filter(sources["filter"]))
-            # end if
-            join_tables = True
-            tables[Source] = Source.source_uuid==Annotation.source_uuid
-        # end if
-
         # annotation_cnf_uuids
         if annotation_cnf_uuids != None:
             functions.is_valid_text_filter(annotation_cnf_uuids)
