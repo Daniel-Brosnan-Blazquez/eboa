@@ -80,6 +80,9 @@ def query_and_execute_tasks(logger = None):
     tasks_to_trigger = len(tasks)
 
     if tasks_to_trigger > 0:
+
+        logger.info("There are {} tasks to trigger and {} available slots".format(tasks_to_trigger, available_slots))
+        
         if tasks_to_trigger > available_slots:
             tasks_to_trigger = available_slots
         # end if
@@ -99,14 +102,11 @@ def query_and_execute_tasks(logger = None):
                     "start": start.isoformat(),
                     "stop": stop.isoformat()
                 })
-            else:
-                parameters.append({
-                    "triggering_uuid": None,
-                    "start": start.isoformat(),
-                    "stop": stop.isoformat()
-                })                
             # end if
         # end for
+
+        logger.info("{} tasks are going to be triggered".format(len(parameters)))
+        
         # Trigger parallel generation of reports
         pool = Pool(tasks_to_trigger)
         try:
@@ -172,7 +172,7 @@ if __name__ == "__main__":
         else:
             print("BOA scheduler is already running...")
             exit(-1)
-        # end try
+        # end if
     elif command == "stop":
         stop_scheduler()
     elif command == "status":

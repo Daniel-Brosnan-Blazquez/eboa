@@ -15,6 +15,8 @@ import psutil
 import shlex
 from subprocess import Popen, PIPE
 from daemon import pidfile
+import lockfile
+import traceback
 
 # Get eboa auxiliary functions
 from eboa.engine.functions import get_resources_path
@@ -55,7 +57,14 @@ def execute_triggering(triggering_uuid, start, stop):
         pid_file = pid_files_folder + "/boa_scheduler_" + str(pid) + ".pid"
 
         # Acquire the pid lock file for stopping processes if needed
-        pidfile.TimeoutPIDLockFile(pid_file).acquire()
+        try:
+            pidfile.TimeoutPIDLockFile(pid_file).acquire()
+        except lockfile.LockFailed as e:
+            logger.error("The lock of the file {} failed unexpectedly with the following error {}".format(pid_file, str(e)))
+            logger.error(traceback.format_exc())
+            traceback.print_exc(file=sys.stdout)
+            return
+        # end try
 
         if task.add_window_arguments:
             command = command + " -b '" + start + "' -e '" + stop + "'"
