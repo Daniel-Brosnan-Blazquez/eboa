@@ -17,7 +17,7 @@ from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
 import uuid
 
 # Import operators
-from eboa.engine.operators import arithmetic_operators, text_operators
+from eboa.engine.operators import arithmetic_operators, text_operators, regex_operators
 
 # Auxiliary functions
 def is_datetime(date):
@@ -266,10 +266,10 @@ def is_valid_text_filter(text_filter):
     if len(text_filter.keys()) != 2 or not "op" in text_filter.keys() or not "filter" in text_filter.keys():
         raise InputError("The parameter text_filter should be a dictionary with keys op and filter (received keys: {}).".format(text_filter.keys()))
     # end if
-    if type(text_filter["op"]) != str or not (text_filter["op"] in arithmetic_operators.keys() or text_filter["op"] in text_operators.keys()):
-        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()), text_filter["op"]))
+    if type(text_filter["op"]) != str or not (text_filter["op"] in arithmetic_operators.keys() or text_filter["op"] in text_operators.keys() or text_filter["op"] in regex_operators.keys()):
+        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()) + list(regex_operators.keys()), text_filter["op"]))
     # end if
-    if (text_filter["op"] in ["like", "notlike"] or text_filter["op"] in arithmetic_operators.keys()) and type(text_filter["filter"]) != str:
+    if (text_filter["op"] in ["like", "notlike", "regex"] or text_filter["op"] in arithmetic_operators.keys()) and type(text_filter["filter"]) != str:
         raise InputError("The specified filter must be a string when the op is in the list {} (received filter has type: {}).".format(list(arithmetic_operators.keys()) + ["like", "notlike"], type(text_filter["filter"])))
     # end if
     if text_filter["op"] in ["in", "notin"] and type(text_filter["filter"]) != list:

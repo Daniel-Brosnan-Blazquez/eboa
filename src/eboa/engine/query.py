@@ -33,6 +33,7 @@ from eboa.datamodel.annotations import Annotation, AnnotationCnf, AnnotationText
 from sqlalchemy.dialects import postgresql
 from rboa.datamodel.reports import Report, ReportGroup, ReportStatus, ReportText, ReportDouble, ReportObject, ReportGeometry, ReportBoolean, ReportTimestamp
 from rboa.datamodel.alerts import ReportAlert
+from sqlalchemy.sql import text
 
 # Import exceptions
 from eboa.engine.errors import InputError
@@ -47,7 +48,7 @@ from eboa.logging import Log
 from eboa.engine.printing import literal_query
 
 # Import operators
-from eboa.engine.operators import arithmetic_operators, text_operators
+from eboa.engine.operators import arithmetic_operators, text_operators, regex_operators
 
 # Import SQLalchemy exceptions
 from sqlalchemy.orm.exc import StaleDataError
@@ -1855,6 +1856,8 @@ class Query():
             if explicit_refs["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[explicit_refs["op"]]
                 params.append(op(ExplicitRef.explicit_ref, explicit_refs["filter"]))
+            elif explicit_refs["op"] in regex_operators.keys():
+                params.append(text("explicit_refs.explicit_ref ~ '" + explicit_refs["filter"] + "'"))
             else:
                 filter = eval('ExplicitRef.explicit_ref.' + text_operators[explicit_refs["op"]])
                 params.append(filter(explicit_refs["filter"]))

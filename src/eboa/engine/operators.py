@@ -16,3 +16,7 @@ text_operators = {
     "in": "in_",
     "notin": "notin_",
 }
+
+regex_operators = {
+    "regex": ""
+}
