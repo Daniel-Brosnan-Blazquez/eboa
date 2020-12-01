@@ -6,6 +6,7 @@ Written by DEIMOS Space S.L. (dibb)
 module eboa
 """
 # Import python utilities
+import time
 import datetime
 from datetime import timedelta
 from lxml import etree
@@ -120,6 +121,7 @@ class Query():
         # end for
 
     def delete(self, query):
+        logger.info("Deletion request received")
         query_executed = False
         while not query_executed:
             try:
@@ -129,7 +131,12 @@ class Query():
             except StaleDataError:
                 pass
             # end try
+            if not query_executed:
+                logger.info("Deletion could not be performed. Trying again after 1 second...")
+                time.sleep(1)
+            # end if
         # end while
+        logger.info("Deletion request performed")
     # end def
         
     def get_dim_signatures(self, dim_signature_uuids = None, dim_signatures = None, order_by = None, limit = None, offset = None):
@@ -518,6 +525,7 @@ class Query():
                 sources = sorted(query.all(), key=lambda x:(x.name))
                 for source in sources:
                     name = source.name
+                    logger.info("The source with name {} is going to be removed".format(name))
                     uuid = source.source_uuid
                     dim_signature_uuid = source.dim_signature_uuid
                     lock = "treat_data_" + source.name
@@ -535,12 +543,15 @@ class Query():
                 # end for
             else:
                 sources = query.all()
+                source_names = [source.name for source in sources]
+                logger.info("The sources with names {} are going to be removed".format(source_names))
                 # Obtain events related to the source
                 event_uuids_related_to_sources = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_([source.source_uuid for source in sources]))
                 # Remove the event links which source is related to the events associated to the source to be removed
                 self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_related_to_sources)).delete(synchronize_session=False)
                 # Remove sources
                 self.delete(self.session.query(Source).with_for_update().filter(Source.source_uuid.in_([source.source_uuid for source in sources])))
+                logger.info("The sources with names {} have been removed".format(source_names))
             # end if
         else:
             sources = query.all()

@@ -838,6 +838,120 @@ class TestEngine(unittest.TestCase):
 
         assert len(event_ddbb) == 1
 
+    def test_insert_event_insert_and_erase_remove_events(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-06T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T05:07:03",
+                "stop": "2018-06-05T05:07:36",
+        }]
+        }]
+        }
+        self.engine_eboa.treat_data(data1)
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T05:07:04",
+                "stop": "2018-06-05T05:07:35"
+            }]
+        }]
+        }
+        self.engine_eboa.treat_data(data2)
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T05:07:03",
+                                                                           Event.stop == "2018-06-05T05:07:36",
+                                                                           Source.name == "source.json").all()
+        assert len(events) == 1
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+    def test_insert_event_insert_and_erase_with_priority_remove_events(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-06T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T05:07:03",
+                "stop": "2018-06-05T05:07:36",
+        }]
+        }]
+        }
+        self.engine_eboa.treat_data(data1)
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T05:07:04",
+                "stop": "2018-06-05T05:07:35"
+            }]
+        }]
+        }
+        self.engine_eboa.treat_data(data2)
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T05:07:03",
+                                                                           Event.stop == "2018-06-05T05:07:36",
+                                                                           Source.name == "source.json").all()
+        assert len(events) == 1
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
     def test_insert_event_insert_and_erase_source_duration_0_in_the_middle_to_remove(self):
 
         data = {"operations": [{

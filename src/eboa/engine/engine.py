@@ -2156,6 +2156,11 @@ class Engine():
                                                                                                     Source.validity_stop > validity_start),
                                                                                                and_(Source.validity_start == validity_start,
                                                                                                     Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+
+                # Check if the period contains sources with the relevant events if not continue with the following period
+                if not source_max_generation_time:
+                    continue
+                # end if
                 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
@@ -2362,6 +2367,11 @@ class Engine():
                                                                                                     Source.validity_stop > validity_start),
                                                                                                and_(Source.validity_start == validity_start,
                                                                                                     Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+
+                # Check if the period contains sources with the relevant events if not continue with the following period
+                if not source_max_generation_time:
+                    continue
+                # end if
                 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
