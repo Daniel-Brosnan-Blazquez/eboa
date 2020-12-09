@@ -12,7 +12,7 @@ from eboa.engine.errors import ErrorParsingDictionary
 from eboa.engine.functions import is_datetime
 
 # Import functions from the eboa parsing module
-from eboa.engine.parsing import validate_values, validate_alert_cnf
+from eboa.engine.parsing import validate_values, validate_alert_cnf, validate_alerts_inside_entity
 
 def validate_data_dictionary(data):
     """
@@ -76,9 +76,9 @@ def _validate_report(data):
         raise ErrorParsingDictionary("The tag report must be a dictionary")
     # end if
     
-    check_items = [item in ["name", "group", "group_description", "path", "compress", "generation_mode", "validity_start", "validity_stop", "triggering_time", "generation_start", "generation_stop", "generator", "generator_version", "ingested", "values"] for item in data.keys()]
+    check_items = [item in ["name", "group", "group_description", "path", "compress", "generation_mode", "validity_start", "validity_stop", "triggering_time", "generation_start", "generation_stop", "generator", "generator_version", "ingested", "values", "alerts"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside report structure are: name, group, group_description, path, compress, generation_mode, validity_start, validity_stop, triggering_time, generation_start, generation_stop, generator, generator_version, ingested and values")
+        raise ErrorParsingDictionary("The allowed tags inside report structure are: name, group, group_description, path, compress, generation_mode, validity_start, validity_stop, triggering_time, generation_start, generation_stop, generator, generator_version, ingested, values and alerts")
     # end if
 
     # Mandatory tags
@@ -165,6 +165,9 @@ def _validate_report(data):
     # Optional tags
     if "ingested" in data and not data["ingested"].lower() in ["false", "true"]:
         raise ErrorParsingDictionary("The tag ingested has to have one of the following values: false or true")
+    # end if
+    if "alerts" in data:
+        validate_alerts_inside_entity(data["alerts"])
     # end if
 
     return

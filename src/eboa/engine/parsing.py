@@ -121,9 +121,9 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag source must be a dictionary")
     # end if
     
-    check_items = [item in ["name", "validity_start", "validity_stop", "reported_validity_start", "reported_validity_stop", "reception_time", "generation_time", "reported_generation_time", "ingested", "processing_duration", "priority", "ingestion_completeness"] for item in data.keys()]
+    check_items = [item in ["name", "validity_start", "validity_stop", "reported_validity_start", "reported_validity_stop", "reception_time", "generation_time", "reported_generation_time", "ingested", "processing_duration", "priority", "ingestion_completeness", "alerts"] for item in data.keys()]
     if False in check_items:
-        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, reported_validity_start, reported_validity_stop, generation_time, reported_generation_time, reception_time, ingested, processing_duration, priority and ingestion_completeness")
+        raise ErrorParsingDictionary("The allowed tags inside source structure are: name, validity_start, validity_stop, reported_validity_start, reported_validity_stop, generation_time, reported_generation_time, reception_time, ingested, processing_duration, priority, ingestion_completeness and alerts")
     # end if
 
     # Mandatory tags        
@@ -188,6 +188,9 @@ def _validate_source(data):
     if "ingestion_completeness" in data:
         _validate_ingestion_completeness(data["ingestion_completeness"])
     # end if
+    if "alerts" in data:
+        validate_alerts_inside_entity(data["alerts"])
+    # end if
     
     return
 
@@ -230,9 +233,9 @@ def _validate_explicit_references(data):
             raise ErrorParsingDictionary("The items inside the explicit_references structure have to be of type dict")
         # end if
 
-        check_items = [item in ["group", "name", "links"] for item in explicit_reference.keys()]
+        check_items = [item in ["group", "name", "links", "alerts"] for item in explicit_reference.keys()]
         if False in check_items:
-            raise ErrorParsingDictionary("The allowed tags inside explicit_references structure are: group, name and links")
+            raise ErrorParsingDictionary("The allowed tags inside explicit_references structure are: group, name, links and alerts")
         # end if
 
         # Mandatory tags        
@@ -249,6 +252,9 @@ def _validate_explicit_references(data):
         # end if
         if "links" in explicit_reference:
             _validate_explicit_reference_links(explicit_reference["links"])
+        # end if
+        if "alerts" in explicit_reference:
+            validate_alerts_inside_entity(explicit_reference["alerts"])
         # end if
 
     # end for
@@ -301,9 +307,9 @@ def _validate_events(data):
             raise ErrorParsingDictionary("The event inside the events structure have to be of type dict")
         # end if
 
-        check_items = [item in ["explicit_reference", "gauge", "start", "stop", "key", "links", "values", "link_ref"] for item in event.keys()]
+        check_items = [item in ["explicit_reference", "gauge", "start", "stop", "key", "links", "values", "link_ref", "alerts"] for item in event.keys()]
         if False in check_items:
-            raise ErrorParsingDictionary("The allowed tags inside events structure are: explicit_reference, gauge, start, stop, key, links and values")
+            raise ErrorParsingDictionary("The allowed tags inside events structure are: explicit_reference, gauge, start, stop, key, links, values and alerts")
         # end if
 
         # Mandatory tags        
@@ -339,6 +345,9 @@ def _validate_events(data):
         # end if
         if "link_ref" in event and not type(event["link_ref"]) == str:
             raise ErrorParsingDictionary("The tag link_ref inside events structure has to be of type string")
+        # end if
+        if "alerts" in event:
+            validate_alerts_inside_entity(event["alerts"])
         # end if
 
     # end for
@@ -433,9 +442,9 @@ def _validate_annotations(data):
             raise ErrorParsingDictionary("The annotation inside the annotations structure have to be of type dict")
         # end if
 
-        check_items = [item in ["explicit_reference", "annotation_cnf", "values"] for item in annotation.keys()]
+        check_items = [item in ["explicit_reference", "annotation_cnf", "values", "alerts"] for item in annotation.keys()]
         if False in check_items:
-            raise ErrorParsingDictionary("The allowed tags inside annotations structure are: explicit_reference, annotation_cnf and values")
+            raise ErrorParsingDictionary("The allowed tags inside annotations structure are: explicit_reference, annotation_cnf, values and alerts")
         # end if
 
         # Mandatory tags        
@@ -453,6 +462,9 @@ def _validate_annotations(data):
         # Optional tags
         if "values" in annotation:
             validate_values(annotation["values"])
+        # end if
+        if "alerts" in annotation:
+            validate_alerts_inside_entity(annotation["alerts"])
         # end if
 
     # end for
@@ -545,6 +557,53 @@ def validate_values(data):
 
     return
 
+def validate_alerts_inside_entity(data):
+
+    if type(data) != list:
+        raise ErrorParsingDictionary("The tag alerts has to be of type list")
+    # end if
+
+    for alert in data:
+        if type(alert) != dict:
+            raise ErrorParsingDictionary("The alert inside the alerts structure have to be of type dict")
+        # end if
+
+        check_items = [item in ["message", "generator", "notification_time", "alert_cnf", "justification"] for item in alert.keys()]
+        if False in check_items:
+            raise ErrorParsingDictionary("The allowed tags inside alerts structure are: message, generator, notification_time, alert_cnf and justification")
+        # end if
+
+        # Mandatory tags
+        if not "message" in alert:
+            raise ErrorParsingDictionary("The tag message is mandatory inside alert structure")
+        # end if
+        if not type(alert["message"]) == str:
+            raise ErrorParsingDictionary("The tag message inside alerts structure has to be of type string")
+        # end if
+        if not "generator" in alert:
+            raise ErrorParsingDictionary("The tag generator is mandatory inside alert structure")
+        # end if
+        if not type(alert["generator"]) == str:
+            raise ErrorParsingDictionary("The tag generator inside alerts structure has to be of type string")
+        # end if
+        if not "notification_time" in alert:
+            raise ErrorParsingDictionary("The tag notification_time is mandatory inside alert structure")
+        # end if
+        if not is_datetime(alert["notification_time"]):
+            raise ErrorParsingDictionary("The tag notification_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        # end if
+
+        validate_alert_cnf(alert["alert_cnf"])
+
+        # Optional tags
+        if "justification" in alert and not type(alert["justification"]) == str:
+            raise ErrorParsingDictionary("The tag justification inside alerts structure has to be of type string")
+        # end if
+
+    # end for
+
+    return
+
 def _validate_alerts(data):
 
     if type(data) != list:
@@ -620,10 +679,13 @@ def _validate_alert_entity(data):
     if not "type" in data:
         raise ErrorParsingDictionary("The tag type is mandatory inside entity structure")
     # end if
-    if not data["type"] in ["event", "source", "explicit_ref"]:
-        raise ErrorParsingDictionary("The values allowed for tag type inside entity structure are 'event', 'source' and 'explicit_ref'")
+    if not data["type"] in ["event", "source", "explicit_ref", "annotation"]:
+        raise ErrorParsingDictionary("The values allowed for tag type inside entity structure are 'event', 'annotation', 'source' and 'explicit_ref'")
     # end if
-
+    if data["type"] == "annotation" and data["reference_mode"] != "by_uuid":
+        raise ErrorParsingDictionary("The alerts associated to annotations are only allowed by using UUDDs")
+    # end if
+    
     return
 
 def validate_alert_cnf(data):

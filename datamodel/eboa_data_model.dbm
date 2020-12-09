@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2" author="Daniel Brosnan Blázquez" last-position="0,504" last-zoom="0.6" max-obj-count="56"
+<dbmodel pgmodeler-ver="0.9.2" author="Daniel Brosnan Blázquez" last-position="0,327" last-zoom="0.6" max-obj-count="60"
 	 default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -805,7 +805,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_linkss" type="rel1n" layer="0"
+<relationship name="events_has_many_event_links" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -838,7 +838,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<position x="0" y="0"/>
 	</label>
 	<label ref-type="name-label">
-		<position x="3.72874" y="8.13934"/>
+		<position x="12.799" y="0.13934"/>
 	</label>
 </relationship>
 
@@ -862,7 +862,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_refs_has_many_explicit_ref_linkss" type="rel1n" layer="0"
+<relationship name="explicit_refs_has_many_explicit_ref_links" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1456,7 +1456,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="name,processor_version,dim_signature_uuid,processor" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="events_has_many_event_keyss" type="rel1n" layer="0"
+<relationship name="events_has_many_event_keys" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1470,7 +1470,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="dim_signatures_has_many_event_keyss" type="rel1n" layer="0"
+<relationship name="dim_signatures_has_many_event_keys" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1688,7 +1688,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="alerts" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1640"/>
+	<position x="1600" y="1880"/>
 	<column name="alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1761,7 +1761,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1640" y="1340"/>
+	<position x="1640" y="1260"/>
 	<column name="explicit_ref_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1848,7 +1848,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#c35c1e"
 	 src-table="eboa.events"
 	 dst-table="eboa.event_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
 <relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n" layer="0"
@@ -1858,7 +1858,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#cdf733"
 	 src-table="eboa.explicit_refs"
 	 dst-table="eboa.explicit_ref_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
 <relationship name="sources_has_many_sources_alerts" type="rel1n" layer="0"
@@ -1868,7 +1868,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#daab63"
 	 src-table="eboa.sources"
 	 dst-table="eboa.source_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
 		<position x="15.1178" y="-1.275"/>
@@ -1878,7 +1878,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="alert_groups" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1820"/>
+	<position x="1600" y="2040"/>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
@@ -1900,7 +1900,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#d21594"
 	 src-table="eboa.alert_groups"
 	 dst-table="eboa.alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="name-label">
 		<position x="184.287" y="-41.5271"/>
@@ -2725,7 +2725,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1580" y="1960"/>
+	<position x="1580" y="2240"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2755,7 +2755,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_source_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1600" y="2120"/>
+	<position x="1580" y="2340"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -3440,5 +3440,191 @@ CAUTION: Do not modify this file unless you know what you are doing.
 			<column name="ingestion_completeness"/>
 		</idxelement>
 </index>
+
+<table name="annotation_alerts" layer="0" collapse-mode="2" max-obj-count="14">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1640" y="1580"/>
+	<column name="annotation_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="annotation_alerts_pk" type="pk-constr" table="eboa.annotation_alerts">
+		<columns names="annotation_alert_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="11"/>
+		<object name="annotation_uuid" index="10"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="2"/>
+		<object name="annotations_fk" index="1"/>
+	</customidxs>
+</table>
+
+<index name="idx_annotation_alerts_validated" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_ingestion_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_generator_gin" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_notified" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_solved" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_solved_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_notification_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_generator" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_justification" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<relationship name="annotations_has_many_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#9b1746"
+	 src-table="eboa.annotations"
+	 dst-table="eboa.annotation_alerts"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="alerts_has_many_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ea2f5a"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.annotation_alerts"
+	 src-required="true" dst-required="false"/>
+
+<index name="idx_annotation_alerts_alert_uuid" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_annotation_uuid" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="annotation_uuid"/>
+		</idxelement>
+</index>
+
+<table name="report_annotation_alerts" layer="0" collapse-mode="2" max-obj-count="2">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1600" y="2140"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_alert_annotations_pk" type="pk-constr" table="eboa.report_annotation_alerts">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="annotation_alert_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="annotation_alerts_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="annotation_alerts_has_many_report_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d09d48"
+	 src-table="eboa.annotation_alerts"
+	 dst-table="eboa.report_annotation_alerts"
+	 src-required="true" dst-required="false"/>
 
 </dbmodel>

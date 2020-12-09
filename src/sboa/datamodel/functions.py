@@ -31,5 +31,10 @@ def read_configuration():
     # Get configuration
     with open(eboa_resources_path + "/sboa_datamodel.json") as json_data_file:
         config = json.load(json_data_file)
+    # end with
+
+    if "SBOA_DDBB_HOST" in os.environ:
+        config["DDBB_CONFIGURATION"]["host"] = os.environ["SBOA_DDBB_HOST"]
+    # end if
 
     return config

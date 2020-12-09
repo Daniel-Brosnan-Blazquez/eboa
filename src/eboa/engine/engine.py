@@ -35,7 +35,7 @@ from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, Duplicate
 # Import datamodel
 from eboa.datamodel.base import Session
 from eboa.datamodel.dim_signatures import DimSignature
-from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, AnnotationAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -1127,6 +1127,32 @@ class Engine():
                                                         Source.processor_version == version,
                                                         Source.processor == processor).first()
 
+        list_alerts = []
+        
+        # Manage alerts
+        if "alerts" in source:
+            alert_groups = insert_alert_groups(self.session, source)
+            alert_cnfs = insert_alert_cnfs(self.session, source, alert_groups)
+            for alert in source["alerts"]:
+                alert_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                alert_cnf = alert_cnfs[alert.get("alert_cnf").get("name")]
+                kwargs = {}
+                kwargs["message"] = alert.get("message")
+                kwargs["ingestion_time"] = datetime.datetime.now()
+                kwargs["generator"] = alert.get("generator")
+                kwargs["notification_time"] = alert.get("notification_time")
+                kwargs["alert_uuid"] = alert_cnf.alert_uuid
+                kwargs["source_alert_uuid"] = alert_uuid
+                kwargs["source_uuid"] = id
+                list_alerts.append(dict(kwargs))
+            # end for
+        # end if
+
+        # Bulk insert alerts
+        if len(list_alerts) > 0:
+            self._bulk_insert_mappings(SourceAlert, list_alerts)
+        # end if
+
         return
 
     def _insert_source_without_dim_signature(self, name):
@@ -1222,9 +1248,9 @@ class Engine():
         """
         Method to insert the groups of explicit references
         """
-        explicit_ref_groups = [explicit_ref.get("group") for explicit_ref in self.operation.get("explicit_references") or []]
+        explicit_ref_groups = [explicit_ref.get("group") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("group")]
         unique_explicit_ref_groups = sorted(set(explicit_ref_groups))
-
+        
         for explicit_ref_group in unique_explicit_ref_groups or []:
             self.session.begin_nested()
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1249,13 +1275,14 @@ class Engine():
         """
         Method to insert the explicit references
         """
+
         # Join all sources of explicit references
-        events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events") or []]
-        annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or []]
+        events_explicit_refs = [event.get("explicit_reference") for event in self.operation.get("events") or [] if event.get("explicit_reference")]
+        annotations_explicit_refs = [annotation.get("explicit_reference") for annotation in self.operation.get("annotations") or [] if annotation.get("explicit_reference")]
         declared_explicit_refs = [i.get("name") for i in self.operation.get("explicit_references") or []]
         linked_explicit_refs = [link.get("link") for explicit_ref in self.operation.get("explicit_references") or [] if explicit_ref.get("links") for link in explicit_ref.get("links")]
         explicit_references = sorted(set(events_explicit_refs + annotations_explicit_refs + declared_explicit_refs + linked_explicit_refs))
-        
+
         for explicit_ref in explicit_references:
             self.explicit_refs[explicit_ref] = self.session.query(ExplicitRef).filter(ExplicitRef.explicit_ref == explicit_ref).first()
 
@@ -1291,6 +1318,33 @@ class Engine():
                 self.explicit_refs[explicit_ref].group = explicit_ref_grp
             # end if
         # end for
+
+        # Manage alerts
+        list_alerts = []
+        explicit_refs_with_alerts = [explicit_ref for explicit_ref in self.operation.get("explicit_references") or [] if "alerts" in explicit_ref]
+        for explicit_ref in explicit_refs_with_alerts:
+                alert_groups = insert_alert_groups(self.session, explicit_ref)
+                alert_cnfs = insert_alert_cnfs(self.session, explicit_ref, alert_groups)
+                for alert in explicit_ref["alerts"]:
+                    alert_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    alert_cnf = alert_cnfs[alert.get("alert_cnf").get("name")]
+                    kwargs = {}
+                    kwargs["message"] = alert.get("message")
+                    kwargs["ingestion_time"] = datetime.datetime.now()
+                    kwargs["generator"] = alert.get("generator")
+                    kwargs["notification_time"] = alert.get("notification_time")
+                    kwargs["alert_uuid"] = alert_cnf.alert_uuid
+                    kwargs["explicit_ref_alert_uuid"] = alert_uuid
+                    kwargs["explicit_ref_uuid"] = id
+                    list_alerts.append(dict(kwargs))
+                # end for
+            # end if
+        # end for
+        # Bulk insert alerts
+        if len(list_alerts) > 0:
+            self._bulk_insert_mappings(ExplicitRefAlert, list_alerts)
+        # end if
+
         return
         
     @debug
@@ -1401,7 +1455,8 @@ class Engine():
         list_event_links_by_uuid = []
         list_event_links_by_uuid_sorted = []
         list_event_links_by_uuid_ddbb = []
-
+        list_alerts = []
+        
         list_values = {}
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1498,6 +1553,26 @@ class Engine():
                 # end if
                 self.event_link_refs[event["link_ref"]] = id
             # end if
+
+            # Manage alerts
+            if "alerts" in event:
+                alert_groups = insert_alert_groups(self.session, event)
+                alert_cnfs = insert_alert_cnfs(self.session, event, alert_groups)
+                for alert in event["alerts"]:
+                    alert_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    alert_cnf = alert_cnfs[alert.get("alert_cnf").get("name")]
+                    kwargs = {}
+                    kwargs["message"] = alert.get("message")
+                    kwargs["ingestion_time"] = datetime.datetime.now()
+                    kwargs["generator"] = alert.get("generator")
+                    kwargs["notification_time"] = alert.get("notification_time")
+                    kwargs["alert_uuid"] = alert_cnf.alert_uuid
+                    kwargs["event_alert_uuid"] = alert_uuid
+                    kwargs["event_uuid"] = id
+                    list_alerts.append(dict(kwargs))
+                # end for
+            # end if
+
         # end for
 
         # Bulk insert events
@@ -1580,6 +1655,11 @@ class Engine():
             raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end if
 
+        # Bulk insert alerts
+        if len(list_alerts) > 0:
+            self._bulk_insert_mappings(EventAlert, list_alerts)
+        # end if
+        
         return
 
     def _insert_values(self, values, entity_uuid, list_values, position = 0, parent_level = -1, parent_position = 0, positions = None):
@@ -1619,6 +1699,7 @@ class Engine():
         Method to insert the annotations
         """
         list_annotations = []
+        list_alerts = []
         list_values = {}
         for annotation in self.operation.get("annotations") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
@@ -1662,6 +1743,25 @@ class Engine():
                 self.annotations[(explicit_ref, annotation_cnf.annotation_cnf_uuid)] = None
             # end if
 
+            # Manage alerts
+            if "alerts" in annotation:
+                alert_groups = insert_alert_groups(self.session, annotation)
+                alert_cnfs = insert_alert_cnfs(self.session, annotation, alert_groups)
+                for alert in annotation["alerts"]:
+                    alert_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    alert_cnf = alert_cnfs[alert.get("alert_cnf").get("name")]
+                    kwargs = {}
+                    kwargs["message"] = alert.get("message")
+                    kwargs["ingestion_time"] = datetime.datetime.now()
+                    kwargs["generator"] = alert.get("generator")
+                    kwargs["notification_time"] = alert.get("notification_time")
+                    kwargs["alert_uuid"] = alert_cnf.alert_uuid
+                    kwargs["annotation_alert_uuid"] = alert_uuid
+                    kwargs["annotation_uuid"] = id
+                    list_alerts.append(dict(kwargs))
+                # end for
+            # end if
+
         # end for
             
         # Bulk insert annotations
@@ -1695,6 +1795,11 @@ class Engine():
             self.session.rollback()
             raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end try
+
+        # Bulk insert alerts
+        if len(list_alerts) > 0:
+            self._bulk_insert_mappings(AnnotationAlert, list_alerts)
+        # end if
 
         return
 

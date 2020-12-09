@@ -1439,7 +1439,7 @@ CREATE TABLE eboa.event_alerts (
 	notification_time timestamp NOT NULL,
 	justification text,
 	alert_uuid uuid NOT NULL,
-	event_uuid uuid,
+	event_uuid uuid NOT NULL,
 	CONSTRAINT event_alerts_pk PRIMARY KEY (event_alert_uuid)
 
 );
@@ -1454,7 +1454,7 @@ CREATE TABLE eboa.alerts (
 	name text NOT NULL,
 	severity integer NOT NULL,
 	description text,
-	alert_group_uuid uuid,
+	alert_group_uuid uuid NOT NULL,
 	CONSTRAINT unique_alerts UNIQUE (name),
 	CONSTRAINT alerts_pk PRIMARY KEY (alert_uuid)
 
@@ -1477,7 +1477,7 @@ CREATE TABLE eboa.source_alerts (
 	notification_time timestamp NOT NULL,
 	justification text,
 	alert_uuid uuid NOT NULL,
-	source_uuid uuid,
+	source_uuid uuid NOT NULL,
 	CONSTRAINT source_alerts_pk PRIMARY KEY (source_alert_uuid)
 
 );
@@ -1499,7 +1499,7 @@ CREATE TABLE eboa.explicit_ref_alerts (
 	notification_time timestamp NOT NULL,
 	justification text,
 	alert_uuid uuid NOT NULL,
-	explicit_ref_uuid uuid,
+	explicit_ref_uuid uuid NOT NULL,
 	CONSTRAINT explicit_ref_alerts_pk PRIMARY KEY (explicit_ref_alert_uuid)
 
 );
@@ -2976,6 +2976,160 @@ CREATE INDEX idx_source_ingestion_completeness ON eboa.sources
 	(
 	  ingestion_completeness
 	);
+-- ddl-end --
+
+-- object: eboa.annotation_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.annotation_alerts CASCADE;
+CREATE TABLE eboa.annotation_alerts (
+	annotation_alert_uuid uuid NOT NULL,
+	message text NOT NULL,
+	validated boolean,
+	ingestion_time timestamp NOT NULL,
+	generator text NOT NULL,
+	notified boolean,
+	solved bool,
+	solved_time timestamp,
+	notification_time timestamp NOT NULL,
+	justification text,
+	annotation_uuid uuid NOT NULL,
+	alert_uuid uuid NOT NULL,
+	CONSTRAINT annotation_alerts_pk PRIMARY KEY (annotation_alert_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.annotation_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: idx_annotation_alerts_validated | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_validated CASCADE;
+CREATE INDEX idx_annotation_alerts_validated ON eboa.annotation_alerts
+	USING btree
+	(
+	  validated
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_ingestion_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_ingestion_time CASCADE;
+CREATE INDEX idx_annotation_alerts_ingestion_time ON eboa.annotation_alerts
+	USING btree
+	(
+	  ingestion_time
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_generator_gin | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_generator_gin CASCADE;
+CREATE INDEX idx_annotation_alerts_generator_gin ON eboa.annotation_alerts
+	USING gin
+	(
+	  generator eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_notified | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_notified CASCADE;
+CREATE INDEX idx_annotation_alerts_notified ON eboa.annotation_alerts
+	USING btree
+	(
+	  notified
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_solved | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_solved CASCADE;
+CREATE INDEX idx_annotation_alerts_solved ON eboa.annotation_alerts
+	USING btree
+	(
+	  solved
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_solved_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_solved_time CASCADE;
+CREATE INDEX idx_annotation_alerts_solved_time ON eboa.annotation_alerts
+	USING btree
+	(
+	  solved_time
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_notification_time | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_notification_time CASCADE;
+CREATE INDEX idx_annotation_alerts_notification_time ON eboa.annotation_alerts
+	USING btree
+	(
+	  notification_time
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_generator | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_generator CASCADE;
+CREATE INDEX idx_annotation_alerts_generator ON eboa.annotation_alerts
+	USING btree
+	(
+	  generator
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_justification | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_justification CASCADE;
+CREATE INDEX idx_annotation_alerts_justification ON eboa.annotation_alerts
+	USING gin
+	(
+	  justification eboa.gin_trgm_ops
+	);
+-- ddl-end --
+
+-- object: annotations_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_alerts DROP CONSTRAINT IF EXISTS annotations_fk CASCADE;
+ALTER TABLE eboa.annotation_alerts ADD CONSTRAINT annotations_fk FOREIGN KEY (annotation_uuid)
+REFERENCES eboa.annotations (annotation_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.annotation_alerts DROP CONSTRAINT IF EXISTS alerts_fk CASCADE;
+ALTER TABLE eboa.annotation_alerts ADD CONSTRAINT alerts_fk FOREIGN KEY (alert_uuid)
+REFERENCES eboa.alerts (alert_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: idx_annotation_alerts_alert_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_alert_uuid CASCADE;
+CREATE INDEX idx_annotation_alerts_alert_uuid ON eboa.annotation_alerts
+	USING btree
+	(
+	  alert_uuid
+	);
+-- ddl-end --
+
+-- object: idx_annotation_alerts_annotation_uuid | type: INDEX --
+-- DROP INDEX IF EXISTS eboa.idx_annotation_alerts_annotation_uuid CASCADE;
+CREATE INDEX idx_annotation_alerts_annotation_uuid ON eboa.annotation_alerts
+	USING btree
+	(
+	  annotation_uuid
+	);
+-- ddl-end --
+
+-- object: eboa.report_annotation_alerts | type: TABLE --
+-- DROP TABLE IF EXISTS eboa.report_annotation_alerts CASCADE;
+CREATE TABLE eboa.report_annotation_alerts (
+	report_uuid uuid NOT NULL,
+	annotation_alert_uuid uuid NOT NULL,
+	CONSTRAINT report_alert_annotations_pk PRIMARY KEY (report_uuid)
+
+);
+-- ddl-end --
+ALTER TABLE eboa.report_annotation_alerts OWNER TO eboa;
+-- ddl-end --
+
+-- object: annotation_alerts_fk | type: CONSTRAINT --
+-- ALTER TABLE eboa.report_annotation_alerts DROP CONSTRAINT IF EXISTS annotation_alerts_fk CASCADE;
+ALTER TABLE eboa.report_annotation_alerts ADD CONSTRAINT annotation_alerts_fk FOREIGN KEY (annotation_alert_uuid)
+REFERENCES eboa.annotation_alerts (annotation_alert_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 

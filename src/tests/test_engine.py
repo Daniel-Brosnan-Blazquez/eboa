@@ -24,7 +24,7 @@ from eboa.engine.errors import LinksInconsistency
 
 # Import datamodel
 from eboa.datamodel.dim_signatures import DimSignature
-from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, AnnotationAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -8978,3 +8978,181 @@ class TestEngine(unittest.TestCase):
         events = self.session.query(Event).all()
 
         assert len(events) == 3
+
+    def test_insert_explicit_reference_without_group(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": 30},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE"
+            }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        ers = self.session.query(ExplicitRef).all()
+
+        assert len(ers) == 1
+
+    def test_insert_alerts_events_sources_annotations_ers(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": 30,
+                       "alerts": [{
+                           "message": "Alert message",
+                           "generator": "test",
+                           "notification_time": "2018-06-05T08:07:36",
+                           "alert_cnf": {
+                               "name": "alert_name1",
+                               "severity": "critical",
+                               "description": "Alert description",
+                               "group": "alert_group"
+                           }}]
+                       },
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }],
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }],
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                },
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        sources = self.session.query(Source).all()
+
+        assert len(sources) == 1
+
+        ers = self.session.query(ExplicitRef).all()
+
+        assert len(ers) == 1
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        annotations = self.session.query(Annotation).all()
+
+        assert len(annotations) == 1
+
+        # Check alerts
+        alert_sources = self.session.query(SourceAlert) \
+                                    .join(Alert) \
+                                    .join(AlertGroup) \
+                                    .filter(SourceAlert.message == "Alert message",
+                                            SourceAlert.generator == "test",
+                                            SourceAlert.notification_time > "1900-01-01",
+                                            SourceAlert.message == "Alert message",
+                                            Alert.name == "alert_name1",
+                                            Alert.severity == 4,
+                                            Alert.description == "Alert description",
+                                            AlertGroup.name == "alert_group").all()
+
+        assert len(alert_sources) == 1
+
+        alert_ers = self.session.query(ExplicitRefAlert) \
+                                    .join(Alert) \
+                                    .join(AlertGroup) \
+                                    .filter(ExplicitRefAlert.message == "Alert message",
+                                            ExplicitRefAlert.generator == "test",
+                                            ExplicitRefAlert.notification_time > "1900-01-01",
+                                            ExplicitRefAlert.message == "Alert message",
+                                            Alert.name == "alert_name1",
+                                            Alert.severity == 4,
+                                            Alert.description == "Alert description",
+                                            AlertGroup.name == "alert_group").all()
+
+        assert len(alert_sources) == 1
+
+        alert_events = self.session.query(EventAlert) \
+                                    .join(Alert) \
+                                    .join(AlertGroup) \
+                                    .filter(EventAlert.message == "Alert message",
+                                            EventAlert.generator == "test",
+                                            EventAlert.notification_time > "1900-01-01",
+                                            EventAlert.message == "Alert message",
+                                            Alert.name == "alert_name1",
+                                            Alert.severity == 4,
+                                            Alert.description == "Alert description",
+                                            AlertGroup.name == "alert_group").all()
+
+        assert len(alert_events) == 1
+
+        alert_annotations = self.session.query(AnnotationAlert) \
+                                    .join(Alert) \
+                                    .join(AlertGroup) \
+                                    .filter(AnnotationAlert.message == "Alert message",
+                                            AnnotationAlert.generator == "test",
+                                            AnnotationAlert.notification_time > "1900-01-01",
+                                            AnnotationAlert.message == "Alert message",
+                                            Alert.name == "alert_name1",
+                                            Alert.severity == 4,
+                                            Alert.description == "Alert description",
+                                            AlertGroup.name == "alert_group").all()
+
+        assert len(alert_annotations) == 1
