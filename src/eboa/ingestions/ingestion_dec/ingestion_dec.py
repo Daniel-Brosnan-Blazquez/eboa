@@ -14,7 +14,7 @@ from lxml import etree
 
 # Import ingestion_functions.helpers
 import eboa.triggering.xpath_functions as xpath_functions
-import s2boa.ingestions.functions as functions
+import eboa.ingestion.functions as functions
 
 # Import query
 from eboa.engine.query import Query

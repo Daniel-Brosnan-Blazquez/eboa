@@ -11,6 +11,17 @@ import datetime
 from lxml import etree, objectify
 
 ###########
+# Functions for controling the ingestion
+###########
+def insert_ingestion_progress(session, source, progress):
+    if source:
+        source.processor_progress = progress
+        session.commit()
+    # end if
+
+    return
+
+###########
 # Functions for helping with the ingestion of data
 ###########
 def insert_event_for_ingestion(event, source, list_of_events):
