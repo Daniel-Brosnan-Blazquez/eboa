@@ -435,7 +435,10 @@ def main():
     # end if
     
     swap_usage = psutil.swap_memory()
-
+    swap_usage_percentage = 0
+    if swap_usage.total > 0:
+        swap_usage_percentage = (swap_usage.used / swap_usage.total) * 100
+    # end if
     values.append({
         "name": "swap_information",
         "type": "object",
@@ -445,7 +448,7 @@ def main():
              "value": str(swap_usage.total)},
             {"name": "swap_usage_percentage",
              "type": "double",
-             "value": str((swap_usage.used / swap_usage.total) * 100)},
+             "value": str(swap_usage_percentage)},
             {"name": "swap_used",
              "type": "double",
              "value": str(swap_usage.used)},
@@ -455,7 +458,7 @@ def main():
         ]
     })
 
-    if ((swap_usage.used / swap_usage.total) * 100) >= swap_max_threshold:
+    if swap_usage_percentage >= swap_max_threshold:
         alerts.append({
             "message": "Swap: maximum usage threshold ({}) reached with a value of {} %".format(swap_max_threshold, (swap_usage.used / swap_usage.total) * 100),
             "generator": os.path.basename(__file__),
