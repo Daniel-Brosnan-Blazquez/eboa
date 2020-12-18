@@ -24,12 +24,6 @@ do
     esac
 done
 
-# Check that the init of the DDBB is being executed by Postgres or root
-if [ "$(whoami)" != "postgres" ] && [ "$(whoami)" != "root" ]; then
-        echo "ERROR: Script must be run as user: postgres"
-        exit -1
-fi
-
 # Check that option -f has been specified
 if [ "$DATAMODEL_FILE" == "" ];
 then
@@ -46,7 +40,7 @@ then
 fi
 
 # Check that there are no connections to the DDBB if exists
-DATABASE=`psql -p "$PORT" -h "$HOST" -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='eboadb'";`
+DATABASE=`psql -p "$PORT" -h "$HOST" -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='eboadb';"`
 if [ $DATABASE -eq 1 ];
 then
     CONNECTIONS=`psql -p "$PORT" -h "$HOST" -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'eboadb';"`
