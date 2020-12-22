@@ -2868,3 +2868,342 @@ class TestQuery(unittest.TestCase):
         source_alerts = self.query.get_source_alerts()
 
         assert len(source_alerts) == 0
+
+    def test_query_event_alerts(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2019-06-05T08:07:36",
+                       "priority": 30},
+            "events": [{
+                "explicit_reference": "ER1",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36",
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "boolean",
+                                 "name": "BOOLEAN",
+                                 "value": "true"}]
+                            }],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }},
+                           {
+                               "message": "Alert message",
+                               "generator": "test2",
+                               "notification_time": "2019-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name2",
+                                   "severity": "major",
+                                   "description": "Alert description",
+                                   "group": "alert_group2"
+                               }}]
+            },
+                       {
+                           "explicit_reference": "ER2",
+                           "gauge": {"name": "GAUGE_NAME2",
+                                     "system": "GAUGE_SYSTEM2",
+                                     "insertion_type": "SIMPLE_UPDATE"},
+                           "start": "2019-06-05T02:07:03",
+                           "stop": "2019-06-05T08:07:36",
+                           "alerts": [{
+                               "message": "Alert message",
+                               "generator": "test",
+                               "notification_time": "2018-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name1",
+                                   "severity": "critical",
+                                   "description": "Alert description",
+                                   "group": "alert_group"
+                               }},
+                                      {
+                                          "message": "Alert message",
+                                          "generator": "test2",
+                                          "notification_time": "2019-06-05T08:07:36",
+                                          "alert_cnf": {
+                                              "name": "alert_name2",
+                                              "severity": "major",
+                                              "description": "Alert description",
+                                              "group": "alert_group2"
+                                          }}]
+                       }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        alerts = self.query.get_event_alerts()
+
+        assert len(alerts) == 4
+
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        filters["duration_filters"] = [{"float": "10", "op": ">"}]
+        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["names"] = {"filter": "alert_name1", "op": "=="}
+        filters["severities"] = {"filter": "critical", "op": "=="}
+        filters["groups"] = {"filter": "alert_group", "op": "=="}
+        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_event_alerts()], "op": "in"}
+        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["generators"] = {"filter": "test", "op": "=="}
+        filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        
+        alerts = self.query.get_event_alerts(filters)
+
+        assert len(alerts) == 1
+
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        filters["duration_filters"] = [{"float": "10", "op": ">"}]
+        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["severities"] = {"filter": ["critical", "major"], "op": "in"}
+        
+        alerts = self.query.get_event_alerts(filters)
+
+        assert len(alerts) == 2
+
+    def test_query_annotation_alerts(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2019-06-05T08:07:36",
+                       "priority": 30},
+            "annotations": [{
+                "explicit_reference": "ER1",
+                "annotation_cnf": {"name": "NAME",
+                                   "system": "SYSTEM",
+                                   "insertion_type": "SIMPLE_UPDATE"},
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "boolean",
+                                 "name": "BOOLEAN",
+                                 "value": "true"}]
+                            }],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }},
+                           {
+                               "message": "Alert message",
+                               "generator": "test2",
+                               "notification_time": "2019-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name2",
+                                   "severity": "major",
+                                   "description": "Alert description",
+                                   "group": "alert_group2"
+                               }}]
+            },
+                       {
+                           "explicit_reference": "ER1",
+                           "annotation_cnf": {"name": "NAME",
+                                              "system": "SYSTEM",
+                                              "insertion_type": "SIMPLE_UPDATE"},
+                           "alerts": [{
+                               "message": "Alert message",
+                               "generator": "test",
+                               "notification_time": "2018-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name1",
+                                   "severity": "critical",
+                                   "description": "Alert description",
+                                   "group": "alert_group"
+                               }},
+                                      {
+                                          "message": "Alert message",
+                                          "generator": "test2",
+                                          "notification_time": "2019-06-05T08:07:36",
+                                          "alert_cnf": {
+                                              "name": "alert_name2",
+                                              "severity": "major",
+                                              "description": "Alert description",
+                                              "group": "alert_group2"
+                                          }}]
+                       }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        alerts = self.query.get_annotation_alerts()
+
+        assert len(alerts) == 4
+
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["names"] = {"filter": "alert_name1", "op": "=="}
+        filters["severities"] = {"filter": "critical", "op": "=="}
+        filters["groups"] = {"filter": "alert_group", "op": "=="}
+        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_annotation_alerts()], "op": "in"}
+        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["generators"] = {"filter": "test", "op": "=="}
+        filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        
+        alerts = self.query.get_annotation_alerts(filters)
+
+        assert len(alerts) == 1
+
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["severities"] = {"filter": ["critical", "major"], "op": "in"}
+        
+        alerts = self.query.get_annotation_alerts(filters)
+
+        assert len(alerts) == 2
+
+    def test_query_explicit_ref_alerts(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2019-06-05T08:07:36",
+                       "priority": 30},
+            "explicit_references": [{
+                "name": "ER1",
+                "group": "ER_GROUP",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2020-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }},
+                           {
+                               "message": "Alert message",
+                               "generator": "test2",
+                               "notification_time": "2019-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name2",
+                                   "severity": "major",
+                                   "description": "Alert description",
+                                   "group": "alert_group2"
+                               }}]
+            },
+                       {
+                           "name": "ER2",
+                           "group": "ER_GROUP2",
+                           "alerts": [{
+                               "message": "Alert message",
+                               "generator": "test",
+                               "notification_time": "2018-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name1",
+                                   "severity": "critical",
+                                   "description": "Alert description",
+                                   "group": "alert_group"
+                               }},
+                                      {
+                                          "message": "Alert message",
+                                          "generator": "test2",
+                                          "notification_time": "2019-06-05T08:07:36",
+                                          "alert_cnf": {
+                                              "name": "alert_name2",
+                                              "severity": "major",
+                                              "description": "Alert description",
+                                              "group": "alert_group2"
+                                          }}]
+                       }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        alerts = self.query.get_explicit_ref_alerts()
+
+        assert len(alerts) == 4
+
+        filters = {}
+        filters["names"] = {"filter": "alert_name1", "op": "=="}
+        filters["severities"] = {"filter": "critical", "op": "=="}
+        filters["groups"] = {"filter": "alert_group", "op": "=="}
+        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_explicit_ref_alerts()], "op": "in"}
+        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["generators"] = {"filter": "test", "op": "=="}
+        filters["notification_time_filters"] = [{"date": "2020-06-05T08:07:36", "op": "=="}]
+        
+        alerts = self.query.get_explicit_ref_alerts(filters)
+
+        assert len(alerts) == 1

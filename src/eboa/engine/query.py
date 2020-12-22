@@ -24,7 +24,7 @@ from sqlalchemy.orm import scoped_session
 # Import datamodel
 from eboa.datamodel.base import Session, engine, Base
 from eboa.datamodel.dim_signatures import DimSignature
-from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, SourceAlert, ExplicitRefAlert
+from eboa.datamodel.alerts import Alert, AlertGroup, EventAlert, AnnotationAlert, SourceAlert, ExplicitRefAlert
 from eboa.datamodel.events import Event, EventLink, EventKey, EventText, EventDouble, EventObject, EventGeometry, EventBoolean, EventTimestamp
 from eboa.datamodel.gauges import Gauge
 from eboa.datamodel.sources import Source, SourceStatus
@@ -52,6 +52,9 @@ from eboa.engine.operators import arithmetic_operators, text_operators, regex_op
 
 # Import SQLalchemy exceptions
 from sqlalchemy.orm.exc import StaleDataError
+
+# Import alert severity codes
+from eboa.engine.alerts import alert_severity_codes
 
 logging = Log(name = __name__)
 logger = logging.logger
@@ -755,7 +758,7 @@ class Query():
         # end if
 
         query = self.session.query(SourceAlert)
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Source, Source.source_uuid==SourceAlert.source_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -780,13 +783,14 @@ class Query():
 
         # Alert severities
         if check_key_in_filters(filters, "severities"):
-            functions.is_valid_text_filter(filters["severities"])
+            functions.is_valid_severity_filter(filters["severities"])
             if filters["severities"]["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[filters["severities"]["op"]]
                 params.append(op(Alert.severity, filters["severities"]["filter"]))
             else:
+                filters = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
                 filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
-                params.append(filter(filters["severities"]["filter"]))
+                params.append(filter(filters))
             # end if
             join_tables = True
         # end if
@@ -805,7 +809,7 @@ class Query():
             tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
         # end if
         
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Alert, Alert.alert_uuid==SourceAlert.alert_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -831,9 +835,9 @@ class Query():
         # end if
         
         # source alert ingestion_time filters
-        if check_key_in_filters(filters, "source_alert_ingestion_time_filters"):
-            functions.is_valid_date_filters(filters["source_alert_ingestion_time_filters"])
-            for ingestion_time_filter in filters["source_alert_ingestion_time_filters"]:
+        if check_key_in_filters(filters, "alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["alert_ingestion_time_filters"]:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(SourceAlert.ingestion_time, ingestion_time_filter["date"]))
             # end for
@@ -864,18 +868,18 @@ class Query():
         # end if
 
         # source alert solved time filters
-        if check_key_in_filters(filters, "source_alert_solved_time_filters"):
-            functions.is_valid_date_filters(filters["source_alert_solved_time_filters"])
-            for solved_time_filter in filters["source_alert_solved_time_filters"]:
+        if check_key_in_filters(filters, "solved_time_filters"):
+            functions.is_valid_date_filters(filters["solved_time_filters"])
+            for solved_time_filter in filters["solved_time_filters"]:
                 op = arithmetic_operators[solved_time_filter["op"]]
                 params.append(op(SourceAlert.solved_time, solved_time_filter["date"]))
             # end for
         # end if
 
         # source alert notification time filters
-        if check_key_in_filters(filters, "source_alert_notification_time_filters"):
-            functions.is_valid_date_filters(filters["source_alert_notification_time_filters"])
-            for notification_time_filter in filters["source_alert_notification_time_filters"]:
+        if check_key_in_filters(filters, "notification_time_filters"):
+            functions.is_valid_date_filters(filters["notification_time_filters"])
+            for notification_time_filter in filters["notification_time_filters"]:
                 op = arithmetic_operators[notification_time_filter["op"]]
                 params.append(op(SourceAlert.notification_time, notification_time_filter["date"]))
             # end for
@@ -1398,7 +1402,7 @@ class Query():
         # end if
 
         query = self.session.query(ReportAlert)
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Report, Report.report_uuid==ReportAlert.report_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -1423,13 +1427,14 @@ class Query():
 
         # Alert severities
         if check_key_in_filters(filters, "severities"):
-            functions.is_valid_text_filter(filters["severities"])
+            functions.is_valid_severity_filter(filters["severities"])
             if filters["severities"]["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[filters["severities"]["op"]]
                 params.append(op(Alert.severity, filters["severities"]["filter"]))
             else:
+                filters = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
                 filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
-                params.append(filter(filters["severities"]["filter"]))
+                params.append(filter(filters))
             # end if
             join_tables = True
         # end if
@@ -1448,7 +1453,7 @@ class Query():
             tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
         # end if
         
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Alert, Alert.alert_uuid==ReportAlert.alert_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -1474,9 +1479,9 @@ class Query():
         # end if
         
         # report alert ingestion_time filters
-        if check_key_in_filters(filters, "report_alert_ingestion_time_filters"):
-            functions.is_valid_date_filters(filters["report_alert_ingestion_time_filters"])
-            for ingestion_time_filter in filters["report_alert_ingestion_time_filters"]:
+        if check_key_in_filters(filters, "alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["alert_ingestion_time_filters"]:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(ReportAlert.ingestion_time, ingestion_time_filter["date"]))
             # end for
@@ -1507,18 +1512,18 @@ class Query():
         # end if
 
         # report alert solved time filters
-        if check_key_in_filters(filters, "report_alert_solved_time_filters"):
-            functions.is_valid_date_filters(filters["report_alert_solved_time_filters"])
-            for solved_time_filter in filters["report_alert_solved_time_filters"]:
+        if check_key_in_filters(filters, "solved_time_filters"):
+            functions.is_valid_date_filters(filters["solved_time_filters"])
+            for solved_time_filter in filters["solved_time_filters"]:
                 op = arithmetic_operators[solved_time_filter["op"]]
                 params.append(op(ReportAlert.solved_time, solved_time_filter["date"]))
             # end for
         # end if
 
         # report alert notification time filters
-        if check_key_in_filters(filters, "report_alert_notification_time_filters"):
-            functions.is_valid_date_filters(filters["report_alert_notification_time_filters"])
-            for notification_time_filter in filters["report_alert_notification_time_filters"]:
+        if check_key_in_filters(filters, "notification_time_filters"):
+            functions.is_valid_date_filters(filters["notification_time_filters"])
+            for notification_time_filter in filters["notification_time_filters"]:
                 op = arithmetic_operators[notification_time_filter["op"]]
                 params.append(op(ReportAlert.notification_time, notification_time_filter["date"]))
             # end for
@@ -1978,6 +1983,360 @@ class Query():
 
         return events
 
+    def get_event_alerts(self, filters = None):
+        """
+        Method to obtain the alerts associated to event entities filtered by the received filters
+
+        :param filters: dictionary with the filters to apply to the query
+        :type filters: dict
+
+        :return: found event_alerts
+        :rtype: list
+        """
+        params = []
+        join_tables = False
+        tables = {}
+
+        # event_uuids
+        if check_key_in_filters(filters, "event_uuids"):
+            functions.is_valid_text_filter(filters["event_uuids"])
+            if filters["event_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["event_uuids"]["op"]]
+                params.append(op(EventAlert.event_uuid, filters["event_uuids"]["filter"]))
+            else:
+                filter = eval('EventAlert.event_uuid.' + text_operators[filters["event_uuids"]["op"]])
+                params.append(filter(filters["event_uuids"]["filter"]))
+            # end if
+        # end if
+
+        # source_uuids
+        if check_key_in_filters(filters, "source_uuids"):
+            functions.is_valid_text_filter(filters["source_uuids"])
+            if filters["source_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["source_uuids"]["op"]]
+                params.append(op(Event.source_uuid, filters["source_uuids"]["filter"]))
+            else:
+                filter = eval('Event.source_uuid.' + text_operators[filters["source_uuids"]["op"]])
+                params.append(filter(filters["source_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # explicit_ref_uuids
+        if check_key_in_filters(filters, "explicit_ref_uuids"):
+            functions.is_valid_text_filter(filters["explicit_ref_uuids"])
+            if filters["explicit_ref_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_ref_uuids"]["op"]]
+                params.append(op(Event.explicit_ref_uuid, filters["explicit_ref_uuids"]["filter"]))
+            else:
+                filter = eval('Event.explicit_ref_uuid.' + text_operators[filters["explicit_ref_uuids"]["op"]])
+                params.append(filter(filters["explicit_ref_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # gauge_uuids
+        if check_key_in_filters(filters, "gauge_uuids"):
+            functions.is_valid_text_filter(filters["gauge_uuids"])
+            if filters["gauge_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["gauge_uuids"]["op"]]
+                params.append(op(Event.gauge_uuid, filters["gauge_uuids"]["filter"]))
+            else:
+                filter = eval('Event.gauge_uuid.' + text_operators[filters["gauge_uuids"]["op"]])
+                params.append(filter(filters["gauge_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Sources
+        if check_key_in_filters(filters, "sources"):
+            functions.is_valid_text_filter(filters["sources"])
+            if filters["sources"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["sources"]["op"]]
+                params.append(op(Source.name, filters["sources"]["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[filters["sources"]["op"]])
+                params.append(filter(filters["sources"]["filter"]))
+            # end if
+            join_tables = True
+            tables[Source] = Source.source_uuid==Event.source_uuid
+        # end if
+
+        # Explicit references
+        if check_key_in_filters(filters, "explicit_refs"):
+            functions.is_valid_text_filter(filters["explicit_refs"])
+            if filters["explicit_refs"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_refs"]["op"]]
+                params.append(op(ExplicitRef.explicit_ref, filters["explicit_refs"]["filter"]))
+            elif filters["explicit_refs"]["op"] in regex_operators.keys():
+                params.append(text("explicit_refs.explicit_ref ~ '" + filters["explicit_refs"]["filter"] + "'"))
+            else:
+                filter = eval('ExplicitRef.explicit_ref.' + text_operators[filters["explicit_refs"]["op"]])
+                params.append(filter(filters["explicit_refs"]["filter"]))
+            # end if
+            join_tables = True
+            tables[ExplicitRef] = ExplicitRef.explicit_ref_uuid==Event.explicit_ref_uuid
+        # end if
+
+        # Gauge names
+        if check_key_in_filters(filters, "gauge_names"):
+            functions.is_valid_text_filter(filters["gauge_names"])
+            if filters["gauge_names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["gauge_names"]["op"]]
+                params.append(op(Gauge.name, filters["gauge_names"]["filter"]))
+            else:
+                filter = eval('Gauge.name.' + text_operators[filters["gauge_names"]["op"]])
+                params.append(filter(filters["gauge_names"]["filter"]))
+            # end if
+            join_tables = True
+            tables[Gauge] = Gauge.gauge_uuid==Event.gauge_uuid
+        # end if
+
+        # Gauge systems
+        if check_key_in_filters(filters, "gauge_systems"):
+            functions.is_valid_text_filter(filters["gauge_systems"])
+            if filters["gauge_systems"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["gauge_systems"]["op"]]
+                params.append(op(Gauge.system, filters["gauge_systems"]["filter"]))
+            else:
+                filter = eval('Gauge.system.' + text_operators[filters["gauge_systems"]["op"]])
+                params.append(filter(filters["gauge_systems"]["filter"]))
+            # end if
+            join_tables = True
+            tables[Gauge] = Gauge.gauge_uuid==Event.gauge_uuid
+        # end if
+
+        # keys
+        if check_key_in_filters(filters, "keys"):
+            functions.is_valid_text_filter(filters["keys"])
+            if filters["keys"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["keys"]["op"]]
+                params.append(op(EventKey.event_key, filters["keys"]["filter"]))
+            else:
+                filter = eval('EventKey.event_key.' + text_operators[filters["keys"]["op"]])
+                params.append(filter(filters["keys"]["filter"]))
+            # end if
+            join_tables = True
+            tables[EventKey] = EventKey.event_uuid==Event.event_uuid
+        # end if
+
+        # start filters
+        if check_key_in_filters(filters, "start_filters"):
+            functions.is_valid_date_filters(filters["start_filters"])
+            for start_filter in filters["start_filters"]:
+                op = arithmetic_operators[start_filter["op"]]
+                params.append(op(Event.start, start_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # stop filters
+        if check_key_in_filters(filters, "stop_filters"):
+            functions.is_valid_date_filters(filters["stop_filters"])
+            for stop_filter in filters["stop_filters"]:
+                op = arithmetic_operators[stop_filter["op"]]
+                params.append(op(Event.stop, stop_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # duration filters
+        if check_key_in_filters(filters, "duration_filters"):
+            functions.is_valid_float_filters(filters["duration_filters"])
+            for duration_filter in filters["duration_filters"]:
+                op = arithmetic_operators[duration_filter["op"]]
+                params.append(op((extract("epoch", Event.stop) - extract("epoch", Event.start)), duration_filter["float"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # ingestion_time filters
+        if check_key_in_filters(filters, "event_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["event_ingestion_time_filters"])
+            for ingestion_time_filter in filters["event_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(Event.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # value filters
+        if check_key_in_filters(filters, "value_filters"):
+            tables_values = []
+            self.prepare_query_values(filters["value_filters"], event_value_entities, params, tables_values)
+            for table in set(tables_values):
+                tables[table] = Event.event_uuid==table.event_uuid
+            # end for
+        # end if
+
+        query = self.session.query(EventAlert)
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(Event, Event.event_uuid==EventAlert.event_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}        
+
+        # Alert configuration names
+        if check_key_in_filters(filters, "names"):
+            functions.is_valid_text_filter(filters["names"])
+            if filters["names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["names"]["op"]]
+                params.append(op(Alert.name, filters["names"]["filter"]))
+            else:
+                filter = eval('Alert.name.' + text_operators[filters["names"]["op"]])
+                params.append(filter(filters["names"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert severities
+        if check_key_in_filters(filters, "severities"):
+            functions.is_valid_severity_filter(filters["severities"])
+            if filters["severities"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["severities"]["op"]]
+                params.append(op(Alert.severity, alert_severity_codes[filters["severities"]["filter"]]))
+            else:
+                if type(filters["severities"]["filter"]) == list:
+                    filters_to_apply = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
+                else:
+                    filters_to_apply = filters["severities"]["filter"]
+                # end if
+                filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
+                params.append(filter(filters_to_apply))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert groups
+        if check_key_in_filters(filters, "groups"):
+            functions.is_valid_text_filter(filters["groups"])
+            if filters["groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["groups"]["op"]]
+                params.append(op(AlertGroup.name, filters["groups"]["filter"]))
+            else:
+                filter = eval('AlertGroup.name.' + text_operators[filters["groups"]["op"]])
+                params.append(filter(filters["groups"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
+        # end if
+        
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(Alert, Alert.alert_uuid==EventAlert.alert_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+        
+        # Alert UUIDs
+        if check_key_in_filters(filters, "alert_uuids"):
+            functions.is_valid_text_filter(filters["alert_uuids"])
+            if filters["alert_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["alert_uuids"]["op"]]
+                params.append(op(EventAlert.alert_uuid, filters["alert_uuids"]["filter"]))
+            else:
+                filter = eval('EventAlert.alert_uuid.' + text_operators[filters["alert_uuids"]["op"]])
+                params.append(filter(filters["alert_uuids"]["filter"]))
+            # end if
+        # end if
+        
+        # validated filter
+        if check_key_in_filters(filters, "validated"):
+            functions.is_valid_bool_filter(filters["validated"])
+            params.append(EventAlert.validated == filters["validated"])
+        # end if
+        
+        # event alert ingestion_time filters
+        if check_key_in_filters(filters, "alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["alert_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(EventAlert.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # Generators
+        if check_key_in_filters(filters, "generators"):
+            functions.is_valid_text_filter(filters["generators"])
+            if filters["generators"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generators"]["op"]]
+                params.append(op(EventAlert.generator, filters["generators"]["filter"]))
+            else:
+                filter = eval('EventAlert.generator.' + text_operators[filters["generators"]["op"]])
+                params.append(filter(filters["generators"]["filter"]))
+            # end if
+        # end if
+
+        # notified filter
+        if check_key_in_filters(filters, "notified"):
+            functions.is_valid_bool_filter(filters["notified"])
+            params.append(EventAlert.notified == filters["notified"])
+        # end if
+
+        # solved filter
+        if check_key_in_filters(filters, "solved"):
+            functions.is_valid_bool_filter(filters["solved"])
+            params.append(EventAlert.solved == filters["solved"])
+        # end if
+
+        # event alert solved time filters
+        if check_key_in_filters(filters, "solved_time_filters"):
+            functions.is_valid_date_filters(filters["solved_time_filters"])
+            for solved_time_filter in filters["solved_time_filters"]:
+                op = arithmetic_operators[solved_time_filter["op"]]
+                params.append(op(EventAlert.solved_time, solved_time_filter["date"]))
+            # end for
+        # end if
+
+        # event alert notification time filters
+        if check_key_in_filters(filters, "notification_time_filters"):
+            functions.is_valid_date_filters(filters["notification_time_filters"])
+            for notification_time_filter in filters["notification_time_filters"]:
+                op = arithmetic_operators[notification_time_filter["op"]]
+                params.append(op(EventAlert.notification_time, notification_time_filter["date"]))
+            # end for
+        # end if
+                
+        query = query.filter(*params)
+
+        # Order by
+        if check_key_in_filters(filters, "order_by"):
+            functions.is_valid_order_by(filters["order_by"])
+            if filters["order_by"]["descending"]:
+                order_by_statement = eval("EventAlert." + filters["order_by"]["field"] + ".desc()")
+            else:
+                order_by_statement = eval("EventAlert." + filters["order_by"]["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if check_key_in_filters(filters, "limit"):
+            functions.is_valid_positive_integer(filters["limit"])
+            query = query.limit(filters["limit"])
+        # end if
+
+        # Offset
+        if check_key_in_filters(filters, "offset"):
+            functions.is_valid_positive_integer(filters["offset"])
+            query = query.offset(filters["offset"])
+        # end if
+
+        log_query(query)
+
+        event_alerts = []
+        if check_key_in_filters(filters, "delete") and filters["delete"]:
+            self.delete(query)
+        else:
+            event_alerts = query.all()
+        # end if
+
+        return event_alerts
+    
     def get_event_keys(self, event_uuids = None, dim_signature_uuids = None, keys = None, order_by = None, limit = None, offset = None):
         """
         """
@@ -2516,6 +2875,313 @@ class Query():
 
         return annotations
 
+    def get_annotation_alerts(self, filters = None):
+        """
+        Method to obtain the alerts associated to annotation entities filtered by the received filters
+
+        :param filters: dictionary with the filters to apply to the query
+        :type filters: dict
+
+        :return: found annotation_alerts
+        :rtype: list
+        """
+        params = []
+        join_tables = False
+        tables = {}
+
+        # annotation_uuids
+        if check_key_in_filters(filters, "annotation_uuids"):
+            functions.is_valid_text_filter(filters["annotation_uuids"])
+            if filters["annotation_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["annotation_uuids"]["op"]]
+                params.append(op(Annotation.annotation_uuid, filters["annotation_uuids"]["filter"]))
+            else:
+                filter = eval('Annotation.annotation_uuid.' + text_operators[filters["annotation_uuids"]["op"]])
+                params.append(filter(filters["annotation_uuids"]["filter"]))
+            # end if
+        # end if
+
+        # source_uuids
+        if check_key_in_filters(filters, "source_uuids"):
+            functions.is_valid_text_filter(filters["source_uuids"])
+            if filters["source_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["source_uuids"]["op"]]
+                params.append(op(Annotation.source_uuid, filters["source_uuids"]["filter"]))
+            else:
+                filter = eval('Annotation.source_uuid.' + text_operators[filters["source_uuids"]["op"]])
+                params.append(filter(filters["source_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # explicit_ref_uuids
+        if check_key_in_filters(filters, "explicit_ref_uuids"):
+            functions.is_valid_text_filter(filters["explicit_ref_uuids"])
+            if filters["explicit_ref_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_ref_uuids"]["op"]]
+                params.append(op(Annotation.explicit_ref_uuid, filters["explicit_ref_uuids"]["filter"]))
+            else:
+                filter = eval('Annotation.explicit_ref_uuid.' + text_operators[filters["explicit_ref_uuids"]["op"]])
+                params.append(filter(filters["explicit_ref_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # annotation_cnf_uuids
+        if check_key_in_filters(filters, "annotation_cnf_uuids"):
+            functions.is_valid_text_filter(filters["annotation_cnf_uuids"])
+            if filters["annotation_cnf_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["annotation_cnf_uuids"]["op"]]
+                params.append(op(Annotation.annotation_cnf_uuid, filters["annotation_cnf_uuids"]["filter"]))
+            else:
+                filter = eval('Annotation.annotation_cnf_uuid.' + text_operators[filters["annotation_cnf_uuids"]["op"]])
+                params.append(filter(filters["annotation_cnf_uuids"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # ingestion_time filters
+        if check_key_in_filters(filters, "annotation_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["annotation_ingestion_time_filters"])
+            for ingestion_time_filter in filters["annotation_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(Annotation.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # Sources
+        if check_key_in_filters(filters, "sources"):
+            functions.is_valid_text_filter(filters["sources"])
+            if filters["sources"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["sources"]["op"]]
+                params.append(op(Source.name, filters["sources"]["filter"]))
+            else:
+                filter = eval('Source.name.' + text_operators[filters["sources"]["op"]])
+                params.append(filter(filters["sources"]["filter"]))
+            # end if
+            join_tables = True
+            tables[Source] = Source.source_uuid==Annotation.source_uuid
+        # end if
+
+        # Explicit references
+        if check_key_in_filters(filters, "explicit_refs"):
+            functions.is_valid_text_filter(filters["explicit_refs"])
+            if filters["explicit_refs"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_refs"]["op"]]
+                params.append(op(ExplicitRef.explicit_ref, filters["explicit_refs"]["filter"]))
+            else:
+                filter = eval('ExplicitRef.explicit_ref.' + text_operators[filters["explicit_refs"]["op"]])
+                params.append(filter(filters["explicit_refs"]["filter"]))
+            # end if
+            join_tables = True
+            tables[ExplicitRef] = ExplicitRef.explicit_ref_uuid==Annotation.explicit_ref_uuid
+        # end if
+
+        # Annotation configuration names
+        if check_key_in_filters(filters, "annotation_cnf_names"):
+            functions.is_valid_text_filter(filters["annotation_cnf_names"])
+            if filters["annotation_cnf_names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["annotation_cnf_names"]["op"]]
+                params.append(op(AnnotationCnf.name, filters["annotation_cnf_names"]["filter"]))
+            else:
+                filter = eval('AnnotationCnf.name.' + text_operators[filters["annotation_cnf_names"]["op"]])
+                params.append(filter(filters["annotation_cnf_names"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AnnotationCnf] = AnnotationCnf.annotation_cnf_uuid==Annotation.annotation_cnf_uuid
+        # end if
+
+        # Annotation configuration systems
+        if check_key_in_filters(filters, "annotation_cnf_systems"):
+            functions.is_valid_text_filter(filters["annotation_cnf_systems"])
+            if filters["annotation_cnf_systems"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["annotation_cnf_systems"]["op"]]
+                params.append(op(AnnotationCnf.system, filters["annotation_cnf_systems"]["filter"]))
+            else:
+                filter = eval('AnnotationCnf.system.' + text_operators[filters["annotation_cnf_systems"]["op"]])
+                params.append(filter(filters["annotation_cnf_systems"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AnnotationCnf] = AnnotationCnf.annotation_cnf_uuid==Annotation.annotation_cnf_uuid
+        # end if
+
+        # value filters
+        if check_key_in_filters(filters, "value_filters"):
+            tables_values = []
+            self.prepare_query_values(filters["value_filters"], annotation_value_entities, params, tables_values)
+            for table in set(tables_values):
+                tables[table] = Annotation.annotation_uuid==table.annotation_uuid
+            # end for
+        # end if
+
+        query = self.session.query(AnnotationAlert)
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(Annotation, Annotation.annotation_uuid==AnnotationAlert.annotation_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}        
+
+        # Alert configuration names
+        if check_key_in_filters(filters, "names"):
+            functions.is_valid_text_filter(filters["names"])
+            if filters["names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["names"]["op"]]
+                params.append(op(Alert.name, filters["names"]["filter"]))
+            else:
+                filter = eval('Alert.name.' + text_operators[filters["names"]["op"]])
+                params.append(filter(filters["names"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert severities
+        if check_key_in_filters(filters, "severities"):
+            functions.is_valid_severity_filter(filters["severities"])
+            if filters["severities"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["severities"]["op"]]
+                params.append(op(Alert.severity, alert_severity_codes[filters["severities"]["filter"]]))
+            else:
+                if type(filters["severities"]["filter"]) == list:
+                    filters_to_apply = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
+                else:
+                    filters_to_apply = filters["severities"]["filter"]
+                # end if
+                filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
+                params.append(filter(filters_to_apply))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert groups
+        if check_key_in_filters(filters, "groups"):
+            functions.is_valid_text_filter(filters["groups"])
+            if filters["groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["groups"]["op"]]
+                params.append(op(AlertGroup.name, filters["groups"]["filter"]))
+            else:
+                filter = eval('AlertGroup.name.' + text_operators[filters["groups"]["op"]])
+                params.append(filter(filters["groups"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
+        # end if
+        
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(Alert, Alert.alert_uuid==AnnotationAlert.alert_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+        
+        # Alert UUIDs
+        if check_key_in_filters(filters, "alert_uuids"):
+            functions.is_valid_text_filter(filters["alert_uuids"])
+            if filters["alert_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["alert_uuids"]["op"]]
+                params.append(op(AnnotationAlert.alert_uuid, filters["alert_uuids"]["filter"]))
+            else:
+                filter = eval('AnnotationAlert.alert_uuid.' + text_operators[filters["alert_uuids"]["op"]])
+                params.append(filter(filters["alert_uuids"]["filter"]))
+            # end if
+        # end if
+        
+        # validated filter
+        if check_key_in_filters(filters, "validated"):
+            functions.is_valid_bool_filter(filters["validated"])
+            params.append(AnnotationAlert.validated == filters["validated"])
+        # end if
+        
+        # annotation alert ingestion_time filters
+        if check_key_in_filters(filters, "alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["alert_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(AnnotationAlert.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # Generators
+        if check_key_in_filters(filters, "generators"):
+            functions.is_valid_text_filter(filters["generators"])
+            if filters["generators"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generators"]["op"]]
+                params.append(op(AnnotationAlert.generator, filters["generators"]["filter"]))
+            else:
+                filter = eval('AnnotationAlert.generator.' + text_operators[filters["generators"]["op"]])
+                params.append(filter(filters["generators"]["filter"]))
+            # end if
+        # end if
+
+        # notified filter
+        if check_key_in_filters(filters, "notified"):
+            functions.is_valid_bool_filter(filters["notified"])
+            params.append(AnnotationAlert.notified == filters["notified"])
+        # end if
+
+        # solved filter
+        if check_key_in_filters(filters, "solved"):
+            functions.is_valid_bool_filter(filters["solved"])
+            params.append(AnnotationAlert.solved == filters["solved"])
+        # end if
+
+        # annotation alert solved time filters
+        if check_key_in_filters(filters, "solved_time_filters"):
+            functions.is_valid_date_filters(filters["solved_time_filters"])
+            for solved_time_filter in filters["solved_time_filters"]:
+                op = arithmetic_operators[solved_time_filter["op"]]
+                params.append(op(AnnotationAlert.solved_time, solved_time_filter["date"]))
+            # end for
+        # end if
+
+        # annotation alert notification time filters
+        if check_key_in_filters(filters, "notification_time_filters"):
+            functions.is_valid_date_filters(filters["notification_time_filters"])
+            for notification_time_filter in filters["notification_time_filters"]:
+                op = arithmetic_operators[notification_time_filter["op"]]
+                params.append(op(AnnotationAlert.notification_time, notification_time_filter["date"]))
+            # end for
+        # end if
+                
+        query = query.filter(*params)
+
+        # Order by
+        if check_key_in_filters(filters, "order_by"):
+            functions.is_valid_order_by(filters["order_by"])
+            if filters["order_by"]["descending"]:
+                order_by_statement = eval("AnnotationAlert." + filters["order_by"]["field"] + ".desc()")
+            else:
+                order_by_statement = eval("AnnotationAlert." + filters["order_by"]["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if check_key_in_filters(filters, "limit"):
+            functions.is_valid_positive_integer(filters["limit"])
+            query = query.limit(filters["limit"])
+        # end if
+
+        # Offset
+        if check_key_in_filters(filters, "offset"):
+            functions.is_valid_positive_integer(filters["offset"])
+            query = query.offset(filters["offset"])
+        # end if
+
+        log_query(query)
+
+        annotation_alerts = []
+        if check_key_in_filters(filters, "delete") and filters["delete"]:
+            self.delete(query)
+        else:
+            annotation_alerts = query.all()
+        # end if
+
+        return annotation_alerts
+
     def get_explicit_refs(self, group_ids = None, explicit_ref_uuids = None, explicit_ref_ingestion_time_filters = None, explicit_refs = None, groups = None, sources = None, source_uuids = None, event_uuids = None, gauge_names = None, gauge_systems = None, gauge_uuids = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, keys = None, annotation_ingestion_time_filters = None, annotation_uuids = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_cnf_uuids = None, annotation_value_filters = None, order_by = None, limit = None, offset = None):
         """
         """
@@ -2733,7 +3399,7 @@ class Query():
             tables[table] = Event.event_uuid==table.event_uuid
         # end for
 
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Event, ExplicitRef.explicit_ref_uuid==Event.explicit_ref_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -2815,7 +3481,7 @@ class Query():
             tables[table] = Annotation.annotation_uuid==table.annotation_uuid
         # end for
 
-        if len(tables) > 0 or join_tables:
+        if len(tables.keys()) > 0 or join_tables:
             query = query.join(Annotation, ExplicitRef.explicit_ref_uuid==Annotation.explicit_ref_uuid)
             for table in tables:
                 query = query.join(table, tables[table])
@@ -2852,6 +3518,189 @@ class Query():
 
         return explicit_refs
 
+    def get_explicit_ref_alerts(self, filters = None):
+        """
+        Method to obtain the alerts associated to explicit reference entities filtered by the received filters
+
+        :param filters: dictionary with the filters to apply to the query
+        :type filters: dict
+
+        :return: found er_alerts
+        :rtype: list
+        """
+        params = []
+        join_tables = False
+        tables = {}
+
+
+        query = self.session.query(ExplicitRefAlert)
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(ExplicitRef, ExplicitRef.explicit_ref_uuid==ExplicitRefAlert.explicit_ref_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}        
+
+        # Alert configuration names
+        if check_key_in_filters(filters, "names"):
+            functions.is_valid_text_filter(filters["names"])
+            if filters["names"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["names"]["op"]]
+                params.append(op(Alert.name, filters["names"]["filter"]))
+            else:
+                filter = eval('Alert.name.' + text_operators[filters["names"]["op"]])
+                params.append(filter(filters["names"]["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert severities
+        if check_key_in_filters(filters, "severities"):
+            functions.is_valid_severity_filter(filters["severities"])
+            if filters["severities"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["severities"]["op"]]
+                params.append(op(Alert.severity, alert_severity_codes[filters["severities"]["filter"]]))
+            else:
+                if type(filters["severities"]["filter"]) == list:
+                    filters_to_apply = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
+                else:
+                    filters_to_apply = filters["severities"]["filter"]
+                # end if
+                filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
+                params.append(filter(filters_to_apply))
+            # end if
+            join_tables = True
+        # end if
+
+        # Alert groups
+        if check_key_in_filters(filters, "groups"):
+            functions.is_valid_text_filter(filters["groups"])
+            if filters["groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["groups"]["op"]]
+                params.append(op(AlertGroup.name, filters["groups"]["filter"]))
+            else:
+                filter = eval('AlertGroup.name.' + text_operators[filters["groups"]["op"]])
+                params.append(filter(filters["groups"]["filter"]))
+            # end if
+            join_tables = True
+            tables[AlertGroup] = AlertGroup.alert_group_uuid==Alert.alert_group_uuid
+        # end if
+        
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(Alert, Alert.alert_uuid==ExplicitRefAlert.alert_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+        
+        # Alert UUIDs
+        if check_key_in_filters(filters, "alert_uuids"):
+            functions.is_valid_text_filter(filters["alert_uuids"])
+            if filters["alert_uuids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["alert_uuids"]["op"]]
+                params.append(op(ExplicitRefAlert.alert_uuid, filters["alert_uuids"]["filter"]))
+            else:
+                filter = eval('ExplicitRefAlert.alert_uuid.' + text_operators[filters["alert_uuids"]["op"]])
+                params.append(filter(filters["alert_uuids"]["filter"]))
+            # end if
+        # end if
+        
+        # validated filter
+        if check_key_in_filters(filters, "validated"):
+            functions.is_valid_bool_filter(filters["validated"])
+            params.append(ExplicitRefAlert.validated == filters["validated"])
+        # end if
+        
+        # explicit reference alert ingestion_time filters
+        if check_key_in_filters(filters, "alert_ingestion_time_filters"):
+            functions.is_valid_date_filters(filters["alert_ingestion_time_filters"])
+            for ingestion_time_filter in filters["alert_ingestion_time_filters"]:
+                op = arithmetic_operators[ingestion_time_filter["op"]]
+                params.append(op(ExplicitRefAlert.ingestion_time, ingestion_time_filter["date"]))
+            # end for
+        # end if
+
+        # Generators
+        if check_key_in_filters(filters, "generators"):
+            functions.is_valid_text_filter(filters["generators"])
+            if filters["generators"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["generators"]["op"]]
+                params.append(op(ExplicitRefAlert.generator, filters["generators"]["filter"]))
+            else:
+                filter = eval('ExplicitRefAlert.generator.' + text_operators[filters["generators"]["op"]])
+                params.append(filter(filters["generators"]["filter"]))
+            # end if
+        # end if
+
+        # notified filter
+        if check_key_in_filters(filters, "notified"):
+            functions.is_valid_bool_filter(filters["notified"])
+            params.append(ExplicitRefAlert.notified == filters["notified"])
+        # end if
+
+        # solved filter
+        if check_key_in_filters(filters, "solved"):
+            functions.is_valid_bool_filter(filters["solved"])
+            params.append(ExplicitRefAlert.solved == filters["solved"])
+        # end if
+
+        # explicit reference alert solved time filters
+        if check_key_in_filters(filters, "solved_time_filters"):
+            functions.is_valid_date_filters(filters["solved_time_filters"])
+            for solved_time_filter in filters["solved_time_filters"]:
+                op = arithmetic_operators[solved_time_filter["op"]]
+                params.append(op(ExplicitRefAlert.solved_time, solved_time_filter["date"]))
+            # end for
+        # end if
+
+        # explicit reference alert notification time filters
+        if check_key_in_filters(filters, "notification_time_filters"):
+            functions.is_valid_date_filters(filters["notification_time_filters"])
+            for notification_time_filter in filters["notification_time_filters"]:
+                op = arithmetic_operators[notification_time_filter["op"]]
+                params.append(op(ExplicitRefAlert.notification_time, notification_time_filter["date"]))
+            # end for
+        # end if
+                
+        query = query.filter(*params)
+
+        # Order by
+        if check_key_in_filters(filters, "order_by"):
+            functions.is_valid_order_by(filters["order_by"])
+            if filters["order_by"]["descending"]:
+                order_by_statement = eval("ExplicitRefAlert." + filters["order_by"]["field"] + ".desc()")
+            else:
+                order_by_statement = eval("ExplicitRefAlert." + filters["order_by"]["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if check_key_in_filters(filters, "limit"):
+            functions.is_valid_positive_integer(filters["limit"])
+            query = query.limit(filters["limit"])
+        # end if
+
+        # Offset
+        if check_key_in_filters(filters, "offset"):
+            functions.is_valid_positive_integer(filters["offset"])
+            query = query.offset(filters["offset"])
+        # end if
+
+        log_query(query)
+
+        explicit_ref_alerts = []
+        if check_key_in_filters(filters, "delete") and filters["delete"]:
+            self.delete(query)
+        else:
+            explicit_ref_alerts = query.all()
+        # end if
+
+        return explicit_ref_alerts
+    
     def get_explicit_ref_links(self, explicit_ref_uuid_links = None, explicit_ref_uuids = None, link_names = None):
         """
         """

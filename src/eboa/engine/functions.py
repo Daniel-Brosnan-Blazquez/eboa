@@ -19,6 +19,9 @@ import uuid
 # Import operators
 from eboa.engine.operators import arithmetic_operators, text_operators, regex_operators
 
+# Import alert severity codes
+from eboa.engine.alerts import alert_severity_codes
+
 # Auxiliary functions
 def is_datetime(date):
     """
@@ -279,6 +282,41 @@ def is_valid_text_filter(text_filter):
         not_str_filters = [text_filter for text_filter in text_filter["filter"] if type(text_filter) != str and type(text_filter) != uuid.UUID]
         if len(not_str_filters) > 0:
             raise InputError("The specified filter inside the list must be a string when the op is 'in' or 'notin' (received filters are: {}).".format(not_str_filters))
+        # end if
+    # end if
+
+    return True
+
+def is_valid_severity_filter(severity_filter):
+
+    if type(severity_filter) != dict:
+        raise InputError("The parameter severity_filter must be a dictionary (received severity_filter: {}).".format(severity_filter))
+    # end if
+    if len(severity_filter.keys()) != 2 or not "op" in severity_filter.keys() or not "filter" in severity_filter.keys():
+        raise InputError("The parameter severity_filter should be a dictionary with keys op and filter (received keys: {}).".format(severity_filter.keys()))
+    # end if
+    if type(severity_filter["op"]) != str or not (severity_filter["op"] in arithmetic_operators.keys() or severity_filter["op"] in text_operators.keys() or severity_filter["op"] in regex_operators.keys()):
+        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()) + list(regex_operators.keys()), severity_filter["op"]))
+    # end if
+    if (severity_filter["op"] in ["like", "notlike", "regex"] or severity_filter["op"] in arithmetic_operators.keys()) and type(severity_filter["filter"]) != str:
+        raise InputError("The specified filter must be a string when the op is in the list {} (received filter has type: {}).".format(list(arithmetic_operators.keys()) + ["like", "notlike"], type(severity_filter["filter"])))
+    # end if
+    if (severity_filter["op"] in ["like", "notlike", "regex"] or severity_filter["op"] in arithmetic_operators.keys()) and not severity_filter["filter"] in alert_severity_codes:
+        raise InputError("The specified filter must be one of this {} (received filter is: {}).".format(alert_severity_codes.keys(), severity_filter["filter"]))
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) != list:
+        raise InputError("The specified filter must be a list when the op is 'in' or 'notin' (received filter has type: {}).".format(type(severity_filter["filter"])))
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) == list:
+        not_str_filters = [severity_filter for severity_filter in severity_filter["filter"] if type(severity_filter) != str and type(severity_filter) != uuid.UUID]
+        if len(not_str_filters) > 0:
+            raise InputError("The specified filter inside the list must be a string when the op is 'in' or 'notin' (received filters are: {}).".format(not_str_filters))
+        # end if
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) == list:
+        not_in_alert_severity_codes = [severity_filter for severity_filter in severity_filter["filter"] if not severity_filter in alert_severity_codes.keys()]
+        if len(not_in_alert_severity_codes) > 0:
+            raise InputError("The specified filter must be one of this {} (received filters are: {}).".format(alert_severity_codes.keys(), not_in_alert_severity_codes))
         # end if
     # end if
 
