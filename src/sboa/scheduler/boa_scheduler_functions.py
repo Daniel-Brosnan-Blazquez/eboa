@@ -26,15 +26,6 @@ from sboa.engine.query import Query
 pid_file = get_resources_path() + "/boa_scheduler.pid"
 pid_files_folder = get_resources_path() + "/on_going_triggerings/"
 
-try:
-    os.makedirs(pid_files_folder)
-except OSError as exc:
-    if exc.errno != errno.EEXIST:
-        raise
-    # end if
-    pass
-# end try
-
 def stop_scheduler():
 
     query = Query()
@@ -98,7 +89,7 @@ def status_scheduler():
     # end if
 
 def command_start_scheduler():
-
+    
     command = "boa_scheduler.py -c start -o"
 
     command_split = shlex.split(command)
@@ -118,6 +109,6 @@ def command_start_scheduler():
                           "output": output,
                           "error": error,
                           "return_code": return_code}
-    # end if
+    # end try
 
     return command_status

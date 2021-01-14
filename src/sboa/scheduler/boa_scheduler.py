@@ -19,6 +19,7 @@ import psutil
 import shlex
 from subprocess import Popen, PIPE
 from multiprocessing import Pool
+import os
 
 # Get boa scheduler functions
 import sboa.scheduler.boa_scheduler_functions as functions
@@ -34,6 +35,7 @@ from sboa.engine.engine import Engine
 import sboa.engine.engine as sboa_engine
 
 pid_file = functions.pid_file
+pid_files_folder = functions.pid_files_folder
 
 # Import auxiliary functions
 from sboa.datamodel.functions import read_configuration
@@ -124,9 +126,20 @@ def query_and_execute_tasks(logger = None):
 
 def start_scheduler():
 
-    print("BOA scheduler started...")
+    print("BOA scheduler initiating...")
     logging = Log(name = __name__)
     logger = logging.logger
+    logger.info("BOA scheduler initiating...")
+    try:
+        os.makedirs(pid_files_folder)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            raise
+        # end if
+        pass
+    # end try
+    
+    print("BOA scheduler started...")
     logger.info("BOA scheduler started...")
     while True:
         time.sleep(1)
