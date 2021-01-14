@@ -20,6 +20,7 @@ import shlex
 from subprocess import Popen, PIPE
 from multiprocessing import Pool
 import os
+import errno
 
 # Get boa scheduler functions
 import sboa.scheduler.boa_scheduler_functions as functions

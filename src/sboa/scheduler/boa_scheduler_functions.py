@@ -12,7 +12,6 @@ import shlex
 from subprocess import Popen, PIPE
 from daemon import pidfile
 import os
-import errno
 
 # Get eboa auxiliary functions
 from eboa.engine.functions import get_resources_path
