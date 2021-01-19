@@ -3149,16 +3149,17 @@ class TestQuery(unittest.TestCase):
                         "description": "Alert description",
                         "group": "alert_group"
                     }},
-                           {
-                               "message": "Alert message",
-                               "generator": "test2",
-                               "notification_time": "2019-06-05T08:07:36",
-                               "alert_cnf": {
-                                   "name": "alert_name2",
-                                   "severity": "major",
-                                   "description": "Alert description",
-                                   "group": "alert_group2"
-                               }}]
+                    {
+                    "message": "Alert message",
+                    "generator": "test2",
+                    "notification_time": "2019-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name2",
+                        "severity": "major",
+                        "description": "Alert description",
+                        "group": "alert_group2"
+                        }
+                    }]
             },
                        {
                            "name": "ER2",
@@ -3183,7 +3184,38 @@ class TestQuery(unittest.TestCase):
                                               "description": "Alert description",
                                               "group": "alert_group2"
                                           }}]
-                       }]
+                       }],
+            "events": [{
+                    "key": "EVENT_KEY",
+                    "explicit_reference": "ER2",
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "text",
+                                            "name": "TEXT",
+                                            "value": "TEXT"}]
+                                    }]
+                }],
+                "annotations": [{
+                    "explicit_reference": "ER2",
+                    "annotation_cnf": {"name": "NAME",
+                                       "system": "SYSTEM"},
+                            "values": [{"name": "VALUES",
+                                       "type": "object",
+                                       "values": [
+                                           {"type": "boolean",
+                                            "name": "BOOLEAN",
+                                            "value": "true"}]
+                                    }]
+                }]
         }]
                 }
 
@@ -3195,7 +3227,27 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 4
 
-        filters = {}
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
+        filters["explicit_ref_cnf_names"] = {"filter": "ER_GROUP2", "op": "=="}
+        filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        filters["keys"] = {"filter": "EVENT_KEY", "op": "=="}
+        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        filters["duration_filters"] = [{"float": "10", "op": ">"}]
+        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
         filters["names"] = {"filter": "alert_name1", "op": "=="}
         filters["severities"] = {"filter": "critical", "op": "=="}
         filters["groups"] = {"filter": "alert_group", "op": "=="}
@@ -3207,3 +3259,30 @@ class TestQuery(unittest.TestCase):
         alerts = self.query.get_explicit_ref_alerts(filters)
 
         assert len(alerts) == 1
+        
+        filters = {"sources": {"filter": "source.json", "op": "=="}}
+        filters["group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
+        filters["explicit_ref_cnf_names"] = {"filter": "ER_GROUP2", "op": "=="}
+        filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        filters["keys"] = {"filter": "EVENT_KEY", "op": "=="}
+        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        filters["duration_filters"] = [{"float": "10", "op": ">"}]
+        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
+        filters["severities"] = {"filter": "critical", "op": "=="}
+
+        alerts = self.query.get_explicit_ref_alerts(filters)
+
+        assert len(alerts) == 2
