@@ -3189,8 +3189,6 @@ class Query():
 
         tables = {}
 
-        query_of_events_or_annotations = False
-
         # group_ids
         if group_ids != None:
             functions.is_valid_text_filter(group_ids)
@@ -3283,6 +3281,7 @@ class Query():
             # end if
             join_tables = True
         # end if
+        
         # Sources
         if sources != None:
             functions.is_valid_text_filter(sources)
@@ -3833,7 +3832,7 @@ class Query():
                 tables[table] = Annotation.annotation_uuid==table.annotation_uuid
             # end for
         # end if
-        
+
         if len(tables.keys()) > 0 or join_tables:
             query = query.join(Annotation, Annotation.explicit_ref_uuid==ExplicitRefAlert.explicit_ref_uuid)
             for table in tables:
