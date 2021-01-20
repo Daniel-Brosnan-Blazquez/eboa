@@ -164,17 +164,15 @@ class TestEboaIngestion(unittest.TestCase):
 
         events = self.query.get_events()
 
-        assert len(events) == 1
+        assert len(events) == 2
 
-        assert events[0].gauge.name == "GAUGE_NAME2"
+        sources = self.query.get_sources(names = {"filter": "source1.json", "op": "=="})
 
-        not_ingested_sources = self.query.get_sources(names = {"filter": os.path.basename(new_file_path), "op": "like"})
+        assert len(sources) == 1
 
-        assert len(not_ingested_sources) == 1
+        events = self.query.get_events(sources = {"filter": "source1.json", "op": "=="})
 
-        assert not_ingested_sources[0].ingestion_error == True
-
-        assert len([status for status in not_ingested_sources[0].statuses if status.status == eboa_engine.exit_codes["INGESTION_ENDED_UNEXPECTEDLY"]["status"]]) == 1
+        assert len(events) == 0
 
     def test_wrong_processor_name(self):
 

@@ -1359,7 +1359,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -1394,7 +1394,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -1434,7 +1434,7 @@ class TestEngine(unittest.TestCase):
         
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Source).filter(Source.name == "source3.json").all()
 
@@ -1469,7 +1469,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -1723,7 +1723,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -1747,7 +1747,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data4 = {"operations": [{
             "mode": "insert",
@@ -1771,7 +1771,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -1795,7 +1795,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -1854,7 +1854,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -1878,7 +1878,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data4 = {"operations": [{
             "mode": "insert",
@@ -1902,7 +1902,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -1926,7 +1926,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -2205,7 +2205,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -2537,7 +2537,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -4256,7 +4256,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -4280,7 +4280,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -4304,7 +4304,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -7054,7 +7054,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -7090,7 +7090,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).all()
 
@@ -7131,7 +7131,7 @@ class TestEngine(unittest.TestCase):
         
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Source).filter(Source.name == "source3.json").all()
 
@@ -7167,7 +7167,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -7760,7 +7760,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -7785,7 +7785,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -7810,7 +7810,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -7887,7 +7887,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         data2 = {"operations": [{
             "mode": "insert",
@@ -7937,7 +7937,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
                                                                              Event.stop == "2018-06-05T08:07:36",
@@ -8011,7 +8011,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -8062,7 +8062,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         filtered_events_ddbb = self.session.query(Event).filter(Event.start == "2018-06-04T05:07:03",
                                                       Event.stop == "2018-06-05T07:07:36",
@@ -8104,7 +8104,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
             
         data2 = {"operations": [{
             "mode": "insert",
@@ -8129,7 +8129,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -8154,7 +8154,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
                                 
         filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
                                                                              Event.stop == "2018-06-05T04:07:36",
@@ -8220,7 +8220,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -8245,7 +8245,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
         
         data3 = {"operations": [{
             "mode": "insert",
@@ -8270,7 +8270,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
  
         filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
                                                                              Event.stop == "2018-06-05T04:07:36",
@@ -8508,7 +8508,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -8533,7 +8533,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data4 = {"operations": [{
             "mode": "insert",
@@ -8558,7 +8558,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -8583,7 +8583,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -8643,7 +8643,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data1)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -8668,7 +8668,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data2)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data4 = {"operations": [{
             "mode": "insert",
@@ -8693,7 +8693,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data4)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         data3 = {"operations": [{
             "mode": "insert",
@@ -8718,7 +8718,7 @@ class TestEngine(unittest.TestCase):
         }
         exit_status = self.engine_eboa.treat_data(data3)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
@@ -9000,7 +9000,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         ers = self.session.query(ExplicitRef).all()
 
@@ -9082,7 +9082,7 @@ class TestEngine(unittest.TestCase):
 
         exit_status = self.engine_eboa.treat_data(data)
 
-        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
         sources = self.session.query(Source).all()
 
@@ -9156,3 +9156,158 @@ class TestEngine(unittest.TestCase):
                                             AlertGroup.name == "alert_group").all()
 
         assert len(alert_annotations) == 1
+
+    def test_linking_to_a_removed_event(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"
+                       },
+            "events": [{
+                "link_ref": "EVENT_LINK",
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+                        }]
+        }]
+        }
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+        
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"
+                       },
+            "events": [{
+                "link_ref": "EVENT_LINK1",
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }]
+            },{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source3.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"
+                       },
+                "events": [{
+                           "link_ref": "EVENT_LINK2",
+                           "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                           "gauge": {"name": "GAUGE_NAME2",
+                                     "system": "GAUGE_SYSTEM2",
+                                     "insertion_type": "SIMPLE_UPDATE"},
+                           "start": "2018-06-05T02:07:03",
+                           "stop": "2018-06-05T08:07:36",
+                           "links": [{
+                               "link": str(events[0].event_uuid),
+                               "link_mode": "by_uuid",
+                               "name": "EVENT_LINK_NAME2"
+                           },{
+                               "link": "EVENT_LINK1",
+                               "link_mode": "by_ref",
+                               "name": "EVENT_LINK_NAME"
+                           }]
+                       }]
+        }]
+        }
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+    def test_event_links_inconsistency_with_a_link_to_a_nonexistent_uuid(self):
+
+        self.engine_eboa._initialize_context_insert_data()
+        data = {"operations": [{
+                "mode": "insert",
+                "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-06-06T13:33:29",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "link_ref": "EVENT_LINK1",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK2",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME",
+                        "back_ref": "EVENT_LINK_NAME"
+                    },{
+                        "link": "e5b51b86-5b31-11eb-ba6f-000000000cf7",
+                        "link_mode": "by_uuid",
+                        "name": "EVENT_LINK_NAME2"
+                    }]
+                },
+                {
+                    "link_ref": "EVENT_LINK2",
+                    "gauge": {"name": "GAUGE_NAME",
+                              "system": "GAUGE_SYSTEM",
+                              "insertion_type": "SIMPLE_UPDATE"},
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "links": [{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK_NAME"
+                    }]
+                }]
+            }]
+            }
+        self.engine_eboa.data = data
+        assert_value = False
+        try:
+            self.engine_eboa.treat_data()
+        except LinksInconsistency:
+            assert_value = True
+        # end try
+
+        assert assert_value == True
+
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["LINKS_INCONSISTENCY"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
+
+        assert len(sources_status) == 1
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 0

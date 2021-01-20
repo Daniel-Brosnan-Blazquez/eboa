@@ -158,6 +158,10 @@ exit_codes = {
     "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
         "status": 22,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a reported validity period which its stop ({}) is lower than its start ({})"
+    },
+    "LINK_TO_NOT_AVAILABLE_EVENT": {
+        "status": 23,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines the link with event_uuid_link '{}', name '{}' and event_uuid '{}' for which the event_uuid is not available. The exception raised has been the following: {}\nThis error is consider normal business and so the link is skipped but the ingestion continues."
     }
 }
 
@@ -1646,13 +1650,36 @@ class Engine():
         # end for
 
         # Bulk insert links
-        list_event_links_ddbb = list_event_links_by_ref_ddbb + list_event_links_by_uuid_ddbb
-        try:
-            race_condition2()
-            self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
-        except IntegrityError as e:
-            self.session.rollback()
-            raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+        list_event_links_ddbb = list_event_links_by_uuid_ddbb + list_event_links_by_ref_ddbb
+        if len(list_event_links_ddbb) > 0:
+            self.session.begin_nested()
+            try:
+                race_condition2()
+                self.session.bulk_insert_mappings(EventLink, list_event_links_ddbb)
+                self.session.commit()
+            except IntegrityError as e:
+                self.session.rollback()
+                if "psycopg2.errors.ForeignKeyViolation" in str(e):
+                    for link in list_event_links_ddbb:
+                        self.session.begin_nested()
+                        try:
+                            self.session.bulk_insert_mappings(EventLink, [link])
+                            self.session.commit()
+                        except IntegrityError as e:
+                            self.session.rollback()
+                            if "psycopg2.errors.ForeignKeyViolation" in str(e):
+                                logger.error(exit_codes["LINK_TO_NOT_AVAILABLE_EVENT"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link["name"], link["event_uuid_link"], link["event_uuid"], e))
+                                pass
+                            else:
+                                self.session.rollback()
+                                raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                            # end if
+                        # end try
+                else:
+                    self.session.rollback()
+                    raise LinksInconsistency(exit_codes["LINKS_INCONSISTENCY"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
+                # end if
+            # end try
         # end if
 
         # Bulk insert alerts
