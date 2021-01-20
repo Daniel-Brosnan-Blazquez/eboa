@@ -125,12 +125,7 @@ def query_and_execute_tasks(logger = None):
     
     return
 
-def start_scheduler():
-
-    print("BOA scheduler initiating...")
-    logging = Log(name = __name__)
-    logger = logging.logger
-    logger.info("BOA scheduler initiating...")
+def create_pid_files_folder():
     try:
         os.makedirs(pid_files_folder)
     except OSError as exc:
@@ -139,6 +134,14 @@ def start_scheduler():
         # end if
         pass
     # end try
+
+def start_scheduler():
+
+    print("BOA scheduler initiating...")
+    logging = Log(name = __name__)
+    logger = logging.logger
+    logger.info("BOA scheduler initiating...")
+    create_pid_files_folder()
     
     print("BOA scheduler started...")
     logger.info("BOA scheduler started...")
