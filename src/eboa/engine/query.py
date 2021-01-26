@@ -3543,15 +3543,15 @@ class Query():
             # end if
         # end if
         
-        # group_ids
-        if check_key_in_filters(filters, "group_ids"):
-            functions.is_valid_text_filter(filters["group_ids"])
-            if filters["group_ids"]["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[filters["group_ids"]["op"]]
-                params.append(op(ExplicitRef.expl_ref_cnf_uuid, filters["group_ids"]["filter"]))
+        # explicit_ref_group_ids
+        if check_key_in_filters(filters, "explicit_ref_group_ids"):
+            functions.is_valid_text_filter(filters["explicit_ref_group_ids"])
+            if filters["explicit_ref_group_ids"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_ref_group_ids"]["op"]]
+                params.append(op(ExplicitRef.expl_ref_cnf_uuid, filters["explicit_ref_group_ids"]["filter"]))
             else:
-                filter = eval('ExplicitRef.expl_ref_cnf_uuid.' + text_operators[filters["group_ids"]["op"]])
-                params.append(filter(filters["group_ids"]["filter"]))
+                filter = eval('ExplicitRef.expl_ref_cnf_uuid.' + text_operators[filters["explicit_ref_group_ids"]["op"]])
+                params.append(filter(filters["explicit_ref_group_ids"]["filter"]))
             # end if
             join_tables = True
         # end if
@@ -3570,14 +3570,14 @@ class Query():
         # end if
 
         # Groups
-        if check_key_in_filters(filters, "explicit_ref_cnf_names"):
-            functions.is_valid_text_filter(filters["explicit_ref_cnf_names"])
-            if filters["explicit_ref_cnf_names"]["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[filters["explicit_ref_cnf_names"]["op"]]
-                params.append(op(ExplicitRefGrp.name, filters["explicit_ref_cnf_names"]["filter"]))
+        if check_key_in_filters(filters, "explicit_ref_groups"):
+            functions.is_valid_text_filter(filters["explicit_ref_groups"])
+            if filters["explicit_ref_groups"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["explicit_ref_groups"]["op"]]
+                params.append(op(ExplicitRefGrp.name, filters["explicit_ref_groups"]["filter"]))
             else:
-                filter = eval('ExplicitRefGrp.name.' + text_operators[filters["explicit_ref_cnf_names"]["op"]])
-                params.append(filter(filters["explicit_ref_cnf_names"]["filter"]))
+                filter = eval('ExplicitRefGrp.name.' + text_operators[filters["explicit_ref_groups"]["op"]])
+                params.append(filter(filters["explicit_ref_groups"]["filter"]))
             # end if
             join_tables = True
             tables[ExplicitRefGrp] = ExplicitRefGrp.expl_ref_cnf_uuid==ExplicitRef.expl_ref_cnf_uuid

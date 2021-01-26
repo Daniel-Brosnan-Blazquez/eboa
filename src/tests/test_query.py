@@ -3228,10 +3228,10 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 4
 
         filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        filters["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
         filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
         filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
-        filters["explicit_ref_cnf_names"] = {"filter": "ER_GROUP2", "op": "=="}
+        filters["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
         filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
         filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
         filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
@@ -3261,10 +3261,10 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 1
         
         filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        filters["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
         filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
         filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
-        filters["explicit_ref_cnf_names"] = {"filter": "ER_GROUP2", "op": "=="}
+        filters["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
         filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
         filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
         filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
