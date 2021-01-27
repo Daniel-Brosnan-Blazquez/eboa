@@ -1437,6 +1437,10 @@ class TestQuery(unittest.TestCase):
                         "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK1"
+                    },{
+                        "link": "EVENT_LINK2",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK3"
                     }],
                     "gauge": {
                         "name": "GAUGE_NAME",
@@ -1453,6 +1457,10 @@ class TestQuery(unittest.TestCase):
                         "link": "EVENT_LINK1",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK2"
+                    },{
+                        "link": "EVENT_LINK1",
+                        "link_mode": "by_ref",
+                        "name": "EVENT_LINK4"
                     }],
                     "gauge": {"name": "GAUGE_NAME",
                               "system": "GAUGE_SYSTEM",
@@ -1467,14 +1475,23 @@ class TestQuery(unittest.TestCase):
 
         events = self.query.get_linked_events_details(event_uuid = event1[0].event_uuid, back_ref = True)
 
-        assert len(events["linked_events"]) == 1
+        assert len(events["linked_events"]) == 2
 
-        assert events["linked_events"][0]["link_name"] == "EVENT_LINK1"
+        links_link1 = [link for link in events["linked_events"] if link["link_name"] == "EVENT_LINK1"]
+        assert len(links_link1) == 1
+
+        links_link3 = [link for link in events["linked_events"] if link["link_name"] == "EVENT_LINK3"]
+        assert len(links_link3) == 1
 
         assert len(events["prime_events"]) == 1
 
-        assert len(events["events_linking"]) == 1
-        assert events["events_linking"][0]["link_name"] == "EVENT_LINK2"
+        assert len(events["events_linking"]) == 2
+
+        links_link2 = [link for link in events["events_linking"] if link["link_name"] == "EVENT_LINK2"]
+        assert len(links_link2) == 1
+
+        links_link4 = [link for link in events["events_linking"] if link["link_name"] == "EVENT_LINK4"]
+        assert len(links_link4) == 1
 
     def test_wrong_inputs_query_linked_event_details(self):
 

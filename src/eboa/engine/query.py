@@ -2513,10 +2513,10 @@ class Query():
         # end if
 
         events["linked_events"] = []
-        for event in linked_events:
-            link_name = [str(link.name) for link in links if link.event_uuid == event.event_uuid][0]
-            events["linked_events"].append({"link_name": link_name,
-                                            "event": event})
+        for link in links:
+            linked_event = [event for event in linked_events if event.event_uuid == link.event_uuid][0]
+            events["linked_events"].append({"link_name": link.name,
+                                            "event": linked_event})
         # end for
 
         if back_ref:
@@ -2529,10 +2529,10 @@ class Query():
             # end if
 
             events["events_linking"] = []
-            for event in events_linking:
-                link_name = [str(link.name) for link in links if link.event_uuid_link == event.event_uuid][0]
-                events["events_linking"].append({"link_name": link_name,
-                                                "event": event})
+            for link in links:
+                event_linking = [event for event in events_linking if event.event_uuid == link.event_uuid_link][0]
+                events["events_linking"].append({"link_name": link.name,
+                                                "event": event_linking})
             # end for
         # end if
 
