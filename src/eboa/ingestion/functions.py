@@ -328,11 +328,11 @@ def get_timeline_duration(timeline):
     """
     return sum([(segment["stop"] - segment["start"]).total_seconds() for segment in timeline])
 
-def get_greater_segment(timeline):
+def get_segments_sorted_by_duration(timeline):
     """
-    Method to get the segment corresponding to the greater duration
+    Method to get the segments of the timeline sorted by duration
     Input: list of segments structured for the usage of this component
-    Output: segment with the greater duration
+    Output: segments sorted by duration
 
     """
     segments_duration = [{"id": segment["id"],
@@ -340,9 +340,22 @@ def get_greater_segment(timeline):
                           "stop": segment["stop"],
                           "duration": (segment["stop"] - segment["start"]).total_seconds()} for segment in timeline]
     
-    sorted_segments_by_duration = sorted(segments_duration, key=lambda segment: segment["duration"])
+    return sorted(segments_duration, key=lambda segment: segment["duration"])
 
-    return sorted_segments_by_duration[-1]
+def get_greater_segment(timeline):
+    """
+    Method to get the segment corresponding to the greater duration
+    Input: list of segments structured for the usage of this component
+    Output: segment with the greater duration
+
+    """
+    segments = get_segments_sorted_by_duration(timeline)
+    greater_segment = None
+    if len(segments) > 0:
+        greater_segment = segments[-1]
+    # end if
+
+    return greater_segment
 
 ###########
 # Functions using the timelines with the structure of data to be inserted into the EBOA
