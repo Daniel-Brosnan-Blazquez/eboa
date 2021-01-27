@@ -3087,6 +3087,17 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 4
 
+        filters = {"annotation_uuids": {"filter": str([annotation.annotation_uuid for annotation in self.query.get_annotations()][0]), "op": "=="}}
+        
+        alerts = self.query.get_annotation_alerts(filters)
+
+        assert len(alerts) == 2
+
+        filters = {"annotation_ingestion_time_filters": [{"date": alerts[0].annotation.ingestion_time.isoformat(), "op": "=="}]}
+        alerts = self.query.get_annotation_alerts(filters)
+
+        assert len(alerts) == 2
+
         filters = {"sources": {"filter": "source.json", "op": "=="}}
         filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
         filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}

@@ -2894,9 +2894,9 @@ class Query():
             functions.is_valid_text_filter(filters["annotation_uuids"])
             if filters["annotation_uuids"]["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[filters["annotation_uuids"]["op"]]
-                params.append(op(Annotation.annotation_uuid, filters["annotation_uuids"]["filter"]))
+                params.append(op(AnnotationAlert.annotation_uuid, filters["annotation_uuids"]["filter"]))
             else:
-                filter = eval('Annotation.annotation_uuid.' + text_operators[filters["annotation_uuids"]["op"]])
+                filter = eval('AnnotationAlert.annotation_uuid.' + text_operators[filters["annotation_uuids"]["op"]])
                 params.append(filter(filters["annotation_uuids"]["filter"]))
             # end if
         # end if
@@ -2940,13 +2940,14 @@ class Query():
             join_tables = True
         # end if
 
-        # ingestion_time filters
+        # Annotation ingestion_time filters
         if check_key_in_filters(filters, "annotation_ingestion_time_filters"):
             functions.is_valid_date_filters(filters["annotation_ingestion_time_filters"])
             for ingestion_time_filter in filters["annotation_ingestion_time_filters"]:
                 op = arithmetic_operators[ingestion_time_filter["op"]]
                 params.append(op(Annotation.ingestion_time, ingestion_time_filter["date"]))
             # end for
+            join_tables = True
         # end if
 
         # Sources
