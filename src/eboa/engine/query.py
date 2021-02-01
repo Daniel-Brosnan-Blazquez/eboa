@@ -79,7 +79,12 @@ annotation_value_entities = {
 
 def log_query(query):
 
-    logger.debug("The following query is going to be executed: {}".format(literal_query(query.statement)))
+    try:
+        logger.debug("The following query is going to be executed: {}".format(literal_query(query.statement)))
+    except NotImplementedError as e:
+        logger.debug("The query has some elements which cannot be displayed. The exception occurred, trying to displayed the query, was the following: {}".format(e))
+        pass
+    # end try
 
     return
 
