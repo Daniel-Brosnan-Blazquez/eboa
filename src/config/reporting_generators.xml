@@ -3,12 +3,39 @@
     <command>rboa_reporting.py -p vboa.views.boa_health.boa_health_generator</command>
     <name_format>BOA_REP__BOA_HEALTH_%C_%B_%E.html</name_format>
   </generator>
-  <generator name="Ingestion control generator" description="Generator for providing reporting about the ingestion chain of the BOA system">
+  <generator name="Ingestion control generator (Complete view)" description="Generator for providing reporting about the ingestion chain of the BOA system">
     <command>rboa_reporting.py -p vboa.views.ingestion_control.ingestion_control_generator</command>
     <name_format>BOA_REP__INGESTCONT_%C_%B_%E.html</name_format>
+    <parameters>
+      <parameter name="type">COMPLETE</parameter>
+    </parameters>
   </generator>
-  <generator name="Reporting control generator" description="Generator for providing reporting about the reporting chain of the BOA system">
+  <generator name="Ingestion control generator (Alerts/Errors view)" description="Generator for providing reporting about alerts and errors impacting the ingestion chain of the BOA system">
+    <command>rboa_reporting.py -p vboa.views.ingestion_control.ingestion_control_generator</command>
+    <name_format>BOA_REP__INGESTCOAE_%C_%B_%E.html</name_format>
+    <parameters>
+      <parameter name="type">ALERTS_ERRORS</parameter>
+    </parameters>
+  </generator>
+  <generator name="General view of alerts generator" description="Generator for providing reporting about the raised alerts">
+    <command>rboa_reporting.py -p vboa.views.general_view_alerts.general_view_alerts_generator</command>
+    <name_format>BOA_REP__GENVIEWALE_%C_%B_%E.html</name_format>
+    <parameters>
+      <parameter name="type">COMPLETE</parameter>
+    </parameters>
+  </generator>
+  <generator name="Reporting control generator (Complete view)" description="Generator for providing reporting about the reporting chain of the BOA system">
     <command>rboa_reporting.py -p vboa.views.reporting_control.reporting_control_generator</command>
     <name_format>BOA_REP__REPORTCONT_%C_%B_%E.html</name_format>
+    <parameters>
+      <parameter name="type">COMPLETE</parameter>
+    </parameters>
+  </generator>
+  <generator name="Reporting control generator (Alerts/Errors view)" description="Generator for providing reporting about alerts and errors impacting the reporting chain of the BOA system">
+    <command>rboa_reporting.py -p vboa.views.reporting_control.reporting_control_generator</command>
+    <name_format>BOA_REP__REPORTCOAE_%C_%B_%E.html</name_format>
+    <parameters>
+      <parameter name="type">ALERTS_ERRORS</parameter>
+    </parameters>
   </generator>
 </reporting_generators>
