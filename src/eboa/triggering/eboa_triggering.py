@@ -61,6 +61,10 @@ def get_triggering_conf():
 
     triggering_xpath = etree.XPathEvaluator(triggering_xml)
 
+    # Register needed xpath functions
+    ns = etree.FunctionNamespace(None)
+    ns["match"] = xpath_functions.match
+
     return triggering_xpath
 
 @debug
@@ -192,10 +196,6 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
     exit_code = 0
     
     file_name = os.path.basename(file_path)
-
-    # Register needed xpath functions
-    ns = etree.FunctionNamespace(None)
-    ns["match"] = xpath_functions.match
 
     # Check configuration
     triggering_xpath = get_triggering_conf()
