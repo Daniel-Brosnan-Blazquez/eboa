@@ -399,7 +399,7 @@ def _validate_event_links(data):
 
         check_items = [item in ["back_ref", "link", "name", "link_mode"] for item in link.keys()]
         if False in check_items:
-            raise ErrorParsingDictionary("The allowed tags inside links structure for explicit_references are: back_ref, link, link_mode and name")
+            raise ErrorParsingDictionary("The allowed tags inside links structure for events are: back_ref, link, link_mode and name")
         # end if
 
         # Mandatory tags
