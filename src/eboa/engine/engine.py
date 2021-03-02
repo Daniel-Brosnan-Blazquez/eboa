@@ -3413,13 +3413,13 @@ class Engine():
         if value["type"] == "boolean":
             value_entity = EventBoolean
         elif value["type"] == "text":
-            value_entity = EventTexts
+            value_entity = EventText
         elif value["type"] == "double":
-            value_entity = EventDoubles
+            value_entity = EventDouble
         elif value["type"] == "timestamp":
-            value_entity = EventTimestamps
+            value_entity = EventTimestamp
         elif value["type"] == "geometrie":
-            value_entity = EventGeometries
+            value_entity = EventGeometry
         # end if
         event = self.session.query(Event).filter(Event.event_uuid == event_uuid).first()
         item = self.session.query(value_entity).filter(value_entity.parent_level == -1, value_entity.parent_position == 0, value_entity.name == value_name, value_entity.event_uuid == event_uuid).first()
