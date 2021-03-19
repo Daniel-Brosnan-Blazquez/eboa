@@ -37,11 +37,11 @@ def validate_data_dictionary(data):
         # end if
 
         # Check that the mode contains a valid value
-        if not item["mode"] in ["insert", "insert_and_erase", "update", "delete"]:
-            raise ErrorParsingDictionary("The mode does not correspond to an allowed value")
+        if not item["mode"] in ["insert", "insert_and_erase", "insert_and_erase_with_priority", "insert_and_erase_with_equal_or_lower_priority", "update", "delete"]:
+            raise ErrorParsingDictionary("The mode {} does not correspond to an allowed value".format(item["mode"]))
         # end if
 
-        if item["mode"] == "insert" or item["mode"] == "insert_and_erase":
+        if item["mode"] in ["insert", "insert_and_erase", "insert_and_erase_with_priority", "insert_and_erase_with_equal_or_lower_priority"]:
             _validate_insert_structure(item)
         # end if
 

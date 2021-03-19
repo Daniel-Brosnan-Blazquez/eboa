@@ -546,9 +546,13 @@ class Engine():
                 self.all_gauges_for_insert_and_erase = False
                 if self.operation.get("mode") == "insert_and_erase":
                     self.all_gauges_for_insert_and_erase = True
+                elif self.operation.get("mode") == "insert_and_erase_with_priority":
+                    self.all_gauges_for_insert_and_erase = True
+                elif self.operation.get("mode") == "insert_and_erase_with_equal_or_lower_priority":
+                    self.all_gauges_for_insert_and_erase = True
                 # end if
 
-                if self.operation.get("mode") == "insert" or self.operation.get("mode") == "insert_and_erase":
+                if self.operation.get("mode") in ["insert", "insert_and_erase", "insert_and_erase_with_priority", "insert_and_erase_with_equal_or_lower_priority"]:
                     returned_value = self._insert_data(processing_duration = processing_duration)
                     returned_information = {
                         "source": self.operation.get("source").get("name"),
@@ -2059,19 +2063,36 @@ class Engine():
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
-                # Check if for the last period there are pending splits
+                # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
                         event = list_split_events[event_uuid]
-                        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                        self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                           gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                        self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
-                        self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               timestamp,
+                                                                               event.stop,
+                                                                               event)
+
                         # Remove event
                         list_events_to_be_removed.append(event_uuid)
                     # end for
+
+                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    for event_uuid in list_events_to_be_created_not_ending_on_period:
+                        # The event has to be created
+                        event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                        start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               start,
+                                                                               event.stop,
+                                                                               event)
+
+                        # Remove the original event
+                        list_events_to_be_removed.append(event.event_uuid)
+
+                    # end for
+
                     break
                 # end if
 
@@ -2105,22 +2126,34 @@ class Engine():
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
                         if event.stop <= validity_stop:
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   validity_start,
+                                                                                   event.stop,
+                                                                                   event)
                             list_events_to_be_removed.append(event.event_uuid)
                         else:
                             list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                         # end if
                         del list_split_events[event.event_uuid]
                     else:
-                        event.visible = True
                         if event.event_uuid in list_events_to_be_created_not_ending_on_period:
-                            event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                            del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            if event.stop <= validity_stop:
+                                # The event has to be created
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       event.stop,
+                                                                                       event)
+
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                # Remove the original event
+                                list_events_to_be_removed.append(event.event_uuid)
+                            # end if
+                        else:
+                            event.visible = True
                         # end if
                     # end if
                 # end for
@@ -2163,12 +2196,11 @@ class Engine():
                             else:
                                 start = event.start
                             # end if
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   validity_start,
+                                                                                   event)
                         # end if
                         if event.stop > validity_stop:
                             event.visible = False
@@ -2217,6 +2249,36 @@ class Engine():
         # end if
 
         return
+    
+    @debug
+    def _create_event_for_remove_deprecated_events_method(self, list_events_to_be_created, list_event_uuids_aliases, start, stop, event):
+        """
+        Method to create an event given the start and stop values
+
+        :param list_events_to_be_created: list of events to be created
+        :type list_events_to_be_created: dict with the following structure
+                list_events_to_be_created = {"events": [],
+                                     "values": {},
+                                     "keys": [],
+                                     "links": []}
+        :param list_event_uuids_aliases: list of event uuids aliases
+        :type list_event_uuids_aliases: dict
+        :param start: start time to assigned to the new event
+        :type start: datetime
+        :param stop: stop time to assigned to the new event
+        :type stop: datetime
+        :param event: original event to copy
+        :type event: event
+
+        """
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        self._insert_event(list_events_to_be_created["events"], id, start, stop,
+                           event.gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
+        self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+        self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
+        self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+
+        return
 
     @debug
     def _remove_deprecated_events_by_insert_and_erase_at_event_level(self):
@@ -2255,18 +2317,32 @@ class Engine():
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
-                # Check if for the last period there are pending splits
+                # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
                         event = list_split_events[event_uuid]
-                        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                        self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                           gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                        self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
-                        self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               timestamp,
+                                                                               event.stop,
+                                                                               event)
                         # Remove event
                         list_events_to_be_removed.append(event_uuid)
+                    # end for
+                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    for event_uuid in list_events_to_be_created_not_ending_on_period:
+                        # The event has to be created
+                        event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                        start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               start,
+                                                                               event.stop,
+                                                                               event)
+
+                        # Remove the original event
+                        list_events_to_be_removed.append(event.event_uuid)
+
                     # end for
                     break
                 # end if
@@ -2306,22 +2382,34 @@ class Engine():
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
                         if event.stop <= validity_stop:
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   validity_start,
+                                                                                   event.stop,
+                                                                                   event)
                             list_events_to_be_removed.append(event.event_uuid)
                         else:
                             list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                         # end if
                         del list_split_events[event.event_uuid]
                     else:
-                        event.visible = True
                         if event.event_uuid in list_events_to_be_created_not_ending_on_period:
-                            event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                            del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            if event.stop <= validity_stop:
+                                # The event has to be created
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       event.stop,
+                                                                                       event)
+
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                # Remove the original event
+                                list_events_to_be_removed.append(event.event_uuid)
+                            # end if
+                        else:
+                            event.visible = True
                         # end if
                     # end if
                 # end for
@@ -2364,12 +2452,11 @@ class Engine():
                             else:
                                 start = event.start
                             # end if
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   validity_start,
+                                                                                   event)
                         # end if
                         if event.stop > validity_stop:
                             event.visible = False
@@ -2456,18 +2543,33 @@ class Engine():
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
-                # Check if for the last period there are pending splits
+                # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
                         event = list_split_events[event_uuid]
-                        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                        self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                           gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                        self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                        self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
-                        self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               timestamp,
+                                                                               event.stop,
+                                                                               event)
                         # Remove event
                         list_events_to_be_removed.append(event_uuid)
+                    # end for
+
+                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    for event_uuid in list_events_to_be_created_not_ending_on_period:
+                        # The event has to be created
+                        event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                        start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               start,
+                                                                               event.stop,
+                                                                               event)
+
+                        # Remove the original event
+                        list_events_to_be_removed.append(event.event_uuid)
+
                     # end for
                     break
                 # end if
@@ -2517,22 +2619,34 @@ class Engine():
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
                         if event.stop <= validity_stop:
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   validity_start,
+                                                                                   event.stop,
+                                                                                   event)
                             list_events_to_be_removed.append(event.event_uuid)
                         else:
                             list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                         # end if
                         del list_split_events[event.event_uuid]
                     else:
-                        event.visible = True
                         if event.event_uuid in list_events_to_be_created_not_ending_on_period:
-                            event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                            del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            if event.stop <= validity_stop:
+                                # The event has to be created
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       event.stop,
+                                                                                       event)
+
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                # Remove the original event
+                                list_events_to_be_removed.append(event.event_uuid)
+                            # end if
+                        else:
+                            event.visible = True
                         # end if
                     # end if
                 # end for
@@ -2581,12 +2695,11 @@ class Engine():
                             else:
                                 start = event.start
                             # end if
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   validity_start,
+                                                                                   event)
                         # end if
                         if event.stop > validity_stop:
                             event.visible = False
@@ -2825,14 +2938,28 @@ class Engine():
                     if next_timestamp == len(filtered_timeline_points):
                         for event_uuid in list_split_events:
                             event = list_split_events[event_uuid]
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   timestamp,
+                                                                                   event.stop,
+                                                                                   event)
                             # Remove event
                             list_events_to_be_removed.append(event_uuid)
+                        # end for
+                        events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                        for event_uuid in list_events_to_be_created_not_ending_on_period:
+                            # The event has to be created
+                            event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                            start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   event.stop,
+                                                                                   event)
+
+                            # Remove the original event
+                            list_events_to_be_removed.append(event.event_uuid)
+
                         # end for
                         break
                     # end if
@@ -2867,24 +2994,35 @@ class Engine():
                     for event in events_max_generation_time:
                         if event.event_uuid in list_split_events:
                             if event.stop <= validity_stop:
-                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       validity_start,
+                                                                                       event.stop,
+                                                                                       event)
                                 list_events_to_be_removed.append(event.event_uuid)
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
                             del list_split_events[event.event_uuid]
                         else:
-                            event.visible = True
                             if event.event_uuid in list_events_to_be_created_not_ending_on_period:
-                                event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                            # end if
+                                if event.stop <= validity_stop:
+                                    # The event has to be created
+                                    start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                           list_event_uuids_aliases,
+                                                                                           start,
+                                                                                           event.stop,
+                                                                                           event)
 
+                                    del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                    # Remove the original event
+                                    list_events_to_be_removed.append(event.event_uuid)
+                                # end if
+                            else:
+                                event.visible = True
+                            # end if
                         # end if
                     # end for
 
@@ -2926,12 +3064,11 @@ class Engine():
                                 else:
                                     start = event.start
                                 # end if
-                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       validity_start,
+                                                                                       event)
                             # end if
                             if event.stop > validity_stop:
                                 event.visible = False
@@ -3028,14 +3165,28 @@ class Engine():
                     if next_timestamp == len(filtered_timeline_points):
                         for event_uuid in list_split_events:
                             event = list_split_events[event_uuid]
-                            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                            self._insert_event(list_events_to_be_created["events"], id, timestamp, event.stop,
-                                               gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                            self._replicate_event_values(event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                            self._create_event_uuid_alias(event_uuid, id, list_event_uuids_aliases)
-                            self._replicate_event_keys(event_uuid, id, list_events_to_be_created["keys"])
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   timestamp,
+                                                                                   event.stop,
+                                                                                   event)
                             # Remove event
                             list_events_to_be_removed.append(event_uuid)
+                        # end for
+                        events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                        for event_uuid in list_events_to_be_created_not_ending_on_period:
+                            # The event has to be created
+                            event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                            start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   event.stop,
+                                                                                   event)
+
+                            # Remove the original event
+                            list_events_to_be_removed.append(event.event_uuid)
+
                         # end for
                         break
                     # end if
@@ -3080,24 +3231,35 @@ class Engine():
                     for event in events_max_generation_time:
                         if event.event_uuid in list_split_events:
                             if event.stop <= validity_stop:
-                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                self._insert_event(list_events_to_be_created["events"], id, validity_start, event.stop,
-                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       validity_start,
+                                                                                       event.stop,
+                                                                                       event)
                                 list_events_to_be_removed.append(event.event_uuid)
                             else:
                                 list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
                             # end if
                             del list_split_events[event.event_uuid]
                         else:
-                            event.visible = True
                             if event.event_uuid in list_events_to_be_created_not_ending_on_period:
-                                event.start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
-                            # end if
+                                if event.stop <= validity_stop:
+                                    # The event has to be created
+                                    start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                    self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                           list_event_uuids_aliases,
+                                                                                           start,
+                                                                                           event.stop,
+                                                                                           event)
 
+                                    del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                    # Remove the original event
+                                    list_events_to_be_removed.append(event.event_uuid)
+                                # end if
+                            else:
+                                event.visible = True
+                            # end if
                         # end if
                     # end for
 
@@ -3145,12 +3307,11 @@ class Engine():
                                 else:
                                     start = event.start
                                 # end if
-                                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                                self._insert_event(list_events_to_be_created["events"], id, start, validity_start,
-                                                   gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
-                                self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
-                                self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
-                                self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       validity_start,
+                                                                                       event)
                             # end if
                             if event.stop > validity_stop:
                                 event.visible = False
