@@ -16,7 +16,7 @@ setup(name="eboa",
       packages=find_packages(),
       python_requires='>=3',
       install_requires=[
-          "sqlalchemy",
+          "sqlalchemy==1.3.22",
           "psycopg2-binary",
           "geoalchemy2",
           "python-dateutil",
