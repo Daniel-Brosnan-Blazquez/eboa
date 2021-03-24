@@ -36,7 +36,7 @@ from rboa.datamodel.alerts import ReportAlert
 from sqlalchemy.sql import text
 
 # Import exceptions
-from eboa.engine.errors import InputError
+from eboa.engine.errors import InputError, ErrorParsingFilters
 
 # Import auxiliary functions
 import eboa.engine.functions as functions
@@ -1998,6 +1998,15 @@ class Query():
         :return: found event_alerts
         :rtype: list
         """
+
+        # Check filters
+        if filters:
+            check_filters = [item in ["event_uuids", "source_uuids", "explicit_ref_uuids", "gauge_uuids", "sources", "explicit_refs", "gauge_names", "gauge_systems", "keys", "start_filters", "stop_filters", "duration_filters", "event_ingestion_time_filters", "value_filters", "names", "severities", "groups", "alert_uuids", "validated", "alert_ingestion_time_filters", "generators", "notified", "solved", "solved_time_filters", "notification_time_filters", "order_by", "limit", "offset", "delete"] for item in filters.keys()]
+            if False in check_filters:
+                raise ErrorParsingFilters("The allowed tags inside the filters structure are: event_uuids, source_uuids, explicit_ref_uuids, gauge_uuids, sources, explicit_refs, gauge_names, gauge_systems, keys, start_filters, stop_filters, duration_filters, event_ingestion_time_filters, value_filters, names, severities, groups, alert_uuids, validated, alert_ingestion_time_filters, generators, notified, solved, solved_time_filters, notification_time_filters, order_by, limit, offset and delete")
+            # end if
+        # end if
+
         params = []
         join_tables = False
         tables = {}

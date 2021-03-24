@@ -119,6 +119,16 @@ class ErrorParsingDictionary(Error):
     def __init__(self, message):
         self.message = message
 
+class ErrorParsingFilters(Error):
+    """Exception raised when the filters passed to a method are not accepted
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class DuplicatedEventLinkRef(Error):
     """Exception raised when there is more than one event with the same link reference identifier.
 
