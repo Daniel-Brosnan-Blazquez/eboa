@@ -9,6 +9,7 @@ module eboa
 import os
 import json
 from dateutil import parser
+import datetime
 
 # Import exceptions
 from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
@@ -322,3 +323,28 @@ def is_valid_severity_filter(severity_filter):
 
     return True
 
+def extract_events_with_alerts_to_be_notified(events):
+    """
+    Extract the events with alerts to be notified (notification time <= current time)
+
+    :param events: list of events to extract those with alerts to be notified from
+    :type events: list
+
+    :return: list of events with alerts to be notified
+    :rtype: list
+    """
+
+    return [event for event in events for alert in event.alerts if alert.notification_time <= datetime.datetime.now()]
+
+def extract_alerts_to_be_notified(alerts):
+    """
+    Extract the alerts to be notified (notification time <= current time)
+
+    :param alerts: list of alerts to extract those to be notified from
+    :type alerts: list
+
+    :return: list of alerts to be notified
+    :rtype: list
+    """
+
+    return [alert for alert in alerts if alert.notification_time <= datetime.datetime.now()]
