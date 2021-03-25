@@ -2992,7 +2992,7 @@ class TestQuery(unittest.TestCase):
         filters["severities"] = {"filter": "critical", "op": "=="}
         filters["groups"] = {"filter": "alert_group", "op": "=="}
         filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_event_alerts()], "op": "in"}
-        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        filters["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
         filters["generators"] = {"filter": "test", "op": "=="}
         filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
         
