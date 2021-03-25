@@ -3621,7 +3621,7 @@ class TestEngine(unittest.TestCase):
         self.engine_eboa.treat_data(data)
 
         data = {"operations": [{
-            "mode": "insert_and_erase",
+            "mode": "insert",
             "dim_signature": {"name": "dim_signature",
                                   "exec": "exec",
                                   "version": "1.0"},
@@ -3812,7 +3812,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_insert_and_erase_no_events(self):
+    def test_remove_deprecated_event_insert_and_erase_at_dim_signature_level_no_events(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -4980,7 +4980,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources_status) == 1
 
-    def test_treat_data_same_dim_signature_diferent_processors(self):
+    def test_treat_data_insert_and_erase_at_dim_signature_level_same_dim_signature_diferent_processors(self):
 
         data = {"operations": [{
             "mode": "insert_and_erase",
@@ -8002,7 +8002,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(values_ddbb) == 8
 
-    def test_remove_deprecated_event_insert_and_erase_with_priority_no_events(self):
+    def test_remove_deprecated_event_insert_and_erase_at_dim_signature_level_no_events(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -8076,6 +8076,372 @@ class TestEngine(unittest.TestCase):
 
         assert len(events_ddbb) == 0
 
+    def test_insert_event_insert_and_erase_at_dim_signature_level_create_event_max_generation_time_not_ending_on_period(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-07-07T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T04:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T04:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid1 = events[0].event_uuid
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2019-08-01T02:07:03",
+                       "validity_start": "2018-06-05T03:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T03:07:03",
+                "stop": "2018-06-05T008:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 2
+
+        events = self.session.query(Event).join(Source).filter(Source.name == "source2.json").all()
+
+        assert len(events) == 1
+
+        event_uuid2 = events[0].event_uuid
+
+        data3 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source3.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-09-06T02:07:03",
+                       "validity_start": "2018-06-05T04:07:20",
+                       "validity_stop": "2018-06-05T06:07:36"}
+        }]
+        }
+        
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data4 = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source4.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-10-03T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data4)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 2
+        
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T02:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:36",
+                                                                           Source.name == "source.json").all()
+        assert len(events) == 1
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T04:07:36",
+                                                                           Event.stop == "2018-06-05T08:07:36",
+                                                                           Source.name == "source2.json").all()
+        assert len(events) == 1
+
+    def test_insert_event_insert_and_erase_at_dim_signature_level_remove_events_starting_before_validity_start(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-07-07T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T04:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T04:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid1 = events[0].event_uuid
+
+        data2 = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2019-08-01T02:07:03",
+                       "validity_start": "2018-06-05T03:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T03:07:03",
+                "stop": "2018-06-05T004:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 2
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T03:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:03",
+                                                                           Source.name == "source2.json").all()
+        assert len(events) == 1
+
+        data3 = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source3.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2019-09-01T02:07:03",
+                       "validity_start": "2018-06-05T03:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T03:07:03",
+                "stop": "2018-06-05T006:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 3
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T03:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:03",
+                                                                           Source.name == "source3.json").all()
+        assert len(events) == 1
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T04:07:36",
+                                                                           Event.stop == "2018-06-05T06:07:36",
+                                                                           Source.name == "source3.json").all()
+        assert len(events) == 1
+
+    def test_insert_event_insert_and_erase_at_dim_signature_level_remove_events_starting_before_validity_start_not_ending_on_period(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-07-07T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T04:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T04:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 1
+
+        event_uuid1 = events[0].event_uuid
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2019-08-01T02:07:03",
+                       "validity_start": "2018-06-05T03:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:20",
+                "stop": "2018-06-05T008:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data3 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source3.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-08-01T02:07:03",
+                       "validity_start": "2018-06-05T04:07:36",
+                       "validity_stop": "2018-06-05T05:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:36",
+                "stop": "2018-06-05T005:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data4 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source4.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-08-01T02:07:03",
+                       "validity_start": "2018-06-05T06:07:36",
+                       "validity_stop": "2018-06-05T08:07:36"}
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data4)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data5 = {"operations": [{
+            "mode": "insert_and_erase",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source5.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-10-03T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:20",
+                "stop": "2018-06-05T005:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data5)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.session.query(Event).all()
+
+        assert len(events) == 2
+        
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T04:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:36",
+                                                                           Source.name == "source.json").all()
+        assert len(events) == 1
+
+        events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
+                                                                           Gauge.system == "GAUGE_SYSTEM",
+                                                                           Event.start == "2018-06-05T04:07:36",
+                                                                           Event.stop == "2018-06-05T06:07:36",
+                                                                           Source.name == "source2.json").all()
+        assert len(events) == 1
+
+        
+        
     def test_remove_deprecated_event_insert_and_erase_with_priority_one_starts_before_links(self):
 
         self.engine_eboa._initialize_context_insert_data()
