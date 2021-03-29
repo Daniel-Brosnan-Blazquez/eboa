@@ -724,3 +724,24 @@ def validate_alert_cnf(data):
     # end if
 
     return
+
+def check_filters(filters, expected_filters):
+    """
+    Method to check if the received filters are matching the expected filters
+    
+    :param filters: dictionary with the filters to apply to the query
+    :type filters: dict
+    :param expected_filters: keys expected inside the filters structure
+    :type expected_filters: list
+
+    """
+
+    # Check filters
+    if filters:
+        check_filters = [item in expected_filters for item in filters.keys()]
+        if False in check_filters:
+            raise ErrorParsingFilters("The allowed tags inside the filters structure are: {}. Received filters are {}".format(expected_filters, filters.keys()))
+        # end if
+    # end if
+
+    return

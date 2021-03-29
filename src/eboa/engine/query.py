@@ -56,6 +56,9 @@ from sqlalchemy.orm.exc import StaleDataError
 # Import alert severity codes
 from eboa.engine.alerts import alert_severity_codes
 
+# Import parsing module
+import eboa.engine.parsing as parsing
+
 logging = Log(name = __name__)
 logger = logging.logger
 
@@ -2000,12 +2003,8 @@ class Query():
         """
 
         # Check filters
-        if filters:
-            check_filters = [item in ["event_uuids", "source_uuids", "explicit_ref_uuids", "gauge_uuids", "sources", "explicit_refs", "gauge_names", "gauge_systems", "keys", "start_filters", "stop_filters", "duration_filters", "event_ingestion_time_filters", "value_filters", "names", "severities", "groups", "alert_uuids", "validated", "alert_ingestion_time_filters", "generators", "notified", "solved", "solved_time_filters", "notification_time_filters", "order_by", "limit", "offset", "delete"] for item in filters.keys()]
-            if False in check_filters:
-                raise ErrorParsingFilters("The allowed tags inside the filters structure are: event_uuids, source_uuids, explicit_ref_uuids, gauge_uuids, sources, explicit_refs, gauge_names, gauge_systems, keys, start_filters, stop_filters, duration_filters, event_ingestion_time_filters, value_filters, names, severities, groups, alert_uuids, validated, alert_ingestion_time_filters, generators, notified, solved, solved_time_filters, notification_time_filters, order_by, limit, offset and delete")
-            # end if
-        # end if
+        expected_filters = ["event_uuids", "source_uuids", "explicit_ref_uuids", "gauge_uuids", "sources", "explicit_refs", "gauge_names", "gauge_systems", "keys", "start_filters", "stop_filters", "duration_filters", "event_ingestion_time_filters", "value_filters", "names", "severities", "groups", "alert_uuids", "validated", "alert_ingestion_time_filters", "generators", "notified", "solved", "solved_time_filters", "notification_time_filters", "order_by", "limit", "offset", "delete"]
+        parsing.check_filters(filters, expected_filters)
 
         params = []
         join_tables = False

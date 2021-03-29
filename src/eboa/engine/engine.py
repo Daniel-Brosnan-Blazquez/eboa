@@ -153,7 +153,7 @@ exit_codes = {
     },
     "PRIORITY_NOT_DEFINED": {
         "status": 21,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event or an annotation with insertion_type 'insert_and_erase_with_priority', 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' or 'EVENT_KEYS_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines the operation mode as 'insert_and_erase_with_priority' or contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' or 'EVENT_KEYS_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
     },
     "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
         "status": 22,
@@ -644,6 +644,15 @@ class Engine():
             self.source.content_json = json.dumps(self.operation)
             self.session.commit()
             return exit_codes["WRONG_SOURCE_PERIOD"]["status"]
+        except PriorityNotDefined as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["PRIORITY_NOT_DEFINED"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["PRIORITY_NOT_DEFINED"]["status"]
         # end try
 
         # Get the general source entry (processor = None, version = None, DIM signature = PENDING_SOURCES)
@@ -970,7 +979,7 @@ class Engine():
                 pass
             # end try
         # end if
-
+        
         return
 
     def _insert_ingestion_progress(self, progress):
@@ -997,6 +1006,7 @@ class Engine():
         # Obtain all attributes of the source
         version = self.operation.get("dim_signature").get("version")
         processor = self.operation.get("dim_signature").get("exec")
+        operation_mode = self.operation.get("mode")
         source = self.operation.get("source")
         name = source.get("name")
         reception_time = source.get("reception_time")
@@ -1029,14 +1039,16 @@ class Engine():
             processing_duration = datetime.timedelta(seconds=float(processing_duration_from_input_data))
         # end if
 
+        # Set the processor progress to 100 if the flag ingested is not set to false
+        processor_progress = None
+        if not self.operation.get("source").get("ingested") == "false":
+            processor_progress = 100
+        # end if
+        
         id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
         if parser.parse(validity_stop).replace(tzinfo=None) < parser.parse(validity_start).replace(tzinfo=None) or parser.parse(reported_validity_stop).replace(tzinfo=None) < parser.parse(reported_validity_start).replace(tzinfo=None):
             # The validity period is not correct (stop > start)
             # Create Source for registering the error in the DDBB
-            processor_progress = None
-            if not self.operation.get("source").get("ingested") == "false":
-                processor_progress = 100
-            # end if
             self.source = Source(id, name, reception_time, generation_time,
                                  version, self.dim_signature, processor = processor,
                                  processing_duration = processing_duration, processor_progress = processor_progress,
@@ -1071,7 +1083,7 @@ class Engine():
                                                                                                      processor, 
                                                                                                      version))
         elif self.source:
-            # Upadte the information
+            # Source available in DDBB but with flag ingested equal to False. Upadte the information
             self.source.validity_start = parser.parse(validity_start)
             self.source.validity_stop = parser.parse(validity_stop)
             self.source.reported_validity_start = parser.parse(reported_validity_start)
@@ -1083,54 +1095,45 @@ class Engine():
             self.source.priority = priority
             self.source.ingestion_completeness = ingestion_completeness_check
             self.source.ingestion_completeness_message = ingestion_completeness_message
-            processor_progress = None
-            if not self.operation.get("source").get("ingested") == "false":
-                self.source.processor_progress = 100
-            # end if
-
-            self.source_progress = self.session_progress.query(Source).filter(Source.name == name,
-                                                                              Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
-                                                                              Source.processor_version == version,
-                                                                              Source.processor == processor).first()
-
-            return
+        else:
+            # Source not available in DDBB. Insert the information
+            self.source = Source(id, name, parser.parse(reception_time),
+                                 parser.parse(generation_time), version, self.dim_signature,
+                                 parser.parse(validity_start), parser.parse(validity_stop),
+                                 processor = processor, processing_duration = processing_duration,
+                                 processor_progress = processor_progress, reported_generation_time = reported_generation_time,
+                                 reported_validity_start = reported_validity_start,
+                                 reported_validity_stop = reported_validity_stop, priority = priority,
+                                 ingestion_completeness = ingestion_completeness_check, ingestion_completeness_message = ingestion_completeness_message)
+            self.session.add(self.source)
+            try:
+                race_condition()
+                self.session.commit()
+            except IntegrityError:
+                # The source has been ingested between the query and the insertion
+                self.session.rollback()
+                self.source = self.session.query(Source).filter(Source.name == name,
+                                                                       Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
+                                                                       Source.processor_version == version,
+                    Source.processor == processor).first()
+                raise SourceAlreadyIngested(exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
+                                                                  self.dim_signature.dim_signature,
+                                                                  processor, 
+                                                                  version))
+            # end try
         # end if
 
-        processor_progress = None
-        if not self.operation.get("source").get("ingested") == "false":
-            processor_progress = 100
+        # Check if the source has to define the priority
+        if operation_mode in ["insert_and_erase_with_priority", "insert_and_erase_with_equal_or_lower_priority"] and not self.source.priority:
+            raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         # end if
-
-        self.source = Source(id, name, parser.parse(reception_time),
-                             parser.parse(generation_time), version, self.dim_signature,
-                             parser.parse(validity_start), parser.parse(validity_stop),
-                             processor = processor, processing_duration = processing_duration,
-                             processor_progress = processor_progress, reported_generation_time = reported_generation_time,
-                             reported_validity_start = reported_validity_start,
-                             reported_validity_stop = reported_validity_stop, priority = priority,
-                             ingestion_completeness = ingestion_completeness_check, ingestion_completeness_message = ingestion_completeness_message)
-        self.session.add(self.source)
-        try:
-            race_condition()
-            self.session.commit()
-        except IntegrityError:
-            # The DIM processing has been ingested between the query and the insertion
-            self.session.rollback()
-            self.source = self.session.query(Source).filter(Source.name == name,
-                                                                   Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
-                                                                   Source.processor_version == version,
-                Source.processor == processor).first()
-            raise SourceAlreadyIngested(exit_codes["SOURCE_ALREADY_INGESTED"]["message"].format(name,
-                                                              self.dim_signature.dim_signature,
-                                                              processor, 
-                                                              version))
-        # end try
-
+            
+        
         self.source_progress = self.session_progress.query(Source).filter(Source.name == name,
                                                         Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
                                                         Source.processor_version == version,
                                                         Source.processor == processor).first()
-
+        
         list_alerts = []
         
         # Manage alerts
@@ -1147,7 +1150,7 @@ class Engine():
                 kwargs["notification_time"] = alert.get("notification_time")
                 kwargs["alert_uuid"] = alert_cnf.alert_uuid
                 kwargs["source_alert_uuid"] = alert_uuid
-                kwargs["source_uuid"] = id
+                kwargs["source_uuid"] = self.source.source_uuid
                 list_alerts.append(dict(kwargs))
             # end for
         # end if
