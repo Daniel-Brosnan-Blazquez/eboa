@@ -14,8 +14,6 @@ from dateutil import parser
 import datetime
 import shlex
 from subprocess import Popen, PIPE
-import traceback
-import sys
 
 # Import engine functions
 from eboa.engine.functions import get_resources_path, get_schemas_path
@@ -199,9 +197,7 @@ def execute_generator(generator, generation_mode, begin, end, output_path = None
     output, error = program.communicate()
     return_code = program.returncode
     if return_code != 0:
-        logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
-        logger.error(traceback.format_exc())
-        traceback.print_exc(file=sys.stdout)
+        logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error.decode())))
         exit(-1)
     # end if
 
