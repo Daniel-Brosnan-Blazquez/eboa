@@ -1998,14 +1998,15 @@ class Engine():
 
                 # Remove events due to INSERT_and_ERASE_with_PRIORITY insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_with_priority_at_event_level()
+
+                # Remove events due to INSERT_and_ERASE_per_EVENT insertion mode
+                self._remove_deprecated_events_by_insert_and_erase_per_event()
+
+                # Remove events due to INSERT_and_ERASE_per_EVENT_with_PRIORITY insertion mode
+                self._remove_deprecated_events_by_insert_and_erase_per_event_with_priority()
+
             # end if
             
-            # Remove events due to INSERT_and_ERASE_per_EVENT insertion mode
-            self._remove_deprecated_events_by_insert_and_erase_per_event()
-
-            # Remove events due to INSERT_and_ERASE_per_EVENT_with_PRIORITY insertion mode
-            self._remove_deprecated_events_by_insert_and_erase_per_event_with_priority()
-
             # Remove events due to EVENT_KEYS insertion mode
             self._remove_deprecated_events_event_keys()
 
