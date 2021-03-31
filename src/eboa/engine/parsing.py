@@ -375,8 +375,8 @@ def _validate_gauge(data):
     if not type(data["name"]) == str:
         raise ErrorParsingDictionary("The tag name inside gauge structure has to be of type string")
     # end if
-    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "EVENT_KEYS_with_PRIORITY", "INSERT_and_ERASE", "INSERT_and_ERASE_per_EVENT", "INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY"]:
-        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS', 'EVENT_KEYS_with_PRIORITY', 'INSERT_and_ERASE', 'INSERT_and_ERASE_per_EVENT', 'INSERT_and_ERASE_with_PRIORITY' and 'INSERT_and_ERASE_per_EVENT_with_PRIORITY'")
+    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "EVENT_KEYS_with_PRIORITY", "EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE_per_EVENT", "INSERT_and_ERASE_per_EVENT_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_EQUAL_or_LOWER_PRIORITY"]:
+        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS', 'EVENT_KEYS_with_PRIORITY', 'EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY', 'INSERT_and_ERASE', 'INSERT_and_ERASE_with_PRIORITY', 'INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY', 'INSERT_and_ERASE_per_EVENT', 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' and 'INSERT_and_ERASE_per_EVENT_with_EQUAL_or_LOWER_PRIORITY'")
     # end if
 
     # Optional tags
@@ -491,8 +491,8 @@ def _validate_annotation_cnf(data):
     # end if
 
     # Optional tags
-    if "insertion_type" in data and not data["insertion_type"] in ["SIMPLE_UPDATE", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY"]:
-        raise ErrorParsingDictionary("The tag insertion_type inside annotation_cnf structure has to be of type string and allowed values are SIMPLE_UPDATE, INSERT_and_ERASE and INSERT_and_ERASE_with_PRIORITY")
+    if "insertion_type" in data and not data["insertion_type"] in ["SIMPLE_UPDATE", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY"]:
+        raise ErrorParsingDictionary("The tag insertion_type inside annotation_cnf structure has to be of type string and allowed values are SIMPLE_UPDATE, INSERT_and_ERASE, INSERT_and_ERASE_with_PRIORITY and INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY")
     # end if
     if "system" in data and not type(data["system"]) == str:
         raise ErrorParsingDictionary("The tag system inside annotation_cnf structure has to be of type string")
