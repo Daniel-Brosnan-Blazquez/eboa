@@ -153,7 +153,7 @@ exit_codes = {
     },
     "PRIORITY_NOT_DEFINED": {
         "status": 21,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines the operation mode as 'insert_and_erase_with_priority' or 'insert_and_erase_with_equal_or_lower_priority' or contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_EQUAL_or_LOWER_PRIORITY' or 'EVENT_KEYS_with_PRIORITY' or 'EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY' but the corresponding priority has not been defined inside the source structure"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines the operation mode as 'insert_and_erase_with_priority' or 'insert_and_erase_with_equal_or_lower_priority' or contains an event or an annotation with insertion_type 'INSERT_and_ERASE_with_PRIORITY' or 'INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY' or 'INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY' or 'INSERT_and_ERASE_per_EVENT_with_PRIORITY' or 'EVENT_KEYS_with_PRIORITY' but the corresponding priority has not been defined inside the source structure"
     },
     "WRONG_SOURCE_REPORTED_VALIDITY_PERIOD": {
         "status": 22,
@@ -587,15 +587,13 @@ class Engine():
         self.insert_and_erase_per_event_gauges = {}
         self.insert_and_erase_with_priority_gauges = {}
         self.insert_and_erase_with_equal_or_lower_priority_gauges = {}
+        self.insert_and_erase_intersected_events_with_priority_gauges = {}
         self.insert_and_erase_per_event_with_priority_gauges = {}
-        self.insert_and_erase_per_event_with_equal_or_lower_priority_gauges = {}
         self.annotation_cnfs_explicit_refs = []
         self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority = []
-        self.annotation_cnfs_explicit_refs_insert_and_erase_with_equal_or_lower_priority = []
         self.annotations = {}
         self.keys_events = {}
         self.keys_events_with_priority = {}
-        self.keys_events_with_equal_or_lower_priority = {}
         self.alert_cnfs = {}
         self.alert_groups = {}
 
@@ -1481,7 +1479,7 @@ class Engine():
             # end if
             key = event.get("key")
             visible = False
-            if gauge_info["insertion_type"] in ["INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_EQUAL_or_LOWER_PRIORITY", "EVENT_KEYS_with_PRIORITY", "EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY"] and not self.source.priority:
+            if gauge_info["insertion_type"] in ["INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY", "INSERT_and_ERASE_per_EVENT_with_PRIORITY", "EVENT_KEYS_with_PRIORITY"] and not self.source.priority:
                 raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
             # end if
             if gauge_info["insertion_type"] == "SIMPLE_UPDATE":
@@ -1498,24 +1496,18 @@ class Engine():
                 self.insert_and_erase_with_priority_gauges[gauge.gauge_uuid] = None
             elif gauge_info["insertion_type"] == "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY":
                 self.insert_and_erase_with_equal_or_lower_priority_gauges[gauge.gauge_uuid] = None
+            elif gauge_info["insertion_type"] == "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY":
+                self.insert_and_erase_intersected_events_with_priority_gauges[gauge.gauge_uuid] = None
             elif gauge_info["insertion_type"] == "INSERT_and_ERASE_per_EVENT_with_PRIORITY":
                 if gauge.gauge_uuid not in self.insert_and_erase_per_event_with_priority_gauges:
                     # Initialize the list of segments to be reviewed
                     self.insert_and_erase_per_event_with_priority_gauges[gauge.gauge_uuid] = []
                 # end if
                 self.insert_and_erase_per_event_with_priority_gauges[gauge.gauge_uuid].append((start, stop))
-            elif gauge_info["insertion_type"] == "INSERT_and_ERASE_per_EVENT_EQUAL_or_LOWER_with_PRIORITY":
-                if gauge.gauge_uuid not in self.insert_and_erase_per_event_with_equal_or_lower_priority_gauges:
-                    # Initialize the list of segments to be reviewed
-                    self.insert_and_erase_per_event_with_equal_or_lower_priority_gauges[gauge.gauge_uuid] = []
-                # end if
-                self.insert_and_erase_per_event_with_equal_or_lower_priority_gauges[gauge.gauge_uuid].append((start, stop))
             elif gauge_info["insertion_type"] == "EVENT_KEYS":
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS_with_PRIORITY":
                 self.keys_events_with_priority[(key, str(self.dim_signature.dim_signature_uuid))] = None
-            elif gauge_info["insertion_type"] == "EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY":
-                self.keys_events_with_equal_or_lower_priority[(key, str(self.dim_signature.dim_signature_uuid))] = None
             # end if
             explicit_ref_uuid = None
             if explicit_ref != None:
@@ -1763,15 +1755,6 @@ class Engine():
                         raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
                     # end if
                     self.annotation_cnfs_explicit_refs_insert_and_erase_with_priority.append({"explicit_ref": explicit_ref,
-                                                               "annotation_cnf": annotation_cnf
-                                                               })
-                    visible = False
-                # end if
-                elif annotation_cnf_info["insertion_type"] == "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY":
-                    if not self.source.priority:
-                        raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
-                    # end if
-                    self.annotation_cnfs_explicit_refs_insert_and_erase_with_equal_or_lower_priority.append({"explicit_ref": explicit_ref,
                                                                "annotation_cnf": annotation_cnf
                                                                })
                     visible = False
@@ -2028,14 +2011,14 @@ class Engine():
                 # Remove events due to INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_with_equal_or_lower_priority_at_event_level()
 
+                # Remove events due to INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY insertion mode
+                self._remove_deprecated_events_by_insert_and_erase_intersected_events_with_priority_at_event_level()
+
                 # Remove events due to INSERT_and_ERASE_per_EVENT insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_per_event()
 
                 # Remove events due to INSERT_and_ERASE_per_EVENT_with_PRIORITY insertion mode
                 self._remove_deprecated_events_by_insert_and_erase_per_event_with_priority()
-
-                # Remove events due to INSERT_and_ERASE_per_EVENT_with_equal_or_lower_PRIORITY insertion mode
-                #self._remove_deprecated_events_by_insert_and_erase_per_event_with_equal_or_lower_priority()
 
             # end if
             
@@ -2045,17 +2028,11 @@ class Engine():
             # Remove events due to EVENT_KEYS_with_PRIORITY insertion mode
             self._remove_deprecated_events_event_keys_with_priority()
 
-            # Remove events due to EVENT_KEYS_with_EQUAL_or_LOWER_PRIORITY insertion mode
-            #self._remove_deprecated_events_event_keys_with_equal_or_lower_priority()
-
             # Remove annotations due to INSERT_and_ERASE insertion mode
             self._remove_deprecated_annotations()
 
             # Remove annotations due to INSERT_and_ERASE_with_PRIORITY insertion mode
             self._remove_deprecated_annotations_insert_and_erase_with_priority()
-
-            # Remove annotations due to INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY insertion mode
-            #self._remove_deprecated_annotations_insert_and_erase_with_equal_or_lower_priority()
 
             # Commit data
             self.session.commit()
@@ -3392,6 +3369,254 @@ class Engine():
                                                                                                     Source.validity_stop > validity_start),
                                                                                                and_(Source.validity_start == validity_start,
                                                                                                     Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+
+                # Check if the period contains sources with the relevant events if not continue with the following period
+                if not source_max_generation_time:
+                    continue
+                # end if
+                
+                # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
+                # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
+                events_max_generation_time = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
+                                                                                           Event.source_uuid == source_max_generation_time.source_uuid,
+                                                                              Event.gauge_uuid == gauge_uuid,
+                                                                              or_(and_(Event.start < validity_stop,
+                                                                                       Event.stop > validity_start),
+                                                                                  and_(Event.start == validity_start,
+                                                                                       Event.stop == validity_stop))).all()
+
+                # Review events with higher generation time in the period
+                for event in events_max_generation_time:
+                    if event.event_uuid in list_split_events:
+                        if event.stop <= validity_stop:
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   validity_start,
+                                                                                   event.stop,
+                                                                                   event)
+                            list_events_to_be_removed.append(event.event_uuid)
+                        else:
+                            list_events_to_be_created_not_ending_on_period[event.event_uuid] = validity_start
+                        # end if
+                        del list_split_events[event.event_uuid]
+                    else:
+                        if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                            if event.stop <= validity_stop:
+                                # The event has to be created
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                       list_event_uuids_aliases,
+                                                                                       start,
+                                                                                       event.stop,
+                                                                                       event)
+
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+
+                                # Remove the original event
+                                list_events_to_be_removed.append(event.event_uuid)
+                            # end if
+                        else:
+                            event.visible = True
+                        # end if
+                    # end if
+                # end for
+
+                # Delete deprecated events fully contained into the validity period
+                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.priority <= self.source.priority,
+                                                                                                            or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                     Source.priority <= max_priority),
+                                                                                                                Source.priority < max_priority),
+                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
+                                                                                                            Event.gauge_uuid == gauge_uuid,
+                                                                                                            Event.start >= validity_start,
+                                                                                                            Event.stop <= validity_stop)
+                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
+                                                                                                     Event.gauge_uuid == gauge_uuid,
+                                                                                                     Event.start >= validity_start,
+                                                                                                     Event.stop <= validity_stop)
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
+                event_uuids_to_be_removed.delete(synchronize_session=False)
+
+                # Get the events ending on the current period to be removed
+                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
+                                                                                                    or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                             Source.priority <= max_priority),
+                                                                                                        Source.priority < max_priority),
+                                                                                                    Event.gauge_uuid == gauge_uuid,
+                                                                                                    Event.start <= validity_start,
+                                                                                                    Event.stop > validity_start,
+                                                                                                    Event.stop <= validity_stop,
+                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
+
+                # Get the events ending on the current period to be removed
+                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
+                                                                                                        or_(and_(Source.generation_time <= max_generation_time,
+                                                                                                                 Source.priority <= max_priority),
+                                                                                                            Source.priority < max_priority),
+                                                                                                        Event.gauge_uuid == gauge_uuid,
+                                                                                                        Event.start < validity_stop,
+                                                                                                        Event.stop > validity_stop,
+                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
+                
+                events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
+                for event in events_not_staying:
+                    if not event.event_uuid in list_split_events:
+                        if event.start < validity_start:
+                            if event.event_uuid in list_events_to_be_created_not_ending_on_period:
+                                start = list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                                del list_events_to_be_created_not_ending_on_period[event.event_uuid]
+                            else:
+                                start = event.start
+                            # end if
+                            self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                                   list_event_uuids_aliases,
+                                                                                   start,
+                                                                                   validity_start,
+                                                                                   event)
+                        # end if
+                        if event.stop > validity_stop:
+                            event.visible = False
+                            list_split_events[event.event_uuid] = event
+                        else:
+                            list_events_to_be_removed.append(event.event_uuid)
+                        # end if
+                    elif event.event_uuid in list_split_events and event.stop <= validity_stop:
+                        list_events_to_be_removed.append(event.event_uuid)
+                        del list_split_events[event.event_uuid]
+                    # end if
+                # end for
+            # end for
+
+        # end for
+        # Bulk insert events
+        self.session.bulk_insert_mappings(Event, list_events_to_be_created["events"])
+        # Bulk insert keys
+        self.session.bulk_insert_mappings(EventKey, list_events_to_be_created["keys"])
+        # Bulk insert links
+        self._replicate_event_links(list_event_uuids_aliases, list_events_to_be_created["links"])
+        self.session.bulk_insert_mappings(EventLink, list_events_to_be_created["links"])
+
+        # Remove the events that were partially affected by the insert and erase operation
+        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+        self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+        # Bulk insert values
+        if EventObject in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
+        # end if
+        if EventBoolean in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventBoolean, list_events_to_be_created["values"][EventBoolean])
+        # end if
+        if EventText in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventText, list_events_to_be_created["values"][EventText])
+        # end if
+        if EventDouble in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventDouble, list_events_to_be_created["values"][EventDouble])
+        # end if
+        if EventTimestamp in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventTimestamp, list_events_to_be_created["values"][EventTimestamp])
+        # end if
+        if EventGeometry in list_events_to_be_created["values"]:
+            self.session.bulk_insert_mappings(EventGeometry, list_events_to_be_created["values"][EventGeometry])
+        # end if
+
+        return
+
+    @debug
+    def _remove_deprecated_events_by_insert_and_erase_intersected_events_with_priority_at_event_level(self):
+        """
+        Method to remove events that were overwritten by other events due to insert and erase with equal or lower priority and intersected by greater priority at event level insertion mode
+        """
+        list_events_to_be_created = {"events": [],
+                                     "values": {},
+                                     "keys": [],
+                                     "links": []}
+        list_event_uuids_aliases = {}
+        list_events_to_be_removed = []
+        for gauge_uuid in self.insert_and_erase_intersected_events_with_priority_gauges:
+            list_events_to_be_created_not_ending_on_period = {}
+            list_split_events = {}
+
+            # Get the events intersecting the validity period defined for the current source
+            events = self.session.query(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                      or_(and_(Event.start < self.source.validity_stop,
+                                                               Event.stop > self.source.validity_start),
+                                                          and_(Event.start == self.source.validity_start,
+                                                               Event.stop == self.source.validity_stop))).all()
+            # Get the timeline of event periods intersecting
+            timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
+
+            filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
+
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            for event in events_duration_0:
+                filtered_timeline_points.append(event.stop)
+            # end for
+            
+            # Sort list
+            filtered_timeline_points.sort()
+
+            # Iterate through the periods
+            next_timestamp = 1
+            for timestamp in filtered_timeline_points:
+                # Check if for the last period there are pending splits or events to be created not ending on previous periods
+                if next_timestamp == len(filtered_timeline_points):
+                    for event_uuid in list_split_events:
+                        event = list_split_events[event_uuid]
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               timestamp,
+                                                                               event.stop,
+                                                                               event)
+                        # Remove event
+                        list_events_to_be_removed.append(event_uuid)
+                    # end for
+
+                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    for event_uuid in list_events_to_be_created_not_ending_on_period:
+                        # The event has to be created
+                        event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
+                        start = list_events_to_be_created_not_ending_on_period[event_uuid]
+                        self._create_event_for_remove_deprecated_events_method(list_events_to_be_created,
+                                                                               list_event_uuids_aliases,
+                                                                               start,
+                                                                               event.stop,
+                                                                               event)
+
+                        # Remove the original event
+                        list_events_to_be_removed.append(event.event_uuid)
+
+                    # end for
+                    break
+                # end if
+
+                validity_start = timestamp
+                validity_stop = filtered_timeline_points[next_timestamp]
+                next_timestamp += 1
+
+                # Get the maximum priority at this moment
+                max_priority = self.session.query(func.max(Source.priority)).join(Event).filter(Source.priority >= self.source.priority,
+                                                                                                Event.gauge_uuid == gauge_uuid,
+                                                                                                or_(and_(Event.start < validity_stop,
+                                                                                                         Event.stop > validity_start),
+                                                                                                    and_(Event.start == validity_start,
+                                                                                                         Event.stop == validity_stop))).first()
+                # Get the maximum generation time at this moment
+                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                              Source.priority == max_priority,
+                                                                                                              or_(and_(Event.start < validity_stop,
+                                                                                                                       Event.stop > validity_start),
+                                                                                                                  and_(Event.start == validity_start,
+                                                                                                                       Event.stop == validity_stop))).first()
+                
+                # Get the related source
+                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                           Source.priority == max_priority,
+                                                                                           Event.gauge_uuid == gauge_uuid,
+                                                                                           or_(and_(Event.start < validity_stop,
+                                                                                                    Event.stop > validity_start),
+                                                                                               and_(Event.start == validity_start,
+                                                                                                    Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
