@@ -3594,9 +3594,9 @@ class Engine():
                                                                                                 or_(and_(Event.start < validity_stop,
                                                                                                          Event.stop > validity_start),
                                                                                                     and_(Event.start == validity_start,
-                                                                                                         Event.stop == validity_stop))).first()
+                                                                                                         Event.stop == validity_stop))).first()[0]
 
-                if max_priority[0] and max_priority[0] <= self.source.priority:
+                if max_priority and max_priority <= self.source.priority:
                     # Get the maximum generation time at this moment
                     max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                                                                   Source.priority == max_priority,
@@ -3613,7 +3613,7 @@ class Engine():
                                                                                                         Source.validity_stop > validity_start),
                                                                                                    and_(Source.validity_start == validity_start,
                                                                                                         Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
-                elif max_priority[0] and max_priority[0] > self.source.priority:
+                elif max_priority and max_priority > self.source.priority:
                     # Get the maximum generation time at this moment
                     max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                                                                   Source.priority == max_priority,
@@ -3629,6 +3629,12 @@ class Engine():
                                                                                                         Event.stop > validity_start),
                                                                                                    and_(Event.start == validity_start,
                                                                                                         Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+
+                # end if
+                
+                # Check if there were no events to define the maximum priority in this period
+                if not max_priority:
+                    continue
                 # end if
                 
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
