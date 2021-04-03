@@ -2192,9 +2192,8 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
-
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
+                
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
                                                                                                            Event.gauge_uuid == gauge_uuid,
@@ -2436,8 +2435,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
@@ -2687,8 +2685,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
@@ -2949,8 +2946,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
@@ -3188,8 +3184,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
@@ -3434,8 +3429,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
@@ -3601,26 +3595,40 @@ class Engine():
                                                                                                          Event.stop > validity_start),
                                                                                                     and_(Event.start == validity_start,
                                                                                                          Event.stop == validity_stop))).first()
-                # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                                                                              Source.priority == max_priority,
-                                                                                                              or_(and_(Event.start < validity_stop,
-                                                                                                                       Event.stop > validity_start),
-                                                                                                                  and_(Event.start == validity_start,
-                                                                                                                       Event.stop == validity_stop))).first()
-                
-                # Get the related source
-                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
-                                                                                           Source.priority == max_priority,
-                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                           or_(and_(Event.start < validity_stop,
-                                                                                                    Event.stop > validity_start),
-                                                                                               and_(Event.start == validity_start,
-                                                                                                    Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
 
-                # Check if the period contains sources with the relevant events if not continue with the following period
-                if not source_max_generation_time:
-                    continue
+                if max_priority[0] and max_priority[0] <= self.source.priority:
+                    # Get the maximum generation time at this moment
+                    max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                                  Source.priority == max_priority,
+                                                                                                                  or_(and_(Source.validity_start < validity_stop,
+                                                                                                                           Source.validity_stop > validity_start),
+                                                                                                                      and_(Source.validity_start == validity_start,
+                                                                                                                           Source.validity_stop == validity_stop))).first()
+
+                    # Get the related source
+                    source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                               Source.priority == max_priority,
+                                                                                               Event.gauge_uuid == gauge_uuid,
+                                                                                               or_(and_(Source.validity_start < validity_stop,
+                                                                                                        Source.validity_stop > validity_start),
+                                                                                                   and_(Source.validity_start == validity_start,
+                                                                                                        Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                elif max_priority[0] and max_priority[0] > self.source.priority:
+                    # Get the maximum generation time at this moment
+                    max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                                                                  Source.priority == max_priority,
+                                                                                                                  or_(and_(Event.start < validity_stop,
+                                                                                                                           Event.stop > validity_start),
+                                                                                                                      and_(Event.start == validity_start,
+                                                                                                                           Event.stop == validity_stop))).first()
+                    # Get the related source
+                    source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
+                                                                                               Source.priority == max_priority,
+                                                                                               Event.gauge_uuid == gauge_uuid,
+                                                                                               or_(and_(Event.start < validity_stop,
+                                                                                                        Event.stop > validity_start),
+                                                                                                   and_(Event.start == validity_start,
+                                                                                                        Event.stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
                 # end if
                 
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
@@ -3682,8 +3690,7 @@ class Engine():
                                                                                                      Event.gauge_uuid == gauge_uuid,
                                                                                                      Event.start >= validity_start,
                                                                                                      Event.stop <= validity_stop)
-                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                event_uuids_to_be_removed.delete(synchronize_session=False)
+                list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
                 events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
@@ -4057,8 +4064,7 @@ class Engine():
                                                                                                          Event.gauge_uuid == gauge_uuid,
                                                                                                          Event.start >= validity_start,
                                                                                                          Event.stop <= validity_stop)
-                    self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                    event_uuids_to_be_removed.delete(synchronize_session=False)
+                    list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
@@ -4296,8 +4302,7 @@ class Engine():
                                                                                             Event.gauge_uuid == gauge_uuid,
                                                                                             Event.start >= validity_start,
                                                                                             Event.stop <= validity_stop)
-                    self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuids_to_be_removed)).delete(synchronize_session=False)
-                    event_uuids_to_be_removed.delete(synchronize_session=False)
+                    list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                     # Get the events ending on the current period to be removed
                     events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
