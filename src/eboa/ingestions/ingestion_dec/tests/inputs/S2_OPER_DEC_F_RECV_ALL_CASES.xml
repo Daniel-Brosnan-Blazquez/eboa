@@ -30,6 +30,8 @@
       <Filename>matching_source</Filename>
       <Filename>matching_source_skip</Filename>
       <Filename>no_matching_source</Filename>
+      <Filename>matching_source_skip_report</Filename>
+      <Filename>matching_source_skip_not_report</Filename>
     </List_of_Files>
   </Data_Block>
 </Earth_Explorer_File>

@@ -109,11 +109,14 @@ def process_file(file_path, engine, query, reception_time):
         if len(matching_rules) > 0:
             rule = matching_rules[0]
             skip = rule.get("skip")
-            if skip == "true":
+            report = rule.get("report")
+            # Check if the file name has to be processed or reported
+            if skip == "true" and (not report or report == "false"):
                 logger.info("The file {} has been received by DEC (reported in file {}) but the first rule matching in the triggering configuration indicates to skip tts processing".format(file_name, file_name_dec_f_recv))
             else:
                 logger.info("The file {} has been received by DEC (reported in file {}) and should be processed by BOA. Its processing will be checked".format(file_name, file_name_dec_f_recv))
                 received_files_by_dec_to_be_queried.append(file_name)
+            # end if
         else:
             logger.info("The file {} has been received by DEC (reported in file {}) but there are no matching rules in the triggering configuration".format(file_name, file_name_dec_f_recv))
         # end if

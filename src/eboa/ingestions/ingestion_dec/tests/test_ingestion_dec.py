@@ -52,15 +52,15 @@ class TestDec(unittest.TestCase):
 
         sources = self.query_eboa.get_sources()
 
-        assert len(sources) == 2
+        assert len(sources) == 3
 
         dec_sources = self.query_eboa.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "RECEIVED_FILES_BY_DEC", "op": "=="})
 
         assert len(dec_sources) == 1
 
-        received_sources_to_triggered = self.query_eboa.get_sources(names = {"filter": filename, "op": "!="}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="})
+        received_sources_to_trigger = self.query_eboa.get_sources(names = {"filter": filename, "op": "!="}, dim_signatures = {"filter": "PENDING_RECEIVED_SOURCES_BY_DEC", "op": "=="})
 
-        assert len(received_sources_to_triggered) == 1
+        assert len(received_sources_to_trigger) == 2
 
         shutil.copyfile("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")
 
@@ -97,7 +97,7 @@ class TestDec(unittest.TestCase):
 
         sources = self.query_eboa.get_sources()
 
-        assert len(sources) == 2
+        assert len(sources) == 3
 
         dec_sources = self.query_eboa.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "RECEIVED_FILES_BY_DEC", "op": "=="})
 
@@ -154,7 +154,7 @@ class TestDec(unittest.TestCase):
 
         sources = self.query_eboa.get_sources()
 
-        assert len(sources) == 2
+        assert len(sources) == 3
 
         dec_sources = self.query_eboa.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "RECEIVED_FILES_BY_DEC", "op": "=="})
 
