@@ -1572,6 +1572,11 @@ class Engine():
                 alert_groups = insert_alert_groups(self.session, event)
                 alert_cnfs = insert_alert_cnfs(self.session, event, alert_groups)
                 for alert in event["alerts"]:
+                    ####
+                    # IMPORTANT NOTE: Remember to modify method
+                    # _replicate_event_alerts when modifying the
+                    # fields of the alerts
+                    ####
                     alert_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                     alert_cnf = alert_cnfs[alert.get("alert_cnf").get("name")]
                     kwargs = {}
@@ -2050,6 +2055,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -2251,6 +2257,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -2280,6 +2289,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -2498,6 +2508,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -2527,6 +2540,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -2750,6 +2764,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -2781,6 +2798,7 @@ class Engine():
         :type list_events_to_be_created: dict with the following structure
                 list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         :param list_event_uuids_aliases: list of event uuids aliases
@@ -2797,6 +2815,7 @@ class Engine():
         self._insert_event(list_events_to_be_created["events"], id, start, stop,
                            event.gauge_uuid, event.explicit_ref_uuid, True, source_id = event.source_uuid)
         self._replicate_event_values(event.event_uuid, id, list_events_to_be_created["events"][-1], list_events_to_be_created["values"])
+        self._replicate_event_alerts(event.event_uuid, id, list_events_to_be_created["alerts"])
         self._create_event_uuid_alias(event.event_uuid, id, list_event_uuids_aliases)
         self._replicate_event_keys(event.event_uuid, id, list_events_to_be_created["keys"])
 
@@ -2809,6 +2828,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -3005,6 +3025,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -3034,6 +3057,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -3247,6 +3271,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -3276,6 +3303,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -3494,6 +3522,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -3523,6 +3554,7 @@ class Engine():
         """
         list_events_to_be_created = {"events": [],
                                      "values": {},
+                                     "alerts": [],
                                      "keys": [],
                                      "links": []}
         list_event_uuids_aliases = {}
@@ -3761,6 +3793,9 @@ class Engine():
         self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
         self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+        # Bulk insert alerts
+        self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
         # Bulk insert values
         if EventObject in list_events_to_be_created["values"]:
             self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -3790,8 +3825,10 @@ class Engine():
 
         :param from_event_uuid: original event where to get the associated values from
         :type from_event_uuid: uuid
-        :param to_event_uuid: new event to associate the values
+        :param to_event_uuid: new event UUID to associate the values
         :type to_event_uuid: uuid
+        :param to_event: new event to associate the values
+        :type to_event: Event
         :param list_values_to_be_created: list of values to be stored later inside the DDBB
         :type list_values_to_be_created: list
         """
@@ -3855,6 +3892,40 @@ class Engine():
         
         return
 
+    @debug
+    def _replicate_event_alerts(self, from_event_uuid, to_event_uuid, list_alerts_to_be_created):
+        """
+        Method to replicate the alerts associated to events that were overwritten partially by other events
+
+        :param from_event_uuid: original event where to get the associated values from
+        :type from_event_uuid: uuid
+        :param to_event_uuid: new event UUID to associate the values
+        :type to_event_uuid: uuid
+        :param list_alerts_to_be_created: list of alerts to be stored later inside the DDBB
+        :type list_alerts_to_be_created: list
+        """
+        alerts = self.query.get_event_alerts({"event_uuids": {"filter": [from_event_uuid], "op": "in"}})
+        for alert in alerts:
+            id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            alert_to_insert = {
+                "event_alert_uuid": id,
+                "message": alert.message,
+                "validated": alert.validated,
+                "ingestion_time": alert.ingestion_time,
+                "generator": alert.generator,
+                "notified": alert.notified,
+                "solved": alert.solved,
+                "solved_time": alert.solved_time,
+                "notification_time": alert.notification_time,
+                "justification": alert.justification,
+                "alert_uuid": alert.alertDefinition.alert_uuid,
+                "event_uuid": to_event_uuid
+            }
+            list_alerts_to_be_created.append(alert_to_insert)
+        # end for
+        
+        return
+    
     def _create_event_uuid_alias(self, event_uuid, alias, list_event_uuids_aliases):
         """
         """
@@ -3937,6 +4008,7 @@ class Engine():
             for segment in self.insert_and_erase_per_event_gauges[gauge_uuid]:
                 list_events_to_be_created = {"events": [],
                                              "values": {},
+                                             "alerts": [],
                                              "keys": [],
                                              "links": []}
                 list_event_uuids_aliases = {}
@@ -4128,6 +4200,9 @@ class Engine():
                 self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
                 self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
 
+                # Bulk insert alerts
+                self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
+
                 # Bulk insert values
                 if EventObject in list_events_to_be_created["values"]:
                     self.session.bulk_insert_mappings(EventObject, list_events_to_be_created["values"][EventObject])
@@ -4163,6 +4238,7 @@ class Engine():
             for segment in self.insert_and_erase_per_event_with_priority_gauges[gauge_uuid]:
                 list_events_to_be_created = {"events": [],
                                              "values": {},
+                                             "alerts": [],
                                              "keys": [],
                                              "links": []}
                 list_event_uuids_aliases = {}
@@ -4369,6 +4445,9 @@ class Engine():
                 # Remove the events that were partially affected by the insert and erase operation
                 self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(list_events_to_be_removed)).delete(synchronize_session=False)
                 self.session.query(Event).filter(Event.event_uuid.in_(list_events_to_be_removed)).delete(synchronize_session=False)
+
+                # Bulk insert alerts
+                self.session.bulk_insert_mappings(EventAlert, list_events_to_be_created["alerts"])
 
                 # Bulk insert values
                 if EventObject in list_events_to_be_created["values"]:
