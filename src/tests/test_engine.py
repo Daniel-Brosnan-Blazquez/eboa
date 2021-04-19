@@ -5445,7 +5445,17 @@ class TestEngine(unittest.TestCase):
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "SIMPLE_UPDATE"},
                 "start": "2018-06-05T05:07:03",
-                "stop": "2018-06-05T09:07:03"
+                "stop": "2018-06-05T09:07:03",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
             }],
 
         }]}
@@ -5497,6 +5507,22 @@ class TestEngine(unittest.TestCase):
 
 
         assert len(events) == 1
+
+        alert_events = self.session.query(EventAlert) \
+                                    .join(Alert) \
+                                    .join(AlertGroup) \
+                                    .filter(EventAlert.message == "Alert message",
+                                            EventAlert.generator == "test",
+                                            EventAlert.notification_time > "1900-01-01",
+                                            EventAlert.message == "Alert message",
+                                            Alert.name == "alert_name1",
+                                            Alert.severity == 4,
+                                            Alert.description == "Alert description",
+                                            AlertGroup.name == "alert_group",
+                                            EventAlert.event_uuid == events[0].event_uuid).all()
+
+        assert len(alert_events) == 1
+
 
     def test_remove_deprecated_event_insert_and_erase_at_event_level_remove_event_after_deletion(self):
 
