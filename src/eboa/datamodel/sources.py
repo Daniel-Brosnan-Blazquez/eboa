@@ -64,20 +64,22 @@ class Source(Base):
 
     def jsonify(self):
         return {
-            "source_uuid": self.source_uuid,
+            "source_uuid": str(self.source_uuid),
             "name": self.name,
-            "validity_start": str(self.validity_start).replace(" ", "T"),
-            "validity_stop": str(self.validity_stop).replace(" ", "T"),
-            "reception_time": str(self.generation_time).replace(" ", "T"),
-            "generation_time": str(self.generation_time).replace(" ", "T"),
+            "validity_start": self.validity_start.isoformat(),
+            "validity_stop": self.validity_stop.isoformat(),
+            "reception_time": self.generation_time.isoformat(),
+            "generation_time": self.generation_time.isoformat(),
             "ingested": self.ingested,
             "ingestion_error": self.ingestion_error,
-            "ingestion_time": str(self.ingestion_time).replace(" ", "T"),
+            "ingestion_time": self.ingestion_time.isoformat(),
             "ingestion_duration": str(self.ingestion_duration),
             "processing_duration": str(self.processing_duration),
             "processor": self.processor,
             "processor_version": self.processor_version,
-            "dim_signature_uuid": self.dim_signature_uuid
+            "dim_signature": str(self.dimSignature.dim_signature),
+            "dim_signature_uuid": str(self.dim_signature_uuid),
+            "alerts": [alert.jsonify() for alert in self.alerts]
         }
 
     def get_ingestion_progress(self):
@@ -140,7 +142,7 @@ class SourceStatus(Base):
     def jsonify(self):
         return {
             "source_uuid": self.source.source_uuid,
-            "time_stamp": str(self.time_stamp).replace(" ", "T"),
+            "time_stamp": self.time_stamp.isoformat(),
             "log": self.log,
             "status": self.status,
         }

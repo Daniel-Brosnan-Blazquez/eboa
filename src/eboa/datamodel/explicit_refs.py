@@ -27,13 +27,35 @@ class ExplicitRef(Base):
         self.explicit_ref = explicitRef
         self.group = group
 
-    def jsonify(self):
-        return {
-            "explicit_ref_uuid": self.explicit_ref_uuid,
-            "ingestion_time": self.ingestion_time,
+    def jsonify(self, include_annotations = True):
+        """
+        Method to obtain the structure of explicit references in a python dictionary format
+
+        :param include_annotations: flag to indicate if the detail of the annotations has to be included
+        :type include_annotations: boolean
+
+        :return: structure of the explicit reference
+        :rtype: dict
+        """
+
+        structure = {
+            "explicit_ref_uuid": str(self.explicit_ref_uuid),
+            "ingestion_time": self.ingestion_time.isoformat(),
             "explicit_ref": self.explicit_ref,
-            "expl_ref_cnf_uuid": self.expl_ref_cnf_uuid
+            "group": self.group.name,
+            "alerts": [alert.jsonify() for alert in self.alerts]
         }
+
+        # Insert explicit reference group
+        if self.group:
+            structure["group"] = self.group.name
+        # end if
+
+        if include_annotations:
+            structure["annotations"] = [annotation.jsonify() for annotation in self.annotations]
+        # end if
+            
+        return structure
 
 class ExplicitRefGrp(Base):
     __tablename__ = 'explicit_ref_cnfs'

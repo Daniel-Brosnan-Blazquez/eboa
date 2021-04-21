@@ -39,9 +39,54 @@ class Event(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
+    def jsonify(self):
+        """
+        Method to obtain the structure of the event in a python dictionary format
+
+        :return: structure of the event
+        :rtype: dict
+        """
+
+        structure = {
+            "event_uuid": str(self.event_uuid),
+            "start": self.start.isoformat(),
+            "stop": self.stop.isoformat(),
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "gauge": {
+                "gauge_uuid": str(self.gauge.gauge_uuid),
+                "dim_signature": self.gauge.dim_signature.dim_signature,
+                "name": self.gauge.name,
+                "system": self.gauge.system,
+                "description": self.gauge.description,
+            },
+            "source": {
+                "source_uuid": str(self.source.source_uuid),
+                "name": self.source.name,
+            },
+            "values": self.get_structured_values(),
+            "links_to_me": [{
+                "event_uuid_link": str(link.event_uuid_link),
+                "name": link.name
+            } for link in self.eventLinks],
+            "alerts": [alert.jsonify() for alert in self.alerts]
+        }
+
+        # Insert explicit reference
+        if self.explicitRef:
+            structure["explicit_reference"] = {
+                "uuid": str(self.explicitRef.explicit_ref_uuid),
+                "name": self.explicitRef.explicit_ref
+            }
+        # end if
+        
+        return structure
+
     def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
         """
         Method to obtain the structure of values in a python dictionary format
+
+        :return: structure of values associated to the event
+        :rtype: list
         """
 
         values = []

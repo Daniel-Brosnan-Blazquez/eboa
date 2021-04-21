@@ -640,6 +640,9 @@ def _validate_alerts(data):
             raise ErrorParsingDictionary("The tag notification_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
         # end if
 
+        if not "entity" in alert:
+            raise ErrorParsingDictionary("The tag entity is mandatory inside alert structure")
+        # end if
         _validate_alert_entity(alert["entity"])        
         validate_alert_cnf(alert["alert_cnf"])
 

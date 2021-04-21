@@ -29,6 +29,24 @@ class Alert(Base):
         self.description = description
         self.group = group
 
+    def jsonify(self):
+        """
+        Method to obtain the structure of the definition of the alerts in a python dictionary format
+
+        :return: structure of the definition of alerts
+        :rtype: dict
+        """
+        structure = {
+            "alert_uuid": str(self.alert_uuid),
+            "name": self.name,
+            "severity": self.severity,
+            "description": self.description,
+            "group": self.group.name
+        }
+
+        return structure
+
+
 class AlertGroup(Base):
     __tablename__ = 'alert_groups'
 
@@ -66,6 +84,34 @@ class EventAlert(Base):
         self.event_uuid = event_uuid
         self.alert_uuid = alert_uuid
 
+    def jsonify(self):
+        """
+        Method to obtain the structure of the alerts related to events in a python dictionary format
+
+        :return: structure of the alert related to an event
+        :rtype: dict
+        """
+        solved_time = None
+        if self.solved_time != None:
+            solved_time = self.solved_time.isoformat()
+        # end if
+        structure = {
+            "event_alert_uuid": str(self.event_alert_uuid),
+            "message": self.message,
+            "validated": self.validated,
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "generator": self.generator,
+            "notified": self.notified,
+            "solved": self.solved,
+            "solved_time": solved_time,
+            "notification_time": self.notification_time.isoformat(),
+            "justification": self.justification,
+            "definition": self.alertDefinition.jsonify(),
+            "event_uuid": str(self.event_uuid),
+        }
+
+        return structure
+    
 class AnnotationAlert(Base):
     __tablename__ = 'annotation_alerts'
 
@@ -92,6 +138,34 @@ class AnnotationAlert(Base):
         self.notification_time = notification_time
         self.annotation_uuid = annotation_uuid
         self.alert_uuid = alert_uuid
+
+    def jsonify(self):
+        """
+        Method to obtain the structure of the alerts related to annotations in a python dictionary format
+
+        :return: structure of the alert related to an annotation
+        :rtype: dict
+        """
+        solved_time = None
+        if self.solved_time != None:
+            solved_time = self.solved_time.isoformat()
+        # end if
+        structure = {
+            "annotation_alert_uuid": str(self.annotation_alert_uuid),
+            "message": self.message,
+            "validated": self.validated,
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "generator": self.generator,
+            "notified": self.notified,
+            "solved": self.solved,
+            "solved_time": solved_time,
+            "notification_time": self.notification_time.isoformat(),
+            "justification": self.justification,
+            "definition": self.alertDefinition.jsonify(),
+            "annotation_uuid": str(self.annotation_uuid),
+        }
+
+        return structure
 
 class SourceAlert(Base):
     __tablename__ = 'source_alerts'
@@ -120,6 +194,34 @@ class SourceAlert(Base):
         self.source_uuid = source_uuid
         self.alert_uuid = alert_uuid
 
+    def jsonify(self):
+        """
+        Method to obtain the structure of the alerts related to sources in a python dictionary format
+
+        :return: structure of the alert related to an source
+        :rtype: dict
+        """
+        solved_time = None
+        if self.solved_time != None:
+            solved_time = self.solved_time.isoformat()
+        # end if
+        structure = {
+            "source_alert_uuid": str(self.source_alert_uuid),
+            "message": self.message,
+            "validated": self.validated,
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "generator": self.generator,
+            "notified": self.notified,
+            "solved": self.solved,
+            "solved_time": solved_time,
+            "notification_time": self.notification_time.isoformat(),
+            "justification": self.justification,
+            "definition": self.alertDefinition.jsonify(),
+            "source_uuid": str(self.source_uuid),
+        }
+
+        return structure
+
 class ExplicitRefAlert(Base):
     __tablename__ = 'explicit_ref_alerts'
 
@@ -146,3 +248,31 @@ class ExplicitRefAlert(Base):
         self.notification_time = notification_time
         self.explicit_ref_uuid = explicit_ref_uuid
         self.alert_uuid = alert_uuid
+        
+    def jsonify(self):
+        """
+        Method to obtain the structure of the alerts related to explicit references in a python dictionary format
+
+        :return: structure of the alert related to an explicit reference
+        :rtype: dict
+        """
+        solved_time = None
+        if self.solved_time != None:
+            solved_time = self.solved_time.isoformat()
+        # end if
+        structure = {
+            "explicit_ref_alert_uuid": str(self.explicit_ref_alert_uuid),
+            "message": self.message,
+            "validated": self.validated,
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "generator": self.generator,
+            "notified": self.notified,
+            "solved": self.solved,
+            "solved_time": solved_time,
+            "notification_time": self.notification_time.isoformat(),
+            "justification": self.justification,
+            "definition": self.alertDefinition.jsonify(),
+            "explicit_ref_uuid": str(self.explicit_ref_uuid),
+        }
+
+        return structure

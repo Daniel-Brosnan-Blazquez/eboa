@@ -35,6 +35,38 @@ class Annotation(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
+    def jsonify(self):
+        """
+        Method to obtain the structure of the annotation in a python dictionary format
+
+        :return: structure of the annotation
+        :rtype: dict
+        """
+
+        structure = {
+            "annotation_uuid": str(self.annotation_uuid),
+            "explicit_reference": {
+                "uuid": str(self.explicitRef.explicit_ref_uuid),
+                "name": self.explicitRef.explicit_ref
+            },
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "configuration": {
+                "uuid": str(self.annotationCnf.annotation_cnf_uuid),
+                "dim_signature": self.annotationCnf.dim_signature.dim_signature,
+                "name": self.annotationCnf.name,
+                "system": self.annotationCnf.system,
+                "description": self.annotationCnf.description,
+            },
+            "source": {
+                "source_uuid": str(self.source.source_uuid),
+                "name": self.source.name,
+            },
+            "values": self.get_structured_values(),
+            "alerts": [alert.jsonify() for alert in self.alerts]
+        }
+
+        return structure
+
     def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
         """
         Method to obtain the structure of values in a python dictionary format

@@ -12,6 +12,8 @@ import unittest
 import datetime
 import uuid
 import random
+import json
+import tempfile
 
 # Import engine of the DDBB
 import eboa.engine.engine as eboa_engine
@@ -353,5 +355,590 @@ class TestDatamodel(unittest.TestCase):
                  "value": "True"}]
         }]
 
+    def test_get_jsonify_event(self):
+        """
+        Test jsonify method associated to events
+        """
         
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-07-05T02:07:03",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36"},
+                "events": [{
+                    "gauge": {
+                        "name": "GAUGE_NAME",
+                        "system": "GAUGE_SYSTEM",
+                        "insertion_type": "SIMPLE_UPDATE"
+                    },
+                    "start": "2018-06-05T02:07:03",
+                    "stop": "2018-06-05T08:07:36",
+                    "values": [{"name": "VALUES",
+                                "type": "object",
+                                "values": [
+                                    {"type": "text",
+                                     "name": "TEXT",
+                                     "value": "TEXT"},
+                                    {"type": "boolean",
+                                     "name": "BOOLEAN",
+                                     "value": "true"},
+                                    {"name": "VALUES2",
+                                     "type": "object",
+                                     "values": [
+                                         {"type": "text",
+                                          "name": "TEXT",
+                                          "value": "TEXT"},
+                                         {"type": "boolean",
+                                          "name": "BOOLEAN",
+                                          "value": "true"}]}]
+                            }],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+                }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
+
+        jsonified_event = events[0].jsonify()
+
+        data_to_match = {
+            "event_uuid": str(events[0].event_uuid),
+            "start": "2018-06-05T02:07:03",
+            "stop": "2018-06-05T08:07:36",
+            "ingestion_time": events[0].ingestion_time.isoformat(),
+            "gauge": {
+                "gauge_uuid": str(events[0].gauge.gauge_uuid),
+                "dim_signature": "dim_signature",
+                "name": "GAUGE_NAME",
+                "system": "GAUGE_SYSTEM",
+                "description": None
+            },
+            "source": {
+                "source_uuid": str(events[0].source.source_uuid),
+                "name": "source.xml"
+            },
+            "values": [{"name": "VALUES",
+                        "type": "object",
+                        "values": [
+                            {"type": "text",
+                             "name": "TEXT",
+                             "value": "TEXT"},
+                            {"type": "boolean",
+                             "name": "BOOLEAN",
+                             "value": "True"},
+                            {"name": "VALUES2",
+                             "type": "object",
+                             "values": [
+                                 {"type": "text",
+                                  "name": "TEXT",
+                                  "value": "TEXT"},
+                                 {"type": "boolean",
+                                  "name": "BOOLEAN",
+                                  "value": "True"}]}]
+                        }],
+            "links_to_me": [],
+            "alerts": [{
+                "event_alert_uuid": str(events[0].alerts[0].event_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": events[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(events[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "event_uuid": str(events[0].event_uuid),
+                }]
+        }
+
+        assert jsonified_event == data_to_match
+
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_event, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
+
+    def test_get_jsonify_source(self):
+        """
+        Test jsonify method associated to sources
+        """
+        
+        data = {"operations": [{
+                "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                  "exec": "exec",
+                                  "version": "1.0"},
+                "source": {"name": "source.xml",
+                           "reception_time": "2018-07-05T02:07:03",
+                           "generation_time": "2018-07-05T02:07:03",
+                           "validity_start": "2018-06-05T02:07:03",
+                           "validity_stop": "2018-06-05T08:07:36",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+                }
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        sources = self.query_eboa.get_sources()
+
+        assert len(sources) == 1
+
+        data_to_match = {
+            "source_uuid": str(sources[0].source_uuid),
+            "name": str(sources[0].name),
+            "validity_start": "2018-06-05T02:07:03",
+            "validity_stop": "2018-06-05T08:07:36",
+            "reception_time": "2018-07-05T02:07:03",
+            "generation_time": "2018-07-05T02:07:03",
+            "ingested": True,
+            "ingestion_error": False,
+            "ingestion_time": sources[0].ingestion_time.isoformat(),
+            "ingestion_duration": str(sources[0].ingestion_duration),
+            "processing_duration": str(sources[0].processing_duration),
+            "processor": "exec",
+            "processor_version": "1.0",
+            "dim_signature": "dim_signature",
+            "dim_signature_uuid": str(sources[0].dim_signature_uuid),
+            "alerts": [{
+                "source_alert_uuid": str(sources[0].alerts[0].source_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": sources[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(sources[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "source_uuid": str(sources[0].source_uuid),
+                }]
+        }
+
+        jsonified_source = sources[0].jsonify()
+        
+        assert jsonified_source == data_to_match
+        
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_source, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
+
+    def test_get_jsonify_annotation(self):
+        """
+        Test jsonify method associated to annotations
+        """
+        
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-07-05T02:07:03",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                },
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "boolean",
+                                 "name": "BOOLEAN",
+                                 "value": "true"},
+                                {"name": "VALUES2",
+                                 "type": "object",
+                                 "values": [
+                                     {"type": "text",
+                                      "name": "TEXT",
+                                      "value": "TEXT"},
+                                     {"type": "boolean",
+                                      "name": "BOOLEAN",
+                                      "value": "true"}]}]
+                            }],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        annotations = self.query_eboa.get_annotations()
+
+        assert len(annotations) == 1
+
+        jsonified_annotation = annotations[0].jsonify()
+
+        data_to_match = {
+            "annotation_uuid": str(annotations[0].annotation_uuid),
+            "explicit_reference": {
+                "uuid": str(annotations[0].explicit_ref_uuid),
+                "name": "EXPLICIT_REFERENCE"
+            },
+            "ingestion_time": annotations[0].ingestion_time.isoformat(),
+            "configuration": {
+                "uuid": str(annotations[0].annotationCnf.annotation_cnf_uuid),
+                "dim_signature": "dim_signature",
+                "name": "ANNOTATION_CNF",
+                "system": "SYSTEM",
+                "description": None,
+            },
+            "source": {
+                "source_uuid": str(annotations[0].source.source_uuid),
+                "name": "source.xml"
+            },
+            "values": [{"name": "VALUES",
+                        "type": "object",
+                        "values": [
+                            {"type": "text",
+                             "name": "TEXT",
+                             "value": "TEXT"},
+                            {"type": "boolean",
+                             "name": "BOOLEAN",
+                             "value": "True"},
+                            {"name": "VALUES2",
+                             "type": "object",
+                             "values": [
+                                 {"type": "text",
+                                  "name": "TEXT",
+                                  "value": "TEXT"},
+                                 {"type": "boolean",
+                                  "name": "BOOLEAN",
+                                  "value": "True"}]}]
+                        }],
+            "alerts": [{
+                "annotation_alert_uuid": str(annotations[0].alerts[0].annotation_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": annotations[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(annotations[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "annotation_uuid": str(annotations[0].annotation_uuid),
+                }]
+        }
+
+        assert jsonified_annotation == data_to_match
+
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_annotation, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
+        
+    def test_get_jsonify_explicit_reference(self):
+        """
+        Test jsonify method associated to explicit references
+        """
+        
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-07-05T02:07:03",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }],
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                },
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        ers = self.query_eboa.get_explicit_refs()
+
+        assert len(ers) == 1
+
+        jsonified_er = ers[0].jsonify(False)
+
+        data_to_match = {
+            "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+            "explicit_ref": "EXPLICIT_REFERENCE",
+            "group": "EXPL_GROUP",
+            "ingestion_time": ers[0].ingestion_time.isoformat(),
+            "alerts": [{
+                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+                }]
+        }
+
+        assert jsonified_er == data_to_match
+
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_er, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
+
+    def test_get_jsonify_explicit_reference_with_annotations(self):
+        """
+        Test jsonify method associated to explicit references with annotations
+        """
+        
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-07-05T02:07:03",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "group": "EXPL_GROUP",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }],
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                }
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        ers = self.query_eboa.get_explicit_refs()
+
+        assert len(ers) == 1
+
+        annotations = self.query_eboa.get_annotations()
+
+        assert len(annotations) == 1
+        
+        jsonified_er = ers[0].jsonify()
+
+        data_to_match = {
+            "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+            "explicit_ref": "EXPLICIT_REFERENCE",
+            "group": "EXPL_GROUP",
+            "ingestion_time": ers[0].ingestion_time.isoformat(),
+            "alerts": [{
+                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+            }],
+            "annotations": [
+                {
+                    "annotation_uuid": str(annotations[0].annotation_uuid),
+                    "explicit_reference": {
+                        "uuid": str(annotations[0].explicit_ref_uuid),
+                        "name": "EXPLICIT_REFERENCE"
+                    },
+                    "ingestion_time": annotations[0].ingestion_time.isoformat(),
+                    "configuration": {
+                        "uuid": str(annotations[0].annotationCnf.annotation_cnf_uuid),
+                        "dim_signature": "dim_signature",
+                        "name": "ANNOTATION_CNF",
+                        "system": "SYSTEM",
+                        "description": None,
+                    },
+                    "source": {
+                        "source_uuid": str(annotations[0].source.source_uuid),
+                        "name": "source.xml"
+                    },
+                    "values": [],
+                    "alerts": []
+                }
+            ]
+        }
+        assert jsonified_er == data_to_match
+
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_er, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
 
