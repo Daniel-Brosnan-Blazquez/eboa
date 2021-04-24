@@ -16004,3 +16004,497 @@ class TestEngine(unittest.TestCase):
         events_ddbb = self.session.query(Event).all()
 
         assert len(events_ddbb) == 3
+
+    def test_remove_deprecated_event_insert_and_erase_intersected_events_with_priority_no_events_removing_previous_events_with_equal_priority_lower_generation_time(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source1.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2016-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T06:07:03",
+                     "stop": "2018-06-05T08:07:36"
+                }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source2.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2018-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+        
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
+                                                                             Event.stop == "2018-06-05T04:07:36",
+                                                                             Source.name == "source2.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+    def test_remove_deprecated_event_insert_and_erase_intersected_events_with_priority_no_events_removing_previous_events_with_lower_priority(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source1.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2016-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T06:07:03",
+                     "stop": "2018-06-05T08:07:36"
+                }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source2.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2018-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 40},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 1
+        
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
+                                                                             Event.stop == "2018-06-05T04:07:36",
+                                                                             Source.name == "source2.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+    def test_remove_deprecated_event_insert_and_erase_intersected_events_with_priority_no_events_not_removing_previous_events_with_greater_priority(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source1.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2016-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T06:07:03",
+                     "stop": "2018-06-05T08:07:36"
+                }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source2.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2018-07-10T02:07:03",
+                            "validity_start": "2018-06-05T02:07:03",
+                            "validity_stop": "2018-06-05T08:07:36",
+                            "priority": 20},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT2",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T02:07:03",
+                     "stop": "2018-06-05T04:07:36"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 2
+        
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:07:03",
+                                                                             Event.stop == "2018-06-05T04:07:36",
+                                                                             Source.name == "source1.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T06:07:03",
+                                                                             Event.stop == "2018-06-05T08:07:36",
+                                                                             Source.name == "source1.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+    def test_remove_deprecated_event_insert_and_erase_intersected_events_several_timelines_1(self):
+        """
+        Method to test the insertion method INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY with the following scenario
+        TIMELINE 1:         |--------------------------|            PRIORITY 30 GENERATION X -> INSERT_and_ERASE_per_EVENT_with_PRIORITY
+        TIMELINE 2:         |---------------------------|           PRIORITY 30 GENERATION Y -> INSERT_and_ERASE_per_EVENT_with_PRIORITY
+        TIMELINE 3: |--|        |-----------|    |         |--|     PRIORITY 10 -> INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY
+        Y > X
+
+        RESULT:
+        TIMELINE 2:         |---------------------------|           
+        TIMELINE 3: |--|                                   |--|     
+        """
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source1.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2016-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_per_EVENT_with_PRIORITY"},
+                     "start": "2018-06-05T04:00:00",
+                     "stop": "2018-06-05T05:00:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source2.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2020-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_per_EVENT_with_PRIORITY"},
+                     "start": "2018-06-05T04:00:00",
+                     "stop": "2018-06-05T05:10:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data3 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source3.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2020-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 10},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T02:00:00",
+                     "stop": "2018-06-05T03:00:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T04:10:00",
+                     "stop": "2018-06-05T04:30:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T04:40:00",
+                     "stop": "2018-06-05T04:40:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T10:00:00",
+                     "stop": "2018-06-05T11:00:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 3
+        
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T04:00:00",
+                                                                             Event.stop == "2018-06-05T05:10:00",
+                                                                             Source.name == "source2.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:00:00",
+                                                                             Event.stop == "2018-06-05T03:00:00",
+                                                                             Source.name == "source3.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T10:00:00",
+                                                                             Event.stop == "2018-06-05T11:00:00",
+                                                                             Source.name == "source3.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+    def test_remove_deprecated_event_insert_and_erase_intersected_events_several_timelines_2(self):
+        """
+        Method to test the insertion method INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY with the following scenario
+        TIMELINE 1:         |--------------------------|            PRIORITY 30 GENERATION X -> SIMPLE_UPDATE
+        TIMELINE 2:         |---------------------------|           PRIORITY 30 GENERATION Y -> SIMPLE_UPDATE
+        TIMELINE 3: |--|        |-----------|    |         |--|     PRIORITY 10 -> INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY
+        Y > X
+
+        RESULT:
+        TIMELINE 1:         |--------------------------|
+        TIMELINE 2:         |---------------------------|           
+        TIMELINE 3: |--|                                   |--|     
+        """
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source1.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2016-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T04:00:00",
+                     "stop": "2018-06-05T05:00:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source2.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2020-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 30},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "SIMPLE_UPDATE"},
+                     "start": "2018-06-05T04:00:00",
+                     "stop": "2018-06-05T05:10:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data3 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                                   "exec": "exec",
+                                   "version": "1.0"},
+                 "source": {"name": "source3.xml",
+                            "reception_time": "2018-06-06T13:33:29",
+                            "generation_time": "2020-01-01T00:00:00",
+                            "validity_start": "2018-06-05T00:00:00",
+                            "validity_stop": "2018-06-06T00:00:00",
+                            "priority": 10},
+                 "events": [{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T02:00:00",
+                     "stop": "2018-06-05T03:00:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T04:10:00",
+                     "stop": "2018-06-05T04:30:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T04:40:00",
+                     "stop": "2018-06-05T04:40:00"
+                 },{
+                     "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                     "gauge": {"name": "GAUGE_NAME",
+                               "system": "GAUGE_SYSTEM",
+                               "insertion_type": "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY"},
+                     "start": "2018-06-05T10:00:00",
+                     "stop": "2018-06-05T11:00:00"
+                 }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events_ddbb = self.session.query(Event).all()
+
+        assert len(events_ddbb) == 4
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T04:00:00",
+                                                                             Event.stop == "2018-06-05T05:00:00",
+                                                                             Source.name == "source1.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T04:00:00",
+                                                                             Event.stop == "2018-06-05T05:10:00",
+                                                                             Source.name == "source2.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T02:00:00",
+                                                                             Event.stop == "2018-06-05T03:00:00",
+                                                                             Source.name == "source3.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
+        filtered_events_ddbb = self.session.query(Event).join(Source).filter(Event.start == "2018-06-05T10:00:00",
+                                                                             Event.stop == "2018-06-05T11:00:00",
+                                                                             Source.name == "source3.xml",
+                                                                             Event.visible == True).all()
+
+        assert len(filtered_events_ddbb) == 1
+
