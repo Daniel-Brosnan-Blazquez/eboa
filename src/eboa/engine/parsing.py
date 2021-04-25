@@ -324,10 +324,10 @@ def _validate_events(data):
         # end if
         _validate_gauge(event["gauge"])
         if not is_datetime(event["start"]):
-            raise ErrorParsingDictionary("The tag start inside event structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+            raise ErrorParsingDictionary("The tag start inside event structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm] and be a valid date. Received value {}".format(event["start"]))
         # end if
         if not is_datetime(event["stop"]):
-            raise ErrorParsingDictionary("The tag stop inside event structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+            raise ErrorParsingDictionary("The tag stop inside event structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm] and be a valid date. Received value {}".format(event["start"]))
         # end if
 
         # Optional tags
