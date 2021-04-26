@@ -119,6 +119,16 @@ class ErrorParsingDictionary(Error):
     def __init__(self, message):
         self.message = message
 
+class ErrorParsingParameters(Error):
+    """Exception raised when the parsing has found a non supported structure in the parameters received
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class ErrorParsingFilters(Error):
     """Exception raised when the filters passed to a method are not accepted
 

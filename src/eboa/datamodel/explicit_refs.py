@@ -42,7 +42,6 @@ class ExplicitRef(Base):
             "explicit_ref_uuid": str(self.explicit_ref_uuid),
             "ingestion_time": self.ingestion_time.isoformat(),
             "explicit_ref": self.explicit_ref,
-            "group": self.group.name,
             "alerts": [alert.jsonify() for alert in self.alerts]
         }
 

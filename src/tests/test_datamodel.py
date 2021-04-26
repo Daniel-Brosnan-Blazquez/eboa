@@ -825,6 +825,105 @@ class TestDatamodel(unittest.TestCase):
 
         new_file.close()
 
+    def test_get_jsonify_explicit_reference_without_group(self):
+        """
+        Test jsonify method associated to explicit references without group
+        """
+        
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-07-05T02:07:03",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "explicit_references": [{
+                "name": "EXPLICIT_REFERENCE",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }],
+            "annotations": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "annotation_cnf": {
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"
+                },
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+
+        ers = self.query_eboa.get_explicit_refs()
+
+        assert len(ers) == 1
+
+        jsonified_er = ers[0].jsonify(False)
+
+        data_to_match = {
+            "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+            "explicit_ref": "EXPLICIT_REFERENCE",
+            "ingestion_time": ers[0].ingestion_time.isoformat(),
+            "alerts": [{
+                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
+                "message": "Alert message",
+                "validated": None,
+                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
+                "generator": "test",
+                "notified": None,
+                "solved": None,
+                "solved_time": None,
+                "notification_time": "2018-06-05T08:07:36",
+                "justification": None,
+                "definition": {
+                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
+                    "name": "alert_name1",
+                    "severity": 4,
+                    "description": "Alert description",
+                    "group": "alert_group"
+                },
+                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
+                }]
+        }
+
+        assert jsonified_er == data_to_match
+
+        new_file = tempfile.NamedTemporaryFile()
+        new_file_path = new_file.name
+        
+        with open(new_file_path, "w") as write_file:
+            json.dump(jsonified_er, write_file, indent=4)
+
+        with open(new_file_path) as input_file:
+            data = json.load(input_file)
+
+        assert data == data_to_match
+
+        new_file.close()
+
     def test_get_jsonify_explicit_reference_with_annotations(self):
         """
         Test jsonify method associated to explicit references with annotations
