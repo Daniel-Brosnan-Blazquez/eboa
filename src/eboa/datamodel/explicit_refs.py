@@ -51,7 +51,20 @@ class ExplicitRef(Base):
         # end if
 
         if include_annotations:
-            structure["annotations"] = [annotation.jsonify() for annotation in self.annotations]
+            
+            structure["annotations"] = {}
+            for annotation in self.annotations:
+                name = annotation.annotationCnf.name
+                system = annotation.annotationCnf.system
+                if name not in structure["annotations"]:
+                    structure["annotations"][name] = []
+                # end if
+                structure["annotations"][name].append({
+                    "annotation_uuid": str(annotation.annotation_uuid),
+                    "name": name,
+                    "system": system
+                })
+            # end for
         # end if
             
         return structure

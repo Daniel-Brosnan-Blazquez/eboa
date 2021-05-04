@@ -84,7 +84,7 @@ def export_events(structure, events, include_ers = True, include_annotations = T
 
         # Insert the structure of the event
         if event.event_uuid not in structure["events"]:
-            structure["events"][str(event.event_uuid)] = event.jsonify()
+            structure["events"][str(event.event_uuid)] = event.jsonify(include_indexed_values = True)
         # end if
 
         # Insert structure of the explicit reference
@@ -96,7 +96,7 @@ def export_events(structure, events, include_ers = True, include_annotations = T
 
     return structure
 
-def export_annotations(structure, annotations, include_ers = True, include_annotations = True, group = None):
+def export_annotations(structure, annotations, include_ers = True, group = None):
     """Function to insert the annotations with DDBB format into a dictionary
     
     :param structure: dictionary where to export the annotations to
@@ -138,10 +138,6 @@ def export_annotations(structure, annotations, include_ers = True, include_annot
         raise ErrorParsingParameters("The include_ers parameter has to have type bool. Received group is: {}".format(include_ers))
     # end if
 
-    if type(include_annotations) != bool:
-        raise ErrorParsingParameters("The include_annotations parameter has to have type bool. Received group is: {}".format(include_annotations))
-    # end if
-
     if group and "annotation_groups" not in structure:
         structure["annotation_groups"] = {}
     # end if
@@ -161,12 +157,12 @@ def export_annotations(structure, annotations, include_ers = True, include_annot
 
         # Insert the structure of the annotation
         if annotation.annotation_uuid not in structure["annotations"]:
-            structure["annotations"][str(annotation.annotation_uuid)] = annotation.jsonify()
+            structure["annotations"][str(annotation.annotation_uuid)] = annotation.jsonify(include_indexed_values = True)
         # end if
 
         # Insert structure of the explicit reference
         if include_ers:
-            export_ers(structure, [annotation.explicitRef], include_annotations = include_annotations)
+            export_ers(structure, [annotation.explicitRef])
         # end if
 
     # end for
@@ -235,19 +231,24 @@ def export_ers(structure, ers, include_annotations = True, group = None):
             structure["explicit_references"][str(er.explicit_ref_uuid)] = er.jsonify(include_annotations)
         # end if
 
+        if include_annotations:
+            export_annotations(structure, er.annotations, include_ers = False)
+        # end if
+
     # end for
 
     return structure
 
-def build_values_structure(values, structure, position = 0, parent_level = -1, parent_position = 0):
+def build_values_structure(values, structure, position = 0, parent_level = -1, parent_position = 0, structure_for_searching_values = None):
     """
     """
+    indexed_values = index_values(values, structure_for_searching_values = structure_for_searching_values)
+    
     if position == 0 and parent_level == -1 and parent_position == 0:
-        build_object_structure(values, structure, parent_level, parent_position)
+        build_object_structure(values, structure, parent_level, parent_position, indexed_values = indexed_values)
     else:
-        value = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position and value.position == position]
-        if len(value) > 0:
-            value = value[0]
+        if (position, parent_level, parent_position) in indexed_values:
+            value = indexed_values[(position, parent_level, parent_position)]
             if str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
                 object_entity_structure = {"name": value.name,
                                            "type": "object",
@@ -255,59 +256,84 @@ def build_values_structure(values, structure, position = 0, parent_level = -1, p
                 }
                 structure.append(object_entity_structure)
 
-                build_object_structure(values, object_entity_structure["values"], parent_level + 1, position)
+                build_object_structure(values, object_entity_structure["values"], parent_level + 1, position, indexed_values = indexed_values)
             else:
-                insert_values(values, [value], structure)
+                insert_value(values, value, structure)
             # end if
         # end if
     # end if
 
     return
 
-def build_object_structure(values, structure, parent_level, parent_position):
+def build_object_structure(values, structure, parent_level, parent_position, indexed_values = None):
 
-    searched_values = [value for value in values if value.parent_level == parent_level and value.parent_position == parent_position]
-    insert_values(values, searched_values, structure)
+    if indexed_values == None:
+        indexed_values = index_values(values)
+    # end if
+    searched_values = indexed_values[(parent_level, parent_position)]
+    insert_values(values, searched_values, structure, parent_level, parent_position, indexed_values)
 
-def insert_values(all_values, values_to_insert, structure):
+def insert_values(all_values, values_to_insert, structure, parent_level, parent_position, indexed_values):
 
-    sorted_values = sorted(values_to_insert, key=lambda x: x.position)
-    for value in sorted_values:
-        if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
-            value_type = "boolean"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
-            value_type = "double"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
-            value_type = "timestamp"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
-            value_type = "geometry"
-        elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
-            value_type = "object"
-        else:
-            value_type = "text"
+    for iterator in range(len(values_to_insert)):
+        insert_value(all_values, indexed_values[(iterator, parent_level, parent_position)], structure, indexed_values = indexed_values)
+    # end for
+
+def insert_value(all_values, value, structure, indexed_values = None):
+
+    if str(type(value)) in ["<class 'eboa.datamodel.events.EventBoolean'>", "<class 'eboa.datamodel.annotations.AnnotationBoolean'>"]:
+        value_type = "boolean"
+    elif str(type(value)) in ["<class 'eboa.datamodel.events.EventDouble'>", "<class 'eboa.datamodel.annotations.AnnotationDouble'>"]:
+        value_type = "double"
+    elif str(type(value)) in ["<class 'eboa.datamodel.events.EventTimestamp'>", "<class 'eboa.datamodel.annotations.AnnotationTimestamp'>"]:
+        value_type = "timestamp"
+    elif str(type(value)) in ["<class 'eboa.datamodel.events.EventGeometry'>", "<class 'eboa.datamodel.annotations.AnnotationGeometry'>"]:
+        value_type = "geometry"
+    elif str(type(value)) in ["<class 'eboa.datamodel.events.EventObject'>", "<class 'eboa.datamodel.annotations.AnnotationObject'>"]:
+        value_type = "object"
+    else:
+        value_type = "text"
+    # end if
+
+    if value_type != "object":
+        value_content = str(value.value)
+        if value_type == "geometry":
+            value_content = to_shape(value.value).wkt
+        # end if
+        elif value_type == "timestamp":
+            value_content = value.value.isoformat()
         # end if
 
-        if value_type != "object":
-            value_content = str(value.value)
-            if value_type == "geometry":
-                value_content = to_shape(value.value).wkt
-            # end if
-            elif value_type == "timestamp":
-                value_content = value.value.isoformat()
-            # end if
+        structure.append({"name": value.name,
+                          "type": value_type,
+                          "value": value_content
+        })
+    else:
+        object_entity_structure = {"name": value.name,
+                                   "type": "object",
+                                   "values": []
+        }
+        structure.append(object_entity_structure)
 
-            structure.append({"name": value.name,
-                              "type": value_type,
-                              "value": value_content
-            })
-        else:
-            object_entity_structure = {"name": value.name,
-                                       "type": "object",
-                                       "values": []
-            }
-            structure.append(object_entity_structure)
+        build_object_structure(all_values, object_entity_structure["values"], value.parent_level + 1, value.position, indexed_values = indexed_values)
+    # end if
 
-            build_object_structure(all_values, object_entity_structure["values"], value.parent_level + 1, value.position)
+def index_values(values, structure_for_searching_values = None):
+
+    indexed_values = {}
+    for value in values:
+        indexed_values[(value.position, value.parent_level, value.parent_position)] = value
+        if (value.parent_level, value.parent_position) not in indexed_values:
+            indexed_values[(value.parent_level, value.parent_position)] = []
+        # end if
+        indexed_values[(value.parent_level, value.parent_position)].append(value)
+
+        if structure_for_searching_values != None:
+            if value.name not in structure_for_searching_values:
+                structure_for_searching_values[value.name] = []
+            # end if
+            insert_value(values, value, structure_for_searching_values[value.name])
         # end if
     # end for
 
+    return indexed_values

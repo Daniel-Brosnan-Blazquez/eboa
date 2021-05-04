@@ -425,6 +425,7 @@ class TestDatamodel(unittest.TestCase):
             "event_uuid": str(events[0].event_uuid),
             "start": "2018-06-05T02:07:03",
             "stop": "2018-06-05T08:07:36",
+            "duration": 21633.0,
             "ingestion_time": events[0].ingestion_time.isoformat(),
             "gauge": {
                 "gauge_uuid": str(events[0].gauge.gauge_uuid),
@@ -1002,29 +1003,12 @@ class TestDatamodel(unittest.TestCase):
                 },
                 "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
             }],
-            "annotations": [
-                {
+            "annotations": {
+                "ANNOTATION_CNF": [{
                     "annotation_uuid": str(annotations[0].annotation_uuid),
-                    "explicit_reference": {
-                        "uuid": str(annotations[0].explicit_ref_uuid),
-                        "name": "EXPLICIT_REFERENCE"
-                    },
-                    "ingestion_time": annotations[0].ingestion_time.isoformat(),
-                    "configuration": {
-                        "uuid": str(annotations[0].annotationCnf.annotation_cnf_uuid),
-                        "dim_signature": "dim_signature",
-                        "name": "ANNOTATION_CNF",
-                        "system": "SYSTEM",
-                        "description": None,
-                    },
-                    "source": {
-                        "source_uuid": str(annotations[0].source.source_uuid),
-                        "name": "source.xml"
-                    },
-                    "values": [],
-                    "alerts": []
-                }
-            ]
+                    "name": "ANNOTATION_CNF",
+                    "system": "SYSTEM"}]
+            }
         }
         assert jsonified_er == data_to_match
 

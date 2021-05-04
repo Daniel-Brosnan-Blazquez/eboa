@@ -35,7 +35,7 @@ class Annotation(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
-    def jsonify(self):
+    def jsonify(self, include_indexed_values = False):
         """
         Method to obtain the structure of the annotation in a python dictionary format
 
@@ -61,13 +61,23 @@ class Annotation(Base):
                 "source_uuid": str(self.source.source_uuid),
                 "name": self.source.name,
             },
-            "values": self.get_structured_values(),
             "alerts": [alert.jsonify() for alert in self.alerts]
         }
+        
+        if include_indexed_values:
+            indexed_values = {}
+            values = self.get_structured_values(structure_for_searching_values = indexed_values)
+
+            structure["indexed_values"] = indexed_values
+        else:
+            values = self.get_structured_values()
+        # end if
+
+        structure["values"] = values
 
         return structure
 
-    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
+    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0, structure_for_searching_values = None):
         """
         Method to obtain the structure of values in a python dictionary format
         """
@@ -82,7 +92,8 @@ class Annotation(Base):
             export.build_values_structure(values, json_values,
                                           position = position,
                                           parent_level = parent_level,
-                                          parent_position = parent_position)
+                                          parent_position = parent_position,
+                                          structure_for_searching_values = structure_for_searching_values)
         # end if
 
         return json_values
