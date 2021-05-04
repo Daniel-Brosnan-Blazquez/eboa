@@ -275,7 +275,17 @@ def build_object_structure(values, structure, parent_level, parent_position, ind
 
 def insert_values(all_values, values_to_insert, structure, parent_level, parent_position, indexed_values):
 
-    for iterator in range(len(values_to_insert)):
+    start_iterator = 0
+    found_start_iterator = False
+    while not found_start_iterator:
+        if (start_iterator, parent_level, parent_position) in indexed_values:
+            found_start_iterator = True
+        else:
+            start_iterator += 1
+        # end if
+    # end while
+        
+    for iterator in range(start_iterator, start_iterator + len(values_to_insert)):
         insert_value(all_values, indexed_values[(iterator, parent_level, parent_position)], structure, indexed_values = indexed_values)
     # end for
 
