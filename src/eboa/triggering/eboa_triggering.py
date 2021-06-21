@@ -261,6 +261,7 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
             logger.info("Found {} dependecy/ies on the triggering of the file {}".format(len(dependencies_on_this), file_name))
 
             if output_path:
+                logger.info("The following command is going to be triggered: {}".format(command))
                 exit_code = execute_command(command)
             else:
                 exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
