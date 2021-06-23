@@ -1353,14 +1353,14 @@ class Query():
         # end if
 
         # Generators
-        if check_key_in_filters(filters, "generators"):
-            functions.is_valid_text_filter(filters["generators"])
-            if filters["generators"]["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[filters["generators"]["op"]]
-                params.append(op(Report.generator, filters["generators"]["filter"]))
+        if check_key_in_filters(filters, "report_generators_filters"):
+            functions.is_valid_text_filter(filters["report_generators_filters"])
+            if filters["report_generators_filters"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["report_generators_filters"]["op"]]
+                params.append(op(Report.generator, filters["report_generators_filters"]["filter"]))
             else:
-                filter = eval('Report.generator.' + text_operators[filters["generators"]["op"]])
-                params.append(filter(filters["generators"]["filter"]))
+                filter = eval('Report.generator.' + text_operators[filters["report_generators_filters"]["op"]])
+                params.append(filter(filters["report_generators_filters"]["filter"]))
             # end if
             join_tables = True
         # end if
@@ -1496,14 +1496,14 @@ class Query():
         # end if
 
         # Generators
-        if check_key_in_filters(filters, "generators"):
-            functions.is_valid_text_filter(filters["generators"])
-            if filters["generators"]["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[filters["generators"]["op"]]
-                params.append(op(ReportAlert.generator, filters["generators"]["filter"]))
+        if check_key_in_filters(filters, "alert_generators_filters"):
+            functions.is_valid_text_filter(filters["alert_generators_filters"])
+            if filters["alert_generators_filters"]["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[filters["alert_generators_filters"]["op"]]
+                params.append(op(ReportAlert.generator, filters["alert_generators_filters"]["filter"]))
             else:
-                filter = eval('ReportAlert.generator.' + text_operators[filters["generators"]["op"]])
-                params.append(filter(filters["generators"]["filter"]))
+                filter = eval('ReportAlert.generator.' + text_operators[filters["alert_generators_filters"]["op"]])
+                params.append(filter(filters["alert_generators_filters"]["filter"]))
             # end if
         # end if
 
