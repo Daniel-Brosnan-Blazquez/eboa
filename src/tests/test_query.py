@@ -2771,7 +2771,8 @@ class TestQuery(unittest.TestCase):
                        "reception_time": "2018-06-06T13:33:29",
                        "generation_time": "2018-07-05T02:07:03",
                        "validity_start": "2018-06-05T02:07:03",
-                       "validity_stop": "2018-06-05T08:07:36"},
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "processing_duration": "0.156283"},
             "alerts": [{
                 "message": "Alert message",
                 "generator": "test",
@@ -2836,14 +2837,27 @@ class TestQuery(unittest.TestCase):
         source_alerts = self.query.get_source_alerts(filters)
         assert len(source_alerts) == 2
 
+        # Reported validity period
+        filters = {"reported_validity_start_filters": [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                   "reported_validity_stop_filters": [{"date": "2018-06-05T08:07:36", "op": "=="}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+        
         # Reception time
         filters = {"reception_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
 
         source_alerts = self.query.get_source_alerts(filters)
         assert len(source_alerts) == 2
-
+        
         # Generation time
         filters = {"generation_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+
+        # Reported generation time
+        filters = {"reported_generation_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
 
         source_alerts = self.query.get_source_alerts(filters)
         assert len(source_alerts) == 2
@@ -2854,12 +2868,24 @@ class TestQuery(unittest.TestCase):
         source_alerts = self.query.get_source_alerts(filters)
         assert len(source_alerts) == 2
 
+        # processing duration
+        filters = {"processing_duration_filters": [{"float": 0, "op": ">"}]}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+        
         # ingestion duration
         filters = {"ingestion_duration_filters": [{"float": 0, "op": ">"}]}
 
         source_alerts = self.query.get_source_alerts(filters)
         assert len(source_alerts) == 2
 
+        # ingestion completeness
+        filters = {"ingestion_completeness": True}
+
+        source_alerts = self.query.get_source_alerts(filters)
+        assert len(source_alerts) == 2
+        
         # ingested
         filters = {"ingested": True}
 

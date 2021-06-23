@@ -653,6 +653,26 @@ class Query():
             join_tables = True
         # end if
 
+        # reported_validity_start filters
+        if check_key_in_filters(filters, "reported_validity_start_filters"):
+            functions.is_valid_date_filters(filters["reported_validity_start_filters"])
+            for reported_validity_start_filter in filters["reported_validity_start_filters"]:
+                op = arithmetic_operators[reported_validity_start_filter["op"]]
+                params.append(op(Source.reported_validity_start, reported_validity_start_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
+        # reported_validity_stop filters
+        if check_key_in_filters(filters, "reported_validity_stop_filters"):
+            functions.is_valid_date_filters(filters["reported_validity_stop_filters"])
+            for reported_validity_stop_filter in filters["reported_validity_stop_filters"]:
+                op = arithmetic_operators[reported_validity_stop_filter["op"]]
+                params.append(op(Source.reported_validity_stop, reported_validity_stop_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+        
         # reception_time filters
         if check_key_in_filters(filters, "reception_time_filters"):
             functions.is_valid_date_filters(filters["reception_time_filters"])
@@ -673,6 +693,16 @@ class Query():
             join_tables = True
         # end if
 
+        # reported_generation_time filters
+        if check_key_in_filters(filters, "reported_generation_time_filters"):
+            functions.is_valid_date_filters(filters["reported_generation_time_filters"])
+            for reported_generation_time_filter in filters["reported_generation_time_filters"]:
+                op = arithmetic_operators[reported_generation_time_filter["op"]]
+                params.append(op(Source.reported_generation_time, reported_generation_time_filter["date"]))
+            # end for
+            join_tables = True
+        # end if
+
         # source ingestion_time filters
         if check_key_in_filters(filters, "source_ingestion_time_filters"):
             functions.is_valid_date_filters(filters["source_ingestion_time_filters"])
@@ -683,6 +713,16 @@ class Query():
             join_tables = True
         # end if
 
+        # processing_duration filters
+        if check_key_in_filters(filters, "processing_duration_filters"):
+            functions.is_valid_float_filters(filters["processing_duration_filters"])
+            for processing_duration_filter in filters["processing_duration_filters"]:
+                op = arithmetic_operators[processing_duration_filter["op"]]
+                params.append(op(Source.processing_duration, timedelta(seconds = processing_duration_filter["float"])))
+            # end for
+            join_tables = True
+        # end if
+        
         # ingestion_duration filters
         if check_key_in_filters(filters, "ingestion_duration_filters"):
             functions.is_valid_float_filters(filters["ingestion_duration_filters"])
@@ -690,6 +730,13 @@ class Query():
                 op = arithmetic_operators[ingestion_duration_filter["op"]]
                 params.append(op(Source.ingestion_duration, timedelta(seconds = ingestion_duration_filter["float"])))
             # end for
+            join_tables = True
+        # end if
+
+        # ingestion_completeness filter
+        if check_key_in_filters(filters, "ingestion_completeness"):
+            functions.is_valid_bool_filter(filters["ingestion_completeness"])
+            params.append(Source.ingestion_completeness == filters["ingestion_completeness"])
             join_tables = True
         # end if
 
