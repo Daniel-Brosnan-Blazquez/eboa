@@ -1485,11 +1485,15 @@ class Query():
             functions.is_valid_severity_filter(filters["severities"])
             if filters["severities"]["op"] in arithmetic_operators.keys():
                 op = arithmetic_operators[filters["severities"]["op"]]
-                params.append(op(Alert.severity, filters["severities"]["filter"]))
+                params.append(op(Alert.severity, alert_severity_codes[filters["severities"]["filter"]]))
             else:
-                filters = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
+                if type(filters["severities"]["filter"]) == list:
+                    filters_to_apply = [alert_severity_codes[severity_filter] for severity_filter in filters["severities"]["filter"]]
+                else:
+                    filters_to_apply = filters["severities"]["filter"]
+                # end if
                 filter = eval('Alert.severity.' + text_operators[filters["severities"]["op"]])
-                params.append(filter(filters))
+                params.append(filter(filters_to_apply))
             # end if
             join_tables = True
         # end if
