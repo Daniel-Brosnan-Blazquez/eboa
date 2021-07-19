@@ -2934,94 +2934,68 @@ class TestQuery(unittest.TestCase):
         assert len(source_alerts) == 2
 
         # Source names
-        filters = {"source_names": {"filter": "source.json", "op": "=="}}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(source_names = {"filter": "source.json", "op": "=="})
         assert len(source_alerts) == 2
 
         # Validity period
-        filters = {"validity_start_filters": [{"date": "2018-06-05T02:07:03", "op": "=="}],
-                   "validity_stop_filters": [{"date": "2018-06-05T08:07:36", "op": "=="}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                                                     validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}])
         assert len(source_alerts) == 2
 
         # validity duration
-        filters = {"validity_duration_filters": [{"float": "0", "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(validity_duration_filters = [{"float": "0", "op": ">"}])
         assert len(source_alerts) == 2
 
         # Reported validity period
-        filters = {"reported_validity_start_filters": [{"date": "2018-06-05T02:07:03", "op": "=="}],
-                   "reported_validity_stop_filters": [{"date": "2018-06-05T08:07:36", "op": "=="}]}
+        source_alerts = self.query.get_source_alerts(reported_validity_start_filters = [{"date": "2018-06-05T02:07:03", "op": "=="}],
+                                                     reported_validity_stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}])
+        assert len(source_alerts) == 2
 
-        source_alerts = self.query.get_source_alerts(filters)
+        # Reported validity duration
+        source_alerts = self.query.get_source_alerts(reported_validity_duration_filters = [{"float": "0", "op": ">"}])
         assert len(source_alerts) == 2
         
         # Reception time
-        filters = {"reception_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(reception_time_filters = [{"date": "2018-06-05T02:07:03", "op": ">"}])
         assert len(source_alerts) == 2
         
         # Generation time
-        filters = {"generation_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(generation_time_filters = [{"date": "2018-06-05T02:07:03", "op": ">"}])
         assert len(source_alerts) == 2
 
         # Reported generation time
-        filters = {"reported_generation_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(reported_generation_time_filters = [{"date": "2018-06-05T02:07:03", "op": ">"}])
         assert len(source_alerts) == 2
 
         # Source ingestion time
-        filters = {"source_ingestion_time_filters": [{"date": "2018-06-05T02:07:03", "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(source_ingestion_time_filters = [{"date": "2018-06-05T02:07:03", "op": ">"}])
         assert len(source_alerts) == 2
 
         # processing duration
-        filters = {"processing_duration_filters": [{"float": 0, "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(processing_duration_filters = [{"float": 0, "op": ">"}])
         assert len(source_alerts) == 2
         
         # ingestion duration
-        filters = {"ingestion_duration_filters": [{"float": 0, "op": ">"}]}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(ingestion_duration_filters = [{"float": 0, "op": ">"}])
         assert len(source_alerts) == 2
 
         # ingestion completeness
-        filters = {"ingestion_completeness": True}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(ingestion_completeness = True)
         assert len(source_alerts) == 2
         
         # ingested
-        filters = {"ingested": True}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(ingested = True)
         assert len(source_alerts) == 2
 
         # DIM signatures
-        filters = {"dim_signatures": {"filter": "dim_signature", "op": "=="}}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(dim_signatures = {"filter": "dim_signature", "op": "=="})
         assert len(source_alerts) == 2
 
         # Alert groups
-        filters = {"groups": {"filter": "alert_group", "op": "=="}}
-
-        source_alerts = self.query.get_source_alerts(filters)
+        source_alerts = self.query.get_source_alerts(groups = {"filter": "alert_group", "op": "=="})
         assert len(source_alerts) == 2
 
-        filters = {"delete": True}
-
-        self.query.get_source_alerts(filters)
+        self.query.get_source_alerts(delete = True)
 
         source_alerts = self.query.get_source_alerts()
 
@@ -3117,45 +3091,45 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 4
 
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
-        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
-        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
-        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["duration_filters"] = [{"float": "10", "op": ">"}]
-        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["names"] = {"filter": "alert_name1", "op": "=="}
-        filters["severities"] = {"filter": "critical", "op": "=="}
-        filters["groups"] = {"filter": "alert_group", "op": "=="}
-        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_event_alerts()], "op": "in"}
-        filters["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["generators"] = {"filter": "test", "op": "=="}
-        filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        kwargs["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        kwargs["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        kwargs["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["duration_filters"] = [{"float": "10", "op": ">"}]
+        kwargs["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["names"] = {"filter": "alert_name1", "op": "=="}
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        kwargs["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_event_alerts()], "op": "in"}
+        kwargs["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["generators"] = {"filter": "test", "op": "=="}
+        kwargs["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
         
-        alerts = self.query.get_event_alerts(filters)
+        alerts = self.query.get_event_alerts(**kwargs)
 
         assert len(alerts) == 1
 
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
-        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
-        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
-        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["duration_filters"] = [{"float": "10", "op": ">"}]
-        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["severities"] = {"filter": ["critical", "major"], "op": "in"}
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        kwargs["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        kwargs["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        kwargs["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["duration_filters"] = [{"float": "10", "op": ">"}]
+        kwargs["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["severities"] = {"filter": ["critical", "major"], "op": "in"}
         
-        alerts = self.query.get_event_alerts(filters)
+        alerts = self.query.get_event_alerts(**kwargs)
 
         assert len(alerts) == 2
 
@@ -3245,50 +3219,47 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 4
 
-        filters = {"annotation_uuids": {"filter": str([annotation.annotation_uuid for annotation in self.query.get_annotations()][0]), "op": "=="}}
-        
-        alerts = self.query.get_annotation_alerts(filters)
+        alerts = self.query.get_annotation_alerts(annotation_uuids = {"filter": str([annotation.annotation_uuid for annotation in self.query.get_annotations()][0]), "op": "=="})
 
         assert len(alerts) == 2
 
-        filters = {"annotation_ingestion_time_filters": [{"date": alerts[0].annotation.ingestion_time.isoformat(), "op": "=="}]}
-        alerts = self.query.get_annotation_alerts(filters)
+        alerts = self.query.get_annotation_alerts(annotation_ingestion_time_filters = [{"date": alerts[0].annotation.ingestion_time.isoformat(), "op": "=="}])
 
         assert len(alerts) == 2
 
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
-        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
-        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
-        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["names"] = {"filter": "alert_name1", "op": "=="}
-        filters["severities"] = {"filter": "critical", "op": "=="}
-        filters["groups"] = {"filter": "alert_group", "op": "=="}
-        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_annotation_alerts()], "op": "in"}
-        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["generators"] = {"filter": "test", "op": "=="}
-        filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        kwargs["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        kwargs["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        kwargs["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["names"] = {"filter": "alert_name1", "op": "=="}
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        kwargs["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_annotation_alerts()], "op": "in"}
+        kwargs["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["generators"] = {"filter": "test", "op": "=="}
+        kwargs["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
         
-        alerts = self.query.get_annotation_alerts(filters)
+        alerts = self.query.get_annotation_alerts(**kwargs)
 
         assert len(alerts) == 1
 
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER1", "op": "=="}
-        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
-        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
-        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["severities"] = {"filter": ["critical", "major"], "op": "in"}
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER1", "op": "=="}
+        kwargs["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        kwargs["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        kwargs["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["severities"] = {"filter": ["critical", "major"], "op": "in"}
         
-        alerts = self.query.get_annotation_alerts(filters)
+        alerts = self.query.get_annotation_alerts(**kwargs)
 
         assert len(alerts) == 2
 
@@ -3396,63 +3367,63 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 4
 
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
-        filters["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
-        filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
-        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
-        filters["keys"] = {"filter": "EVENT_KEY", "op": "=="}
-        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["duration_filters"] = [{"float": "10", "op": ">"}]
-        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
-        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
-        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
-        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
-        filters["names"] = {"filter": "alert_name1", "op": "=="}
-        filters["severities"] = {"filter": "critical", "op": "=="}
-        filters["groups"] = {"filter": "alert_group", "op": "=="}
-        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_explicit_ref_alerts()], "op": "in"}
-        filters["ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["generators"] = {"filter": "test", "op": "=="}
-        filters["notification_time_filters"] = [{"date": "2020-06-05T08:07:36", "op": "=="}]
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER2", "op": "=="}
+        kwargs["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
+        kwargs["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        kwargs["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        kwargs["keys"] = {"filter": "EVENT_KEY", "op": "=="}
+        kwargs["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["duration_filters"] = [{"float": "10", "op": ">"}]
+        kwargs["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        kwargs["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        kwargs["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        kwargs["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
+        kwargs["names"] = {"filter": "alert_name1", "op": "=="}
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        kwargs["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_explicit_ref_alerts()], "op": "in"}
+        kwargs["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["generators"] = {"filter": "test", "op": "=="}
+        kwargs["notification_time_filters"] = [{"date": "2020-06-05T08:07:36", "op": "=="}]
         
-        alerts = self.query.get_explicit_ref_alerts(filters)
+        alerts = self.query.get_explicit_ref_alerts(**kwargs)
 
         assert len(alerts) == 1
         
-        filters = {"sources": {"filter": "source.json", "op": "=="}}
-        filters["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
-        filters["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
-        filters["explicit_refs"] = {"filter": "ER2", "op": "=="}
-        filters["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
-        filters["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
-        filters["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
-        filters["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
-        filters["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
-        filters["keys"] = {"filter": "EVENT_KEY", "op": "=="}
-        filters["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["duration_filters"] = [{"float": "10", "op": ">"}]
-        filters["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
-        filters["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
-        filters["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
-        filters["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
-        filters["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
-        filters["severities"] = {"filter": "critical", "op": "=="}
+        kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
+        kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
+        kwargs["explicit_refs"] = {"filter": "ER2", "op": "=="}
+        kwargs["explicit_ref_groups"] = {"filter": "ER_GROUP2", "op": "=="}
+        kwargs["explicit_ref_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
+        kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
+        kwargs["gauge_names"] = {"filter": "GAUGE_NAME", "op": "=="}
+        kwargs["gauge_systems"] = {"filter": "GAUGE_SYSTEM", "op": "=="}
+        kwargs["keys"] = {"filter": "EVENT_KEY", "op": "=="}
+        kwargs["start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["duration_filters"] = [{"float": "10", "op": ">"}]
+        kwargs["event_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["event_value_filters"] = [{"name": {"op": "==", "filter": "TEXT"}, "type": "text", "value": {"op": "like", "filter": "TEXT"}}]
+        kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
+        kwargs["annotation_cnf_names"] = {"filter": "NAME", "op": "=="}
+        kwargs["annotation_cnf_systems"] = {"filter": "SYSTEM", "op": "=="}
+        kwargs["annotation_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["annotation_value_filters"] = [{"name": {"op": "==", "filter": "BOOLEAN"}, "type": "boolean", "value": {"op": "==", "filter": "true"}}]
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
 
-        alerts = self.query.get_explicit_ref_alerts(filters)
+        alerts = self.query.get_explicit_ref_alerts(**kwargs)
 
         assert len(alerts) == 2
 
@@ -3561,43 +3532,43 @@ class TestQuery(unittest.TestCase):
 
         assert len(alerts) == 3
 
-        filters = {"report_names": {"filter": "report.html", "op": "=="}}
-        filters["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
-        filters["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
-        filters["generation_modes"] = {"filter": "MANUAL", "op": "=="}
-        filters["validity_start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["validity_stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["validity_duration_filters"] = [{"float": 21633.0, "op": "=="}]
-        filters["triggering_time_filters"] = [{"date": "2018-07-05T02:07:03", "op": "=="}]
-        filters["generation_start_filters"] = [{"date": "2018-07-05T02:07:10", "op": "=="}]
-        filters["generation_stop_filters"] = [{"date": "2018-07-05T02:15:10", "op": "=="}]
-        filters["generated"] = True
-        filters["compressed"] = True
-        filters["generation_error"] = {"filter": "false", "op": "=="}
-        filters["report_generators_filters"] = {"filter": "report_generator", "op": "=="}
-        filters["generator_version_filters"] = [{"filter": "1.0", "op": "=="}]
-        filters["report_groups"] = {"filter": "report_group", "op": "=="}
-        filters["names"] = {"filter": "alert_name1", "op": "=="}
-        filters["severities"] = {"filter": "critical", "op": "=="}
-        filters["groups"] = {"filter": "alert_group", "op": "=="}
-        filters["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_report_alerts()], "op": "in"}
-        filters["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
-        filters["generators"] = {"filter": "test", "op": "=="}
-        filters["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs = {"report_names": {"filter": "report.html", "op": "=="}}
+        kwargs["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
+        kwargs["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
+        kwargs["generation_modes"] = {"filter": "MANUAL", "op": "=="}
+        kwargs["validity_start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["validity_stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["validity_duration_filters"] = [{"float": 21633.0, "op": "=="}]
+        kwargs["triggering_time_filters"] = [{"date": "2018-07-05T02:07:03", "op": "=="}]
+        kwargs["generation_start_filters"] = [{"date": "2018-07-05T02:07:10", "op": "=="}]
+        kwargs["generation_stop_filters"] = [{"date": "2018-07-05T02:15:10", "op": "=="}]
+        kwargs["generated"] = True
+        kwargs["compressed"] = True
+        kwargs["generation_error"] = {"filter": "false", "op": "=="}
+        kwargs["report_generators_filters"] = {"filter": "report_generator", "op": "=="}
+        kwargs["generator_version_filters"] = [{"filter": "1.0", "op": "=="}]
+        kwargs["report_groups"] = {"filter": "report_group", "op": "=="}
+        kwargs["names"] = {"filter": "alert_name1", "op": "=="}
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        kwargs["alert_uuids"] = {"filter": [alert.alert_uuid for alert in self.query.get_report_alerts()], "op": "in"}
+        kwargs["alert_ingestion_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": ">"}]
+        kwargs["generators"] = {"filter": "test", "op": "=="}
+        kwargs["notification_time_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
         
-        alerts = self.query.get_report_alerts(filters)
+        alerts = self.query.get_report_alerts(**kwargs)
 
         assert len(alerts) == 1
 
-        filters = {"report_names": {"filter": "report.html", "op": "=="}}
-        filters["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
-        filters["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
-        filters["generation_modes"] = {"filter": "MANUAL", "op": "=="}
-        filters["validity_start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
-        filters["validity_stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
-        filters["validity_duration_filters"] = [{"float": 21633.0, "op": "=="}]
-        filters["severities"] = {"filter": ["warning", "major"], "op": "in"}
+        kwargs = {"report_names": {"filter": "report.html", "op": "=="}}
+        kwargs["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
+        kwargs["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
+        kwargs["generation_modes"] = {"filter": "MANUAL", "op": "=="}
+        kwargs["validity_start_filters"] = [{"date": "2018-06-05T02:07:03", "op": "=="}]
+        kwargs["validity_stop_filters"] = [{"date": "2018-06-05T08:07:36", "op": "=="}]
+        kwargs["validity_duration_filters"] = [{"float": 21633.0, "op": "=="}]
+        kwargs["severities"] = {"filter": ["warning", "major"], "op": "in"}
         
-        alerts = self.query.get_report_alerts(filters)
+        alerts = self.query.get_report_alerts(**kwargs)
 
         assert len(alerts) == 2
