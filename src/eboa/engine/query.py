@@ -1265,11 +1265,15 @@ class Query():
 
         # status filters
         if statuses != None:
-            functions.is_valid_float_filters(statuses)
-            for status in statuses:
-                op = arithmetic_operators[status["op"]]
-                params.append(op(ReportStatus.status, status["float"]))
-            # end for
+            functions.is_valid_text_filter(statuses)
+            if statuses["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[statuses["op"]]
+                params.append(op(ReportStatus.status, statuses["filter"]))
+            else:
+                filter = eval('ReportStatus.status.' + text_operators[statuses["op"]])
+                params.append(filter(statuses["filter"]))
+            # end if
+            tables.append(ReportStatus)
         # end if
 
         query = self.session.query(Report)
