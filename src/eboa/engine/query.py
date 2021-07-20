@@ -4525,6 +4525,88 @@ class Query():
 
         return values
 
+    def get_alerts(self, names = None, severities = None, groups = None, order_by = None, limit = None, offset = None):
+
+        params = []
+        tables = []
+
+        # Alert configuration names
+        if names != None:
+            functions.is_valid_text_filter(names)
+            if names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[names["op"]]
+                params.append(op(Alert.name, names["filter"]))
+            else:
+                filter = eval('Alert.name.' + text_operators[names["op"]])
+                params.append(filter(names["filter"]))
+            # end if
+        # end if
+
+        # Alert severities
+        if severities != None:
+            functions.is_valid_severity_filter(severities)
+            if severities["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[severities["op"]]
+                params.append(op(Alert.severity, alert_severity_codes[severities["filter"]]))
+            else:
+                if type(severities["filter"]) == list:
+                    filters_to_apply = [alert_severity_codes[severity_filter] for severity_filter in severities["filter"]]
+                else:
+                    filters_to_apply = severities["filter"]
+                # end if
+                filter = eval('Alert.severity.' + text_operators[severities["op"]])
+                params.append(filter(filters_to_apply))
+            # end if
+        # end if
+
+        # Alert groups
+        if groups != None:
+            functions.is_valid_text_filter(groups)
+            if groups["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[groups["op"]]
+                params.append(op(AlertGroup.name, groups["filter"]))
+            else:
+                filter = eval('AlertGroup.name.' + text_operators[groups["op"]])
+                params.append(filter(groups["filter"]))
+            # end if
+            tables.append(AlertGroup)
+        # end if
+
+        query = self.session.query(Alert)
+        for table in set(tables):
+            query = query.join(table)
+        # end for
+
+        query = query.filter(*params)
+        
+        # Order by
+        if order_by != None:
+            functions.is_valid_order_by(order_by)
+            if order_by["descending"]:
+                order_by_statement = eval("Alert." + order_by["field"] + ".desc()")
+            else:
+                order_by_statement = eval("Alert." + order_by["field"])
+            # end if
+            query = query.order_by(order_by_statement)
+        # end if
+
+        # Limit
+        if limit != None:
+            functions.is_valid_positive_integer(limit)
+            query = query.limit(limit)
+        # end if
+
+        # Offset
+        if offset != None:
+            functions.is_valid_positive_integer(offset)
+            query = query.offset(offset)
+        # end if
+
+        log_query(query)
+        alerts = query.all()
+
+        return alerts
+
     def close_session (self):
         """
         Method to close the session
