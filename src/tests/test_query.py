@@ -1934,7 +1934,7 @@ class TestQuery(unittest.TestCase):
 
         assert len(report) == 1
 
-        report = self.query.get_reports(statuses = [{"float": "0", "op": "=="}])
+        report = self.query.get_reports(statuses = {"filter": "0", "op": "=="})
 
         assert len(report) == 1
 
@@ -3570,5 +3570,111 @@ class TestQuery(unittest.TestCase):
         kwargs["severities"] = {"filter": ["warning", "major"], "op": "in"}
         
         alerts = self.query.get_report_alerts(**kwargs)
+
+        assert len(alerts) == 2
+
+    def test_query_alerts(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2019-06-05T08:07:36",
+                       "priority": 30},
+            "events": [{
+                "explicit_reference": "ER1",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36",
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "boolean",
+                                 "name": "BOOLEAN",
+                                 "value": "true"}]
+                            }],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }},
+                           {
+                               "message": "Alert message",
+                               "generator": "test2",
+                               "notification_time": "2019-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name2",
+                                   "severity": "major",
+                                   "description": "Alert description",
+                                   "group": "alert_group"
+                               }}]
+            },
+                       {
+                           "explicit_reference": "ER2",
+                           "gauge": {"name": "GAUGE_NAME2",
+                                     "system": "GAUGE_SYSTEM2",
+                                     "insertion_type": "SIMPLE_UPDATE"},
+                           "start": "2019-06-05T02:07:03",
+                           "stop": "2019-06-05T08:07:36",
+                           "alerts": [{
+                               "message": "Alert message",
+                               "generator": "test3",
+                               "notification_time": "2018-06-05T08:07:36",
+                               "alert_cnf": {
+                                   "name": "alert_name3",
+                                   "severity": "critical",
+                                   "description": "Alert description",
+                                   "group": "alert_group3"
+                               }},
+                                      {
+                                          "message": "Alert message",
+                                          "generator": "test4",
+                                          "notification_time": "2019-06-05T08:07:36",
+                                          "alert_cnf": {
+                                              "name": "alert_name4",
+                                              "severity": "major",
+                                              "description": "Alert description",
+                                              "group": "alert_group4"
+                                          }}]
+                       }]
+        }]
+                }
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert exit_status[0]["status"] == eboa_engine.exit_codes["OK"]["status"]
+
+        alerts = self.query.get_alerts()
+
+        assert len(alerts) == 4
+
+        kwargs = {}
+        kwargs["names"] = {"filter": "alert_name1", "op": "=="}
+        kwargs["severities"] = {"filter": "critical", "op": "=="}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        
+        alerts = self.query.get_alerts(**kwargs)
+
+        assert len(alerts) == 1
+
+        kwargs = {}
+        kwargs["groups"] = {"filter": "alert_group", "op": "=="}
+        
+        alerts = self.query.get_alerts(**kwargs)
 
         assert len(alerts) == 2
