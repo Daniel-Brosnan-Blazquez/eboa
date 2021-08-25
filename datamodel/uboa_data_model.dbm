@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,0" last-zoom="0.65" max-obj-count="4"
+	 default-owner="postgres">
+<role name="uboa"
+      inherit="true"
+      login="true">
+</role>
+
+<database name="uboadb" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="uboa" layer="0" fill-color="#e1e1e1">
+	<role name="uboa"/>
+</schema>
+
+<table name="users" layer="0" collapse-mode="2" max-obj-count="14" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="800" y="360"/>
+	<column name="user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="email" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="username" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="password">
+		<type name="text" length="0"/>
+	</column>
+	<column name="last_login_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="current_login_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="last_login_ip">
+		<type name="text" length="0"/>
+	</column>
+	<column name="current_login_ip">
+		<type name="text" length="0"/>
+	</column>
+	<column name="login_count">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="active">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fs_uniquifier">
+		<type name="text" length="0"/>
+	</column>
+	<column name="confirmed_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="users_pk" type="pk-constr" table="uboa.users">
+		<columns names="user_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_user" type="uq-constr" table="uboa.users">
+		<columns names="email,username,fs_uniquifier" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="roles" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="1180" y="360"/>
+	<column name="role_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="unique_role" type="uq-constr" table="uboa.roles">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="roles_pk" type="pk-constr" table="uboa.roles">
+		<columns names="role_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="roles_users" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="1000" y="100"/>
+	<column name="role_user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="roles_users_pk" type="pk-constr" table="uboa.roles_users">
+		<columns names="role_user_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="configurations" layer="0" collapse-mode="2" max-obj-count="4" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="1180" y="520"/>
+	<column name="configuration_uuid" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="configuration">
+		<type name="json" length="0"/>
+	</column>
+	<constraint name="configurations_pk" type="pk-constr" table="uboa.configurations">
+		<columns names="configuration_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="roles_has_many_roles_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#4830d1"
+	 src-table="uboa.roles"
+	 dst-table="uboa.roles_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_has_many_roles_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#684e2f"
+	 src-table="uboa.users"
+	 dst-table="uboa.roles_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_has_many_configurations" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#92bf74"
+	 src-table="uboa.users"
+	 dst-table="uboa.configurations"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+</dbmodel>
