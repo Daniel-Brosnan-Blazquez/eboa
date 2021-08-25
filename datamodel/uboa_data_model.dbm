@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,0" last-zoom="0.65" max-obj-count="4"
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="82,0" last-zoom="0.95" max-obj-count="7"
 	 default-owner="postgres">
 <role name="uboa"
       inherit="true"
@@ -20,10 +20,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<role name="uboa"/>
 </schema>
 
-<table name="users" layer="0" collapse-mode="2" max-obj-count="14" z-value="0">
+<table name="users" layer="0" collapse-mode="2" max-obj-count="15" z-value="0">
 	<schema name="uboa"/>
 	<role name="uboa"/>
-	<position x="800" y="360"/>
+	<position x="520" y="100"/>
 	<column name="user_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -33,7 +33,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="username" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<column name="password">
+	<column name="group" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="password" not-null="true">
 		<type name="text" length="0"/>
 	</column>
 	<column name="last_login_at">
@@ -71,7 +74,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
 	<schema name="uboa"/>
 	<role name="uboa"/>
-	<position x="1180" y="360"/>
+	<position x="900" y="240"/>
 	<column name="role_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -92,7 +95,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles_users" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
 	<schema name="uboa"/>
 	<role name="uboa"/>
-	<position x="1000" y="100"/>
+	<position x="880" y="100"/>
 	<column name="role_user_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -101,18 +104,27 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="configurations" layer="0" collapse-mode="2" max-obj-count="4" z-value="0">
+<table name="configurations" layer="0" collapse-mode="2" max-obj-count="7" z-value="0">
 	<schema name="uboa"/>
 	<role name="uboa"/>
-	<position x="1180" y="520"/>
+	<position x="920" y="540"/>
 	<column name="configuration_uuid" not-null="true">
-		<type name="text" length="0"/>
+		<type name="uuid" length="0"/>
 	</column>
 	<column name="name" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<column name="configuration">
+	<column name="configuration" not-null="true">
 		<type name="json" length="0"/>
+	</column>
+	<column name="permission" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="diff_previous_version">
+		<type name="text" length="0"/>
+	</column>
+	<column name="active" not-null="true">
+		<type name="boolean" length="0"/>
 	</column>
 	<constraint name="configurations_pk" type="pk-constr" table="uboa.configurations">
 		<columns names="configuration_uuid" ref-type="src-columns"/>
@@ -139,13 +151,91 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="users_has_many_configurations" type="rel1n" layer="0"
+<table name="configurations_users" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="840" y="400"/>
+	<column name="configuration_user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="configurations_users_pk" type="pk-constr" table="uboa.configurations_users">
+		<columns names="configuration_user_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="configuration_uuid" index="2"/>
+		<object name="user_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="configurations_fk" index="1"/>
+		<object name="users_fk" index="0"/>
+	</customidxs>
+</table>
+
+<relationship name="users_has_many_configurations_users" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
-	 custom-color="#92bf74"
+	 custom-color="#88ed48"
 	 src-table="uboa.users"
-	 dst-table="uboa.configurations"
+	 dst-table="uboa.configurations_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="configurations_has_many_configurations_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#1f978a"
+	 src-table="uboa.configurations"
+	 dst-table="uboa.configurations_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<table name="configuration_changes" layer="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="500" y="540"/>
+	<column name="configuration_change_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="timestamp" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="type" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="configuration_changes_pk" type="pk-constr" table="uboa.configuration_changes">
+		<columns names="configuration_change_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="configuration_uuid" index="3"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="configurations_fk" index="0"/>
+	</customidxs>
+</table>
+
+<relationship name="configurations_has_many_configuration_changes" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#125bfa"
+	 src-table="uboa.configurations"
+	 dst-table="uboa.configuration_changes"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_has_many_configuration_changes" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#f98553"
+	 src-table="uboa.users"
+	 dst-table="uboa.configuration_changes"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
