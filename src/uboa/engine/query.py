@@ -11,7 +11,7 @@ from sqlalchemy.orm import scoped_session
 
 # Import datamodel
 from uboa.datamodel.base import Session, engine, Base
-from uboa.datamodel.users import RoleUser, Role, User
+from uboa.datamodel.users import RoleUser, Role, User, ConfigurationUser, Configuration
 
 # Import auxiliary functions
 import eboa.engine.functions as functions
@@ -51,21 +51,13 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, last_login_at_filters = None, current_login_at_filters = None, last_login_ip_filters = None, current_login_ip_filters = None, login_counts = None, active = None, fs_uniquifiers = None, confirmed_at_filters = None, order_by = None, limit = None, offset = None):
+    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, last_logins_at = None, current_logins_at = None, last_login_ips = None, current_login_ips = None, login_counts = None, active = None, fs_uniquifiers = None, confirmed_at_filters = None, role_uuids = None, role_names = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None):
         """
-        Method to obtain the rule entities filtered by the received parameters
-
-        :param rule_uuids: list of rule identifiers
-        :type rule_uuids: text_filter
-        :param names: name filters
-        :type names: text_filter
-        :param window_size_filters: list of window size filters
-        :type window_size_filters: float_filters
-
-        :return: found rules
-        :rtype: list
+        Method to obtain the users filtered by the received parameters
         """
         params = []
+        join_tables = False
+        tables = {}
 
         # User UUIDs
         if user_uuids != None:
@@ -115,45 +107,45 @@ class Query():
             # end if
         # end if
 
-        # last_login_at filters
-        if last_login_at_filters != None:
-            functions.is_valid_date_filters(last_login_at_filters)
-            for last_login_at_filter in last_login_at_filters:
-                op = arithmetic_operators[last_login_at_filter["op"]]
-                params.append(op(User.last_login_at, last_login_at_filter["date"]))
+        # Last logins at
+        if last_logins_at != None:
+            functions.is_valid_date_filters(last_logins_at)
+            for last_login_at in last_logins_at:
+                op = arithmetic_operators[last_login_at["op"]]
+                params.append(op(User.last_login_at, last_login_at["date"]))
             # end for
         # end if
 
-        # current_login_at filters
-        if current_login_at_filters != None:
-            functions.is_valid_date_filters(current_login_at_filters)
-            for current_login_at_filter in current_login_at_filters:
-                op = arithmetic_operators[current_login_at_filter["op"]]
-                params.append(op(User.current_login_at, current_login_at_filter["date"]))
+        # Current logins at
+        if current_logins_at != None:
+            functions.is_valid_date_filters(current_logins_at)
+            for current_login_at in current_logins_at:
+                op = arithmetic_operators[current_login_at["op"]]
+                params.append(op(User.current_login_at, current_login_at["date"]))
             # end for
         # end if
 
-        # last_login_ip filters
-        if last_login_ip_filters != None:
-            functions.is_valid_text_filter(last_login_ip_filters)
-            if last_login_ip_filters["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[last_login_ip_filters["op"]]
-                params.append(op(User.last_login_ip, last_login_ip_filters["filter"]))
+        # Last logins ip
+        if last_login_ips != None:
+            functions.is_valid_text_filter(last_login_ips)
+            if last_login_ips["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[last_login_ips["op"]]
+                params.append(op(User.last_login_ip, last_login_ips["filter"]))
             else:
-                filter = eval('User.last_login_ip.' + text_operators[last_login_ip_filters["op"]])
-                params.append(filter(last_login_ip_filters["filter"]))
+                filter = eval('User.last_login_ip.' + text_operators[last_login_ips["op"]])
+                params.append(filter(last_login_ips["filter"]))
             # end if
         # end if
 
-        # current_login_ip filters
-        if current_login_ip_filters != None:
-            functions.is_valid_text_filter(current_login_ip_filters)
-            if current_login_ip_filters["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[current_login_ip_filters["op"]]
-                params.append(op(User.current_login_ip, current_login_ip_filters["filter"]))
+        # Current logins ip
+        if current_login_ips != None:
+            functions.is_valid_text_filter(current_login_ips)
+            if current_login_ips["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[current_login_ips["op"]]
+                params.append(op(User.current_login_ip, current_login_ips["filter"]))
             else:
-                filter = eval('User.current_login_ip.' + text_operators[current_login_ip_filters["op"]])
-                params.append(filter(current_login_ip_filters["filter"]))
+                filter = eval('User.current_login_ip.' + text_operators[current_login_ips["op"]])
+                params.append(filter(current_login_ips["filter"]))
             # end if
         # end if
 
@@ -166,7 +158,107 @@ class Query():
             # end for
         # end if
 
-        query = self.session.query(User).filter(*params)
+        # Active
+        if active != None:
+            functions.is_valid_bool_filter(active)
+            params.append(User.active == active)
+        # end if
+
+        # fs_uniquifiers
+        if fs_uniquifiers != None:
+            functions.is_valid_text_filter(fs_uniquifiers)
+            if fs_uniquifiers["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[fs_uniquifiers["op"]]
+                params.append(op(User.fs_uniquifier, fs_uniquifiers["filter"]))
+            else:
+                filter = eval('User.fs_uniquifier.' + text_operators[fs_uniquifiers["op"]])
+                params.append(filter(fs_uniquifiers["filter"]))
+            # end if
+        # end if
+
+        # confirmed_at_filters
+        if confirmed_at_filters != None:
+            functions.is_valid_date_filters(confirmed_at_filters)
+            for confirmed_at_filter in confirmed_at_filters:
+                op = arithmetic_operators[confirmed_at_filter["op"]]
+                params.append(op(User.confirmed_at, confirmed_at_filter["date"]))
+            # end for
+        # end if
+
+        # Role UUIDs
+        if role_uuids != None:
+            functions.is_valid_text_filter(role_uuids)
+            if role_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[role_uuids["op"]]
+                params.append(op(RoleUser.role_uuid, role_uuids["filter"]))
+            else:
+                filter = eval('RoleUser.role_uuid.' + text_operators[role_uuids["op"]])
+                params.append(filter(role_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Role names
+        if role_names != None:
+            functions.is_valid_text_filter(role_names)
+            if role_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[role_names["op"]]
+                params.append(op(Role.name, role_names["filter"]))
+            else:
+                filter = eval('Role.name.' + text_operators[role_names["op"]])
+                params.append(filter(role_names["filter"]))
+            # end if
+            join_tables = True
+            tables[Role] = Role.role_uuid==RoleUser.role_uuid
+        # end if
+
+        query = self.session.query(User)
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(RoleUser, RoleUser.user_uuid==User.user_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        join_tables = False
+        tables = {}
+
+        # Configuration UUIDs
+        if configuration_uuids != None:
+            functions.is_valid_text_filter(configuration_uuids)
+            if configuration_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[configuration_uuids["op"]]
+                params.append(op(ConfigurationUser.configuration_uuid, configuration_uuids["filter"]))
+            else:
+                filter = eval('ConfigurationUser.configuration_uuid.' + text_operators[configuration_uuids["op"]])
+                params.append(filter(configuration_uuids["filter"]))
+            # end if
+            join_tables = True
+        # end if
+
+        # Configuration names
+        if configuration_names != None:
+            functions.is_valid_text_filter(configuration_names)
+            if configuration_names["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[configuration_names["op"]]
+                params.append(op(Configuration.name, configuration_names["filter"]))
+            else:
+                filter = eval('Configuration.name.' + text_operators[configuration_names["op"]])
+                params.append(filter(configuration_names["filter"]))
+            # end if
+            join_tables = True
+            tables[Configuration] = Configuration.configuration_uuid==ConfigurationUser.configuration_uuid
+        # end if
+
+        query = self.session.query(User)
+        if len(tables.keys()) > 0 or join_tables:
+            query = query.join(ConfigurationUser, ConfigurationUser.user_uuid==User.user_uuid)
+            for table in tables:
+                query = query.join(table, tables[table])
+            # end for
+        # end if
+
+        query = query.filter(*params)
 
         # Order by
         if order_by != None:
@@ -192,9 +284,9 @@ class Query():
         # end if
         
         log_query(query)
-        rules = query.all()
+        users = query.all()
 
-        return rules
+        return users
 
     def close_session (self):
         """
