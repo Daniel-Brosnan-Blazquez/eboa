@@ -5,13 +5,12 @@ Written by DEIMOS Space S.L. (jubv)
 
 module uboa
 """
-
 # Import SQLalchemy entities
 from sqlalchemy.orm import scoped_session
 
 # Import datamodel
 from uboa.datamodel.base import Session, engine, Base
-from uboa.datamodel.users import RoleUser, Role, User, ConfigurationUser, Configuration
+from uboa.datamodel.users import RoleUser, Role, User#, ConfigurationUser, Configuration
 
 # Import auxiliary functions
 import eboa.engine.functions as functions
@@ -20,7 +19,7 @@ import eboa.engine.functions as functions
 from eboa.engine.operators import arithmetic_operators, text_operators
 
 # Import logging
-from sboa.logging import Log
+from uboa.logging import Log
 
 # Import query printing facilities
 from eboa.engine.query import log_query
@@ -250,7 +249,6 @@ class Query():
             tables[Configuration] = Configuration.configuration_uuid==ConfigurationUser.configuration_uuid
         # end if
 
-        query = self.session.query(User)
         if len(tables.keys()) > 0 or join_tables:
             query = query.join(ConfigurationUser, ConfigurationUser.user_uuid==User.user_uuid)
             for table in tables:
