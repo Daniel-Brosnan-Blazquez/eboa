@@ -3,7 +3,7 @@ Logging definition
 
 Written by DEIMOS Space S.L. (dibb)
 
-module eboa
+module sboa
 """
 # Import EBOA logging functions
 from eboa.logging import Log
