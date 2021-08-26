@@ -35,7 +35,7 @@ from uboa.datamodel.base import Session
 from uboa.datamodel.users import User, Role, RoleUser
 
 # Import parsing module
-import uboa.engine.parsing as parsing
+#import uboa.engine.parsing as parsing
 
 # Import logging
 from uboa.logging import Log
