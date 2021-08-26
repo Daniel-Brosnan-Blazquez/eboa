@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="82,0" last-zoom="0.95" max-obj-count="7"
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,90" last-zoom="0.95" max-obj-count="8"
 	 default-owner="postgres">
 <role name="uboa"
       inherit="true"
@@ -54,10 +54,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="login_count">
 		<type name="integer" length="0"/>
 	</column>
-	<column name="active">
+	<column name="active" not-null="true">
 		<type name="bool" length="0"/>
 	</column>
-	<column name="fs_uniquifier">
+	<column name="fs_uniquifier" not-null="true">
 		<type name="text" length="0"/>
 	</column>
 	<column name="confirmed_at">
@@ -104,7 +104,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="configurations" layer="0" collapse-mode="2" max-obj-count="7" z-value="0">
+<table name="configurations" layer="0" collapse-mode="2" max-obj-count="8" z-value="0">
 	<schema name="uboa"/>
 	<role name="uboa"/>
 	<position x="920" y="540"/>
@@ -129,6 +129,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="configurations_pk" type="pk-constr" table="uboa.configurations">
 		<columns names="configuration_uuid" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="user_uuid" index="6"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="users_fk" index="2"/>
+	</customidxs>
 </table>
 
 <relationship name="roles_has_many_roles_users" type="rel1n" layer="0"
@@ -238,5 +246,18 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="uboa.configuration_changes"
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
+
+<relationship name="users_creates_many_configurations" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#7ce9c2"
+	 src-table="uboa.users"
+	 dst-table="uboa.configurations"
+	 src-required="true" dst-required="false"/>
+
+<constraint name="unique_configuration" type="uq-constr" table="uboa.configurations">
+	<columns names="name,user_uuid" ref-type="src-columns"/>
+</constraint>
 
 </dbmodel>

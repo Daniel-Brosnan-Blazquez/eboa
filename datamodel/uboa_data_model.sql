@@ -43,8 +43,8 @@ CREATE TABLE uboa.users (
 	last_login_ip text,
 	current_login_ip text,
 	login_count integer,
-	active bool,
-	fs_uniquifier text,
+	active bool NOT NULL,
+	fs_uniquifier text NOT NULL,
 	confirmed_at timestamp,
 	CONSTRAINT users_pk PRIMARY KEY (user_uuid),
 	CONSTRAINT unique_user UNIQUE (email,username,fs_uniquifier)
@@ -90,6 +90,7 @@ CREATE TABLE uboa.configurations (
 	permission integer NOT NULL,
 	diff_previous_version text,
 	active boolean NOT NULL,
+	user_uuid uuid NOT NULL,
 	CONSTRAINT configurations_pk PRIMARY KEY (configuration_uuid)
 
 );
@@ -165,6 +166,18 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE uboa.configuration_changes ADD CONSTRAINT users_fk FOREIGN KEY (user_uuid)
 REFERENCES uboa.users (user_uuid) MATCH FULL
 ON DELETE CASCADE ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: users_fk | type: CONSTRAINT --
+-- ALTER TABLE uboa.configurations DROP CONSTRAINT IF EXISTS users_fk CASCADE;
+ALTER TABLE uboa.configurations ADD CONSTRAINT users_fk FOREIGN KEY (user_uuid)
+REFERENCES uboa.users (user_uuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE CASCADE;
+-- ddl-end --
+
+-- object: unique_configuration | type: CONSTRAINT --
+-- ALTER TABLE uboa.configurations DROP CONSTRAINT IF EXISTS unique_configuration CASCADE;
+ALTER TABLE uboa.configurations ADD CONSTRAINT unique_configuration UNIQUE (name,user_uuid);
 -- ddl-end --
 
 
