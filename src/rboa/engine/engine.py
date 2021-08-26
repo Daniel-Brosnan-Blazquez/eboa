@@ -143,9 +143,6 @@ class Engine():
     
         return
 
-    #####################
-    # INSERTION METHODS #
-    #####################
     def _validate_data(self, data, report = None):
         """
         Method to validate the data structure
@@ -218,6 +215,9 @@ class Engine():
         # end for
         return returned_values
 
+    #####################
+    # INSERTION METHODS #
+    #####################
     def _initialize_context_insert_data(self):
         # Initialize context
         self.report = None
