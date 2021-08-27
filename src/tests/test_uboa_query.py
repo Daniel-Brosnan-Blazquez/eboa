@@ -94,10 +94,65 @@ class TestQuery(unittest.TestCase):
         users = self.query.get_users(active = True)
         assert len(users) == 2
 
-        # fs uniquifier
-        users = self.query.get_users(fs_uniquifiers = {"filter": [users[0].fs_uniquifier], "op": "in"})
-        assert len(users) == 1
-
         # Roles
         users = self.query.get_users(roles = {"filter": "administrator", "op": "=="})
         assert len(users) == 1
+
+    def test_query_roles(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "users": [
+                {
+                    "email": "administrator@test.com",
+                    "username": "administrator",
+                    "password": password,
+                    "roles": ["administrator"],
+                    "group": "Deimos"
+                },{
+                    "email": "operator@test.com",
+                    "username": "operator",
+                    "password": password,
+                    "roles": ["operator"],
+                    "group": "Deimos"
+                },
+            ]
+        }]}
+
+        exit_status = self.engine_uboa.treat_data(data, False)
+
+        assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        roles = self.query.get_roles()
+
+        assert len(roles) == 2
+
+        users = self.query.get_users(emails = {"filter": "administrator@test.com", "op": "=="})
+
+        # User UUID
+        roles = self.query.get_roles(user_uuids = {"filter": [users[0].user_uuid], "op": "in"})
+        assert len(roles) == 1
+
+        # Emails
+        roles = self.query.get_roles(emails = {"filter": "administrator@test.com", "op": "=="})
+        assert len(roles) == 1
+        
+        # Usernames
+        roles = self.query.get_roles(usernames = {"filter": "administrator", "op": "=="})
+        assert len(roles) == 1
+
+        # Groups
+        roles = self.query.get_roles(groups = {"filter": "Deimos", "op": "=="})
+        assert len(roles) == 2
+
+        # Active
+        roles = self.query.get_roles(active = True)
+        assert len(roles) == 2
+    
+        # Roles
+        roles = self.query.get_roles(roles = {"filter": "administrator", "op": "=="})
+        assert len(roles) == 1
+
+        # Role UUID
+        roles = self.query.get_roles(role_uuids = {"filter": [roles[0].role_uuid], "op": "in"})
+        assert len(roles) == 1
