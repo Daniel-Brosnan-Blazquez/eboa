@@ -50,7 +50,7 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, last_logins_at = None, current_logins_at = None, last_login_ips = None, current_login_ips = None, login_counts = None, active = None, fs_uniquifiers = None, confirmed_at_filters = None, role_uuids = None, role_names = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None):
+    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, last_logins_at = None, current_logins_at = None, last_login_ips = None, current_login_ips = None, login_counts = None, active = None, fs_uniquifiers = None, confirmed_at_filters = None, role_uuids = None, roles = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the users filtered by the received parameters
         """
@@ -198,14 +198,14 @@ class Query():
         # end if
 
         # Role names
-        if role_names != None:
-            functions.is_valid_text_filter(role_names)
-            if role_names["op"] in arithmetic_operators.keys():
-                op = arithmetic_operators[role_names["op"]]
-                params.append(op(Role.name, role_names["filter"]))
+        if roles != None:
+            functions.is_valid_text_filter(roles)
+            if roles["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[roles["op"]]
+                params.append(op(Role.name, roles["filter"]))
             else:
-                filter = eval('Role.name.' + text_operators[role_names["op"]])
-                params.append(filter(role_names["filter"]))
+                filter = eval('Role.name.' + text_operators[roles["op"]])
+                params.append(filter(roles["filter"]))
             # end if
             join_tables = True
             tables[Role] = Role.role_uuid==RoleUser.role_uuid
