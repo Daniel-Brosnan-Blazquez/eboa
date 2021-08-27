@@ -3993,7 +3993,7 @@ class Engine():
         :param list_alerts_to_be_created: list of alerts to be stored later inside the DDBB
         :type list_alerts_to_be_created: list
         """
-        alerts = self.query.get_event_alerts({"event_uuids": {"filter": [from_event_uuid], "op": "in"}})
+        alerts = self.query.get_event_alerts(event_uuids = {"filter": [from_event_uuid], "op": "in"})
         for alert in alerts:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             alert_to_insert = {
