@@ -25,7 +25,10 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy import or_, and_
 
 # Import exceptions
-from uboa.engine.errors import RolesDuplicated, RoleAlreadyInserted, UsersDuplicated, UserAlreadyInserted, EmailNotCorrect, UsernameNotCorrect
+from uboa.engine.errors import RolesDuplicated, RoleAlreadyInserted, UsersDuplicated, UserAlreadyInserted, EmailNotCorrect, UsernameNotCorrect, ErrorParsingDictionary
+
+# Import parsing module
+import uboa.engine.parsing as parsing
 
 # Import debugging
 from eboa.debugging import debug, race_condition
