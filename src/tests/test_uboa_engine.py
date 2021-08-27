@@ -73,7 +73,7 @@ class TestEngine(unittest.TestCase):
             ]
         }]}
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
 
@@ -106,11 +106,11 @@ class TestEngine(unittest.TestCase):
             ]
         }]}
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["ROLE_ALREADY_INSERTED"]["status"]
 
@@ -146,7 +146,7 @@ class TestEngine(unittest.TestCase):
             ]
         }]}
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["ROLES_DUPLICATED"]["status"]
 
@@ -174,9 +174,54 @@ class TestEngine(unittest.TestCase):
             ]
         }]}
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        users = self.session.query(User).all()
+
+        assert len(users) == 2
+
+        users = self.session.query(User).filter(User.email == "administrator@test.com",
+                                                User.username == "administrator").all()
+
+        assert len(users) == 1
+        assert users[0].group == "boa_users"
+        assert users[0].password == password
+        assert users[0].active == True
+
+        users = self.session.query(User).filter(User.email == "operator@test.com",
+                                                User.username == "operator").all()
+
+        assert len(users) == 1
+        assert users[0].group == "boa_users"
+        assert users[0].password == password
+        assert users[0].active == True
+
+    def test_insert_only_users_twice(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "users": [
+                {
+                    "email": "administrator@test.com",
+                    "username": "administrator",
+                    "password": password
+                },{
+                    "email": "operator@test.com",
+                    "username": "operator",
+                    "password": password
+                },
+            ]
+        }]}
+
+        exit_status = self.engine_uboa.treat_data(data)
+
+        assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        exit_status = self.engine_uboa.treat_data(data)
+
+        assert exit_status[0]["status"] == uboa_engine.exit_codes["USER_ALREADY_INSERTED"]["status"]
 
         users = self.session.query(User).all()
 
@@ -217,7 +262,7 @@ class TestEngine(unittest.TestCase):
             ]
         }]}
 
-        exit_status = self.engine_uboa.treat_data(data, False)
+        exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
 
@@ -254,3 +299,69 @@ class TestEngine(unittest.TestCase):
 
         assert len(roles) == 1
         assert not roles[0].description
+
+    def test_insert_users_and_roles_with_description(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "users": [
+                {
+                    "email": "administrator@test.com",
+                    "username": "administrator",
+                    "password": password,
+                    "roles": ["administrator"]
+                },{
+                    "email": "operator@test.com",
+                    "username": "operator",
+                    "password": password,
+                    "roles": ["operator"]
+                },
+            ],
+            "roles": [
+                {
+                    "name": "administrator",
+                    "description": "Administrator of the system"
+                },{
+                    "name": "operator",
+                    "description": "Operator of the system"
+                },
+            ]
+        }]}
+
+        exit_status = self.engine_uboa.treat_data(data)
+
+        assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        users = self.session.query(User).all()
+
+        assert len(users) == 2
+
+        users = self.session.query(User).filter(User.email == "administrator@test.com",
+                                                User.username == "administrator").all()
+
+        assert len(users) == 1
+        assert users[0].group == "boa_users"
+        assert users[0].password == password
+        assert users[0].active == True
+
+        users = self.session.query(User).filter(User.email == "operator@test.com",
+                                                User.username == "operator").all()
+
+        assert len(users) == 1
+        assert users[0].group == "boa_users"
+        assert users[0].password == password
+        assert users[0].active == True
+
+        roles = self.session.query(Role).all()
+
+        assert len(roles) == 2
+
+        roles = self.session.query(Role).filter(Role.name == "administrator").all()
+
+        assert len(roles) == 1
+        assert roles[0].description == "Administrator of the system"
+
+        roles = self.session.query(Role).filter(Role.name == "operator").all()
+
+        assert len(roles) == 1
+        assert roles[0].description == "Operator of the system"

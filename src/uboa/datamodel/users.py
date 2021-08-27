@@ -8,7 +8,7 @@ module uboa
 from uboa.datamodel.base import Base
 from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Table, DateTime, ForeignKey, Text, Integer, Boolean
+from sqlalchemy import Column, Table, DateTime, ForeignKey, Text, Integer, Boolean, JSON
 from sqlalchemy.dialects import postgresql
 
 class RoleUser(Base):
@@ -61,3 +61,39 @@ class User(Base, UserMixin):
         self.password = password
         self.fs_uniquifier = fs_uniquifier
         self.active = active
+
+class Configuration(Base):
+    __tablename__ = 'configurations'
+    configuration_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
+    name = Column(Text)
+    configuration = Column(JSON)
+    permission = Column(Integer)
+    diff_previous_version = Column(Text)
+    active = Column(Boolean())
+    user_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('users.user_uuid'))
+    creator = relationship("User", backref="created_configurations")
+
+class ConfigurationUser(Base):
+    """
+    This table is used to associate configurations to a user.
+    Do not confuse this relation with the 'created_configurations' relation which specifies which user created the configuration
+    """
+    __tablename__ = 'configurations_users'
+    configuration_user_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
+    user_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('users.user_uuid'))
+    configuration_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('configurations.configuration_uuid'))
+
+
+class ConfigurationChance(Base):
+    """
+    This table is used to track the configuration changes a user made on a specific configuration.
+    """
+    __tablename__ = 'configuration_changes'
+    configuration_change_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
+    timestamp = Column(DateTime)
+    type = Column(Integer)
+    user_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('users.user_uuid'))
+    configuration_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('configurations.configuration_uuid'))
+    editor = relationship("User", backref="edit_configurations")
+    configuration = relationship("Configuration", backref="changes")
+
