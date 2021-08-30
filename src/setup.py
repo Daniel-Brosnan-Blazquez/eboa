@@ -38,7 +38,9 @@ setup(name="eboa",
               "nose",
               "before_after",
               "coverage",
-              "termcolor"
+              "termcolor",
+              "pytest-cov",
+              "Sphinx"
           ]
       },
       test_suite='nose.collector')
