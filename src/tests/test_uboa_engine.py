@@ -365,3 +365,75 @@ class TestEngine(unittest.TestCase):
 
         assert len(roles) == 1
         assert roles[0].description == "Operator of the system"
+
+    def test_insert_basic_users_and_roles_with_description(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "users": [
+                {
+                    "email": "administrator@test.com",
+                    "username": "administrator",
+                    "password": password,
+                    "roles": ["administrator"]
+                },{
+                    "email": "service_administrator@test.com",
+                    "username": "service_administrator",
+                    "password": password,
+                    "roles": ["service_administrator"]
+                },{
+                    "email": "operator@test.com",
+                    "username": "operator",
+                    "password": password,
+                    "roles": ["operator"]
+                },{
+                    "email": "analyst@test.com",
+                    "username": "analyst",
+                    "password": password,
+                    "roles": ["analyst"]
+                },{
+                    "email": "operator_observer@test.com",
+                    "username": "operator_observer",
+                    "password": password,
+                    "roles": ["operator_observer"]
+                },{
+                    "email": "observer@test.com",
+                    "username": "observer",
+                    "password": password,
+                    "roles": ["observer"]
+                }
+            ],
+            "roles": [
+                {
+                    "name": "administrator",
+                    "description": "Administrator of the system. All operations allowed."
+                },{
+                    "name": "service_administrator",
+                    "description": "Administrator of the service. All operations allowed, except management of users."
+                },{
+                    "name": "operator",
+                    "description": "Operator of the service. All operations allowed, except management of users and management of services."
+                },{
+                    "name": "analyst",
+                    "description": "Analyst of the service. Read access to data (including EBOA navigation) and write access to include justifications."
+                },{
+                    "name": "operator_observer",
+                    "description": "Operator of the service. Read access to data (including EBOA navigation)."
+                },{
+                    "name": "observer",
+                    "description": "Read access to specfic views."
+                }
+            ]
+        }]}
+
+        exit_status = self.engine_uboa.treat_data(data)
+
+        assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        users = self.session.query(User).all()
+
+        assert len(users) == 6
+
+        roles = self.session.query(Role).all()
+
+        assert len(roles) == 6
