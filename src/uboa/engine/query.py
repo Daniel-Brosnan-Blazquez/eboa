@@ -53,6 +53,32 @@ class Query():
     def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, active = None, role_uuids = None, roles = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the users filtered by the received parameters
+
+        :param user_uuids: list of user identifiers
+        :type user_uuids: text_filter
+        :param emails: list of emails
+        :type emails: text_filter
+        :param usernames: list of usernames
+        :type usernames: text_filter
+        :param groups: list of the group to which the user belongs
+        :type groups: text_filter
+        :param active: flag to indicate if the user is active
+        :type active: boolean_filter
+        :param role_uuids: list of role identifiers
+        :type role_uuids: text_filter
+        :param roles: list of user's roles
+        :type roles: text_filter
+        :param configuration_uuids: list of configuration identifiers
+        :type configuration_uuids: text_filter
+        :param configuration_names: list of the name of the configuration
+        :type configuration_names: text_filter
+        :param order_by: field to order by
+        :type order_by: order_by statement
+        :param limit: positive integer to limit the number of results of the query
+        :type limit: positive integer
+        :param offset: positive integer to offset the pointer to the list of results
+        :type offset: positive integer
+
         """
         params = []
         join_tables = False
@@ -217,6 +243,28 @@ class Query():
     def get_roles(self, role_uuids = None, roles = None, user_uuids = None, emails = None, usernames = None, groups = None, active = None, order_by = None, limit = None, offset = None):
         """
         Method to obtain the roles filtered by the received parameters
+
+        :param role_uuids: list of role identifiers
+        :type role_uuids: text_filter
+        :param roles: list of user's roles
+        :type roles: text_filter
+        :param user_uuids: list of user identifiers
+        :type user_uuids: text_filter
+        :param emails: list of emails
+        :type emails: text_filter
+        :param usernames: list of usernames
+        :type usernames: text_filter
+        :param groups: list of the group to which the user belongs
+        :type groups: text_filter
+        :param active: flag to indicate if the user is active
+        :type active: boolean_filter
+        :param order_by: field to order by
+        :type order_by: order_by statement
+        :param limit: positive integer to limit the number of results of the query
+        :type limit: positive integer
+        :param offset: positive integer to offset the pointer to the list of results
+        :type offset: positive integer
+
         """
         params = []
         join_tables = False
