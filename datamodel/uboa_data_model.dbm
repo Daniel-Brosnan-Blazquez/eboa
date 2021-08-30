@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,90" last-zoom="0.95" max-obj-count="8"
+	 default-owner="postgres">
+<role name="uboa"
+      inherit="true"
+      login="true">
+</role>
+
+<database name="uboadb" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<schema name="uboa" layer="0" fill-color="#e1e1e1">
+	<role name="uboa"/>
+</schema>
+
+<table name="users" layer="0" collapse-mode="2" max-obj-count="15" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="520" y="100"/>
+	<column name="user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="email" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="username" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="group" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="password" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="last_login_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="current_login_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="last_login_ip">
+		<type name="text" length="0"/>
+	</column>
+	<column name="current_login_ip">
+		<type name="text" length="0"/>
+	</column>
+	<column name="login_count">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="active" not-null="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fs_uniquifier" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="confirmed_at">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="users_pk" type="pk-constr" table="uboa.users">
+		<columns names="user_uuid" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_user" type="uq-constr" table="uboa.users">
+		<columns names="email,username,fs_uniquifier" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="roles" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="900" y="240"/>
+	<column name="role_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="unique_role" type="uq-constr" table="uboa.roles">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="roles_pk" type="pk-constr" table="uboa.roles">
+		<columns names="role_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="roles_users" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="880" y="100"/>
+	<column name="role_user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="roles_users_pk" type="pk-constr" table="uboa.roles_users">
+		<columns names="role_user_uuid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="configurations" layer="0" collapse-mode="2" max-obj-count="8" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="920" y="540"/>
+	<column name="configuration_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="configuration" not-null="true">
+		<type name="json" length="0"/>
+	</column>
+	<column name="permission" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="diff_previous_version">
+		<type name="text" length="0"/>
+	</column>
+	<column name="active" not-null="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<constraint name="configurations_pk" type="pk-constr" table="uboa.configurations">
+		<columns names="configuration_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="user_uuid" index="6"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="users_fk" index="2"/>
+	</customidxs>
+</table>
+
+<relationship name="roles_has_many_roles_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#4830d1"
+	 src-table="uboa.roles"
+	 dst-table="uboa.roles_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_has_many_roles_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#684e2f"
+	 src-table="uboa.users"
+	 dst-table="uboa.roles_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<table name="configurations_users" layer="0" collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="840" y="400"/>
+	<column name="configuration_user_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="configurations_users_pk" type="pk-constr" table="uboa.configurations_users">
+		<columns names="configuration_user_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="configuration_uuid" index="2"/>
+		<object name="user_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="configurations_fk" index="1"/>
+		<object name="users_fk" index="0"/>
+	</customidxs>
+</table>
+
+<relationship name="users_has_many_configurations_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#88ed48"
+	 src-table="uboa.users"
+	 dst-table="uboa.configurations_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="configurations_has_many_configurations_users" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#1f978a"
+	 src-table="uboa.configurations"
+	 dst-table="uboa.configurations_users"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<table name="configuration_changes" layer="0" collapse-mode="2" max-obj-count="6" z-value="0">
+	<schema name="uboa"/>
+	<role name="uboa"/>
+	<position x="500" y="540"/>
+	<column name="configuration_change_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="timestamp" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="type" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="configuration_changes_pk" type="pk-constr" table="uboa.configuration_changes">
+		<columns names="configuration_change_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="configuration_uuid" index="3"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="configurations_fk" index="0"/>
+	</customidxs>
+</table>
+
+<relationship name="configurations_has_many_configuration_changes" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#125bfa"
+	 src-table="uboa.configurations"
+	 dst-table="uboa.configuration_changes"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_has_many_configuration_changes" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#f98553"
+	 src-table="uboa.users"
+	 dst-table="uboa.configuration_changes"
+	 src-required="true" dst-required="false"
+	del-action="CASCADE"/>
+
+<relationship name="users_creates_many_configurations" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#7ce9c2"
+	 src-table="uboa.users"
+	 dst-table="uboa.configurations"
+	 src-required="true" dst-required="false"/>
+
+<constraint name="unique_configuration" type="uq-constr" table="uboa.configurations">
+	<columns names="name,user_uuid" ref-type="src-columns"/>
+</constraint>
+
+</dbmodel>
