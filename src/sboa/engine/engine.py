@@ -104,26 +104,18 @@ exit_codes = {
 }
 
 class Engine():
-    """Class for communicating with the engine of the rboa module
+    """Class for communicating with the engine of the sboa module
 
     Provides access to the logic for inserting, deleting and updating
-    the information stored into the DDBB related to reports
+    the information stored into the DDBB related to the scheduler
     """
 
-    def __init__(self, data = None):
+    def __init__(self):
         """
         Instantiation method
-
-        :param data: data provided to be treat by the engine (default None)
-        :type data: dict
         """
-        if data == None:
-            data = {}
-        # end if
-        self.data = data
         self.Scoped_session = scoped_session(Session)
         self.session = self.Scoped_session()
-        self.operation = None
     
         return
 
