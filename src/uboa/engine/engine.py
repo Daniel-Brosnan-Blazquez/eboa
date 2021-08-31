@@ -16,7 +16,8 @@ import tarfile
 from shutil import copyfile
 import errno
 import json
-import pdb
+import traceback
+import sys
 
 # Import SQLalchemy entities
 from sqlalchemy.exc import IntegrityError, InternalError
@@ -37,8 +38,8 @@ from eboa.debugging import debug, race_condition
 from uboa.datamodel.base import Session
 from uboa.datamodel.users import User, Role, RoleUser
 
-# Import parsing module
-#import uboa.engine.parsing as parsing
+# Import EBOA engine functions
+from eboa.engine.functions import get_resources_path
 
 # Import logging
 from uboa.logging import Log
@@ -79,8 +80,20 @@ exit_codes = {
         "status": 7,
         "message": "The specified username {} has a wrong format"
     },
-    "METADATA_INGESTION_ENDED_UNEXPECTEDLY": {
+    "FILE_NOT_LOADED": {
+        "status": 8,
+        "message": "The source file with name {} could not be loaded"
+    },
+    "FILE_NOT_VALID": {
+        "status": 9,
+        "message": "The source file with name {} contains data with a wrong structure"
+    },
+    "FILE_VALID": {
         "status": 10,
+        "message": "The source file with name {} was loaded and validated"
+    },
+    "METADATA_INGESTION_ENDED_UNEXPECTEDLY": {
+        "status": 11,
         "message": "The metadata of the report {} was going to be ingested after its generation by the generator {} but the ingestion ended unexpectedly with the error {}"
     }
 }
@@ -110,6 +123,49 @@ class Engine():
     
         return
 
+    ###################
+    # PARSING METHODS #
+    ###################
+    @debug
+    def parse_data_from_json(self, json_path, check_schema = True):
+        """
+        Method to parse a json file for later treatment of its content
+        
+        :param json_path: path to the json file to be parsed
+        :type json_path: str
+        :param check_schema: indicates whether to pass a schema over the json file or not
+        :type check_schema: bool
+        """
+        json_name = os.path.basename(json_path)
+        # Parse data from the json file
+        try:
+            with open(json_path) as input_file:
+                data = json.load(input_file)
+        except ValueError:
+            message = exit_codes["FILE_NOT_LOADED"]["message"].format(json_name)
+            # Log the error
+            logger.error(message)
+            logger.error(traceback.format_exc())
+            traceback.print_exc(file=sys.stdout)
+            return exit_codes["FILE_NOT_LOADED"]
+        # end try
+
+        if check_schema:
+            is_valid = self._validate_data(data)
+            if not is_valid:
+                # Log the error
+                logger.error(exit_codes["FILE_NOT_LOADED"]["message"])
+                return exit_codes["FILE_NOT_LOADED"]
+            # end if
+        # end if
+
+        self.data=data
+
+        return exit_codes["FILE_VALID"]
+    
+    #########################
+    # DATA HANDLING METHODS #
+    #########################
     def _validate_data(self, data):
         """
         Method to validate the data structure
@@ -375,6 +431,19 @@ class Engine():
         # Insert role-user relationships
         self.session.bulk_insert_mappings(RoleUser, list_roles_users)
 
+    def insert_default_configuration(self):
+        users_configuration = get_resources_path() + "/users.json"
+
+        exit_status = self.parse_data_from_json(users_configuration)
+
+        if exit_status["status"] != exit_codes["FILE_VALID"]["status"]:
+            return [exit_status]
+        # end if
+
+        exit_status = self.treat_data()
+
+        return exit_status
+        
     def close_session (self):
         """
         Method to close the session

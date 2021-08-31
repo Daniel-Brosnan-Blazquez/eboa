@@ -59,8 +59,8 @@ def init():
 def main():
 
     args_parser = argparse.ArgumentParser(description="Initialize EBOA environment (Scheduler).")
-    args_parser.add_argument('-f', dest='datamodel_path', type=str, nargs=1,
-                             help='path to the datamodel', required=False)
+    args_parser.add_argument("-f", dest="datamodel_path", type=str, nargs=1,
+                             help="path to the datamodel", required=False)
     args_parser.add_argument("-y", "--accept_everything",
                              help="Accept by default every request (Be careful when using this because it will drop all the data without requesting any confirmation)", action="store_true")
 

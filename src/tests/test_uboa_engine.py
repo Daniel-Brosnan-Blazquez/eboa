@@ -50,6 +50,14 @@ class TestEngine(unittest.TestCase):
         self.query_uboa.clear_db()
 
     def tearDown(self):
+
+        # Clear all tables before executing the test
+        self.query_uboa.clear_db()
+
+        # Insert the default configuration for users
+        exit_status = self.engine_uboa.insert_default_configuration()
+        assert len([item for item in exit_status if item["status"] != uboa_engine.exit_codes["OK"]["status"]]) == 0
+
         # Close connections to the DDBB
         self.engine_uboa.close_session()
         self.query_uboa.close_session()
@@ -366,7 +374,7 @@ class TestEngine(unittest.TestCase):
         assert len(roles) == 1
         assert roles[0].description == "Operator of the system"
 
-    def test_insert_basic_users_and_roles_with_description(self):
+    def test_insert_default_users_and_roles_with_description(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -374,12 +382,12 @@ class TestEngine(unittest.TestCase):
                 {
                     "email": "administrator@test.com",
                     "username": "administrator",
-                    "password": password,
+                    "password": "$2b$12$U9sVkIyZuER4eG0Kzfr2cOzHK7mNox5Qc8AtUrb6I4gHuIYiU4n56",
                     "roles": ["administrator"]
                 },{
                     "email": "service_administrator@test.com",
                     "username": "service_administrator",
-                    "password": password,
+                    "password": "$2b$12$U9sVkIyZuER4eG0Kzfr2cOzHK7mNox5Qc8AtUrb6I4gHuIYiU4n56",
                     "roles": ["service_administrator"]
                 },{
                     "email": "operator@test.com",
@@ -429,6 +437,25 @@ class TestEngine(unittest.TestCase):
         exit_status = self.engine_uboa.treat_data(data)
 
         assert exit_status[0]["status"] == uboa_engine.exit_codes["OK"]["status"]
+
+        users = self.session.query(User).all()
+
+        assert len(users) == 6
+
+        roles = self.session.query(Role).all()
+
+        assert len(roles) == 6
+
+    def test_insert_from_json(self):
+
+        filename = "users.json"
+        exit_status = self.engine_uboa.parse_data_from_json(os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename)
+
+        assert exit_status["status"] == uboa_engine.exit_codes["FILE_VALID"]["status"]
+
+        exit_status = self.engine_uboa.treat_data()
+
+        assert len([item for item in exit_status if item["status"] != uboa_engine.exit_codes["OK"]["status"]]) == 0
 
         users = self.session.query(User).all()
 

@@ -16,14 +16,15 @@ import shutil
 # Import auxiliary functions
 from uboa.datamodel.functions import read_configuration
 
-# Import engine functions
-from eboa.engine.functions import get_resources_path
+# Import UBOA engine functions
+import uboa.engine.engine as uboa_engine
+from uboa.engine.engine import Engine
 
 config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 
-def init(datamodel_path = None):
+def init(datamodel_path = None, not_insert_users = False):
 
     # Path to the datamodel
     if datamodel_path != None:
@@ -44,11 +45,31 @@ def init(datamodel_path = None):
     print("The UBOA database is going to be initialize using the datamodel SQL file {}...".format(datamodel_path))
     execute_command(command, "The UBOA database has been initialized successfully :-)")
 
+    if not not_insert_users:
+
+        engine_uboa = Engine()
+        exit_status = engine_uboa.insert_default_configuration()
+
+        failed_operations = [item for item in exit_status if item["status"] not in (uboa_engine.exit_codes["OK"]["status"], uboa_engine.exit_codes["FILE_VALID"]["status"])]
+        if len(failed_operations) != 0:
+            print("There have been the following failed operations when treating the users configuration {}".format(users_configuration))
+            for failed_operation in failed_operations:
+                print("Status: {}, message: {}".format(failed_operation["status"], failed_operation["message"]))
+            # end if
+            exit(-1)
+        # end if
+        
+        print("The users configuration has been inserted successfully :-)")
+    # end if
+
+
 def main():
 
     args_parser = argparse.ArgumentParser(description="Initialize UBOA environment (User management).")
-    args_parser.add_argument('-f', dest='datamodel_path', type=str, nargs=1,
-                             help='path to the datamodel', required=False)
+    args_parser.add_argument("-f", dest="datamodel_path", type=str, nargs=1,
+                             help="Path to the datamodel", required=False)
+    args_parser.add_argument("-n", "--not_insert_users",
+                             help="Do not insert the users provided by the configuration", action="store_true")
     args_parser.add_argument("-y", "--accept_everything",
                              help="Accept by default every request (Be careful when using this because it will drop all the data without requesting any confirmation)", action="store_true")
 
@@ -67,7 +88,7 @@ def main():
     # end if
     
     # Initialize DDBB
-    init(args.datamodel_path)
+    init(args.datamodel_path, args.not_insert_users)
     
     exit(0)
     
