@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Table, DateTime, ForeignKey, Text, Integer, Boolean, JSON
 from sqlalchemy.dialects import postgresql
 
-from uboa.engine.errors import WrongParameter
+from uboa.datamodel.errors import WrongParameter
 
 class RoleUser(Base):
     __tablename__ = 'roles_users'
