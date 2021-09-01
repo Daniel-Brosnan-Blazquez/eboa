@@ -11,6 +11,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Table, DateTime, ForeignKey, Text, Integer, Boolean, JSON
 from sqlalchemy.dialects import postgresql
 
+from uboa.engine.errors import WrongParameter
+
 class RoleUser(Base):
     __tablename__ = 'roles_users'
     role_user_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
@@ -61,6 +63,58 @@ class User(Base, UserMixin):
         self.password = password
         self.fs_uniquifier = fs_uniquifier
         self.active = active
+
+    def has_one_of_these_roles(self, roles):
+        """
+        Method to check if the user has associated one of the received roles
+
+        :param roles: list of roles to check
+        :type roles: list
+        """
+        if type(roles) != list:
+            raise WrongParameter("roles parameter must be a list. Received type: {}".format(type(roles)))
+        # end if
+
+        # Look for a match
+        user_roles = [role.name for role in self.roles]
+        match = False
+        for role in roles:
+            if type(role) != str:
+                raise WrongParameter("role {} inside roles parameter must be a str. Received type: {}".format(role, type(role)))
+            # end if
+            if role in user_roles:
+                match = True
+                break
+            # end if
+        # end for
+
+        return match
+
+    def has_none_of_these_roles(self, roles):
+        """
+        Method to check if the user does not have associated any of the received roles
+
+        :param roles: list of roles to check
+        :type roles: list
+        """
+        if type(roles) != list:
+            raise WrongParameter("roles parameter must be a list. Received type: {}".format(type(roles)))
+        # end if
+
+        # Look for a match
+        user_roles = [role.name for role in self.roles]
+        no_match = True
+        for role in roles:
+            if type(role) != str:
+                raise WrongParameter("role {} inside roles parameter must be a str. Received type: {}".format(role, type(role)))
+            # end if
+            if role in user_roles:
+                no_match = False
+                break
+            # end if
+        # end for
+
+        return no_match
 
 class Configuration(Base):
     __tablename__ = 'configurations'
