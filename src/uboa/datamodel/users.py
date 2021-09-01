@@ -70,6 +70,9 @@ class User(Base, UserMixin):
 
         :param roles: list of roles to check
         :type roles: list
+
+        :return: True or False
+        :rtype: Boolean
         """
         if type(roles) != list:
             raise WrongParameter("roles parameter must be a list. Received type: {}".format(type(roles)))
@@ -96,6 +99,9 @@ class User(Base, UserMixin):
 
         :param roles: list of roles to check
         :type roles: list
+
+        :return: True or False
+        :rtype: Boolean
         """
         if type(roles) != list:
             raise WrongParameter("roles parameter must be a list. Received type: {}".format(type(roles)))
