@@ -5,6 +5,10 @@ Written by DEIMOS Space S.L. (jubv)
 
 module uboa
 """
+
+# Import python utilities
+import time
+
 # Import SQLalchemy entities
 from sqlalchemy.orm import scoped_session
 
@@ -23,6 +27,9 @@ from uboa.logging import Log
 
 # Import query printing facilities
 from eboa.engine.query import log_query
+
+# Import SQLalchemy exceptions
+from sqlalchemy.orm.exc import StaleDataError
 
 logging = Log(name = __name__)
 logger = logging.logger
@@ -50,7 +57,26 @@ class Query():
             engine.execute(table.delete())
         # end for
 
-    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, active = None, role_uuids = None, roles = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None):
+    def delete(self, query):
+        logger.info("Deletion request received")
+        query_executed = False
+        while not query_executed:
+            try:
+                query.delete(synchronize_session=False)
+                self.session.commit()
+                query_executed = True
+            except StaleDataError:
+                pass
+            # end try
+            if not query_executed:
+                logger.info("Deletion could not be performed. Trying again after 1 second...")
+                time.sleep(1)
+            # end if
+        # end while
+        logger.info("Deletion request performed")
+    # end def
+
+    def get_users(self, user_uuids = None, emails = None, usernames = None, groups = None, active = None, role_uuids = None, roles = None, configuration_uuids = None, configuration_names = None, order_by = None, limit = None, offset = None, delete = False):
         """
         Method to obtain the users filtered by the received parameters
 
@@ -78,6 +104,8 @@ class Query():
         :type limit: positive integer
         :param offset: positive integer to offset the pointer to the list of results
         :type offset: positive integer
+        :param delete: flag to indicate if the sources found by the query have to be deleted
+        :type delete: bool
 
         """
         params = []
@@ -236,7 +264,13 @@ class Query():
         # end if
         
         log_query(query)
-        users = query.all()
+
+        users = []
+        if delete != None and delete:
+            self.delete(query)
+        else:
+            users = query.all()
+        # end if
 
         return users
 

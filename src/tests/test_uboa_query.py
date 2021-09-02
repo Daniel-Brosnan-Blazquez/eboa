@@ -98,6 +98,12 @@ class TestQuery(unittest.TestCase):
         users = self.query.get_users(roles = {"filter": "administrator", "op": "=="})
         assert len(users) == 1
 
+        self.query.get_users(delete = True)
+
+        users = self.query.get_users()
+
+        assert len(users) == 0
+
     def test_query_roles(self):
 
         data = {"operations": [{
