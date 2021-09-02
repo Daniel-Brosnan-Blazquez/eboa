@@ -65,9 +65,14 @@ def main():
             exit(0)
         # end if
     # end if
-    
+
+    datamodel_path = None
+    if args.datamodel_path != None:
+        datamodel_path = args.datamodel_path[0]
+    # end if
+
     # Initialize DDBB
-    init(args.datamodel_path)
+    init(datamodel_path)
     
     exit(0)
     

@@ -431,8 +431,11 @@ class Engine():
         # Insert role-user relationships
         self.session.bulk_insert_mappings(RoleUser, list_roles_users)
 
-    def insert_default_configuration(self):
-        users_configuration = get_resources_path() + "/users.json"
+    def insert_configuration(self, users_configuration = None):
+
+        if not users_configuration:
+            users_configuration = get_resources_path() + "/users.json"
+        # end if
 
         exit_status = self.parse_data_from_json(users_configuration)
 

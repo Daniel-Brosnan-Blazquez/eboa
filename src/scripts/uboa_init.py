@@ -24,7 +24,7 @@ config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 
-def init(datamodel_path = None, not_insert_users = False):
+def init(datamodel_path = None, not_insert_users = False, users_configuration = None):
 
     # Path to the datamodel
     if datamodel_path != None:
@@ -48,7 +48,7 @@ def init(datamodel_path = None, not_insert_users = False):
     if not not_insert_users:
 
         engine_uboa = Engine()
-        exit_status = engine_uboa.insert_default_configuration()
+        exit_status = engine_uboa.insert_configuration(users_configuration)
 
         failed_operations = [item for item in exit_status if item["status"] not in (uboa_engine.exit_codes["OK"]["status"], uboa_engine.exit_codes["FILE_VALID"]["status"])]
         if len(failed_operations) != 0:
@@ -68,6 +68,8 @@ def main():
     args_parser = argparse.ArgumentParser(description="Initialize UBOA environment (User management).")
     args_parser.add_argument("-f", dest="datamodel_path", type=str, nargs=1,
                              help="Path to the datamodel", required=False)
+    args_parser.add_argument("-u", dest="users_configuration", type=str, nargs=1,
+                             help="Path to the users configuration", required=False)
     args_parser.add_argument("-n", "--not_insert_users",
                              help="Do not insert the users provided by the configuration", action="store_true")
     args_parser.add_argument("-y", "--accept_everything",
@@ -87,8 +89,18 @@ def main():
         # end if
     # end if
     
+    datamodel_path = None
+    if args.datamodel_path != None:
+        datamodel_path = args.datamodel_path[0]
+    # end if
+
+    users_configuration = None
+    if args.users_configuration != None:
+        users_configuration = args.users_configuration[0]
+    # end if
+
     # Initialize DDBB
-    init(args.datamodel_path, args.not_insert_users)
+    init(datamodel_path, args.not_insert_users, users_configuration)
     
     exit(0)
     

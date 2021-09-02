@@ -55,7 +55,7 @@ class TestEngine(unittest.TestCase):
         self.query_uboa.clear_db()
 
         # Insert the default configuration for users
-        exit_status = self.engine_uboa.insert_default_configuration()
+        exit_status = self.engine_uboa.insert_configuration()
         assert len([item for item in exit_status if item["status"] != uboa_engine.exit_codes["OK"]["status"]]) == 0
 
         # Close connections to the DDBB
