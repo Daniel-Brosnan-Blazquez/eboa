@@ -35,6 +35,13 @@ class Role(Base, RoleMixin):
         self.name = name
         self.description = description
 
+    def jsonify(self):
+        return {
+            "role_uuid": self.role_uuid,
+            "name": self.name,
+            "description": self.description,
+        }
+
 class User(Base, UserMixin):
     __tablename__ = 'users'
     user_uuid = Column(postgresql.UUID(as_uuid=True), primary_key=True)
@@ -63,6 +70,16 @@ class User(Base, UserMixin):
         self.password = password
         self.fs_uniquifier = fs_uniquifier
         self.active = active
+
+    def jsonify(self):
+        return {
+            "user_uuid": self.user_uuid,
+            "email": self.email,
+            "username": self.username,
+            "group": self.group,
+            "active": self.active,
+            "roles": [role.name for role in self.roles]
+        }
 
     def has_one_of_these_roles(self, roles):
         """
