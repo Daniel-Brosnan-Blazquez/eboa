@@ -244,9 +244,9 @@ class Query():
         if order_by != None:
             functions.is_valid_order_by(order_by)
             if order_by["descending"]:
-                order_by_statement = eval("Rule." + order_by["field"] + ".desc()")
+                order_by_statement = eval("User." + order_by["field"] + ".desc()")
             else:
-                order_by_statement = eval("Rule." + order_by["field"])
+                order_by_statement = eval("User." + order_by["field"])
             # end if
             query = query.order_by(order_by_statement)
         # end if
@@ -406,9 +406,9 @@ class Query():
         if order_by != None:
             functions.is_valid_order_by(order_by)
             if order_by["descending"]:
-                order_by_statement = eval("Rule." + order_by["field"] + ".desc()")
+                order_by_statement = eval("Role." + order_by["field"] + ".desc()")
             else:
-                order_by_statement = eval("Rule." + order_by["field"])
+                order_by_statement = eval("Role." + order_by["field"])
             # end if
             query = query.order_by(order_by_statement)
         # end if
