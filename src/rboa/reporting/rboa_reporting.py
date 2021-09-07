@@ -44,6 +44,9 @@ def insert_data_into_DDBB(data, report_name, engine):
 
 def command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path = None, parameters = None):
 
+    # Set VBOA_TEST to TRUE to avoid authentication and authorization
+    os.environ["VBOA_TEST"] = "TRUE"
+
     # Import the processor module
     try:
         processor_module = import_module(processor)
