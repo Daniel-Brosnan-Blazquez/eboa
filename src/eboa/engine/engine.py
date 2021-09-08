@@ -4114,7 +4114,6 @@ class Engine():
                                                                    Event.stop > segment_start),
                                                               and_(Event.start == segment_start,
                                                                    Event.stop == segment_stop))).order_by(Event.start).all()
-                sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
@@ -4133,85 +4132,7 @@ class Engine():
                 # Sort list
                 filtered_timeline_points.sort()
 
-                events_per_timestamp = {}
-                timeline_points_iterator = 0
-                for event in events:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if event.stop > timestamp:
-                                if timestamp not in events_per_timestamp:
-                                    events_per_timestamp[timestamp] = []
-                                # end if
-                                events_per_timestamp[timestamp].append(event)
-                            # end if
-                            break
-                        # end if
-
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the event can still be allocated in the timeline if not continue with the following event
-                        if event.stop <= timestamp and event.start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the event can be allocated to the current period if not continue to the next period
-                        if event.start >= next_timestamp and event.stop > next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (event.start < next_timestamp and event.stop > timestamp) or \
-                           (event.start == timestamp and event.stop == next_timestamp):
-                            if timestamp not in events_per_timestamp:
-                                events_per_timestamp[timestamp] = []
-                            # end if
-                            events_per_timestamp[timestamp].append(event)
-                        # end if
-
-                    # end while
-                # end for
-
-                sources_per_timestamp = {}
-                timeline_points_iterator = 0
-                for source in sources:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if source.validity_stop > timestamp:
-                                if timestamp not in sources_per_timestamp:
-                                    sources_per_timestamp[timestamp] = []
-                                # end if
-                                sources_per_timestamp[timestamp].append(source)
-                            # end if
-                            break
-                        # end if
-
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the source can still be allocated in the timeline if not continue with the following source
-                        if source.validity_stop <= timestamp and source.validity_start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the source can be allocated to the current period if not continue to the next period
-                        if source.validity_start >= next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-                           (source.validity_start == timestamp and source.validity_stop == next_timestamp):
-                            if timestamp not in sources_per_timestamp:
-                                sources_per_timestamp[timestamp] = []
-                            # end if
-                            sources_per_timestamp[timestamp].append(source)
-                        # end if
-
-                    # end while
-                # end for
+                events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4222,10 +4143,7 @@ class Engine():
                     if timestamp in events_per_timestamp:
                         events_during_period = events_per_timestamp[timestamp]
                     # end if
-                    sources_during_period = []
-                    if timestamp in sources_per_timestamp:
-                        sources_during_period = sources_per_timestamp[timestamp]
-                    # end if
+                    sources_during_period = sorted(set([event.source for event in events_during_period]), key=lambda source: source.validity_start)
                     
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
@@ -5101,3 +5019,87 @@ def insert_source_status(session, source, status, error = False, message = None)
     session.commit()
 
     return
+
+def get_events_per_timestamp(events, timestamps):
+    """
+    Method to associate events to the timestamps (starts of segments specified by the timestamps).
+    An event is associated to a timestamp:
+    if (start < next timestamp and stop > timestamp) or
+    (start == timestamp and stop == next timestamp)
+
+    PRE:
+    - The list of events is ordered by start
+    - The list of timestamps is the list of start and stop values associated to the events without duplications except for the case of having events with duration 0 in which case there will be only one duplication
+
+    Note:
+    1. Given the following scenario:
+    Timestamps: |         |         |
+                          |
+    Event1:     [         ]
+    Event2:               |
+    Event3:               [         ]
+    Event4:     [                   ]
+
+    Result:
+    Timestamp:  |
+    Events:     Event1, Event4
+    Timestamp:            |
+    Events:     Event2, Event3, Event4
+
+    :param events: list of events to associate to the timestamps
+    :type events: list
+    :param timestamps: list of timestamps corresponding to the start and stop values of the received events
+    :type timestamps: list
+
+    :return: events_per_timestamp
+    :rtype: dictionary (key: timestamp, value: list of events associated)
+    """
+
+    events_per_timestamp = {}
+    timeline_points_iterator = 0
+    for event in events:
+        specific_timeline_points_iterator = timeline_points_iterator
+        specific_covered_timestamps = {}
+        while specific_timeline_points_iterator < len(timestamps):
+            timestamp = timestamps[specific_timeline_points_iterator]
+            if specific_timeline_points_iterator == len(timestamps) - 1:
+                if event.stop > timestamp:
+                    if timestamp not in events_per_timestamp:
+                        events_per_timestamp[timestamp] = []
+                    # end if
+                    if timestamp not in specific_covered_timestamps:
+                        events_per_timestamp[timestamp].append(event)
+                        specific_covered_timestamps[timestamp] = None
+                    # end if
+                # end if
+                break
+            # end if
+
+            next_timestamp = timestamps[specific_timeline_points_iterator + 1]
+            specific_timeline_points_iterator += 1
+
+            # Check that the event can still be allocated in the timeline if not continue with the following event
+            if event.stop <= timestamp and event.start < timestamp:
+                break
+            # end if
+
+            # Check that the event can be allocated to the current period if not continue to the next period
+            if event.start >= next_timestamp and event.stop > next_timestamp:
+                timeline_points_iterator += 1
+            # end if
+
+            if (event.start < next_timestamp and event.stop > timestamp) or \
+               (event.start == timestamp and event.stop == next_timestamp):
+                if timestamp not in events_per_timestamp:
+                    events_per_timestamp[timestamp] = []
+                # end if
+                if timestamp not in specific_covered_timestamps:
+                    events_per_timestamp[timestamp].append(event)
+                    specific_covered_timestamps[timestamp] = None
+                # end if
+            # end if
+
+        # end while
+    # end for
+
+    return events_per_timestamp
