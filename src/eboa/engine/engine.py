@@ -3590,86 +3590,9 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
-            events_per_timestamp = {}
-            timeline_points_iterator = 0
-            for event in events:
-                specific_timeline_points_iterator = timeline_points_iterator
-                while specific_timeline_points_iterator < len(filtered_timeline_points):
-                    timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                    if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                        if event.stop > timestamp:
-                            if timestamp not in events_per_timestamp:
-                                events_per_timestamp[timestamp] = []
-                            # end if
-                            events_per_timestamp[timestamp].append(event)
-                        # end if
-                        break
-                    # end if
-                        
-                    next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                    specific_timeline_points_iterator += 1
-                    
-                    # Check that the event can still be allocated in the timeline if not continue with the following event
-                    if event.stop <= timestamp and event.start < timestamp:
-                        break
-                    # end if
-
-                    # Check that the event can be allocated to the current period if not continue to the next period
-                    if event.start >= next_timestamp and event.stop > next_timestamp:
-                        timeline_points_iterator += 1
-                    # end if
-                    
-                    if (event.start < next_timestamp and event.stop > timestamp) or \
-                       (event.start == timestamp and event.stop == next_timestamp):
-                        if timestamp not in events_per_timestamp:
-                            events_per_timestamp[timestamp] = []
-                        # end if
-                        events_per_timestamp[timestamp].append(event)
-                    # end if
-
-                # end while
-            # end for
-
-            sources_per_timestamp = {}
-            timeline_points_iterator = 0
-            for source in sources:
-                specific_timeline_points_iterator = timeline_points_iterator
-                while specific_timeline_points_iterator < len(filtered_timeline_points):
-                    timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                    if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                        if source.validity_stop > timestamp:
-                            if timestamp not in sources_per_timestamp:
-                                sources_per_timestamp[timestamp] = []
-                            # end if
-                            sources_per_timestamp[timestamp].append(source)
-                        # end if
-                        break
-                    # end if
-                        
-                    next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                    specific_timeline_points_iterator += 1
-                    
-                    # Check that the source can still be allocated in the timeline if not continue with the following source
-                    if source.validity_stop <= timestamp and source.validity_start < timestamp:
-                        break
-                    # end if
-
-                    # Check that the source can be allocated to the current period if not continue to the next period
-                    if source.validity_start >= next_timestamp:
-                        timeline_points_iterator += 1
-                    # end if
-                    
-                    if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-                       (source.validity_start == timestamp and source.validity_stop == next_timestamp):
-                        if timestamp not in sources_per_timestamp:
-                            sources_per_timestamp[timestamp] = []
-                        # end if
-                        sources_per_timestamp[timestamp].append(source)
-                    # end if
-
-                # end while
-            # end for
-
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp_considering_events_with_duration_0(sources, filtered_timeline_points, events_duration_0)
+            
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
@@ -3681,7 +3604,7 @@ class Engine():
                 if timestamp in sources_per_timestamp:
                     sources_during_period = sources_per_timestamp[timestamp]
                 # end if
-
+                
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -3716,6 +3639,11 @@ class Engine():
                 validity_start = timestamp
                 validity_stop = filtered_timeline_points[next_timestamp]
                 next_timestamp += 1
+
+                # Check if there are no events for this timestamp
+                if len(events_during_period) < 1:
+                    continue
+                # end if
 
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
@@ -3758,12 +3686,12 @@ class Engine():
                                                           (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # end if
-                
+
                 # Check if there were no events to define the maximum priority in this period
                 if not max_priority:
                     continue
                 # end if
-                
+                                
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
                 events_max_generation_time = [event for event in events_during_period if event.source.priority <= self.source.priority and
@@ -4114,6 +4042,7 @@ class Engine():
                                                                    Event.stop > segment_start),
                                                               and_(Event.start == segment_start,
                                                                    Event.stop == segment_stop))).order_by(Event.start).all()
+                sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
@@ -4134,6 +4063,8 @@ class Engine():
 
                 events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
+                sources_per_timestamp = get_sources_per_timestamp_considering_events_with_duration_0(sources, filtered_timeline_points, events_duration_0)
+
                 # Iterate through the periods
                 next_timestamp = 1
                 for timestamp in filtered_timeline_points:
@@ -4143,7 +4074,10 @@ class Engine():
                     if timestamp in events_per_timestamp:
                         events_during_period = events_per_timestamp[timestamp]
                     # end if
-                    sources_during_period = sorted(set([event.source for event in events_during_period]), key=lambda source: source.validity_start)
+                    sources_during_period = []
+                    if timestamp in sources_per_timestamp:
+                        sources_during_period = sources_per_timestamp[timestamp]
+                    # end if
                     
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
@@ -4354,6 +4288,7 @@ class Engine():
                                                                                 Event.stop > segment_start),
                                                                            and_(Event.start == segment_start,
                                                                                 Event.stop == segment_stop))).order_by(Event.start).all()
+                sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
                 
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
@@ -4374,6 +4309,7 @@ class Engine():
                 filtered_timeline_points.sort()
 
                 events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+                sources_per_timestamp = get_sources_per_timestamp_considering_events_with_duration_0(sources, filtered_timeline_points, events_duration_0)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4384,7 +4320,10 @@ class Engine():
                     if timestamp in events_per_timestamp:
                         events_during_period = events_per_timestamp[timestamp]
                     # end if
-                    sources_during_period = sorted(set([event.source for event in events_during_period]), key=lambda source: source.validity_start)
+                    sources_during_period = []
+                    if timestamp in sources_per_timestamp:
+                        sources_during_period = sources_per_timestamp[timestamp]
+                    # end if
                     
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
@@ -5002,11 +4941,6 @@ def get_events_per_timestamp(events, timestamps):
                 break
             # end if
 
-            # Check that the event can be allocated to the current period if not continue to the next period
-            if event.start >= next_timestamp and event.stop > next_timestamp:
-                timeline_points_iterator += 1
-            # end if
-
             if (event.start < next_timestamp and event.stop > timestamp) or \
                (event.start == timestamp and event.stop == next_timestamp):
                 if timestamp not in events_per_timestamp:
@@ -5022,3 +4956,99 @@ def get_events_per_timestamp(events, timestamps):
     # end for
 
     return events_per_timestamp
+
+def get_sources_per_timestamp_considering_events_with_duration_0(sources, timestamps, events_duration_0):
+    """
+    Method to associate sources to the timestamps (starts of segments specified by the timestamps).
+    A source is associated to a timestamp:
+    if (validity_start < next timestamp and validity_stop > timestamp) or
+    (validity_start == timestamp and validity_stop == next timestamp) or
+    there is an associated event with duration 0 and event.start == timestamp
+
+    PRE:
+    - The list of sources is ordered by validity_start
+    - The list of timestamps is the list of validity_start and validity_stop values associated to the sources without duplications except for the case of having sources with duration 0 in which case there will be only one duplication
+
+    Note:
+    1. Given the following scenario:
+    Timestamps: |         |         |
+                          |
+    Source1:    [         ]
+    Event1:               |           --> This will associate Source1 to the second timestamp
+    Source2:              |
+    Source3:              [         ]
+    Source4:    [                   ]
+
+    Result:
+    Timestamp:  |
+    Sources:     Source1, Source4
+    Timestamp:            |
+    Sources:     Source2, Source3, Source4
+
+    :param sources: list of sources to associate to the timestamps
+    :type sources: list
+    :param timestamps: list of timestamps corresponding to the start and stop values of the received sources
+    :type timestamps: list
+    :param events_duration_0: list of events related to the sources with duration 0
+    :type events_duration_0: list
+
+    :return: sources_per_timestamp
+    :rtype: dictionary (key: timestamp, value: list of sources associated)
+    """
+
+    sources_per_timestamp = {}
+    timeline_points_iterator = 0
+    for source in sources:
+        specific_timeline_points_iterator = timeline_points_iterator
+        specific_covered_timestamps = {}
+        while specific_timeline_points_iterator < len(timestamps):
+            timestamp = timestamps[specific_timeline_points_iterator]
+
+            # Associate source to the timestamp if it has an event with duration 0 and start == timestamp
+            associated_events_with_duration_0 = [event for event in events_duration_0 if event.source.source_uuid == source.source_uuid and event.start == timestamp]
+            if len(associated_events_with_duration_0) > 0:
+                if timestamp not in sources_per_timestamp:
+                    sources_per_timestamp[timestamp] = []
+                # end if
+                if timestamp not in specific_covered_timestamps:
+                    sources_per_timestamp[timestamp].append(source)
+                    specific_covered_timestamps[timestamp] = None
+                # end if
+            # end if
+            
+            if specific_timeline_points_iterator == len(timestamps) - 1:
+                if source.validity_stop > timestamp:
+                    if timestamp not in sources_per_timestamp:
+                        sources_per_timestamp[timestamp] = []
+                    # end if
+                    if timestamp not in specific_covered_timestamps:
+                        sources_per_timestamp[timestamp].append(source)
+                        specific_covered_timestamps[timestamp] = None
+                    # end if
+                # end if
+                break
+            # end if
+
+            next_timestamp = timestamps[specific_timeline_points_iterator + 1]
+            specific_timeline_points_iterator += 1
+
+            # Check that the source can still be allocated in the timeline if not continue with the following source
+            if source.validity_stop <= timestamp and source.validity_start < timestamp:
+                break
+            # end if
+
+            if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
+               (source.validity_start == timestamp and source.validity_stop == next_timestamp):
+                if timestamp not in sources_per_timestamp:
+                    sources_per_timestamp[timestamp] = []
+                # end if
+                if timestamp not in specific_covered_timestamps:
+                    sources_per_timestamp[timestamp].append(source)
+                    specific_covered_timestamps[timestamp] = None
+                # end if
+            # end if
+
+        # end while
+    # end for
+    
+    return sources_per_timestamp
