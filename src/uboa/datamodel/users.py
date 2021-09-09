@@ -37,7 +37,6 @@ class Role(Base, RoleMixin):
 
     def jsonify(self):
         return {
-            "role_uuid": self.role_uuid,
             "name": self.name,
             "description": self.description,
         }
@@ -73,11 +72,10 @@ class User(Base, UserMixin):
 
     def jsonify(self):
         return {
-            "user_uuid": self.user_uuid,
             "email": self.email,
             "username": self.username,
+            "password":self.password,
             "group": self.group,
-            "active": self.active,
             "roles": [role.name for role in self.roles]
         }
 
