@@ -1166,3 +1166,92 @@ class TestInsertEventsInsertAndEraseWithEqualOrLowerPriorityAtDim(unittest.TestC
                                             stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}])
 
         assert len(events) == 1
+
+    def test_insert_event_insert_and_erase_with_equal_or_lower_priority_at_dim_signature_level_event_is_not_removed(self):
+
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2022-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": "20"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }]
+        }]
+        }
+
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data3 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source3.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2022-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": "15"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }]
+        }]
+        }
+
+        exit_status = self.engine_eboa.treat_data(data3)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        data2 = {"operations": [{
+            "mode": "insert_and_erase_with_equal_or_lower_priority",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source2.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2020-07-05T02:07:03",
+                       "validity_start": "2016-06-04T02:07:03",
+                       "validity_stop": "2020-06-05T04:07:36",
+                       "priority": "10"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T04:07:36"
+            }]
+        }]
+        }
+
+        exit_status = self.engine_eboa.treat_data(data2)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 2
+
+        events = self.query_eboa.get_events(start_filters = [{"date": "2018-06-04T02:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                            sources = {"filter": "source1.json", "op": "=="})
+
+        events = self.query_eboa.get_events(start_filters = [{"date": "2018-06-04T02:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T08:07:36", "op": "=="}],
+                                            sources = {"filter": "source3.json", "op": "=="})

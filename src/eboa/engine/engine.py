@@ -2217,12 +2217,9 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if source.generation_time <= max_generation_time and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.generation_time <= max_generation_time and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -2490,14 +2487,11 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -2775,15 +2769,12 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if source.priority <= self.source.priority and
-                                                   ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -3076,12 +3067,9 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if source.generation_time <= max_generation_time and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.generation_time <= max_generation_time and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -3346,14 +3334,11 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -3624,15 +3609,12 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                   if source.priority <= self.source.priority and
-                                                   ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -3916,14 +3898,12 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period if source.priority <= self.source.priority and
-                                                   ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -4346,12 +4326,9 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                       if source.generation_time <= max_generation_time and
-                                                       source.source_uuid != source_max_generation_time.source_uuid and
-                                                       len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                    
-                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                                 if event.source.generation_time <= max_generation_time and
+                                                 event.source.source_uuid != source_max_generation_time.source_uuid and
                                                  event.start >= validity_start and event.stop <= validity_stop]
                 
                     list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -4603,14 +4580,11 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                       if ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                        or
-                                                        (source.priority < max_priority)) and
-                                                       source.source_uuid != source_max_generation_time.source_uuid and
-                                                       len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-
-                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                                 if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                     or
+                                                     (event.source.priority < max_priority)) and
+                                                 event.source.source_uuid != source_max_generation_time.source_uuid and
                                                  event.start >= validity_start and event.stop <= validity_stop]
 
                     list_events_to_be_removed.extend(event_uuids_to_be_removed)
