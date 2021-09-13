@@ -5107,6 +5107,8 @@ def get_events_per_timestamp(events, timestamps):
         specific_covered_timestamps = {}
         while specific_timeline_points_iterator < len(timestamps):
             timestamp = timestamps[specific_timeline_points_iterator]
+
+            # Check if the event has to be assigned to the penultimate timestamp (latest timestamp is not used)
             if specific_timeline_points_iterator == len(timestamps) - 1:
                 if event.stop > timestamp:
                     if timestamp not in events_per_timestamp:
@@ -5122,6 +5124,10 @@ def get_events_per_timestamp(events, timestamps):
 
             next_timestamp = timestamps[specific_timeline_points_iterator + 1]
             specific_timeline_points_iterator += 1
+            # Improve performances by moving to the next timestamp for all events if the current event start is already >= next_timestamp
+            if event.start > next_timestamp:
+                timeline_points_iterator += 1
+            # end if
 
             # Check that the event can still be allocated in the timeline if not continue with the following event
             if event.stop <= timestamp and event.start < timestamp:
@@ -5204,7 +5210,8 @@ def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
                     # end if
                 # end if
             # end if
-            
+
+            # Check if the source has to be assigned to the penultimate timestamp (latest timestamp is not used)
             if specific_timeline_points_iterator == len(timestamps) - 1:
                 if source.validity_stop > timestamp:
                     if timestamp not in sources_per_timestamp:
@@ -5220,6 +5227,10 @@ def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
 
             next_timestamp = timestamps[specific_timeline_points_iterator + 1]
             specific_timeline_points_iterator += 1
+            # Improve performances by moving to the next timestamp for all events if the current event start is already >= next_timestamp
+            if source.validity_start > next_timestamp:
+                timeline_points_iterator += 1
+            # end if
 
             # Check that the source can still be allocated in the timeline if not continue with the following source
             if source.validity_stop <= timestamp and source.validity_start < timestamp:
