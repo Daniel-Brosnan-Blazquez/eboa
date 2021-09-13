@@ -3021,13 +3021,11 @@ class Engine():
                                                source.validity_stop > validity_start)
                                            or
                                            (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)) and
-                                           len([event for event in source.events if event.gauge_uuid]) > 0])
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
                 source_max_generation_time = sorted([source for source in sources_during_period
-                                                     if source.generation_time == max_generation_time and
-                                                     len([event for event in source.events if event.gauge_uuid]) > 0],
+                                                     if source.generation_time == max_generation_time],
                                                     key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
@@ -3278,8 +3276,7 @@ class Engine():
                                             source.validity_stop > validity_start)
                                            or
                                            (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)) and
-                                           len([event for event in source.events if event.gauge_uuid]) > 0])
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
@@ -3288,8 +3285,7 @@ class Engine():
                                                source.validity_stop > validity_start)
                                            or
                                            (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)) and
-                                           len([event for event in source.events if event.gauge_uuid]) > 0])
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
                 source_max_generation_time = sorted(
@@ -3300,8 +3296,7 @@ class Engine():
                        source.validity_stop > validity_start)
                       or
                       (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop)) and
-                    len([event for event in source.events if event.gauge_uuid]) > 0], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -3558,8 +3553,7 @@ class Engine():
                                             source.validity_stop > validity_start)
                                            or
                                            (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)) and
-                                           len([event for event in source.events if event.gauge_uuid]) > 0])
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
@@ -3568,8 +3562,7 @@ class Engine():
                                                source.validity_stop > validity_start)
                                            or
                                            (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)) and
-                                           len([event for event in source.events if event.gauge_uuid]) > 0])
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
                 source_max_generation_time = sorted(
@@ -3580,8 +3573,7 @@ class Engine():
                        source.validity_stop > validity_start)
                       or
                       (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop)) and
-                    len([event for event in source.events if event.gauge_uuid]) > 0], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
