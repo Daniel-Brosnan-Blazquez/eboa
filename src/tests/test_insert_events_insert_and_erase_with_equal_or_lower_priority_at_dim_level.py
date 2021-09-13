@@ -1,5 +1,5 @@
 """
-Automated tests for the engine submodule (event insertion type insert_and_erase_with_priority)
+Automated tests for the engine submodule (event insertion type insert_and_erase_with_equal_or_lower_priority)
 
 Written by DEIMOS Space S.L. (dibb)
 
