@@ -2072,27 +2072,54 @@ class Engine():
 
             # Get the sources of events intersecting the validity period
             dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
-            sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                  or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                                           Source.validity_stop > self.source.validity_start),
-                                                                                      and_(Source.validity_start == self.source.validity_start,
-                                                                                           Source.validity_stop == self.source.validity_stop))).all()
+            sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                        or_(and_(Source.validity_start < self.source.validity_stop,
+                                                                 Source.validity_stop > self.source.validity_start),
+                                                            and_(Source.validity_start == self.source.validity_start,
+                                                                 Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                      
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -2107,7 +2134,8 @@ class Engine():
                         list_events_to_be_removed.append(event_uuid)
                     # end for
 
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -2130,28 +2158,28 @@ class Engine():
                 validity_stop = filtered_timeline_points[next_timestamp]
                 next_timestamp += 1
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                                     or_(and_(Source.validity_start < validity_stop,
-                                                                                                                              Source.validity_stop > validity_start),
-                                                                                                                         and_(Source.validity_start == validity_start,
-                                                                                                                              Source.validity_stop == validity_stop))).first()
-
-                # Get the related source
-                source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
-                                                                                                  DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                  or_(and_(Source.validity_start < validity_stop,
-                                                                                                           Source.validity_stop > validity_start),
-                                                                                                      and_(Source.validity_start == validity_start,
-                                                                                                           Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop)])
                 
-                # Events related to the DIM processing with the maximum generation time
-                events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                              Event.gauge_uuid == gauge_uuid,
-                                                                              or_(and_(Event.start < validity_stop,
-                                                                                       Event.stop > validity_start),
-                                                                                  and_(Event.start == validity_start,
-                                                                                       Event.stop == validity_stop))).all()
+                # Get the related source
+                source_max_generation_time = sorted([source for source in sources_during_period
+                                           if source.generation_time == max_generation_time and
+                                              ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                              or
+                                              (source.validity_start == validity_start and
+                                               source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
+                # Events related to the DIM processing with the maximum generation time
+                events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
+                                    
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
@@ -2189,31 +2217,26 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.generation_time <= max_generation_time,
-                                                                                                     Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.generation_time <= max_generation_time and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+                                
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
                 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
-                                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                                           Event.start <= validity_start,
-                                                                                                           Event.stop > validity_start,
-                                                                                                           Event.stop <= validity_stop,
-                                                                                                           Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if event.source.generation_time <= max_generation_time and
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
-                                                                                                               Event.gauge_uuid == gauge_uuid,
-                                                                                                               Event.start < validity_stop,
-                                                                                                               Event.stop > validity_stop,
-                                                                                                               Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_not_ending_on_period = [event for event in events_during_period if event.source.generation_time <= max_generation_time and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
 
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
@@ -2306,27 +2329,55 @@ class Engine():
 
             # Get the sources of events intersecting the validity period defined for the current source
             dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
-            sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                  or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                                           Source.validity_stop > self.source.validity_start),
-                                                                                      and_(Source.validity_start == self.source.validity_start,
-                                                                                           Source.validity_stop == self.source.validity_stop))).all()
+            sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                        Source.priority != None,
+                                                        or_(and_(Source.validity_start < self.source.validity_stop,
+                                                                 Source.validity_stop > self.source.validity_start),
+                                                            and_(Source.validity_start == self.source.validity_start,
+                                                                 Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+                
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -2340,8 +2391,8 @@ class Engine():
                         # Remove event
                         list_events_to_be_removed.append(event_uuid)
                     # end for
-
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+                    
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -2365,38 +2416,40 @@ class Engine():
                 next_timestamp += 1
 
                 # Get the maximum priority at this moment
-                max_priority = self.session.query(func.max(Source.priority)).join(DimSignature).filter(Source.priority >= self.source.priority,
-                                                                                                DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                or_(and_(Source.validity_start < validity_stop,
-                                                                                                         Source.validity_stop > validity_start),
-                                                                                                    and_(Source.validity_start == validity_start,
-                                                                                                         Source.validity_stop == validity_stop))).first()
-                
+                max_priority = max([source.priority for source in sources_during_period
+                                           if source.priority >= self.source.priority and
+                                           ((source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
+
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                                     Source.priority == max_priority,
-                                                                                                                     or_(and_(Source.validity_start < validity_stop,
-                                                                                                                              Source.validity_stop > validity_start),
-                                                                                                                         and_(Source.validity_start == validity_start,
-                                                                                                                              Source.validity_stop == validity_stop))).first()
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if source.priority == max_priority and
+                                           ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
 
                 # Get the related source
-                source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
-                                                                                                  Source.priority == max_priority,
-                                                                                                  DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                  or_(and_(Source.validity_start < validity_stop,
-                                                                                                           Source.validity_stop > validity_start),
-                                                                                                      and_(Source.validity_start == validity_start,
-                                                                                                           Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                source_max_generation_time = sorted(
+                    [source for source in sources_during_period
+                     if source.generation_time == max_generation_time and
+                     source.priority == max_priority and
+                     ((source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)
+                      or
+                      (source.validity_start == validity_start and
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
                 
                 # Events related to the DIM processing with the maximum generation time
-                events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                              Event.gauge_uuid == gauge_uuid,
-                                                                              or_(and_(Event.start < validity_stop,
-                                                                                       Event.stop > validity_start),
-                                                                                  and_(Event.start == validity_start,
-                                                                                       Event.stop == validity_stop))).all()
-
+                events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
+                
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
@@ -2434,38 +2487,35 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                     Source.priority <= max_priority),
-                                                                                                                Source.priority < max_priority),
-                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                            Event.gauge_uuid == gauge_uuid,
-                                                                                                            Event.start >= validity_start,
-                                                                                                            Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                             Source.priority <= max_priority),
-                                                                                                        Source.priority < max_priority),
-                                                                                                    Event.gauge_uuid == gauge_uuid,
-                                                                                                    Event.start <= validity_start,
-                                                                                                    Event.stop > validity_start,
-                                                                                                    Event.stop <= validity_stop,
-                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                           or
+                                                           (event.source.priority < max_priority)) and
 
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
+                
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                 Source.priority <= max_priority),
-                                                                                                            Source.priority < max_priority),
-                                                                                                        Event.gauge_uuid == gauge_uuid,
-                                                                                                        Event.start < validity_stop,
-                                                                                                        Event.stop > validity_stop,
-                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
-
+                events_not_staying_not_ending_on_period = [event for event in events_during_period
+                                                           if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                               or
+                                                               (event.source.priority < max_priority)) and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
+                
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
                     if not event.event_uuid in list_split_events:
@@ -2557,27 +2607,55 @@ class Engine():
 
             # Get the sources of events intersecting the validity period defined for the current source
             dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
-            sources = self.session.query(Source).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
+            sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
+                                                                           Source.priority != None,
                                                                                   or_(and_(Source.validity_start < self.source.validity_stop,
                                                                                            Source.validity_stop > self.source.validity_start),
                                                                                       and_(Source.validity_start == self.source.validity_start,
-                                                                                           Source.validity_stop == self.source.validity_stop))).all()
+                                                                                           Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -2592,7 +2670,8 @@ class Engine():
                         list_events_to_be_removed.append(event_uuid)
                     # end for
 
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+                    
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -2616,39 +2695,42 @@ class Engine():
                 next_timestamp += 1
 
                 # Get the maximum priority at this moment
-                max_priority = self.session.query(func.max(Source.priority)).join(DimSignature).filter(Source.priority >= self.source.priority,
-                                                                                                DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                or_(and_(Source.validity_start < validity_stop,
-                                                                                                         Source.validity_stop > validity_start),
-                                                                                                    and_(Source.validity_start == validity_start,
-                                                                                                         Source.validity_stop == validity_stop))).first()
+                max_priority = max([source.priority for source in sources_during_period
+                                           if source.priority >= self.source.priority and
+                                           ((source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(DimSignature).filter(DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                                     Source.priority == max_priority,
-                                                                                                                     or_(and_(Source.validity_start < validity_stop,
-                                                                                                                              Source.validity_stop > validity_start),
-                                                                                                                         and_(Source.validity_start == validity_start,
-                                                                                                                              Source.validity_stop == validity_stop))).first()
-
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if source.priority == max_priority and
+                                           ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
+                
                 # Get the related source
-                source_max_generation_time = self.session.query(Source).join(DimSignature).filter(Source.generation_time == max_generation_time,
-                                                                                                  Source.priority == max_priority,
-                                                                                                  DimSignature.dim_signature_uuid == dim_signature.dim_signature_uuid,
-                                                                                                  or_(and_(Source.validity_start < validity_stop,
-                                                                                                           Source.validity_stop > validity_start),
-                                                                                                      and_(Source.validity_start == validity_start,
-                                                                                                           Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                source_max_generation_time = sorted(
+                    [source for source in sources_during_period
+                     if source.generation_time == max_generation_time and
+                     source.priority == max_priority and
+                     ((source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)
+                      or
+                      (source.validity_start == validity_start and
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
                 
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
-                events_max_generation_time = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                           Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                           or_(and_(Event.start < validity_stop,
-                                                                                                    Event.stop > validity_start),
-                                                                                               and_(Event.start == validity_start,
-                                                                                                    Event.stop == validity_stop))).all()
+                events_max_generation_time = [event for event in events_during_period if
+                                              event.source.priority <= self.source.priority and
+                                              event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -2687,41 +2769,38 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.priority <= self.source.priority,
-                                                                                                            or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                     Source.priority <= max_priority),
-                                                                                                                Source.priority < max_priority),
-                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                            Event.gauge_uuid == gauge_uuid,
-                                                                                                            Event.start >= validity_start,
-                                                                                                            Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+                
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                                    or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                             Source.priority <= max_priority),
-                                                                                                        Source.priority < max_priority),
-                                                                                                    Event.gauge_uuid == gauge_uuid,
-                                                                                                    Event.start <= validity_start,
-                                                                                                    Event.stop > validity_start,
-                                                                                                    Event.stop <= validity_stop,
-                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if event.source.priority <= self.source.priority and
+                                                       ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                           or
+                                                           (event.source.priority < max_priority)) and
 
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
+                
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                                        or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                 Source.priority <= max_priority),
-                                                                                                            Source.priority < max_priority),
-                                                                                                        Event.gauge_uuid == gauge_uuid,
-                                                                                                        Event.start < validity_stop,
-                                                                                                        Event.stop > validity_stop,
-                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
-
+                events_not_staying_not_ending_on_period = [event for event in events_during_period
+                                                           if event.source.priority <= self.source.priority and
+                                                           ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                               or
+                                                               (event.source.priority < max_priority)) and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
+                
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
                     if not event.event_uuid in list_split_events:
@@ -2842,23 +2921,50 @@ class Engine():
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
                                                                              Source.validity_stop > self.source.validity_start),
                                                                         and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).all()
+                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -2871,7 +2977,9 @@ class Engine():
                         # Remove event
                         list_events_to_be_removed.append(event_uuid)
                     # end for
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+                    
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -2892,20 +3000,24 @@ class Engine():
                 validity_start = timestamp
                 validity_stop = filtered_timeline_points[next_timestamp]
                 next_timestamp += 1
+
+                # Check if there are no events for this timestamp
+                if len(events_during_period) < 1:
+                    continue
+                # end if
+
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                                                                              or_(and_(Source.validity_start < validity_stop,
-                                                                                                                       Source.validity_stop > validity_start),
-                                                                                                                  and_(Source.validity_start == validity_start,
-                                                                                                                       Source.validity_stop == validity_stop))).first()
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
-                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
-                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                           or_(and_(Source.validity_start < validity_stop,
-                                                                                                    Source.validity_stop > validity_start),
-                                                                                               and_(Source.validity_start == validity_start,
-                                                                                                    Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                source_max_generation_time = sorted([source for source in sources_during_period
+                                                     if source.generation_time == max_generation_time],
+                                                    key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -2913,12 +3025,10 @@ class Engine():
                 # end if
                 
                 # Events related to the DIM processing with the maximum generation time
-                events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                              Event.gauge_uuid == gauge_uuid,
-                                                                              or_(and_(Event.start < validity_stop,
-                                                                                       Event.stop > validity_start),
-                                                                                  and_(Event.start == validity_start,
-                                                                                       Event.stop == validity_stop))).all()
+                events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -2957,32 +3067,27 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.generation_time <= max_generation_time,
-                                                                                                     Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.generation_time <= max_generation_time and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+                
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
-                                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                                           Event.start <= validity_start,
-                                                                                                           Event.stop > validity_start,
-                                                                                                           Event.stop <= validity_stop,
-                                                                                                           Event.source_uuid != source_max_generation_time.source_uuid).all()
-
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if event.source.generation_time <= max_generation_time and
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
+                
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.generation_time <= max_generation_time,
-                                                                                                               Event.gauge_uuid == gauge_uuid,
-                                                                                                               Event.start < validity_stop,
-                                                                                                               Event.stop > validity_stop,
-                                                                                                               Event.source_uuid != source_max_generation_time.source_uuid).all()
-
+                events_not_staying_not_ending_on_period = [event for event in events_during_period if event.source.generation_time <= max_generation_time and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
+                
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
                     if not event.event_uuid in list_split_events:
@@ -3068,26 +3173,54 @@ class Engine():
 
             # Get the sources of events intersecting the validity period defined for the current source
             sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                       Source.priority != None,
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
                                                                              Source.validity_stop > self.source.validity_start),
                                                                         and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).all()
+                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Event.start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+                
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -3101,7 +3234,8 @@ class Engine():
                         list_events_to_be_removed.append(event_uuid)
                     # end for
 
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -3124,28 +3258,33 @@ class Engine():
                 next_timestamp += 1
 
                 # Get the maximum priority at this moment
-                max_priority = self.session.query(func.max(Source.priority)).join(Event).filter(Source.priority >= self.source.priority,
-                                                                                                Event.gauge_uuid == gauge_uuid,
-                                                                                                or_(and_(Source.validity_start < validity_stop,
-                                                                                                         Source.validity_stop > validity_start),
-                                                                                                    and_(Source.validity_start == validity_start,
-                                                                                                         Source.validity_stop == validity_stop))).first()
+                max_priority = max([source.priority for source in sources_during_period
+                                           if source.priority >= self.source.priority and
+                                           ((source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
+                
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                                                                              Source.priority == max_priority,
-                                                                                                              or_(and_(Source.validity_start < validity_stop,
-                                                                                                                       Source.validity_stop > validity_start),
-                                                                                                                  and_(Source.validity_start == validity_start,
-                                                                                                                       Source.validity_stop == validity_stop))).first()
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if source.priority == max_priority and
+                                           ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
-                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
-                                                                                           Source.priority == max_priority,
-                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                           or_(and_(Source.validity_start < validity_stop,
-                                                                                                    Source.validity_stop > validity_start),
-                                                                                               and_(Source.validity_start == validity_start,
-                                                                                                    Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                source_max_generation_time = sorted(
+                    [source for source in sources_during_period
+                     if source.generation_time == max_generation_time and
+                     source.priority == max_priority and
+                     ((source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)
+                      or
+                      (source.validity_start == validity_start and
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -3153,13 +3292,11 @@ class Engine():
                 # end if
                 
                 # Events related to the DIM processing with the maximum generation time
-                events_max_generation_time = self.session.query(Event).filter(Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                              Event.gauge_uuid == gauge_uuid,
-                                                                              or_(and_(Event.start < validity_stop,
-                                                                                       Event.stop > validity_start),
-                                                                                  and_(Event.start == validity_start,
-                                                                                       Event.stop == validity_stop))).all()
-
+                events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
+                
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
@@ -3197,37 +3334,33 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                     Source.priority <= max_priority),
-                                                                                                                Source.priority < max_priority),
-                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                            Event.gauge_uuid == gauge_uuid,
-                                                                                                            Event.start >= validity_start,
-                                                                                                            Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+                
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                             Source.priority <= max_priority),
-                                                                                                        Source.priority < max_priority),
-                                                                                                    Event.gauge_uuid == gauge_uuid,
-                                                                                                    Event.start <= validity_start,
-                                                                                                    Event.stop > validity_start,
-                                                                                                    Event.stop <= validity_stop,
-                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
-
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                           or
+                                                           (event.source.priority < max_priority)) and
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
+                
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                 Source.priority <= max_priority),
-                                                                                                            Source.priority < max_priority),
-                                                                                                        Event.gauge_uuid == gauge_uuid,
-                                                                                                        Event.start < validity_stop,
-                                                                                                        Event.stop > validity_stop,
-                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_not_ending_on_period = [event for event in events_during_period
+                                                           if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                               or
+                                                               (event.source.priority < max_priority)) and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
                 
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
@@ -3314,26 +3447,54 @@ class Engine():
 
             # Get the sources of events intersecting the validity period defined for the current source
             sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
+                                                                       Source.priority != None,
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
                                                                              Source.validity_stop > self.source.validity_start),
                                                                         and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).all()
+                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Event.start).all()
+            events = sorted(set([event for source in sources for event in source.events if
+                                 (event.gauge_uuid == gauge_uuid) and
+                                 ((event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start) or
+                                 (event.start == self.source.validity_start and
+                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
 
             sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
+            sources_duration_0_added_stop = {}
             for source in sources_duration_0:
-                filtered_timeline_points.append(source.validity_stop)
+                # Insert only once the stop of the sources with duration 0
+                if source.validity_stop not in sources_duration_0_added_stop:
+                    sources_duration_0_added_stop[source.validity_stop] = None
+                    filtered_timeline_points.append(source.validity_stop)
+                # end if
             # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
+                race_condition3()
+
+                events_during_period = []
+                if timestamp in events_per_timestamp:
+                    events_during_period = events_per_timestamp[timestamp]
+                # end if
+                sources_during_period = []
+                if timestamp in sources_per_timestamp:
+                    sources_during_period = sources_per_timestamp[timestamp]
+                # end if
+
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -3347,7 +3508,8 @@ class Engine():
                         list_events_to_be_removed.append(event_uuid)
                     # end for
 
-                    events_to_be_created_not_ending_on_period = self.session.query(Event).filter(Event.event_uuid.in_(list(list_events_to_be_created_not_ending_on_period.keys()))).all()
+                    events_to_be_created_not_ending_on_period = [event for event in events_during_period if event.event_uuid in list_events_to_be_created_not_ending_on_period]
+
                     for event_uuid in list_events_to_be_created_not_ending_on_period:
                         # The event has to be created
                         event = [event for event in events_to_be_created_not_ending_on_period if event.event_uuid == event_uuid][0]
@@ -3370,28 +3532,33 @@ class Engine():
                 next_timestamp += 1
 
                 # Get the maximum priority at this moment
-                max_priority = self.session.query(func.max(Source.priority)).join(Event).filter(Source.priority >= self.source.priority,
-                                                                                                Event.gauge_uuid == gauge_uuid,
-                                                                                                or_(and_(Source.validity_start < validity_stop,
-                                                                                                         Source.validity_stop > validity_start),
-                                                                                                    and_(Source.validity_start == validity_start,
-                                                                                                         Source.validity_stop == validity_stop))).first()
+                max_priority = max([source.priority for source in sources_during_period
+                                           if source.priority >= self.source.priority and
+                                           ((source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
+                
                 # Get the maximum generation time at this moment
-                max_generation_time = self.session.query(func.max(Source.generation_time)).join(Event).filter(Event.gauge_uuid == gauge_uuid,
-                                                                                                              Source.priority == max_priority,
-                                                                                                              or_(and_(Source.validity_start < validity_stop,
-                                                                                                                       Source.validity_stop > validity_start),
-                                                                                                                  and_(Source.validity_start == validity_start,
-                                                                                                                       Source.validity_stop == validity_stop))).first()
+                max_generation_time = max([source.generation_time for source in sources_during_period
+                                           if source.priority == max_priority and
+                                           ((source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)
+                                           or
+                                           (source.validity_start == validity_start and
+                                            source.validity_stop == validity_stop))])
                 
                 # Get the related source
-                source_max_generation_time = self.session.query(Source).join(Event).filter(Source.generation_time == max_generation_time,
-                                                                                           Source.priority == max_priority,
-                                                                                           Event.gauge_uuid == gauge_uuid,
-                                                                                           or_(and_(Source.validity_start < validity_stop,
-                                                                                                    Source.validity_stop > validity_start),
-                                                                                               and_(Source.validity_start == validity_start,
-                                                                                                    Source.validity_stop == validity_stop))).order_by(Source.ingestion_time.nullslast()).first()
+                source_max_generation_time = sorted(
+                    [source for source in sources_during_period
+                     if source.generation_time == max_generation_time and
+                     source.priority == max_priority and
+                     ((source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)
+                      or
+                      (source.validity_start == validity_start and
+                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -3400,14 +3567,11 @@ class Engine():
                 
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
-                events_max_generation_time = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                           Event.source_uuid == source_max_generation_time.source_uuid,
-                                                                              Event.gauge_uuid == gauge_uuid,
-                                                                              or_(and_(Event.start < validity_stop,
-                                                                                       Event.stop > validity_start),
-                                                                                  and_(Event.start == validity_start,
-                                                                                       Event.stop == validity_stop))).all()
-
+                events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
+                                              ((event.start < validity_stop and event.stop > validity_start)
+                                               or
+                                               (event.start == validity_start and event.stop == validity_stop))]
+                
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
                     if event.event_uuid in list_split_events:
@@ -3445,40 +3609,37 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = self.session.query(Source.source_uuid).join(Event).filter(Source.priority <= self.source.priority,
-                                                                                                            or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                     Source.priority <= max_priority),
-                                                                                                                Source.priority < max_priority),
-                                                                                                            Event.source_uuid != source_max_generation_time.source_uuid,
-                                                                                                            Event.gauge_uuid == gauge_uuid,
-                                                                                                            Event.start >= validity_start,
-                                                                                                            Event.stop <= validity_stop)
-                event_uuids_to_be_removed = self.session.query(Event.event_uuid).filter(Event.source_uuid.in_(sources_of_events_to_be_removed),
-                                                                                                     Event.gauge_uuid == gauge_uuid,
-                                                                                                     Event.start >= validity_start,
-                                                                                                     Event.stop <= validity_stop)
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
+                                             event.start >= validity_start and event.stop <= validity_stop]
+                
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                                    or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                             Source.priority <= max_priority),
-                                                                                                        Source.priority < max_priority),
-                                                                                                    Event.gauge_uuid == gauge_uuid,
-                                                                                                    Event.start <= validity_start,
-                                                                                                    Event.stop > validity_start,
-                                                                                                    Event.stop <= validity_stop,
-                                                                                                    Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_ending_on_period = [event for event in events_during_period
+                                                       if event.source.priority <= self.source.priority and
+                                                       ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                           or
+                                                           (event.source.priority < max_priority)) and
+
+                                                       event.start <= validity_start and
+                                                       event.stop > validity_start and
+                                                       event.stop <= validity_stop and
+                                                       event.source_uuid != source_max_generation_time.source_uuid]
 
                 # Get the events ending on the current period to be removed
-                events_not_staying_not_ending_on_period = self.session.query(Event).join(Source).filter(Source.priority <= self.source.priority,
-                                                                                                        or_(and_(Source.generation_time <= max_generation_time,
-                                                                                                                 Source.priority <= max_priority),
-                                                                                                            Source.priority < max_priority),
-                                                                                                        Event.gauge_uuid == gauge_uuid,
-                                                                                                        Event.start < validity_stop,
-                                                                                                        Event.stop > validity_stop,
-                                                                                                        Event.source_uuid != source_max_generation_time.source_uuid).all()
+                events_not_staying_not_ending_on_period = [event for event in events_during_period
+                                                           if event.source.priority <= self.source.priority and
+                                                           ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                               or
+                                                               (event.source.priority < max_priority)) and
+                                                           event.start < validity_stop and
+                                                           event.stop > validity_stop and
+                                                           event.source_uuid != source_max_generation_time.source_uuid]
                 
                 events_not_staying = events_not_staying_ending_on_period + events_not_staying_not_ending_on_period
                 for event in events_not_staying:
@@ -3590,86 +3751,9 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
-            events_per_timestamp = {}
-            timeline_points_iterator = 0
-            for event in events:
-                specific_timeline_points_iterator = timeline_points_iterator
-                while specific_timeline_points_iterator < len(filtered_timeline_points):
-                    timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                    if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                        if event.stop > timestamp:
-                            if timestamp not in events_per_timestamp:
-                                events_per_timestamp[timestamp] = []
-                            # end if
-                            events_per_timestamp[timestamp].append(event)
-                        # end if
-                        break
-                    # end if
-                        
-                    next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                    specific_timeline_points_iterator += 1
-                    
-                    # Check that the event can still be allocated in the timeline if not continue with the following event
-                    if event.stop <= timestamp and event.start < timestamp:
-                        break
-                    # end if
-
-                    # Check that the event can be allocated to the current period if not continue to the next period
-                    if event.start >= next_timestamp and event.stop > next_timestamp:
-                        timeline_points_iterator += 1
-                    # end if
-                    
-                    if (event.start < next_timestamp and event.stop > timestamp) or \
-                       (event.start == timestamp and event.stop == next_timestamp):
-                        if timestamp not in events_per_timestamp:
-                            events_per_timestamp[timestamp] = []
-                        # end if
-                        events_per_timestamp[timestamp].append(event)
-                    # end if
-
-                # end while
-            # end for
-
-            sources_per_timestamp = {}
-            timeline_points_iterator = 0
-            for source in sources:
-                specific_timeline_points_iterator = timeline_points_iterator
-                while specific_timeline_points_iterator < len(filtered_timeline_points):
-                    timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                    if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                        if source.validity_stop > timestamp:
-                            if timestamp not in sources_per_timestamp:
-                                sources_per_timestamp[timestamp] = []
-                            # end if
-                            sources_per_timestamp[timestamp].append(source)
-                        # end if
-                        break
-                    # end if
-                        
-                    next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                    specific_timeline_points_iterator += 1
-                    
-                    # Check that the source can still be allocated in the timeline if not continue with the following source
-                    if source.validity_stop <= timestamp and source.validity_start < timestamp:
-                        break
-                    # end if
-
-                    # Check that the source can be allocated to the current period if not continue to the next period
-                    if source.validity_start >= next_timestamp:
-                        timeline_points_iterator += 1
-                    # end if
-                    
-                    if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-                       (source.validity_start == timestamp and source.validity_stop == next_timestamp):
-                        if timestamp not in sources_per_timestamp:
-                            sources_per_timestamp[timestamp] = []
-                        # end if
-                        sources_per_timestamp[timestamp].append(source)
-                    # end if
-
-                # end while
-            # end for
-
+            events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
+            
             # Iterate through the periods
             next_timestamp = 1
             for timestamp in filtered_timeline_points:
@@ -3681,7 +3765,7 @@ class Engine():
                 if timestamp in sources_per_timestamp:
                     sources_during_period = sources_per_timestamp[timestamp]
                 # end if
-
+                
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -3716,6 +3800,11 @@ class Engine():
                 validity_start = timestamp
                 validity_stop = filtered_timeline_points[next_timestamp]
                 next_timestamp += 1
+
+                # Check if there are no events for this timestamp
+                if len(events_during_period) < 1:
+                    continue
+                # end if
 
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
@@ -3758,12 +3847,12 @@ class Engine():
                                                           (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # end if
-                
+
                 # Check if there were no events to define the maximum priority in this period
                 if not max_priority:
                     continue
                 # end if
-                
+                                
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
                 events_max_generation_time = [event for event in events_during_period if event.source.priority <= self.source.priority and
@@ -3809,14 +3898,12 @@ class Engine():
                 # end for
 
                 # Delete deprecated events fully contained into the validity period
-                sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period if source.priority <= self.source.priority and
-                                                   ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                    or
-                                                    (source.priority < max_priority)) and
-                                                   source.source_uuid != source_max_generation_time.source_uuid and
-                                                   len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                
-                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                             if event.source.priority <= self.source.priority and
+                                             ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                 or
+                                                 (event.source.priority < max_priority)) and
+                                             event.source.source_uuid != source_max_generation_time.source_uuid and
                                              event.start >= validity_start and event.stop <= validity_stop]
                 
                 list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -4133,85 +4220,9 @@ class Engine():
                 # Sort list
                 filtered_timeline_points.sort()
 
-                events_per_timestamp = {}
-                timeline_points_iterator = 0
-                for event in events:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if event.stop > timestamp:
-                                if timestamp not in events_per_timestamp:
-                                    events_per_timestamp[timestamp] = []
-                                # end if
-                                events_per_timestamp[timestamp].append(event)
-                            # end if
-                            break
-                        # end if
+                events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the event can still be allocated in the timeline if not continue with the following event
-                        if event.stop <= timestamp and event.start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the event can be allocated to the current period if not continue to the next period
-                        if event.start >= next_timestamp and event.stop > next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (event.start < next_timestamp and event.stop > timestamp) or \
-                           (event.start == timestamp and event.stop == next_timestamp):
-                            if timestamp not in events_per_timestamp:
-                                events_per_timestamp[timestamp] = []
-                            # end if
-                            events_per_timestamp[timestamp].append(event)
-                        # end if
-
-                    # end while
-                # end for
-
-                sources_per_timestamp = {}
-                timeline_points_iterator = 0
-                for source in sources:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if source.validity_stop > timestamp:
-                                if timestamp not in sources_per_timestamp:
-                                    sources_per_timestamp[timestamp] = []
-                                # end if
-                                sources_per_timestamp[timestamp].append(source)
-                            # end if
-                            break
-                        # end if
-
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the source can still be allocated in the timeline if not continue with the following source
-                        if source.validity_stop <= timestamp and source.validity_start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the source can be allocated to the current period if not continue to the next period
-                        if source.validity_start >= next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-                           (source.validity_start == timestamp and source.validity_stop == next_timestamp):
-                            if timestamp not in sources_per_timestamp:
-                                sources_per_timestamp[timestamp] = []
-                            # end if
-                            sources_per_timestamp[timestamp].append(source)
-                        # end if
-
-                    # end while
-                # end for
+                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4315,12 +4326,9 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                       if source.generation_time <= max_generation_time and
-                                                       source.source_uuid != source_max_generation_time.source_uuid and
-                                                       len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-                    
-                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                                 if event.source.generation_time <= max_generation_time and
+                                                 event.source.source_uuid != source_max_generation_time.source_uuid and
                                                  event.start >= validity_start and event.stop <= validity_stop]
                 
                     list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -4437,6 +4445,7 @@ class Engine():
                                                                            and_(Event.start == segment_start,
                                                                                 Event.stop == segment_stop))).order_by(Event.start).all()
                 sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
+                
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
@@ -4455,85 +4464,8 @@ class Engine():
                 # Sort list
                 filtered_timeline_points.sort()
 
-                events_per_timestamp = {}
-                timeline_points_iterator = 0
-                for event in events:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if event.stop > timestamp:
-                                if timestamp not in events_per_timestamp:
-                                    events_per_timestamp[timestamp] = []
-                                # end if
-                                events_per_timestamp[timestamp].append(event)
-                            # end if
-                            break
-                        # end if
-
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the event can still be allocated in the timeline if not continue with the following event
-                        if event.stop <= timestamp and event.start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the event can be allocated to the current period if not continue to the next period
-                        if event.start >= next_timestamp and event.stop > next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (event.start < next_timestamp and event.stop > timestamp) or \
-                           (event.start == timestamp and event.stop == next_timestamp):
-                            if timestamp not in events_per_timestamp:
-                                events_per_timestamp[timestamp] = []
-                            # end if
-                            events_per_timestamp[timestamp].append(event)
-                        # end if
-
-                    # end while
-                # end for
-
-                sources_per_timestamp = {}
-                timeline_points_iterator = 0
-                for source in sources:
-                    specific_timeline_points_iterator = timeline_points_iterator
-                    while specific_timeline_points_iterator < len(filtered_timeline_points):
-                        timestamp = filtered_timeline_points[specific_timeline_points_iterator]
-                        if specific_timeline_points_iterator == len(filtered_timeline_points) - 1:
-                            if source.validity_stop > timestamp:
-                                if timestamp not in sources_per_timestamp:
-                                    sources_per_timestamp[timestamp] = []
-                                # end if
-                                sources_per_timestamp[timestamp].append(source)
-                            # end if
-                            break
-                        # end if
-
-                        next_timestamp = filtered_timeline_points[specific_timeline_points_iterator + 1]
-                        specific_timeline_points_iterator += 1
-
-                        # Check that the source can still be allocated in the timeline if not continue with the following source
-                        if source.validity_stop <= timestamp and source.validity_start < timestamp:
-                            break
-                        # end if
-
-                        # Check that the source can be allocated to the current period if not continue to the next period
-                        if source.validity_start >= next_timestamp:
-                            timeline_points_iterator += 1
-                        # end if
-
-                        if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-                           (source.validity_start == timestamp and source.validity_stop == next_timestamp):
-                            if timestamp not in sources_per_timestamp:
-                                sources_per_timestamp[timestamp] = []
-                            # end if
-                            sources_per_timestamp[timestamp].append(source)
-                        # end if
-
-                    # end while
-                # end for
+                events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
+                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4548,7 +4480,7 @@ class Engine():
                     if timestamp in sources_per_timestamp:
                         sources_during_period = sources_per_timestamp[timestamp]
                     # end if
-
+                    
                     # Check if for the last period there are pending splits
                     if next_timestamp == len(filtered_timeline_points):
                         for event_uuid in list_split_events:
@@ -4648,14 +4580,11 @@ class Engine():
                     # end for
 
                     # Delete deprecated events fully contained into the validity period
-                    sources_of_events_to_be_removed = [source.source_uuid for source in sources_during_period
-                                                       if ((source.generation_time <= max_generation_time and source.priority <= max_priority)
-                                                        or
-                                                        (source.priority < max_priority)) and
-                                                       source.source_uuid != source_max_generation_time.source_uuid and
-                                                       len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start >= validity_start and event.stop <= validity_stop]) > 0]
-
-                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period if event.source_uuid in sources_of_events_to_be_removed and
+                    event_uuids_to_be_removed = [event.event_uuid for event in events_during_period
+                                                 if ((event.source.generation_time <= max_generation_time and event.source.priority <= max_priority)
+                                                     or
+                                                     (event.source.priority < max_priority)) and
+                                                 event.source.source_uuid != source_max_generation_time.source_uuid and
                                                  event.start >= validity_start and event.stop <= validity_stop]
 
                     list_events_to_be_removed.extend(event_uuids_to_be_removed)
@@ -5101,3 +5030,191 @@ def insert_source_status(session, source, status, error = False, message = None)
     session.commit()
 
     return
+
+def get_events_per_timestamp(events, timestamps):
+    """
+    Method to associate events to the timestamps (starts of segments specified by the timestamps).
+    An event is associated to a timestamp:
+    if (start < next timestamp and stop > timestamp) or
+    (start == timestamp and stop == next timestamp)
+
+    PRE:
+    - The list of events is ordered by start
+    - The list of timestamps is the list of start and stop values associated to the events without duplications except for the case of having events with duration 0 in which case there will be only one duplication
+
+    Note:
+    1. Given the following scenario:
+    Timestamps: |         |         |
+                          |
+    Event1:     [         ]
+    Event2:               |
+    Event3:               [         ]
+    Event4:     [                   ]
+
+    Result:
+    Timestamp:  |
+    Events:     Event1, Event4
+    Timestamp:            |
+    Events:     Event2, Event3, Event4
+
+    :param events: list of events to associate to the timestamps
+    :type events: list
+    :param timestamps: list of timestamps corresponding to the start and stop values of the received events
+    :type timestamps: list
+
+    :return: events_per_timestamp
+    :rtype: dictionary (key: timestamp, value: list of events associated)
+    """
+
+    events_per_timestamp = {}
+    timeline_points_iterator = 0
+    for event in events:
+        specific_timeline_points_iterator = timeline_points_iterator
+        specific_covered_timestamps = {}
+        while specific_timeline_points_iterator < len(timestamps):
+            timestamp = timestamps[specific_timeline_points_iterator]
+
+            # Check if the event has to be assigned to the penultimate timestamp (latest timestamp is not used)
+            if specific_timeline_points_iterator == len(timestamps) - 1:
+                if event.stop > timestamp:
+                    if timestamp not in events_per_timestamp:
+                        events_per_timestamp[timestamp] = []
+                    # end if
+                    if timestamp not in specific_covered_timestamps:
+                        events_per_timestamp[timestamp].append(event)
+                        specific_covered_timestamps[timestamp] = None
+                    # end if
+                # end if
+                break
+            # end if
+
+            next_timestamp = timestamps[specific_timeline_points_iterator + 1]
+            specific_timeline_points_iterator += 1
+            # Improve performances by moving to the next timestamp for all events if the current event start is already >= next_timestamp
+            if event.start > next_timestamp:
+                timeline_points_iterator += 1
+            # end if
+
+            # Check that the event can still be allocated in the timeline if not continue with the following event
+            if event.stop <= timestamp and event.start < timestamp:
+                break
+            # end if
+
+            if (event.start < next_timestamp and event.stop > timestamp) or \
+               (event.start == timestamp and event.stop == next_timestamp):
+                if timestamp not in events_per_timestamp:
+                    events_per_timestamp[timestamp] = []
+                # end if
+                if timestamp not in specific_covered_timestamps:
+                    events_per_timestamp[timestamp].append(event)
+                    specific_covered_timestamps[timestamp] = None
+                # end if
+            # end if
+
+        # end while
+    # end for
+
+    return events_per_timestamp
+
+def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
+    """
+    Method to associate sources to the timestamps (starts of segments specified by the timestamps).
+    A source is associated to a timestamp:
+    if (validity_start < next timestamp and validity_stop > timestamp) or
+    (validity_start == timestamp and validity_stop == next timestamp) or
+    there is an associated event with duration 0 and event.start == timestamp
+
+    PRE:
+    - The list of sources is ordered by validity_start
+    - The list of timestamps is the list of validity_start and validity_stop values associated to the sources without duplications except for the case of having sources with duration 0 in which case there will be only one duplication
+
+    Note:
+    1. Given the following scenario (if events_duration_0 != None)):
+    Timestamps: |         |         |
+                          |
+    Source1:    [         ]
+    Event1:               |           --> This will associate Source1 to the second timestamp
+    Source2:              |
+    Source3:              [         ]
+    Source4:    [                   ]
+
+    Result:
+    Timestamp:  |
+    Sources:     Source1, Source4
+    Timestamp:            |
+    Sources:     Source2, Source3, Source4
+
+    :param sources: list of sources to associate to the timestamps
+    :type sources: list
+    :param timestamps: list of timestamps corresponding to the start and stop values of the received sources
+    :type timestamps: list
+    :param events_duration_0: list of events related to the sources with duration 0
+    :type events_duration_0: list
+
+    :return: sources_per_timestamp
+    :rtype: dictionary (key: timestamp, value: list of sources associated)
+    """
+
+    sources_per_timestamp = {}
+    timeline_points_iterator = 0
+    for source in sources:
+        specific_timeline_points_iterator = timeline_points_iterator
+        specific_covered_timestamps = {}
+        while specific_timeline_points_iterator < len(timestamps):
+            timestamp = timestamps[specific_timeline_points_iterator]
+
+            if events_duration_0 != None:
+                # Associate source to the timestamp if it has an event with duration 0 and start == timestamp
+                associated_events_with_duration_0 = [event for event in events_duration_0 if event.source.source_uuid == source.source_uuid and event.start == timestamp]
+                if len(associated_events_with_duration_0) > 0:
+                    if timestamp not in sources_per_timestamp:
+                        sources_per_timestamp[timestamp] = []
+                    # end if
+                    if timestamp not in specific_covered_timestamps:
+                        sources_per_timestamp[timestamp].append(source)
+                        specific_covered_timestamps[timestamp] = None
+                    # end if
+                # end if
+            # end if
+
+            # Check if the source has to be assigned to the penultimate timestamp (latest timestamp is not used)
+            if specific_timeline_points_iterator == len(timestamps) - 1:
+                if source.validity_stop > timestamp:
+                    if timestamp not in sources_per_timestamp:
+                        sources_per_timestamp[timestamp] = []
+                    # end if
+                    if timestamp not in specific_covered_timestamps:
+                        sources_per_timestamp[timestamp].append(source)
+                        specific_covered_timestamps[timestamp] = None
+                    # end if
+                # end if
+                break
+            # end if
+
+            next_timestamp = timestamps[specific_timeline_points_iterator + 1]
+            specific_timeline_points_iterator += 1
+            # Improve performances by moving to the next timestamp for all events if the current event start is already >= next_timestamp
+            if source.validity_start > next_timestamp:
+                timeline_points_iterator += 1
+            # end if
+
+            # Check that the source can still be allocated in the timeline if not continue with the following source
+            if source.validity_stop <= timestamp and source.validity_start < timestamp:
+                break
+            # end if
+
+            if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
+               (source.validity_start == timestamp and source.validity_stop == next_timestamp):
+                if timestamp not in sources_per_timestamp:
+                    sources_per_timestamp[timestamp] = []
+                # end if
+                if timestamp not in specific_covered_timestamps:
+                    sources_per_timestamp[timestamp].append(source)
+                    specific_covered_timestamps[timestamp] = None
+                # end if
+            # end if
+
+        # end while
+    # end for
+    
+    return sources_per_timestamp
