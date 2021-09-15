@@ -160,7 +160,7 @@ class ConfigurationUser(Base):
     configuration_uuid = Column(postgresql.UUID(as_uuid=True), ForeignKey('configurations.configuration_uuid'))
 
 
-class ConfigurationChance(Base):
+class ConfigurationChange(Base):
     """
     This table is used to track the configuration changes a user made on a specific configuration.
     """
