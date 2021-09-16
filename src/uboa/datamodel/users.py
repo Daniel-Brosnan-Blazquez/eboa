@@ -76,6 +76,7 @@ class User(Base, UserMixin):
             "username": self.username,
             "password":self.password,
             "group": self.group,
+            "active": self.active,
             "roles": [role.name for role in self.roles]
         }
 
