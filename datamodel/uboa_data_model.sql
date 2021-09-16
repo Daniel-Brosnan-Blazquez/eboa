@@ -47,7 +47,9 @@ CREATE TABLE uboa.users (
 	fs_uniquifier text NOT NULL,
 	confirmed_at timestamp,
 	CONSTRAINT users_pk PRIMARY KEY (user_uuid),
-	CONSTRAINT unique_user UNIQUE (email,username,fs_uniquifier)
+	CONSTRAINT unique_fs_uniquifier UNIQUE (fs_uniquifier),
+	CONSTRAINT unique_username UNIQUE (username),
+	CONSTRAINT unique_email UNIQUE (email)
 
 );
 -- ddl-end --

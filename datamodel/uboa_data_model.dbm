@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,90" last-zoom="0.95" max-obj-count="8"
+<dbmodel pgmodeler-ver="0.9.3" use-changelog="false" author="John Bradley Valdenebro" last-position="0,0" last-zoom="0.95" max-obj-count="8"
 	 default-owner="postgres">
 <role name="uboa"
       inherit="true"
@@ -66,8 +66,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="users_pk" type="pk-constr" table="uboa.users">
 		<columns names="user_uuid" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="unique_user" type="uq-constr" table="uboa.users">
-		<columns names="email,username,fs_uniquifier" ref-type="src-columns"/>
+	<constraint name="unique_fs_uniquifier" type="uq-constr" table="uboa.users">
+		<columns names="fs_uniquifier" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_username" type="uq-constr" table="uboa.users">
+		<columns names="username" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="unique_email" type="uq-constr" table="uboa.users">
+		<columns names="email" ref-type="src-columns"/>
 	</constraint>
 </table>
 
