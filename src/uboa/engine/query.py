@@ -274,7 +274,7 @@ class Query():
 
         return users
 
-    def get_roles(self, role_uuids = None, roles = None, user_uuids = None, emails = None, usernames = None, groups = None, active = None, order_by = None, limit = None, offset = None):
+    def get_roles(self, role_uuids = None, roles = None, user_uuids = None, emails = None, usernames = None, groups = None, active = None, order_by = None, limit = None, offset = None, delete = False):
         """
         Method to obtain the roles filtered by the received parameters
 
@@ -298,6 +298,8 @@ class Query():
         :type limit: positive integer
         :param offset: positive integer to offset the pointer to the list of results
         :type offset: positive integer
+        :param delete: flag to indicate if the sources found by the query have to be deleted
+        :type delete: bool
 
         """
         params = []
@@ -426,7 +428,13 @@ class Query():
         # end if
         
         log_query(query)
-        roles = query.all()
+
+        roles = []
+        if delete != None and delete:
+            self.delete(query)
+        else:
+            roles = query.all()
+        # end if
 
         return roles
 

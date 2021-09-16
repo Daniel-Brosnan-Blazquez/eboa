@@ -34,11 +34,11 @@ def validate_data_dictionary(data):
         # end if
 
         # Check that the mode contains a valid value
-        if not item["mode"] in ["insert", "update", "delete"]:
+        if not item["mode"] in ["insert", "erase_and_insert", "force_insert"]:
             raise ErrorParsingDictionary("The mode does not correspond to an allowed value")
         # end if
 
-        if item["mode"] == "insert":
+        if item["mode"] in ["insert", "erase_and_insert", "force_insert"]:
             _validate_insert_structure(item)
         # end if
 
@@ -99,6 +99,9 @@ def _validate_users(data):
         # end if
 
         # Optional tags
+        if "active" in user and type(user["active"]) != str:
+            raise ErrorParsingDictionary("The tag active inside the user structure has to be of type str. Received type: {}".format(type(user["active"])))
+        # end if
         if "active" in user and not user["active"].lower() in ["false", "true"]:
             raise ErrorParsingDictionary("The tag active inside the user structure has to have one of the following values: false or true. Received value: {}".format(user["active"]))
         # end if

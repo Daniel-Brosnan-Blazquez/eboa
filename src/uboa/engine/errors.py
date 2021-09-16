@@ -69,6 +69,16 @@ class UsernameNotCorrect(Error):
     def __init__(self, message):
         self.message = message
 
+class UserAlreadyInsertedNotMatchingUsernameOrEmail(Error):
+    """Exception raised when a the specified user is already inserted but email or username does not match
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class ErrorParsingDictionary(Error):
     """Exception raised when the input cannot be validated
 

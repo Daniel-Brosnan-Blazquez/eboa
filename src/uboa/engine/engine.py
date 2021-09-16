@@ -23,16 +23,20 @@ import sys
 from sqlalchemy.exc import IntegrityError, InternalError
 from sqlalchemy.sql import func
 from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm.exc import StaleDataError
 from sqlalchemy import or_, and_
 
 # Import exceptions
-from uboa.engine.errors import RolesDuplicated, RoleAlreadyInserted, UsersDuplicated, UserAlreadyInserted, EmailNotCorrect, UsernameNotCorrect, ErrorParsingDictionary
+from uboa.engine.errors import RolesDuplicated, RoleAlreadyInserted, UsersDuplicated, UserAlreadyInserted, EmailNotCorrect, UsernameNotCorrect, ErrorParsingDictionary, UserAlreadyInsertedNotMatchingUsernameOrEmail
+
+# Import query module
+from uboa.engine.query import Query
 
 # Import parsing module
 import uboa.engine.parsing as parsing
 
 # Import debugging
-from eboa.debugging import debug, race_condition
+from eboa.debugging import debug, race_condition, race_condition2, race_condition3, race_condition4, race_condition5
 
 # Import datamodel
 from uboa.datamodel.base import Session
@@ -92,9 +96,13 @@ exit_codes = {
         "status": 10,
         "message": "The source file with name {} was loaded and validated"
     },
-    "METADATA_INGESTION_ENDED_UNEXPECTEDLY": {
+    "FILE_NONEXISTENT": {
         "status": 11,
-        "message": "The metadata of the report {} was going to be ingested after its generation by the generator {} but the ingestion ended unexpectedly with the error {}"
+        "message": "The source file with name {} does not exist"
+    },
+    "USER_ALREADY_INSERTED_NOT_MATCHING_USERNAME_OR_EMAIL": {
+        "status": 12,
+        "message": "The metadata of the users information contains the definition of the user with email {} or username {} already inserted with same username but different email or viceversa"
     }
 }
 
@@ -120,6 +128,8 @@ class Engine():
         self.session = self.Scoped_session()
         self.session_progress = self.Scoped_session()
         self.operation = None
+        self.query = Query()
+        self.force_insert = False
     
         return
 
@@ -147,21 +157,46 @@ class Engine():
             logger.error(message)
             logger.error(traceback.format_exc())
             traceback.print_exc(file=sys.stdout)
-            return exit_codes["FILE_NOT_LOADED"]
+            returned_information = {
+                "status": exit_codes["FILE_NOT_LOADED"]["status"],
+                "message": message
+            }
+            return returned_information
+        except FileNotFoundError:
+            message = exit_codes["FILE_NONEXISTENT"]["message"].format(json_name)
+            # Log the error
+            logger.error(message)
+            logger.error(traceback.format_exc())
+            traceback.print_exc(file=sys.stdout)
+            returned_information = {
+                "status": exit_codes["FILE_NONEXISTENT"]["status"],
+                "message": message
+            }
+            return returned_information
         # end try
 
         if check_schema:
             is_valid = self._validate_data(data)
             if not is_valid:
                 # Log the error
-                logger.error(exit_codes["FILE_NOT_LOADED"]["message"])
-                return exit_codes["FILE_NOT_LOADED"]
+                message = exit_codes["FILE_NOT_LOADED"]["message"].format(json_name)
+                logger.error(message)
+                returned_information = {
+                    "status": exit_codes["FILE_NOT_LOADED"]["status"],
+                    "message": message
+                }
+                return returned_information
             # end if
         # end if
 
         self.data=data
 
-        return exit_codes["FILE_VALID"]
+        message = exit_codes["FILE_VALID"]["message"].format(json_name)
+        returned_information = {
+            "status": exit_codes["FILE_VALID"]["status"],
+            "message": message
+        }
+        return returned_information
     
     #########################
     # DATA HANDLING METHODS #
@@ -198,24 +233,34 @@ class Engine():
         if data != None:
             self.data = data
         # end if
+
+        if type (self.data) != dict:
+            # Log the error
+            logger.error(exit_codes["DATA_NOT_VALID"]["message"])
+            return [exit_codes["DATA_NOT_VALID"]]
+        # end if
         
         if validate:
             is_valid = self._validate_data(self.data)
             if not is_valid:
                 # Log the error
                 logger.error(exit_codes["DATA_NOT_VALID"]["message"])
-                returned_information = {
-                    "status": exit_codes["DATA_NOT_VALID"]["status"],
-                    "message": exit_codes["DATA_NOT_VALID"]["message"]
-                }
-                return [returned_information]
+                return [exit_codes["DATA_NOT_VALID"]]
             # end if
         # end if
 
         returned_values = []
         for self.operation in self.data.get("operations") or []:
 
-            if self.operation.get("mode") == "insert":
+            if self.operation.get("mode") == "erase_and_insert":
+                self.query.clear_db()
+            # end if            
+
+            if self.operation.get("mode") == "force_insert":
+                self.force_insert = True
+            # end if            
+
+            if self.operation.get("mode") in ["insert", "erase_and_insert", "force_insert"]:
                 returned_information = self._insert_data()
                 returned_values.append(returned_information)
             # end if
@@ -258,6 +303,9 @@ class Engine():
             return exit_codes["ROLE_ALREADY_INSERTED"]
         # end try
 
+        # Race condition to test deletion between insert_roles and insert_users
+        race_condition5()
+        
         # Insert users
         try:
             self._insert_users()
@@ -272,17 +320,15 @@ class Engine():
             logger.error(e)
             return exit_codes["USER_ALREADY_INSERTED"]
         # end try
-        except EmailNotCorrect as e:
-            self.session.rollback()
-            # Log that the specified email is not correct
-            logger.error(e)
-            return exit_codes["EMAIL_NOT_CORRECT"]
-        # end try
-        except UsernameNotCorrect as e:
+        except UserAlreadyInsertedNotMatchingUsernameOrEmail as e:
             self.session.rollback()
             # Log that the specified username is not correct
             logger.error(e)
-            return exit_codes["USERNAME_NOT_CORRECT"]
+            returned_information = {
+                "status": exit_codes["USER_ALREADY_INSERTED_NOT_MATCHING_USERNAME_OR_EMAIL"]["status"],
+                "message": e
+            }
+            return returned_information
         # end try
 
         # Commit data
@@ -304,11 +350,73 @@ class Engine():
 
         n_users = 0
 
-        returned_value = exit_codes["OK"]
-        returned_value["message"] = exit_codes["OK"]["message"].format(n_roles, n_users)
-        
-        return exit_codes["OK"]
+        message = exit_codes["OK"]["message"].format(n_roles, n_users)
+        logger.info(message)
+        returned_information = {
+            "status": exit_codes["OK"]["status"],
+            "message": message
+        }
+        return returned_information
 
+    @debug
+    def _update_role_description(self, role, description):
+        """
+        Method to update the role description
+
+        :param role: name of the role
+        :type role: str
+        :param description: description of the role
+        :type description: str
+        """
+
+        self.roles[role] = self.session.query(Role).filter(Role.name == role).first()
+        self.session.begin_nested()
+        try:
+            race_condition2()
+            self.roles[role].description = description
+            self.session.commit()
+        except StaleDataError:
+            # The role has been deleted between the query and the update. Roll back transaction for
+            # re-using the session
+            self.session.rollback()
+            self._insert_role(role, description)
+        # end try
+
+        return
+    
+    @debug
+    def _insert_role(self, role, description):
+        """
+        Method to insert the roles
+
+        :param role: name of the role
+        :type role: str
+        :param description: description of the role
+        :type description: str
+
+        :return: True if role has been inserted, False otherwise
+        :rtype: bool
+        """
+
+        role_inserted = False
+        
+        self.session.begin_nested()
+        id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        self.roles[role] = Role(id, role, description)
+        self.session.add(self.roles[role])
+        try:
+            race_condition()
+            self.session.commit()
+            role_inserted = True
+        except IntegrityError:
+            # The role has been inserted between the query and the insertion. Roll back transaction for
+            # re-using the session
+            self.session.rollback()
+            self.roles[role] = self.session.query(Role).filter(Role.name == role).first()
+        # end try
+
+        return role_inserted
+        
     @debug
     def _insert_roles(self):
         """
@@ -323,37 +431,153 @@ class Engine():
         # end if
 
         roles = sorted(set(users_roles + declared_roles))
-        
+
         for role in roles:
             self.roles[role] = self.session.query(Role).filter(Role.name == role).first()
+
+            description = None
+            # Get associated group if exists from the declared explicit references
+            declared_role = next(iter([i for i in self.operation.get("roles") or [] if i.get("name") == role]), None)
+            if declared_role:
+                description = declared_role.get("description")
+            # end if
             
             if not self.roles[role]:
-                description = None
-                # Get associated group if exists from the declared explicit references
-                declared_role = next(iter([i for i in self.operation.get("roles") or [] if i.get("name") == role]), None)
-                if declared_role:
-                    description = declared_role.get("description")
-                # end if
 
-                self.session.begin_nested()
-                id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                self.roles[role] = Role(id, role, description)
-                self.session.add(self.roles[role])
-                try:
-                    race_condition()
-                    self.session.commit()
-                except IntegrityError:
-                    # The role has been inserted between the query and the insertion. Roll back transaction for
-                    # re-using the session
-                    self.session.rollback()
+                role_inserted = self._insert_role(role, description)
+                if not role_inserted and not self.force_insert:
                     raise RoleAlreadyInserted(exit_codes["ROLE_ALREADY_INSERTED"]["message"])
-                # end try
-            else:
-                raise RoleAlreadyInserted(exit_codes["ROLE_ALREADY_INSERTED"]["message"])
+                elif not role_inserted and self.force_insert:
+                    self._update_role_description(role, description)
+                # end if
+                
+            elif role in declared_roles:
+                if self.force_insert:
+                    self._update_role_description(role, description)
+                else:
+                    raise RoleAlreadyInserted(exit_codes["ROLE_ALREADY_INSERTED"]["message"])
+                # end if
             # end if
 
         # end for
 
+    @debug
+    def _update_user_information(self, user):
+        """
+        Method to update the user information
+
+        :param user: structure with the information of the user
+        :type user: dict
+        """
+
+        user_ddbb = self.session.query(User).filter(User.email == user.get("email"), User.username == user.get("username")).first()
+
+        if not user_ddbb:
+            raise UserAlreadyInsertedNotMatchingUsernameOrEmail(exit_codes["USER_ALREADY_INSERTED_NOT_MATCHING_USERNAME_OR_EMAIL"]["message"].format(user.get("email"), user.get("username")))
+        # end if
+        
+        self.session.begin_nested()
+        try:
+            race_condition4()
+            group = user.get("group")
+            if group:
+                user_ddbb.group = group
+            # end if
+
+            if user.get("active"):
+                active = user.get("active").lower()
+                if active == "true":
+                    user_ddbb.active = True
+                else:
+                    user_ddbb.active = False
+                # end if
+            # end if
+
+            user_ddbb.roles = []
+            self.session.commit()
+
+            for role in user.get("roles") or []:
+                role_user_ddbb = self.session.query(RoleUser).filter(RoleUser.user_uuid == user_ddbb.user_uuid,
+                                                                     RoleUser.role_uuid == self.roles[role].role_uuid).first()
+                if not role_user_ddbb:
+                    role_user_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    role_user = RoleUser(role_user_uuid, user_ddbb.user_uuid, self.roles[role].role_uuid)
+                    self.session.begin_nested()
+                    self.session.add(role_user)
+                    try:
+                        self.session.commit()
+                    except IntegrityError:
+                        # The role has been deleted between the management of the roles data and management of the users data. Roll back transaction for
+                        # re-using the session
+                        self.session.rollback()
+                        pass
+                # end if
+            # end for
+        except StaleDataError:
+            # The user has been deleted between the query and the update. Roll back transaction for
+            # re-using the session
+            self.session.rollback()
+            pass
+        # end try
+
+        return
+    
+    @debug
+    def _insert_user(self, user, list_roles_users):
+        """
+        Method to insert the users
+
+        :param user: structure with the information of the user
+        :type user: dict
+
+        :return: True if user has been inserted, False otherwise
+        :rtype: bool
+        """
+
+        user_inserted = False
+        
+        self.session.begin_nested()
+        user_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+        fs_uniquifier = str(uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14)))
+
+        # Get email
+        email = user.get("email")
+
+        # Get username
+        username = user.get("username")
+
+        active = True
+        if user.get("active") and user.get("active").lower() == "false":
+            active = False
+        # end if
+
+        group = user.get("group")
+        if not group or group == "":
+            group = "boa_users"
+        # end if
+
+        user_to_ddbb = User(user_uuid, email, username, group, user.get("password"), fs_uniquifier, active)
+        self.session.add(user_to_ddbb)
+        try:
+            race_condition3()
+            self.session.commit()
+
+            for role in user.get("roles") or []:
+                role_user_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                list_roles_users.append(dict(role_user_uuid = role_user_uuid,
+                                             user_uuid = user_uuid,
+                                             role_uuid = self.roles[role].role_uuid))
+            # end for
+
+            user_inserted = True
+        except IntegrityError:
+            # The user has been inserted between the query and the insertion. Roll back transaction for
+            # re-using the session
+            self.session.rollback()
+        # end try
+
+        return user_inserted
+        
     @debug
     def _insert_users(self):
         """
@@ -371,57 +595,20 @@ class Engine():
         if len(usernames) > len(set(usernames)):
             raise UsersDuplicated(exit_codes["USERS_DUPLICATED"]["message"])
         # end if
-        
+
         for user in users:
             user_ddbb = self.session.query(User).filter(or_(User.email == user.get("email"), User.username == user.get("username"))).first()
 
             if not user_ddbb:
 
-                self.session.begin_nested()
-                user_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                fs_uniquifier = str(uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14)))
-
-                # Check email
-                email = user.get("email")
-                if not email:
-                    raise EmailNotCorrect(exit_codes["EMAIL_NOT_CORRECT"]["message"].format(user.get("email")))
-                # end if
-
-                # Check username
-                username = user.get("username")
-                if not username:
-                    raise UsernameNotCorrect(exit_codes["USERNAME_NOT_CORRECT"]["message"].format(user.get("username")))
-                # end if
-
-                active = True
-                if user.get("active") and user.get("active") == "false":
-                    active = False
-                # end if
-
-                group = user.get("group")
-                if not group or group == "":
-                    group = "boa_users"
-                # end if
-
-                user_to_ddbb = User(user_uuid, email, username, group, user.get("password"), fs_uniquifier, active)
-                self.session.add(user_to_ddbb)
-                self.session.commit()
-                try:
-                    race_condition()
-                    self.session.commit()
-                except IntegrityError:
-                    # The user has been inserted between the query and the insertion. Roll back transaction for
-                    # re-using the session
-                    self.session.rollback()
+                user_inserted = self._insert_user(user, list_roles_users)
+                if not user_inserted and not self.force_insert:
                     raise UserAlreadyInserted(exit_codes["USER_ALREADY_INSERTED"]["message"])
-                # end try
-
-                for role in user.get("roles") or []:
-                    role_user_uuid = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
-                    list_roles_users.append(dict(role_user_uuid = role_user_uuid,
-                                                 user_uuid = user_uuid,
-                                                 role_uuid = self.roles[role].role_uuid))
-                # end for
+                elif not user_inserted and self.force_insert:
+                    self._update_user_information(user)
+                # end if
+            elif self.force_insert:
+                self._update_user_information(user)
             else:
                 raise UserAlreadyInserted(exit_codes["USER_ALREADY_INSERTED"]["message"])
             # end if

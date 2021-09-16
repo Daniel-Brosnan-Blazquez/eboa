@@ -41,6 +41,14 @@ class TestQuery(unittest.TestCase):
         self.query.clear_db()
 
     def tearDown(self):
+
+        # Clear all tables before executing the test
+        self.query.clear_db()
+
+        # Insert the default configuration for users
+        exit_status = self.engine_uboa.insert_configuration()
+        assert len([item for item in exit_status if item["status"] != uboa_engine.exit_codes["OK"]["status"]]) == 0
+
         # Close connections to the DDBB
         self.engine_uboa.close_session()
         self.query.close_session()
