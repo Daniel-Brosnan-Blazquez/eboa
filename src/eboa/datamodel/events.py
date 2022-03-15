@@ -14,6 +14,9 @@ from geoalchemy2 import Geometry
 from eboa.datamodel.base import Base
 import eboa.engine.export as export
 
+# Import EBOA errors
+from eboa.engine.errors import ErrorParsingParameters
+
 class Event(Base):
     __tablename__ = 'events'
 
@@ -126,6 +129,35 @@ class Event(Base):
         # end for
 
         return values
+
+    def get_value(self, value_type, value_name):
+        """
+        Method to obtain the structure of values in a python dictionary format
+
+        :param value_type: type in ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]
+        :type value_type: str
+        :param value_name: name of the value
+        :type value_name: str
+
+        :return: corresponding value
+        :rtype: str
+        """
+
+        types = ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]
+        if value_type not in types:
+            raise ErrorParsingParameters("The received value type is not in the list of value types ({}). Received value type is: {}".format(types, value_type))
+        # end if
+
+        value_type_access = eval("self." + value_type)
+
+        values = [value.value for value in value_type_access if value.name == value_name]
+
+        value = ""
+        if len(values) > 0:
+            value = values[0]
+        # end if
+
+        return value
 
     def get_duration(self):
         """
