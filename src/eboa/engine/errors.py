@@ -210,3 +210,21 @@ class PriorityNotDefined(Error):
 
     def __init__(self, message):
         self.message = message
+
+class IncorrectTle(Error):
+    """Exception raised when the format of the received TLE is not correct.
+    Correct format is:
+    SATELLITE-INDICATOR
+    1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN
+    2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, tle):
+        tle_format = "SATELLITE-INDICATOR\n1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN\n2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN"
+
+        self.message = "\nReceived TLE:\n{}\n is incorrect. TLE should have the following format:\n{} ".format(tle, tle_format)
+
+        super().__init__(self.message)
