@@ -594,7 +594,8 @@ class TestExport(unittest.TestCase):
                                 }
                                ]
                 }
-            }
+            },
+            "gauges": {'GAUGE_NAME': {'GAUGE_SYSTEM': [str(events[0].event_uuid)]}}
         }
 
     def test_export_events_no_events(self):
@@ -610,7 +611,8 @@ class TestExport(unittest.TestCase):
                 "event_group": []
             },
             "events": {
-            }
+            },
+            "gauges": {}
         }
 
     def test_export_events_with_links(self):
@@ -720,7 +722,8 @@ class TestExport(unittest.TestCase):
                     "annotations": {}
                 }
             },
-            "annotations": {}
+            "annotations": {},
+            "gauges": {'GAUGE_NAME': {'GAUGE_SYSTEM': [str(events[0].event_uuid), str(events[1].event_uuid)]}}
         }
 
     def test_export_events_with_group(self):
@@ -793,7 +796,8 @@ class TestExport(unittest.TestCase):
                     "annotations": {}
                 }
             },
-            "annotations": {}
+            "annotations": {},
+            "gauges": {'GAUGE_NAME': {'GAUGE_SYSTEM': [str(events[0].event_uuid)]}}
         }
 
     def test_export_events_without_explicit_references(self):
@@ -852,7 +856,8 @@ class TestExport(unittest.TestCase):
                     "links_to_me": [],
                     "alerts": [],
                 }
-            }
+            },
+            "gauges": {'GAUGE_NAME': {'GAUGE_SYSTEM': [str(events[0].event_uuid)]}}
         }
 
     def test_export_annotations_wrong_structure(self):

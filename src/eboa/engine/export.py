@@ -74,7 +74,11 @@ def export_events(structure, events, include_ers = True, include_annotations = T
     if "events" not in structure:
         structure["events"] = {}
     # end if
-    
+
+    if "gauges" not in structure:
+        structure["gauges"] = {}
+    # end if
+
     for event in events:
 
         # Insert the event reference in the group
@@ -85,6 +89,19 @@ def export_events(structure, events, include_ers = True, include_annotations = T
         # Insert the structure of the event
         if event.event_uuid not in structure["events"]:
             structure["events"][str(event.event_uuid)] = event.jsonify(include_indexed_values = True)
+        # end if
+
+        # Insert the id in structure of the gauges
+        gauge_name = event.gauge.name
+        gauge_system = event.gauge.system
+        if event.event_uuid not in structure["events"]:
+            if gauge_name not in structure["gauges"]:
+                structure["gauges"][gauge_name] = {}
+            # end if
+            if gauge_system not in structure["gauges"][gauge_name]:
+                structure["gauges"][gauge_name][gauge_system] = []
+            # end if
+            structure["gauges"][gauge_name][gauge_system].append(str(event.event_uuid))
         # end if
 
         # Insert structure of the explicit reference
