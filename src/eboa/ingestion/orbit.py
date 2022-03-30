@@ -12,8 +12,7 @@ from lxml import etree, objectify
 import re
 
 # Import SGP4 utilities for orbit propagation
-from sgp4.earth_gravity import wgs72
-from sgp4.io import twoline2rv
+from sgp4.api import Satrec
 
 # Import eboa utilities
 from eboa.engine.errors import IncorrectTle
@@ -55,6 +54,6 @@ def get_orbit(tle):
         raise IncorrectTle(tle)
     # end if
 
-    orbit = twoline2rv(first_line, second_line, wgs72)
+    orbit = Satrec.twoline2rv(first_line, second_line)
 
     return orbit
