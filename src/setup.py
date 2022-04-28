@@ -31,7 +31,8 @@ setup(name="eboa",
           "psutil",
           "inotify",
           "lockfile",
-          "python-daemon"
+          "python-daemon",
+          "scipy"
       ],
       extras_require={
           "tests" :[
