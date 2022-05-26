@@ -102,7 +102,7 @@ def get_ephemeris(satellite_orbit, time):
 
 def get_semimajor(tle_string):
     """
-    Method to verify the content of a tle
+    Method to obtain the semimajor from a tle
 
     :param tle_string: TLE of the satellite with the following format:
     SATELLITE-INDICATOR
