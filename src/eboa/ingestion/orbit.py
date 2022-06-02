@@ -40,7 +40,7 @@ def verify_tle(tle_string):
     """
 
     # Verify TLE has three lines
-    if not re.match(".*\n.*\n.*", tle_string):
+    if not tle_string or not re.match(".*\n.*\n.*", tle_string):
         raise IncorrectTle(tle_string)
     # end if
 
@@ -145,7 +145,7 @@ def satellite_positions_to_fixed(inertial_satellite_positions, epochs):
     :return: satellite positions in the Earth fixed frame with the format [x1, y1, z1, ..., xn, yn, zn]
     :rtype: list
     '''
-    
+
     # Obtain satellite positions referenced in the Earth fixed frame
     satellite_positions = []
     i = 0
