@@ -18,6 +18,12 @@ from astropy.time import Time
 # Import eboa vector
 import eboa.ingestion.vector as eboa_vector
 
+# Import eboa orbit
+import eboa.ingestion.orbit as eboa_orbit
+
+# Import eboa utilities
+from eboa.engine.errors import InputError
+
 ##########
 # Configurations
 ##########
@@ -27,6 +33,85 @@ earth_radius = 6378.1370
 ###########
 # Functions for helping with the generation of footprints of a satellite's instrument
 ###########
+def get_footprint(start, stop, alpha, tle_string = None, semimajor = None, satellite_orbit = None, roll=0, pitch=0, yaw=0, interval=30):
+    '''
+    Function to obtain the footprint of the instrument of the satellite during a period.
+    The attitude of the satellite is specified by roll, pitch and yaw.
+
+    :param start: start of the footprint in ISO 8601 format
+    :type start: str
+    :param stop: stop of the footprint in ISO 8601 format
+    :type stop: str
+    :param alpha: aperture angle of the instrument
+    :type alpha: float
+    :param tle_string: TLE of the satellite with the following format:
+    SATELLITE-INDICATOR
+    1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN
+    2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN
+    :type tle_string: str
+    :param semimajor: semimajor axis of the orbit of the satellite
+    :type semimajor: float
+    :param satellite_orbit: object defining the orbit of the satellite
+    :type satellite_orbit: orbit object
+    :param satellite_orbit: object defining the orbit of the satellite
+    :type satellite_orbit: orbit object
+    :param roll: roll angle of the attitude of the satellite
+    :type roll: float
+    :param pitch: pitch angle of the attitude of the satellite
+    :type pitch: float
+    :param yaw: yaw angle of the attitude of the satellite
+    :type yaw: float
+
+    :return: TLE string content
+    :rtype: str
+    '''
+
+    # Check parameters are complete
+    if tle_string == None and satellite_orbit == None:
+        raise InputError("tle_string or satellite_orbit parameters should be defined")
+    # end if
+    if tle_string == None and semimajor == None:
+        raise InputError("tle_string or semimajor parameters should be defined")
+    elif tle_string != None:
+        # Obtain semimajor from TLE
+        semimajor = eboa_orbit.get_semimajor(tle_string)
+    # end if
+
+    if satellite_orbit == None:
+        # Get the satellite orbit defined by the TLE
+        satellite_orbit = eboa_orbit.get_orbit(tle_string)
+    # end if
+
+    # Obtain the satellite position during the period
+    time = start
+    j = 0
+    inertial_satellite_positions = []
+    epochs = []
+    while time < stop:
+        time = (parser.parse(start) + datetime.timedelta(seconds=j*interval)).replace(tzinfo=None).isoformat(timespec="microseconds")
+        if time > stop:
+            time = stop
+        # end if
+        # Get position of the satellite associated to time in the Earth inertial frame
+        error, position, velocity = eboa_orbit.get_ephemeris(satellite_orbit, time)
+
+        # Register position
+        inertial_satellite_positions.append(position[0])
+        inertial_satellite_positions.append(position[1])
+        inertial_satellite_positions.append(position[2])
+        epochs.append(time)
+        
+        j += 1
+    # end while
+
+    # Transform satellite positions to the Earth fixed frame
+    satellite_positions = eboa_orbit.satellite_positions_to_fixed(inertial_satellite_positions, epochs)
+    
+    # Get swath
+    swath = get_satellite_swath(satellite_positions, alpha, roll, pitch, yaw, semimajor)
+
+    return swath
+
 def get_satellite_swath(satellite_positions, alpha, roll, pitch, yaw, semimajor):
     '''
     Function to obtain the satellite footprint coordinates with the following format:
