@@ -66,6 +66,10 @@ def get_footprint(start, stop, alpha, tle_string = None, semimajor = None, satel
     :rtype: str
     '''
 
+    # Correct inputs
+    corrected_start = parser.parse(start).replace(tzinfo=None).isoformat(timespec="microseconds")
+    corrected_stop = parser.parse(stop).replace(tzinfo=None).isoformat(timespec="microseconds")
+    
     # Check parameters are complete
     if tle_string == None and satellite_orbit == None:
         raise InputError("tle_string or satellite_orbit parameters should be defined")
@@ -83,14 +87,14 @@ def get_footprint(start, stop, alpha, tle_string = None, semimajor = None, satel
     # end if
 
     # Obtain the satellite position during the period
-    time = start
+    time = corrected_start
     j = 0
     inertial_satellite_positions = []
     epochs = []
-    while time < stop:
-        time = (parser.parse(start) + datetime.timedelta(seconds=j*interval)).replace(tzinfo=None).isoformat(timespec="microseconds")
-        if time > stop:
-            time = stop
+    while time < corrected_stop:
+        time = (parser.parse(corrected_start) + datetime.timedelta(seconds=j*interval)).replace(tzinfo=None).isoformat(timespec="microseconds")
+        if time > corrected_stop:
+            time = corrected_stop
         # end if
         # Get position of the satellite associated to time in the Earth inertial frame
         error, position, velocity = eboa_orbit.get_ephemeris(satellite_orbit, time)
