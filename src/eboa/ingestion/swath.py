@@ -62,8 +62,12 @@ def get_footprint(start, stop, alpha, tle_string = None, semimajor = None, satel
     :param yaw: yaw angle of the attitude of the satellite
     :type yaw: float
 
-    :return: TLE string content
-    :rtype: str
+    :return: satellite track and footprint coordinates with the following format
+    coordinates = {
+        "satellite_track": "lon1 lat1, ..., lonN latN",
+        "satellite_footprint": "lon1 lat1, ..., lonN latN",
+    }
+    :rtype: dict
     '''
 
     # Correct inputs
