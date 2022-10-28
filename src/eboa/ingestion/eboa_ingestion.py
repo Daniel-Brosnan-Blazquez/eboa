@@ -49,6 +49,32 @@ def insert_data_into_DDBB(data, filename, engine, processing_duration):
 def command_process_file(processor, file_path, reception_time, output_path = None):
 
     filename = os.path.basename(file_path)
+
+    returned_statuses = [{
+        "source": filename,
+        "dim_signature": None,
+        "processor": None,
+        "status": eboa_engine.exit_codes["OK"]["status"]
+    }]
+    
+    logger.info("Received file {}".format(file_path))
+
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        logger.error("The specified file {} does not exist".format(file_path))
+        # Log status
+        query_log_status = Query()
+        sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+        if len(sources) > 0:
+            eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(filename))
+        # end if
+        query_log_status.close_session()
+
+        returned_statuses[0]["status"] = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"]
+
+        return returned_statuses
+    # end if
+    
     # Process file
     try:
         processor_module = import_module(processor)
@@ -62,7 +88,9 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
         # end if
         query_log_status.close_session()
                 
-        return -1
+        returned_statuses[0]["status"] = eboa_engine.exit_codes["PROCESSOR_DOES_NOT_EXIST"]["status"]
+
+        return returned_statuses
     # end try
 
     engine = Engine()
@@ -93,17 +121,12 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
             # end if
             query_log_status.close_session()
 
-            return -1
+            returned_statuses[0]["status"] = eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"]
+
+            return returned_statuses
         # end try
 
         # Validate data
-        returned_statuses = [{
-            "source": filename,
-            "dim_signature": None,
-            "processor": None,
-            "status": eboa_engine.exit_codes["OK"]["status"]
-        }]
-
         # Treat data
         if output_path == None:
             try:
@@ -124,7 +147,9 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
                     # end if
                     query_log_status.close_session()
 
-                    return -1
+                    returned_statuses[0]["status"] = eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"]
+
+                    return returned_statuses
                 else:
                     query_remove = Query()
                     query_remove.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "!="}, delete = True)
@@ -177,32 +202,20 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     
     return returned_statuses
 
-def main(file_path, processor, output_path = None, reception_time = None):
+def command_process_file_main(processor, file_path, reception_time, output_path = None):
 
-    filename = os.path.basename(file_path)
-    # Check if file exists
-    if not os.path.isfile(file_path):
-        logger.error("The specified file {} does not exist".format(file_path))
-        # Log status
-        query_log_status = Query()
-        sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
-        if len(sources) > 0:
-            eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(filename))
-        # end if
-        query_log_status.close_session()
-
-        return -1
-    # end if
-
-    logger.info("Received file {}".format(file_path))
-    
     returned_statuses = command_process_file(processor, file_path, reception_time, output_path)
 
-    if returned_statuses == -1:
+    failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
+    if len(failures) > 0:
         return -1
     # end if
-    
+
     return 0
+
+def main(file_path, processor, output_path = None, reception_time = None):
+        
+    return command_process_file_main(processor, file_path, reception_time, output_path)
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Process NPPFs.")
