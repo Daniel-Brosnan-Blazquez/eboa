@@ -107,13 +107,13 @@ def date_doy_to_iso (date_doy):
     """
     split_date_doy = date_doy.split(".")
     year = int(split_date_doy[0])
-    doy = int(split_date_doy[1])
+    doy = int(split_date_doy[1]) - 1
     hours = int(split_date_doy[2])
     minutes = int(split_date_doy[3])
     seconds = int(split_date_doy[4])
     milliseconds = hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000
     if len(split_date_doy) > 5:
-        milliseconds = milliseconds + int(split_date_doy[5])
+        milliseconds = milliseconds + float("0." + split_date_doy[5]) * 1000
     # end if
     
     return (datetime.datetime(year, 1, 1) + datetime.timedelta(days=doy, milliseconds=milliseconds)).isoformat()
