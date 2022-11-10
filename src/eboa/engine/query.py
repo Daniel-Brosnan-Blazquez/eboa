@@ -2730,7 +2730,7 @@ class Query():
             # Obtain the links to the prime events from other events
             links = []
             if len(prime_event_uuids) > 0:
-                links = self.get_event_links(event_uuids = {"filter": prime_event_uuids, "op": "in"}, link_names = {"filter": [link_name], "op": link_names["op"]})
+                links = self.get_event_links(event_uuids = {"filter": prime_event_uuids, "op": "in"}, link_names = {"filter": link_name, "op": "=="})
             # end if
 
             # Obtain the events linking the prime events
@@ -4324,7 +4324,7 @@ class Query():
             # Obtain the links to the prime explicit_refs from other explicit_refs
             links = []
             if len(prime_explicit_ref_uuids) > 0:
-                links = self.get_explicit_ref_links(explicit_ref_uuids = {"filter": prime_explicit_ref_uuids, "op": "in"}, link_names = {"filter": [link_name], "op": link_names["op"]})
+                links = self.get_explicit_ref_links(explicit_ref_uuids = {"filter": prime_explicit_ref_uuids, "op": "in"}, link_names = {"filter": link_name, "op": "=="})
             # end if
 
             # Obtain the explicit_refs linking the prime explicit_refs

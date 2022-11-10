@@ -49,6 +49,23 @@ def insert_event_for_ingestion(event, source, list_of_events):
     list_of_events.append(event)
     return
 
+def add_ingestion_completess_message(ingestion_completeness_message, new_message):
+    """
+    Method to add a new ingestion completeness message into the record
+
+    :param ingestion_completeness_message: record of the ingestino completeness messages
+    :type ingestion_completeness_message: str
+    :param new_message: new message to be inserted into the record
+    :type new_message: str
+    """
+
+    new_message_wrapper = "#" + new_message + "# "
+    if not new_message_wrapper in ingestion_completeness_message:
+        ingestion_completeness_message = ingestion_completeness_message + new_message_wrapper
+    # end if
+
+    return ingestion_completeness_message
+
 ###########
 # Functions for helping with trating XML files
 ###########
@@ -105,6 +122,7 @@ def date_doy_to_iso (date_doy):
     :rtype: str
 
     """
+
     split_date_doy = date_doy.split(".")
     year = int(split_date_doy[0])
     doy = int(split_date_doy[1]) - 1
@@ -115,8 +133,9 @@ def date_doy_to_iso (date_doy):
     if len(split_date_doy) > 5:
         milliseconds = milliseconds + float("0." + split_date_doy[5]) * 1000
     # end if
-    
-    return (datetime.datetime(year, 1, 1) + datetime.timedelta(days=doy, milliseconds=milliseconds)).isoformat()
+    date_iso = (datetime.datetime(year, 1, 1) + datetime.timedelta(days=doy, milliseconds=milliseconds)).isoformat()
+
+    return date_iso
 
 ###########
 # Functions using the timelines with the structure defined by identifiers and start and stop vlaues
