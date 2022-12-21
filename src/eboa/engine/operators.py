@@ -1,6 +1,15 @@
 # Import python utilities
 import operator
 
+comparison_operators = {
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+    "==": operator.eq,
+    "!=": operator.ne
+}
+
 arithmetic_operators = {
     ">": operator.gt,
     ">=": operator.ge,
