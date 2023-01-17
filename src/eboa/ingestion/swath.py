@@ -29,6 +29,7 @@ from eboa.engine.errors import InputError
 ##########
 # Set the radius of the Earth in km
 earth_radius = 6378.1370
+max_points = 200
 
 ###########
 # Functions for helping with the generation of footprints of a satellite's instrument
@@ -71,8 +72,15 @@ def get_footprint(start, stop, alpha, tle_string = None, semimajor = None, satel
     '''
 
     # Correct inputs
-    corrected_start = parser.parse(start).replace(tzinfo=None).isoformat(timespec="microseconds")
-    corrected_stop = parser.parse(stop).replace(tzinfo=None).isoformat(timespec="microseconds")
+    corrected_start_datetime = parser.parse(start).replace(tzinfo=None)
+    corrected_start = corrected_start_datetime.isoformat(timespec="microseconds")
+    corrected_stop_datetime = parser.parse(stop).replace(tzinfo=None)
+    corrected_stop = corrected_stop_datetime.isoformat(timespec="microseconds")
+
+    duration = (corrected_stop_datetime - corrected_start_datetime).total_seconds()
+    if (duration / interval) > max_points:
+        interval = duration / max_points
+    # end if
     
     # Check parameters are complete
     if tle_string == None and satellite_orbit == None:
