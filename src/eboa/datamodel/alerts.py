@@ -40,7 +40,7 @@ class Alert(Base):
             "alert_uuid": str(self.alert_uuid),
             "name": self.name,
             "severity": self.severity,
-            "description": self.description,
+            "description": self.description or "",
             "group": self.group.name
         }
 
@@ -91,21 +91,21 @@ class EventAlert(Base):
         :return: structure of the alert related to an event
         :rtype: dict
         """
-        solved_time = None
+        solved_time = ""
         if self.solved_time != None:
             solved_time = self.solved_time.isoformat()
         # end if
         structure = {
             "event_alert_uuid": str(self.event_alert_uuid),
             "message": self.message,
-            "validated": self.validated,
+            "validated": self.validated or "",
             "ingestion_time": self.ingestion_time.isoformat(),
             "generator": self.generator,
-            "notified": self.notified,
-            "solved": self.solved,
+            "notified": self.notified or "",
+            "solved": self.solved or "",
             "solved_time": solved_time,
             "notification_time": self.notification_time.isoformat(),
-            "justification": self.justification,
+            "justification": self.justification or "",
             "definition": self.alertDefinition.jsonify(),
             "event_uuid": str(self.event_uuid),
         }
@@ -146,21 +146,21 @@ class AnnotationAlert(Base):
         :return: structure of the alert related to an annotation
         :rtype: dict
         """
-        solved_time = None
+        solved_time = ""
         if self.solved_time != None:
             solved_time = self.solved_time.isoformat()
         # end if
         structure = {
             "annotation_alert_uuid": str(self.annotation_alert_uuid),
             "message": self.message,
-            "validated": self.validated,
+            "validated": self.validated or "",
             "ingestion_time": self.ingestion_time.isoformat(),
             "generator": self.generator,
-            "notified": self.notified,
-            "solved": self.solved,
+            "notified": self.notified or "",
+            "solved": self.solved or "",
             "solved_time": solved_time,
             "notification_time": self.notification_time.isoformat(),
-            "justification": self.justification,
+            "justification": self.justification or "",
             "definition": self.alertDefinition.jsonify(),
             "annotation_uuid": str(self.annotation_uuid),
         }
@@ -201,21 +201,21 @@ class SourceAlert(Base):
         :return: structure of the alert related to an source
         :rtype: dict
         """
-        solved_time = None
+        solved_time = ""
         if self.solved_time != None:
             solved_time = self.solved_time.isoformat()
         # end if
         structure = {
             "source_alert_uuid": str(self.source_alert_uuid),
             "message": self.message,
-            "validated": self.validated,
+            "validated": self.validated or "",
             "ingestion_time": self.ingestion_time.isoformat(),
             "generator": self.generator,
-            "notified": self.notified,
-            "solved": self.solved,
+            "notified": self.notified or "",
+            "solved": self.solved or "",
             "solved_time": solved_time,
             "notification_time": self.notification_time.isoformat(),
-            "justification": self.justification,
+            "justification": self.justification or "",
             "definition": self.alertDefinition.jsonify(),
             "source_uuid": str(self.source_uuid),
         }
@@ -256,21 +256,21 @@ class ExplicitRefAlert(Base):
         :return: structure of the alert related to an explicit reference
         :rtype: dict
         """
-        solved_time = None
+        solved_time = ""
         if self.solved_time != None:
             solved_time = self.solved_time.isoformat()
         # end if
         structure = {
             "explicit_ref_alert_uuid": str(self.explicit_ref_alert_uuid),
             "message": self.message,
-            "validated": self.validated,
+            "validated": self.validated or "",
             "ingestion_time": self.ingestion_time.isoformat(),
             "generator": self.generator,
-            "notified": self.notified,
-            "solved": self.solved,
+            "notified": self.notified or "",
+            "solved": self.solved or "",
             "solved_time": solved_time,
             "notification_time": self.notification_time.isoformat(),
-            "justification": self.justification,
+            "justification": self.justification or "",
             "definition": self.alertDefinition.jsonify(),
             "explicit_ref_uuid": str(self.explicit_ref_uuid),
         }

@@ -56,13 +56,7 @@ class Event(Base):
             "stop": self.stop.isoformat(),
             "duration": self.get_duration(),
             "ingestion_time": self.ingestion_time.isoformat(),
-            "gauge": {
-                "gauge_uuid": str(self.gauge.gauge_uuid),
-                "dim_signature": self.gauge.dim_signature.dim_signature,
-                "name": self.gauge.name,
-                "system": self.gauge.system,
-                "description": self.gauge.description,
-            },
+            "gauge": self.gauge.jsonify(),
             "source": {
                 "source_uuid": str(self.source.source_uuid),
                 "name": self.source.name,

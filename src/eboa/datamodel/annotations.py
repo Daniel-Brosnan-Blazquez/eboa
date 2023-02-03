@@ -55,7 +55,7 @@ class Annotation(Base):
                 "dim_signature": self.annotationCnf.dim_signature.dim_signature,
                 "name": self.annotationCnf.name,
                 "system": self.annotationCnf.system,
-                "description": self.annotationCnf.description,
+                "description": self.annotationCnf.description or "",
             },
             "source": {
                 "source_uuid": str(self.source.source_uuid),
