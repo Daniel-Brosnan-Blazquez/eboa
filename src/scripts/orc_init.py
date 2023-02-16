@@ -41,6 +41,9 @@ def init():
     command = 'psql -p {} -h {} -t -U postgres -c "CREATE ROLE minarc_orc WITH INHERIT LOGIN;"'.format(datatabse_port, datatabse_address)
     execute_command(command, "The minarc_orc role has been successfully created :-)")
 
+    # minArc_orc role needs to be superuser to install postgres extensions
+    # -- enable_extension("pgcrypto")
+    # -- enable_extension("uuid-ossp")
     print("The minarc_orc role is going to be changed to superuser as minarc needs to create some extensions...")
     command = 'psql -p {} -h {} -t -U postgres -c "ALTER ROLE minarc_orc SUPERUSER;"'.format(datatabse_port, datatabse_address)
     execute_command(command, "The minarc_orc role changed to superuser :-)")
