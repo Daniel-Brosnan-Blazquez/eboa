@@ -351,3 +351,143 @@ class TestEboaIngestion(unittest.TestCase):
 
         # Check 1 failure
         assert len([returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]) == 1
+
+    def test_ingestion_passing_schema(self):
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_ALL_CASES.xml"
+
+        schema_path = os.path.dirname(os.path.abspath(__file__)) + "/xsd_inputs/DEC_F_RECS.xsd"
+
+        returned_status = eboa_ingestion.main(file_path, "eboa.ingestions.ingestion_dec.ingestion_dec", reception_time = datetime.datetime.now().isoformat(), schema_path = schema_path)
+
+        # Check ingestion success
+        assert returned_status == 0
+
+        # Check inserted data
+        sources = self.query.get_sources()
+
+        assert len(sources) == 1
+
+        sources = self.query.get_sources(names = {"filter": "DEC_F_RECS_ALL_CASES.xml", "op": "=="})
+
+        assert len(sources) == 1
+
+    def test_ingestion_not_passing_schema(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "PENDING_SOURCES",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": "DEC_F_RECS_NOT_PASSING_SCHEMA.xml",
+                       "reception_time": datetime.datetime.now().isoformat(),
+                       "generation_time": datetime.datetime.now().isoformat(),
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"}
+        }]
+        }
+
+        returned_value = self.engine.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_NOT_PASSING_SCHEMA.xml"
+
+        schema_path = os.path.dirname(os.path.abspath(__file__)) + "/xsd_inputs/DEC_F_RECS.xsd"
+
+        returned_statuses = eboa_ingestion.command_process_file("eboa.ingestions.ingestion_dec.ingestion_dec", file_path, datetime.datetime.now().isoformat(), schema_path = schema_path)
+
+        # Check failures
+        assert len(returned_statuses) == 1
+        assert len([returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["status"]]]) == 1
+
+    def test_ingestion_not_valid_xml(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "PENDING_SOURCES",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": "DEC_F_RECS_NOT_VALID_XML.xml",
+                       "reception_time": datetime.datetime.now().isoformat(),
+                       "generation_time": datetime.datetime.now().isoformat(),
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"}
+        }]
+        }
+
+        returned_value = self.engine.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_NOT_VALID_XML.xml"
+
+        schema_path = os.path.dirname(os.path.abspath(__file__)) + "/xsd_inputs/DEC_F_RECS.xsd"
+
+        returned_statuses = eboa_ingestion.command_process_file("eboa.ingestions.ingestion_dec.ingestion_dec", file_path, datetime.datetime.now().isoformat(), schema_path = schema_path)
+
+        # Check failures
+        assert len(returned_statuses) == 1
+        assert len([returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT"]["status"]]]) == 1
+
+    def test_ingestion_schema_does_not_exit(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "PENDING_SOURCES",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": "DEC_F_RECS_NOT_PASSING_SCHEMA.xml",
+                       "reception_time": datetime.datetime.now().isoformat(),
+                       "generation_time": datetime.datetime.now().isoformat(),
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"}
+        }]
+        }
+
+        returned_value = self.engine.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_NOT_PASSING_SCHEMA.xml"
+
+        schema_path = os.path.dirname(os.path.abspath(__file__)) + "/xsd_inputs/DEC_F_RECS_DOES_NOT_EXIST.xsd"
+
+        returned_statuses = eboa_ingestion.command_process_file("eboa.ingestions.ingestion_dec.ingestion_dec", file_path, datetime.datetime.now().isoformat(), schema_path = schema_path)
+
+        # Check failures
+        assert len(returned_statuses) == 1
+        assert len([returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["SCHEMA_FILE_DOES_NOT_EXIST"]["status"]]]) == 1
+
+    def test_ingestion_failing_processor(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "PENDING_SOURCES",
+                              "exec": "",
+                              "version": ""},
+            "source": {"name": "DEC_F_RECS_NOT_PASSING_SCHEMA.xml",
+                       "reception_time": datetime.datetime.now().isoformat(),
+                       "generation_time": datetime.datetime.now().isoformat(),
+                       "validity_start": datetime.datetime.now().isoformat(),
+                       "validity_stop": datetime.datetime.now().isoformat(),
+                       "ingested": "false"}
+        }]
+        }
+
+        returned_value = self.engine.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_ALL_CASES.xml"
+
+        schema_path = os.path.dirname(os.path.abspath(__file__)) + "/xsd_inputs/DEC_F_RECS.xsd"
+
+        returned_statuses = eboa_ingestion.command_process_file("eboa.processors.failing_processor", file_path, datetime.datetime.now().isoformat(), schema_path = schema_path)
+
+        # Check failures
+        assert len(returned_statuses) == 1
+        assert len([returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"]]]) == 1

@@ -126,3 +126,34 @@ class TestEboaIngestion(unittest.TestCase):
 
         shutil.copyfile("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")
         
+    def test_trigger_file_exists_passing_schema(self):
+
+        # Move test configuration for triggering
+        os.rename("/resources_path/triggering.xml", "/resources_path/triggering_bak.xml")
+        shutil.copyfile(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/triggering.xml", "/resources_path/triggering.xml")
+
+        filename = "DEC_F_RECS_ALL_CASES.xml"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/" + filename
+        
+        try:
+            eboa_triggering.main(file_path, test = True)
+        except SystemExit as e:
+            exit_code = str(e)
+        # end try
+
+        assert exit_code == "0"
+
+        # Check inserted data
+        sources = self.query.get_sources()
+
+        assert len(sources) == 2
+
+        sources = self.query.get_sources(names = {"filter": "DEC_F_RECS_ALL_CASES.xml", "op": "=="})
+
+        assert len(sources) == 1
+
+        sources = self.query.get_sources(names = {"filter": "matching_source", "op": "=="})
+
+        assert len(sources) == 1
+
+        shutil.copyfile("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="EEF_UTC_DateTime_Millsec_Type">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="UTC=\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}"> </xs:pattern>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Fixed_Header_Source_Type">
+		<xs:sequence>
+			<xs:element name="System" type="xs:string" />
+			<xs:element name="Creator" type="xs:string" />
+			<xs:element name="Creator_Version" type="xs:string" />
+			<xs:element name="Creation_Date" type="EEF_UTC_DateTime_Millsec_Type" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Fixed_Header_Validity_Period">
+		<xs:sequence>
+			<xs:element name="Validity_Start" type="EEF_UTC_DateTime_Millsec_Type" />
+			<xs:element name="Validity_Stop" type="EEF_UTC_DateTime_Millsec_Type" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Fixed_Header_Type">
+		<xs:sequence>
+			<xs:element name="File_Name" type="xs:string"/>
+			<xs:element name="File_Description" type="xs:string"/>
+			<xs:element name="Notes" type="xs:string"/>
+			<xs:element name="Mission" type="xs:string"/>
+			<xs:element name="File_Class" type="xs:string"/>
+			<xs:element name="File_Type" type="xs:string"/>
+			<xs:element name="Validity_Period" type="Fixed_Header_Validity_Period"/>
+			<xs:element name="File_Version" type="xs:string"/>
+			<xs:element name="Source" type="Fixed_Header_Source_Type" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Variable_Header_Type">
+		<xs:sequence>
+			<xs:element name="Destination" type="xs:string"/>
+			<xs:element name="Date" type="EEF_UTC_DateTime_Millsec_Type"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Earth_Explorer_Header">
+		<xs:sequence>
+		  <xs:element name="Fixed_Header" type="Fixed_Header_Type" />
+		  <xs:element name="Variable_Header" type="Variable_Header_Type" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="List_of_Files">
+		<xs:sequence>
+			<xs:element name="Filename" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence> 
+	</xs:complexType>
+	<xs:complexType name="Data_Block_Type">
+		<xs:sequence>
+			<xs:element name="List_of_Files" type="List_of_Files" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="Earth_Explorer_File">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Earth_Explorer_Header" type="Earth_Explorer_Header" />
+				<xs:element name="Data_Block" type="Data_Block_Type" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

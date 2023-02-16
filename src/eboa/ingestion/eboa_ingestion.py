@@ -46,7 +46,7 @@ def insert_data_into_DDBB(data, filename, engine, processing_duration):
 
     return returned_statuses
 
-def command_process_file(processor, file_path, reception_time, output_path = None):
+def command_process_file(processor, file_path, reception_time, output_path = None, schema_path = None):
 
     filename = os.path.basename(file_path)
 
@@ -61,7 +61,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
 
     # Check if file exists
     if not os.path.isfile(file_path):
-        logger.error("The specified file {} does not exist".format(file_path))
+        logger.error(eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["message"].format(filename))
         # Log status
         query_log_status = Query()
         sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
@@ -73,6 +73,67 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
         returned_statuses[0]["status"] = eboa_engine.exit_codes["FILE_DOES_NOT_EXIST"]["status"]
 
         return returned_statuses
+    # end if
+    
+    # If a schema is available, check if file passes the schema (only for XML files)
+    if schema_path:
+        # Check if schema file exists
+        if not os.path.isfile(schema_path):
+            logger.error(eboa_engine.exit_codes["SCHEMA_FILE_DOES_NOT_EXIST"]["message"].format(schema_path))
+            # Log status
+            query_log_status = Query()
+            sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+            if len(sources) > 0:
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["SCHEMA_FILE_DOES_NOT_EXIST"]["status"], error = True, message = eboa_engine.exit_codes["SCHEMA_FILE_DOES_NOT_EXIST"]["message"].format(schema_path))
+            # end if
+            query_log_status.close_session()
+
+            returned_statuses[0]["status"] = eboa_engine.exit_codes["SCHEMA_FILE_DOES_NOT_EXIST"]["status"]
+
+            return returned_statuses
+        # end if
+    
+        parsed_schema = etree.parse(schema_path)
+        schema = etree.XMLSchema(parsed_schema)
+
+        # Get XML content of file, raise error if file is not an XML or the XML has incorrect content
+        try:
+            file_xml = etree.parse(file_path)
+        except etree.XMLSyntaxError as e:
+            logger.error(eboa_engine.exit_codes["FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT"]["message"].format(file_path))
+            # Log status
+            query_log_status = Query()
+            sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+            if len(sources) > 0:
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT"]["status"], error = True, message = eboa_engine.exit_codes["FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT"]["message"].format(file_path))
+            # end if
+            query_log_status.close_session()
+
+            returned_statuses[0]["status"] = eboa_engine.exit_codes["FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT"]["status"]
+
+            return returned_statuses
+        # end try
+
+        # Check XML file against schema
+        valid = schema.validate(file_xml)
+        if not valid:
+
+            logger.error(eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["message"].format(file_path, schema_path, schema.error_log))
+            # Log status
+            query_log_status = Query()
+            sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+            if len(sources) > 0:
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["status"], error = True, message = eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["message"].format(file_path, schema_path, schema.error_log))
+            # end if
+            query_log_status.close_session()
+
+            returned_statuses[0]["status"] = eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["status"]
+
+            return returned_statuses
+
+        # end if
+    
+        logger.info("Received file {} passes schema {}".format(file_path, schema_path))
     # end if
     
     # Process file
@@ -202,9 +263,9 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     
     return returned_statuses
 
-def command_process_file_main(processor, file_path, reception_time, output_path = None):
+def command_process_file_main(processor, file_path, reception_time, output_path = None, schema_path = None):
 
-    returned_statuses = command_process_file(processor, file_path, reception_time, output_path)
+    returned_statuses = command_process_file(processor, file_path, reception_time, output_path, schema_path)
 
     failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
     if len(failures) > 0:
@@ -213,16 +274,18 @@ def command_process_file_main(processor, file_path, reception_time, output_path 
 
     return 0
 
-def main(file_path, processor, output_path = None, reception_time = None):
+def main(file_path, processor, output_path = None, reception_time = None, schema_path = None):
         
-    return command_process_file_main(processor, file_path, reception_time, output_path)
+    return command_process_file_main(processor, file_path, reception_time, output_path, schema_path)
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Process NPPFs.")
     args_parser.add_argument("-p", dest="processor", type=str, nargs=1,
-                        help="processor module", required=True)
+                             help="processor module", required=True)
     args_parser.add_argument("-f", dest="file_path", type=str, nargs=1,
-                        help="path to the file to process", required=True)
+                             help="path to the file to process", required=True)
+    args_parser.add_argument("-s", dest="schema_path", type=str, nargs=1,
+                             help="path to the schema to check the file (only for XML files)", required=False)
     args_parser.add_argument("-t", dest="reception_time", type=str, nargs=1,
                              help="reception time of the file", required=False)
     args_parser.add_argument("-o", dest="output_path", type=str, nargs=1,
@@ -233,6 +296,13 @@ if __name__ == "__main__":
 
     processor = args.processor[0]
 
+    # Path to the schema if specified
+    schema_path = None
+    if args.schema_path != None:
+        schema_path = args.schema_path[0]
+    # end if
+
+    # Path to the output if specified
     output_path = None
     if args.output_path != None:
         output_path = args.output_path[0]
@@ -243,7 +313,7 @@ if __name__ == "__main__":
         reception_time = parser.parse(args.reception_time[0]).isoformat()
     # end if
     
-    returned_value = main(file_path, processor, output_path, reception_time)
+    returned_value = main(file_path, processor, output_path, reception_time, schema_path)
 
     exit(returned_value)
     

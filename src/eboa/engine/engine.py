@@ -162,6 +162,22 @@ exit_codes = {
     "LINK_TO_NOT_AVAILABLE_EVENT": {
         "status": 23,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines the link with event_uuid_link '{}', name '{}' and event_uuid '{}' for which the event_uuid is not available. The exception raised has been the following: {}\nThis error is consider normal business and so the link is skipped but the ingestion continues."
+    },
+    "FILE_IS_NOT_XML_OR_XML_CONTENT_INCORRECT": {
+        "status": 24,
+        "message": "The file {} is not an XML or its content is not correct."
+    },
+    "FILE_DOES_NOT_PASS_SCHEMA": {
+        "status": 25,
+        "message": "The file {} does not pass the schema {} with the following errors and/or warnings:\n{}"
+    },
+    "TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY": {
+        "status": 26,
+        "message": "The triggered command associated to the source file with name {} ended unexpectedly with the error:\n{}"
+    },
+    "SCHEMA_FILE_DOES_NOT_EXIST": {
+        "status": 27,
+        "message": "The schema file with path {} does not exist"
     }
 }
 

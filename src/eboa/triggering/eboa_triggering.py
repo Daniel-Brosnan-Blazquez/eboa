@@ -108,12 +108,14 @@ def execute_command(command):
     program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, error = program.communicate()
     return_code = program.returncode
+    error_message = ""
     if return_code != 0:
-        logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error)))
+        logger.error("The execution of the command {} has ended unexpectedly with the following error: {}".format(command, str(error.decode("UTF-8"))))
         exit_code = -1
+        error_message = str(error.decode("UTF-8"))
     # end if
     
-    return exit_code
+    return exit_code, error_message
 
 @debug
 def block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test):
@@ -142,8 +144,19 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
         logger.info("The following command is going to be triggered: {}".format(command))
         logger.info("The execution of the command {} will block triggerings depending on: {}".format(command, source_type))
 
-        exit_code = execute_command(command)
-        logger.info("The triggering of the file {} has been executed".format(file_name))
+        exit_code, error_message = execute_command(command)
+        if exit_code == 0:
+            logger.info("The triggering of the file {} has been executed".format(file_name))
+        else:
+            # Execution of triggering command failed
+            logger.error(eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_name, error_message))
+            query_log_status = Query()
+            sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+            if len(sources) > 0:
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_name, error_message))
+            # end if
+            query_log_status.close_session()
+        # end if
     
     else:
 
@@ -262,7 +275,19 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
 
             if output_path:
                 logger.info("The following command is going to be triggered: {}".format(command))
-                exit_code = execute_command(command)
+                exit_code, error_message = execute_command(command)
+                if exit_code == 0:
+                    logger.info("The triggering of the file {} has been executed".format(file_name))
+                else:
+                    # Execution of triggering command failed
+                    logger.error(eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
+                    query_log_status = Query()
+                    sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+                    if len(sources) > 0:
+                        eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
+                    # end if
+                    query_log_status.close_session()
+                # end if
             else:
                 exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
             # end if
