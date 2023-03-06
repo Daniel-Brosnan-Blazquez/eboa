@@ -10,6 +10,9 @@ from dateutil import parser
 import datetime
 from lxml import etree, objectify
 
+# Import LeapSeconds
+from astropy.utils.iers import LeapSeconds
+
 ###########
 # Functions for controling the ingestion
 ###########
@@ -455,3 +458,51 @@ def get_eboa_timeline_duration(timeline):
     """
 
     return sum([(event.stop - event.start).total_seconds() for event in timeline])
+
+###########
+# Functions for managing dates
+###########
+def get_leap_seconds():
+    """
+    Method to obtain a dictionary with the leap seconds
+
+    :return: list with the dates when the leap seconds where applied
+    :rtype: list
+
+    """
+
+    epoch = "1980-01-01T00:00:00"
+    
+    leap_seconds_list = []
+    leap_seconds = LeapSeconds()
+
+    leap_seconds_table = leap_seconds.auto_open()
+    
+    for leap_seconds_row in leap_seconds_table:
+        year = leap_seconds_row[0]
+        month = leap_seconds_row[1]
+        date = datetime.datetime(year=year, month=month, day=1).isoformat()
+        if date > epoch:
+            leap_seconds_list.append(date)
+        # end if
+    # end for
+
+    return leap_seconds_list
+
+def get_number_of_leap_seconds(date):
+    """
+    Method to obtain the number of leap seconds before a given date
+
+    :param date: date in ISO8601
+    :type date: str
+
+    :return: number of leap seconds
+    :rtype: int
+
+    """
+
+    leap_seconds_list = get_leap_seconds()
+
+    leap_seconds_before_date = [leap_second_date for leap_second_date in leap_seconds_list if leap_second_date < date]
+
+    return len(leap_seconds_before_date)
