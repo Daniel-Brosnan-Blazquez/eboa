@@ -916,18 +916,64 @@ class Engine():
         logger.debug("Deprecated data removed for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         n_events = 0
+        n_event_alerts = 0
         if "events" in self.operation:
-            n_events = len(self.operation.get("events"))
+            events = self.operation.get("events")
+            n_events = len(events)
+
+            # Get the alerts associated to the events
+            for event in events:
+                if "alerts" in event:
+                    event_alerts = [alert for alert in event.get("alerts")]
+                    n_event_alerts = n_event_alerts + len(event_alerts)
+                # end if
+            # end for
         # end if
 
         n_annotations = 0
+        n_annotation_alerts = 0
         if "annotations" in self.operation:
-            n_annotations = len(self.operation.get("annotations"))
+            annotations = self.operation.get("annotations")
+            n_annotations = len(annotations)
+
+            # Get the alerts associated to the annotations
+            for annotation in annotations:
+                if "alerts" in annotation:
+                    annotation_alerts = [alert for alert in annotation.get("alerts")]
+                    n_annotation_alerts = n_annotation_alerts + len(annotation_alerts)
+                # end if
+            # end for
         # end if
 
-        n_alerts = 0
+        n_explicit_references = 0
+        n_explicit_reference_alerts = 0
+        if "explicit_references" in self.operation:
+            explicit_references = self.operation.get("explicit_references")
+            n_explicit_references = len(explicit_references)
+
+            # Get the alerts associated to the explicit_references
+            for explicit_reference in explicit_references:
+                if "alerts" in explicit_reference:
+                    explicit_reference_alerts = [alert for alert in explicit_reference.get("alerts")]
+                    n_explicit_reference_alerts = n_explicit_reference_alerts + len(explicit_reference_alerts)
+                # end if
+            # end for
+        # end if
+
+        n_source_alerts = 0        
+        if "source" in self.operation:
+            source = self.operation.get("source")
+
+            # Get the alerts associated to the sources
+            if "alerts" in source:
+                source_alerts = [alert for alert in source.get("alerts")]
+                n_source_alerts = len(source_alerts)
+            # end if
+        # end if
+
+        n_alerts = n_event_alerts + n_annotation_alerts + n_explicit_reference_alerts + n_source_alerts
         if "alerts" in self.operation:
-            n_alerts = len(self.operation.get("alerts"))
+            n_alerts = n_alerts + len(self.operation.get("alerts"))
         # end if
 
         self._insert_ingestion_progress(100)
