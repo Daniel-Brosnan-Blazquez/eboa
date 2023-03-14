@@ -34,8 +34,16 @@ class Log():
     def __init__(self, name = None, log_name = "eboa_engine.log"):
         self.log_name = log_name
         self.define_logging_configuration(name)
+        self._add_new_level("DEBUGI", 15)
 
     def define_logging_configuration(self, name = None):
+        """
+        Method to define the logging configuration for a module
+        
+        :param name: name of the module
+        :type name: string
+        """
+        
         # Define logging configuration
         if name == None:
             name = __name__
@@ -83,3 +91,31 @@ class Log():
         # end if
 
         return
+
+    def _add_new_level(self, name, level):
+        """
+        Method to add a new log level
+        This method was inspired by this thread in Stack Overflow:
+        https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility/35804945#35804945
+        
+        :param name: name of the level
+        :type name: string
+        :param level: numeric representation of level
+        :type level: int
+        """
+
+        # Add new level name
+        logging.addLevelName(level, name)
+
+        # These instructions were inspired by the answers to Stack Overflow post
+        # http://stackoverflow.com/q/2183233/2988730, especially
+        # http://stackoverflow.com/a/13638084/2988730
+        def log_for_level(self, message, *args, **kwargs):
+            if self.isEnabledFor(level):
+                self._log(level, message, args, **kwargs)
+        
+        # Add new method associated to the new level name
+        setattr(logging, name, level)
+        setattr(logging.getLoggerClass(), name.lower(), log_for_level)
+
+        
