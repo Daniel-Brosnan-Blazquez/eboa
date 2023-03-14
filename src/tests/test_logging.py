@@ -416,7 +416,6 @@ class TestLogging(unittest.TestCase):
         # Deleting the environment variables for setting the logging
         # level of the configuration and remove the streaming of logs
         del os.environ["EBOA_LOG_LEVEL"]
-        del os.environ["EBOA_STREAM_LOG"]
 
         logging_module.define_logging_configuration(name = "eboa" + __name__)
 

@@ -33,8 +33,8 @@ class Log():
 
     def __init__(self, name = None, log_name = "eboa_engine.log"):
         self.log_name = log_name
-        self.define_logging_configuration(name)
         self._add_new_level("DEBUGI", 15)
+        self.define_logging_configuration(name)
 
     def define_logging_configuration(self, name = None):
         """
