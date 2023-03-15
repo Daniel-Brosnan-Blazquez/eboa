@@ -1536,3 +1536,223 @@ class TestExport(unittest.TestCase):
             "explicit_references": {
             }
         }
+
+
+    def test_export_event_alerts(self):
+        """
+        Method to test the export_alerts function with no optional arguments
+        """
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.xml",
+                       "reception_time": "2018-01-01T00:00:00",
+                       "generation_time": "2018-01-01T00:00:00",
+                       "validity_start": "2018-01-01T00:00:00",
+                       "validity_stop": "2018-01-02T00:00:00",
+                       "priority": 30},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-01-01T04:00:00",
+                "stop": "2018-01-01T05:00:00",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
+
+        event_alerts = self.query_eboa.get_event_alerts()
+
+        assert len(event_alerts) == 1
+
+        structure = {}
+        export.export_alerts(structure, event_alerts)
+
+        assert structure == {
+            "event_alerts": {
+                str(event_alerts[0].get_uuid()): {
+                    "event_alert_uuid": str(event_alerts[0].get_uuid()),
+                    "message": "Alert message",
+                    "validated": "",
+                    "ingestion_time": event_alerts[0].ingestion_time.isoformat(),
+                    "generator": "test",
+                    "notified": "",
+                    "solved": "",
+                    "solved_time": "",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "justification": "",
+                    "definition": {
+                        "alert_uuid": str(event_alerts[0].alertDefinition.alert_uuid),
+                        "name": "alert_name1",
+                        "severity": 4,
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    },
+                    "event_uuid": str(events[0].event_uuid)}
+            },
+            "event_alerts_groups": {
+                "alert_group": [str(event_alerts[0].get_uuid())]
+            }
+        }
+
+    def test_export_events_including_alerts(self):
+        """
+        Method to test the export_events function including alerts
+        """
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.xml",
+                       "reception_time": "2018-01-01T00:00:00",
+                       "generation_time": "2018-01-01T00:00:00",
+                       "validity_start": "2018-01-01T00:00:00",
+                       "validity_stop": "2018-01-02T00:00:00",
+                       "priority": 30},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-01-01T04:00:00",
+                "stop": "2018-01-01T05:00:00",
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    }}]
+            }]
+        }]}
+
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
+
+        event_alerts = self.query_eboa.get_event_alerts()
+
+        assert len(event_alerts) == 1
+
+        structure = {}
+        export.export_events(structure, events, include_alerts = True)
+
+        assert structure == {
+            "events": {
+                str(events[0].event_uuid): {
+                    "event_uuid": str(events[0].event_uuid),
+                    "start": "2018-01-01T04:00:00",
+                    "stop": "2018-01-01T05:00:00",
+                    "duration": 3600.0,
+                    "ingestion_time": events[0].ingestion_time.isoformat(),
+                    "gauge": {
+                        "gauge_uuid": str(events[0].gauge.gauge_uuid),
+                        "system": "GAUGE_SYSTEM",
+                        "name": "GAUGE_NAME",
+                        "dim_signature": "dim_signature",
+                        "description": ""},
+                    "source": {
+                        "source_uuid": str(events[0].source.source_uuid),
+                        "name": "source1.xml"},
+                    "links_to_me": [],
+                    "alerts": [str(event_alerts[0].get_uuid())],
+                    "indexed_values": {},
+                    "values": []
+                }
+            },
+            "gauges": {
+                "GAUGE_NAME": {
+                    "GAUGE_SYSTEM": [str(events[0].event_uuid)]
+                }
+            },
+            "event_alerts": {
+                str(event_alerts[0].get_uuid()): {
+                    "event_alert_uuid": str(event_alerts[0].get_uuid()),
+                    "message": "Alert message",
+                    "validated": "",
+                    "ingestion_time": event_alerts[0].ingestion_time.isoformat(),
+                    "generator": "test",
+                    "notified": "",
+                    "solved": "",
+                    "solved_time": "",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "justification": "",
+                    "definition": {
+                        "alert_uuid": str(event_alerts[0].alertDefinition.alert_uuid),
+                        "name": "alert_name1",
+                        "severity": 4,
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    },
+                    "event_uuid": str(events[0].event_uuid)}
+            },
+            "event_alerts_groups": {
+                "alert_group": [str(event_alerts[0].get_uuid())]
+            }
+        }
+
+        {"events": {"3c67a40a-c313-11ed-b0b8-000000000463": {"event_uuid": "3c67a40a-c313-11ed-b0b8-000000000463",
+"start": "2018-01-01T04:00:00",
+"stop": "2018-01-01T05:00:00",
+"duration": 3600.0, "ingestion_time": "2023-03-15T09:24:50.362475",
+"gauge": {"gauge_uuid": "3c59feba-c313-11ed-bea6-000000000463",
+"system": "GAUGE_SYSTEM",
+"name": "GAUGE_NAME",
+"dim_signature": "dim_signature",
+"description": ""},
+"source": {"source_uuid": "3c500992-c313-11ed-92ef-000000000463",
+"name": "source1.xml"},
+"links_to_me": [], "alerts": ["3c6a9102-c313-11ed-9d63-000000000463"], "indexed_values": {},
+"values": [], "explicit_reference": {"uuid": "3c606f22-c313-11ed-a9ed-000000000463",
+"name": "EXPLICIT_REFERENCE"}}},
+"gauges": {"GAUGE_NAME": {"GAUGE_SYSTEM": ["3c67a40a-c313-11ed-b0b8-000000000463"]}},
+"explicit_references": {"3c606f22-c313-11ed-a9ed-000000000463": {"explicit_ref_uuid": "3c606f22-c313-11ed-a9ed-000000000463",
+"ingestion_time": "2023-03-15T09:24:50.310150",
+"explicit_ref": "EXPLICIT_REFERENCE",
+"alerts": [], "annotations": {}}},
+"annotations": {},
+"event_alerts": {"3c6a9102-c313-11ed-9d63-000000000463": {"event_alert_uuid": "3c6a9102-c313-11ed-9d63-000000000463",
+"message": "Alert message",
+"validated": "",
+"ingestion_time": "2023-03-15T09:24:50.376561",
+"generator": "test",
+"notified": "",
+"solved": "",
+"solved_time": "",
+"notification_time": "2018-06-05T08:07:36",
+"justification": "",
+"definition": {"alert_uuid": "3c698378-c313-11ed-aed3-000000000463",
+"name": "alert_name1",
+"severity": 4, "description": "Alert description",
+"group": "alert_group"},
+"event_uuid": "3c67a40a-c313-11ed-b0b8-000000000463"}},
+"event_alerts_groups": {"alert_group": ["3c6a9102-c313-11ed-9d63-000000000463"]}}

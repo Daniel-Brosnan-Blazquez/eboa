@@ -111,6 +111,16 @@ class EventAlert(Base):
         }
 
         return structure
+
+    def get_uuid(self):
+        """
+        Method to obtain the UUID of the alert
+
+        :return: UUID of the alert
+        :rtype: str
+        """
+
+        return str(self.event_alert_uuid)
     
 class AnnotationAlert(Base):
     __tablename__ = 'annotation_alerts'
@@ -167,6 +177,16 @@ class AnnotationAlert(Base):
 
         return structure
 
+    def get_uuid(self):
+        """
+        Method to obtain the UUID of the alert
+
+        :return: UUID of the alert
+        :rtype: str
+        """
+
+        return str(self.annotation_alert_uuid)
+
 class SourceAlert(Base):
     __tablename__ = 'source_alerts'
 
@@ -222,6 +242,16 @@ class SourceAlert(Base):
 
         return structure
 
+    def get_uuid(self):
+        """
+        Method to obtain the UUID of the alert
+
+        :return: UUID of the alert
+        :rtype: str
+        """
+
+        return str(self.source_alert_uuid)
+
 class ExplicitRefAlert(Base):
     __tablename__ = 'explicit_ref_alerts'
 
@@ -276,3 +306,13 @@ class ExplicitRefAlert(Base):
         }
 
         return structure
+
+    def get_uuid(self):
+        """
+        Method to obtain the UUID of the alert
+
+        :return: UUID of the alert
+        :rtype: str
+        """
+
+        return str(self.explicit_ref_alert_uuid)
