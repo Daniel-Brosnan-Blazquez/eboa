@@ -147,7 +147,7 @@ def start_scheduler():
     logger.info("BOA scheduler started...")
     while True:
         time.sleep(1)
-        logger.info("BOA scheduler is going to review tasks for triggerig")
+        logger.info("BOA scheduler is going to review tasks for triggering")
         query_and_execute_tasks(logger)    
     # end while
 

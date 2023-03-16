@@ -100,6 +100,30 @@ def get_ephemeris(satellite_orbit, time):
 
     return satellite_orbit.sgp4(jd, fr)
 
+def get_orbit_duration(tle_string):
+    """
+    Method to obtain the orbit duration from a tle
+
+    :param tle_string: TLE of the satellite with the following format:
+    SATELLITE-INDICATOR
+    1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN
+    2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN
+    :type tle_string: str
+
+    :return: orbit duration in minutes
+    :rtype: float
+    """
+    
+    first_line, second_line = verify_tle(tle_string)
+
+    # Obtain mean motion from TLE
+    mean_motion = float(second_line[52:63])
+
+    # Obtain orbit duration from mean motion
+    orbit_duration = (24*60) / mean_motion
+
+    return orbit_duration    
+
 def get_semimajor(tle_string):
     """
     Method to obtain the semimajor from a tle
@@ -135,7 +159,7 @@ def get_semimajor(tle_string):
 ###########
 def satellite_positions_to_fixed(inertial_satellite_positions, epochs):
     '''
-    Function to transform satellite positions in the Earth inertial frame to the Earth fixed frame
+    Function to transform satellite positions in the Earth inertial frame (TEME) to the Earth fixed frame
 
     :param inertial_satellite_positions: list of satellite positions with the format [x1, y1, z1, ..., xn, yn, zn]
     :type inertial_satellite_positions: list

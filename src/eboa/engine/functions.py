@@ -219,7 +219,7 @@ def is_valid_value_filters(value_filters):
             raise InputError("Every value_filter should be a dictionary with maximum 3 keys (received keys: {}).".format(value_filter.keys()))
         # end if
         if len(value_filter.keys()) == 3 and (not "name" in value_filter.keys() or not "type" in value_filter.keys() or not "value" in value_filter.keys()):
-            raise InputError("Every value_filter should be a dictionary with keys name, type and, if three specified, and value (received keys: {}).".format(value_filter.keys()))
+            raise InputError("Every value_filter should be a dictionary with keys name, type and, if three specified, value (received keys: {}).".format(value_filter.keys()))
         # end if
         if len(value_filter.keys()) == 2 and (not "name" in value_filter.keys() or not "type" in value_filter.keys()):
             raise InputError("Every value_filter should be a dictionary with at least keys name and type (received keys: {}).".format(value_filter.keys()))
@@ -228,11 +228,19 @@ def is_valid_value_filters(value_filters):
         is_valid_text_filter(value_filter["name"])
         if type(value_filter["type"]) != str:
             raise InputError("The specified name must be a string (received type: {}).".format(value_filter["type"]))
+        # end if
         if not value_filter["type"] in ["text", "timestamp", "boolean", "double", "geometry", "object"]:
             raise InputError("The specified type is not in the list of allowed types: 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object' (received type: {}).".format(value_filter["type"]))
         # end if
         if "value" in value_filter and value_filter["type"] != "object":
             is_valid_text_filter(value_filter["value"])
+            if value_filter["type"] == "double":
+                try:
+                    float(value_filter["value"]["filter"])
+                except (ValueError, TypeError):
+                    raise InputError("The value for the filter with type double has to be convertible to float. Received value {} of filter {} is not convertible to float".format(value_filter["value"]["filter"], value_filter))
+                # end try
+            # end if
         elif "value" in value_filter and value_filter["type"] == "object":
             raise InputError("The object value has no possibility of filtering by value")
         # end if
