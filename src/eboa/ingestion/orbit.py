@@ -89,7 +89,7 @@ def get_ephemeris(satellite_orbit, time):
     :param time: time of interest in ISO 8601 format
     :type time: str
 
-    :return: (error, position, velocity) tuple corresponding to the ephemeris of the satellite
+    :return: (error, position, velocity) tuple corresponding to the ephemeris of the satellite in TEME system reference frame
     :rtype: tuple
     '''
     
