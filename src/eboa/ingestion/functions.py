@@ -506,3 +506,29 @@ def get_number_of_leap_seconds(date):
     leap_seconds_before_date = [leap_second_date for leap_second_date in leap_seconds_list if leap_second_date < date]
 
     return len(leap_seconds_before_date)
+
+def date_inside_range(date1, date2, margin):
+    """
+    Method to check if date1 is inside range [date2 - margin, date2 + margin]
+
+    :param date1: date to check if it is inside range [date2 - margin, date2 + margin]
+    :type date1: datetime
+    :param date2: date to define the range [date2 - margin, date2 + margin]
+    :type date2: datetime
+    :param margin: margin in seconds to define the range [date2 - margin, date2 + margin]
+    :type margin: float
+
+    :return: True if date1 is in range [date2 - margin, date2 + margin], False otherwise
+    :rtype: bool
+
+    """
+
+    period_start = date2 - datetime.timedelta(seconds=margin)
+    period_stop = date2 + datetime.timedelta(seconds=margin)
+
+    date_inside_period = False
+    if date1 >= period_start and date1 <= period_stop:
+        date_inside_period = True
+    # end if
+    
+    return date_inside_period

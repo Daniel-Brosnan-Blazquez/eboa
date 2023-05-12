@@ -431,9 +431,11 @@ def export_alerts(structure, alerts, group = None):
             structure[alert_type + "_groups"][alert_group] = []
         # end if
 
-        structure[alert_type + "_groups"][alert_group].append(alert.get_uuid())
+        if alert.get_uuid() not in structure[alert_type + "_groups"][alert_group]:
+            structure[alert_type + "_groups"][alert_group].append(alert.get_uuid())
+        # end if
 
-        # Insert the structure of the event
+        # Insert the structure of the alert
         if alert.get_uuid() not in structure[alert_type]:
             structure[alert_type][alert.get_uuid()] = alert.jsonify()
         # end if
