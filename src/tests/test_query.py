@@ -3092,6 +3092,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 4
 
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["event_alert_uuids"] = {"filter": [event_alert.event_alert_uuid for event_alert in self.query.get_event_alerts()], "op": "in"}
         kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
         kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
@@ -3116,6 +3117,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 1
 
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["event_alert_uuids"] = {"filter": [event_alert.event_alert_uuid for event_alert in self.query.get_event_alerts()], "op": "in"}
         kwargs["event_uuids"] = {"filter": [event.event_uuid for event in self.query.get_events()], "op": "in"}
         kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
@@ -3228,6 +3230,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 2
 
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["annotation_alert_uuids"] = {"filter": [annotation_alert.annotation_alert_uuid for annotation_alert in self.query.get_annotation_alerts()], "op": "in"}
         kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
         kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
@@ -3249,6 +3252,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 1
 
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["annotation_alert_uuids"] = {"filter": [annotation_alert.annotation_alert_uuid for annotation_alert in self.query.get_annotation_alerts()], "op": "in"}
         kwargs["annotation_uuids"] = {"filter": [annotation.annotation_uuid for annotation in self.query.get_annotations()], "op": "in"}
         kwargs["source_uuids"] = {"filter": [source.source_uuid for source in self.query.get_sources()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
@@ -3368,6 +3372,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 4
 
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["explicit_ref_alert_uuids"] = {"filter": [explicit_ref_alert.explicit_ref_alert_uuid for explicit_ref_alert in self.query.get_explicit_ref_alerts()], "op": "in"}
         kwargs["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
         kwargs["explicit_refs"] = {"filter": "ER2", "op": "=="}
@@ -3401,6 +3406,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 1
         
         kwargs = {"sources": {"filter": "source.json", "op": "=="}}
+        kwargs["explicit_ref_alert_uuids"] = {"filter": [explicit_ref_alert.explicit_ref_alert_uuid for explicit_ref_alert in self.query.get_explicit_ref_alerts()], "op": "in"}
         kwargs["explicit_ref_group_ids"] = {"filter": [expl_group.expl_ref_cnf_uuid for expl_group in self.query.get_explicit_refs_groups()], "op": "in"}
         kwargs["explicit_ref_uuids"] = {"filter": [explicit_ref.explicit_ref_uuid for explicit_ref in self.query.get_explicit_refs()], "op": "in"}
         kwargs["explicit_refs"] = {"filter": "ER2", "op": "=="}
@@ -3533,6 +3539,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 3
 
         kwargs = {"report_names": {"filter": "report.html", "op": "=="}}
+        kwargs["report_alert_uuids"] = {"filter": [report_alert.report_alert_uuid for report_alert in self.query.get_report_alerts()], "op": "in"}
         kwargs["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
         kwargs["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
         kwargs["generation_modes"] = {"filter": "MANUAL", "op": "=="}
@@ -3561,6 +3568,7 @@ class TestQuery(unittest.TestCase):
         assert len(alerts) == 1
 
         kwargs = {"report_names": {"filter": "report.html", "op": "=="}}
+        kwargs["report_alert_uuids"] = {"filter": [report_alert.report_alert_uuid for report_alert in self.query.get_report_alerts()], "op": "in"}
         kwargs["report_uuids"] = {"filter": [report.report_uuid for report in self.query.get_reports()], "op": "in"}
         kwargs["report_group_uuids"] = {"filter": [report.report_group_uuid for report in self.query.get_reports()], "op": "in"}
         kwargs["generation_modes"] = {"filter": "MANUAL", "op": "=="}

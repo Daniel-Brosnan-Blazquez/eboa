@@ -389,12 +389,12 @@ def export_alerts(structure, alerts, group = None):
     structure = {
     "<alerts_type>_alerts_groups": {
     group: [<alerts_type>_alert_uuid1, <alerts_type>_alert_uuid2, ..., <alerts_type>_alert_uuidn]
+    },
     "<alerts_type>_alerts": {
     "<alerts_type>_alert_uuid1": structure of <alerts_type>_alert with <alerts_type>_alert_uuid1,
     "<alerts_type>_alert_uuid2": structure of <alerts_type>_alert with <alerts_type>_alert_uuid1,
     ...,
     "<alerts_type>_alert_uuidn": structure of <alerts_type>_alert with <alerts_type>_alert_uuidn
-    }
     }
     }
 

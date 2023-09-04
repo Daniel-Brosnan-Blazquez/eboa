@@ -562,10 +562,12 @@ class Query():
 
         return sources
 
-    def get_source_alerts(self, source_uuids = None, dim_signature_uuids = None, source_names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reported_validity_start_filters = None, reported_validity_stop_filters = None, reported_validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, reported_generation_time_filters = None, source_ingestion_time_filters = None, processing_duration_filters = None, ingestion_duration_filters = None, ingestion_completeness = None, ingested = None, ingestion_error = None, processors = None, processor_version_filters = None, dim_signatures = None, statuses = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = False):
+    def get_source_alerts(self, source_alert_uuids = None, source_uuids = None, dim_signature_uuids = None, source_names = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, reported_validity_start_filters = None, reported_validity_stop_filters = None, reported_validity_duration_filters = None, reception_time_filters = None, generation_time_filters = None, reported_generation_time_filters = None, source_ingestion_time_filters = None, processing_duration_filters = None, ingestion_duration_filters = None, ingestion_completeness = None, ingested = None, ingestion_error = None, processors = None, processor_version_filters = None, dim_signatures = None, statuses = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = False):
         """
         Method to obtain the alerts associated to source entities filtered by the received filters
 
+        :param source_alert_uuids: list of source alert identifiers
+        :type source_alert_uuids: text_filter
         :param source_uuids: list of source identifiers
         :type source_uuids: text_filter
         :param dim_signature_uuids: list DIM signature identifiers
@@ -648,6 +650,18 @@ class Query():
         params = []
         join_tables = False
         tables = {}
+
+        # source_alert_uuids
+        if source_alert_uuids != None:
+            functions.is_valid_text_filter(source_alert_uuids)
+            if source_alert_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[source_alert_uuids["op"]]
+                params.append(op(SourceAlert.source_alert_uuid, source_alert_uuids["filter"]))
+            else:
+                filter = eval('SourceAlert.source_alert_uuid.' + text_operators[source_alert_uuids["op"]])
+                params.append(filter(source_alert_uuids["filter"]))
+            # end if
+        # end if
 
         # Source UUIDs
         if source_uuids != None:
@@ -1334,7 +1348,7 @@ class Query():
 
         return reports
 
-    def get_report_alerts(self, report_uuids = None, report_group_uuids = None, report_names = None, generation_modes = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, triggering_time_filters = None, generation_start_filters = None, generation_stop_filters = None, generated = None, compressed = None, generation_error = None, report_generators_filters = None, generator_version_filters = None, statuses = None, report_groups = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
+    def get_report_alerts(self, report_alert_uuids = None, report_uuids = None, report_group_uuids = None, report_names = None, generation_modes = None, validity_start_filters = None, validity_stop_filters = None, validity_duration_filters = None, triggering_time_filters = None, generation_start_filters = None, generation_stop_filters = None, generated = None, compressed = None, generation_error = None, report_generators_filters = None, generator_version_filters = None, statuses = None, report_groups = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
         """
         Method to obtain the alerts associated to report entities filtered by the received filters
 
@@ -1347,6 +1361,18 @@ class Query():
         params = []
         join_tables = False
         tables = {}
+
+        # report_alert_uuids
+        if report_alert_uuids != None:
+            functions.is_valid_text_filter(report_alert_uuids)
+            if report_alert_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[report_alert_uuids["op"]]
+                params.append(op(ReportAlert.report_alert_uuid, report_alert_uuids["filter"]))
+            else:
+                filter = eval('ReportAlert.report_alert_uuid.' + text_operators[report_alert_uuids["op"]])
+                params.append(filter(report_alert_uuids["filter"]))
+            # end if
+        # end if
 
         # Report UUIDs
         if report_uuids != None:
@@ -2123,7 +2149,7 @@ class Query():
 
         return events
 
-    def get_event_alerts(self, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
+    def get_event_alerts(self, event_alert_uuids = None, event_uuids = None, source_uuids = None, explicit_ref_uuids = None, gauge_uuids = None, sources = None, explicit_refs = None, gauge_names = None, gauge_systems = None, keys = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
         """
         Method to obtain the alerts associated to event entities filtered by the received filters
 
@@ -2137,6 +2163,18 @@ class Query():
         params = []
         join_tables = False
         tables = {}
+
+        # event_alert_uuids
+        if event_alert_uuids != None:
+            functions.is_valid_text_filter(event_alert_uuids)
+            if event_alert_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[event_alert_uuids["op"]]
+                params.append(op(EventAlert.event_alert_uuid, event_alert_uuids["filter"]))
+            else:
+                filter = eval('EventAlert.event_alert_uuid.' + text_operators[event_alert_uuids["op"]])
+                params.append(filter(event_alert_uuids["filter"]))
+            # end if
+        # end if
 
         # event_uuids
         if event_uuids != None:
@@ -3016,7 +3054,7 @@ class Query():
 
         return annotations
 
-    def get_annotation_alerts(self, annotation_uuids = None, source_uuids = None, explicit_ref_uuids = None, annotation_cnf_uuids = None, annotation_ingestion_time_filters = None, sources = None, explicit_refs = None, annotation_cnf_names = None, annotation_cnf_systems = None, value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
+    def get_annotation_alerts(self, annotation_alert_uuids = None, annotation_uuids = None, source_uuids = None, explicit_ref_uuids = None, annotation_cnf_uuids = None, annotation_ingestion_time_filters = None, sources = None, explicit_refs = None, annotation_cnf_names = None, annotation_cnf_systems = None, value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
         """
         Method to obtain the alerts associated to annotation entities filtered by the received filters
 
@@ -3029,6 +3067,18 @@ class Query():
         params = []
         join_tables = False
         tables = {}
+
+        # annotation_alert_uuids
+        if annotation_alert_uuids != None:
+            functions.is_valid_text_filter(annotation_alert_uuids)
+            if annotation_alert_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[annotation_alert_uuids["op"]]
+                params.append(op(AnnotationAlert.annotation_alert_uuid, annotation_alert_uuids["filter"]))
+            else:
+                filter = eval('AnnotationAlert.annotation_alert_uuid.' + text_operators[annotation_alert_uuids["op"]])
+                params.append(filter(annotation_alert_uuids["filter"]))
+            # end if
+        # end if
 
         # annotation_uuids
         if annotation_uuids != None:
@@ -3659,7 +3709,7 @@ class Query():
 
         return explicit_refs
 
-    def get_explicit_ref_alerts(self, explicit_ref_uuids = None, explicit_ref_group_ids = None, explicit_refs = None, explicit_ref_groups = None, explicit_ref_ingestion_time_filters = None, event_uuids = None, source_uuids = None, sources = None, gauge_uuids = None, gauge_names = None, gauge_systems = None, keys = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, annotation_uuids = None, annotation_cnf_uuids = None, annotation_ingestion_time_filters = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
+    def get_explicit_ref_alerts(self, explicit_ref_alert_uuids = None, explicit_ref_uuids = None, explicit_ref_group_ids = None, explicit_refs = None, explicit_ref_groups = None, explicit_ref_ingestion_time_filters = None, event_uuids = None, source_uuids = None, sources = None, gauge_uuids = None, gauge_names = None, gauge_systems = None, keys = None, start_filters = None, stop_filters = None, duration_filters = None, event_ingestion_time_filters = None, event_value_filters = None, annotation_uuids = None, annotation_cnf_uuids = None, annotation_ingestion_time_filters = None, annotation_cnf_names = None, annotation_cnf_systems = None, annotation_value_filters = None, names = None, severities = None, groups = None, alert_uuids = None, validated = None, alert_ingestion_time_filters = None, generators = None, notified = None, solved = None, solved_time_filters = None, notification_time_filters = None, order_by = None, limit = None, offset = None, delete = None):
         """
         Method to obtain the alerts associated to explicit reference entities filtered by the received filters
 
@@ -3672,6 +3722,18 @@ class Query():
         params = []
         join_tables = False
         tables = {}
+
+        # explicit_ref_alert_uuids
+        if explicit_ref_alert_uuids != None:
+            functions.is_valid_text_filter(explicit_ref_alert_uuids)
+            if explicit_ref_alert_uuids["op"] in arithmetic_operators.keys():
+                op = arithmetic_operators[explicit_ref_alert_uuids["op"]]
+                params.append(op(ExplicitRefAlert.explicit_ref_alert_uuid, explicit_ref_alert_uuids["filter"]))
+            else:
+                filter = eval('ExplicitRefAlert.explicit_ref_alert_uuid.' + text_operators[explicit_ref_alert_uuids["op"]])
+                params.append(filter(explicit_ref_alert_uuids["filter"]))
+            # end if
+        # end if
 
         # explicit_ref_uuids
         if explicit_ref_uuids != None:
