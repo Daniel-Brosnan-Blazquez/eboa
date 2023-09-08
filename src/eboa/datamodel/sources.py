@@ -62,14 +62,27 @@ class Source(Base):
         self.ingestion_completeness = ingestion_completeness
         self.ingestion_completeness_message = ingestion_completeness_message
 
-    def jsonify(self):
-        return {
+    def jsonify(self, include_source_statuses = False):
+        """
+        Method to obtain the structure of the source in a python dictionary format
+
+        :param include_source_statuses: flag to indicate to include the statuses associated to the source
+        :type include_source_statuses: boolean
+
+        :return: structure of the source
+        :rtype: dict
+        """
+
+        structure = {
             "source_uuid": str(self.source_uuid),
             "name": self.name,
             "validity_start": self.validity_start.isoformat(),
             "validity_stop": self.validity_stop.isoformat(),
+            "reported_validity_start": self.reported_validity_start.isoformat(),
+            "reported_validity_stop": self.reported_validity_stop.isoformat(),
             "reception_time": self.generation_time.isoformat(),
             "generation_time": self.generation_time.isoformat(),
+            "reported_generation_time": self.reported_generation_time.isoformat(),
             "ingested": self.ingested,
             "ingestion_error": self.ingestion_error,
             "ingestion_time": self.ingestion_time.isoformat(),
@@ -77,10 +90,22 @@ class Source(Base):
             "processing_duration": str(self.processing_duration),
             "processor": self.processor,
             "processor_version": self.processor_version,
+            "ingestion_completeness": self.ingestion_completeness,
+            "ingestion_completeness_message": self.ingestion_completeness_message,
+            "priority": self.priority,
             "dim_signature": str(self.dimSignature.dim_signature),
-            "dim_signature_uuid": str(self.dim_signature_uuid),
-            "alerts": [alert.jsonify() for alert in self.alerts]
+            "number_of_events": len(self.events),
+            "number_of_annotations": len(self.annotations)
         }
+        
+        if include_source_statuses:
+            structure["statuses"] = []
+            for status in self.statuses:
+                structure["statuses"].append(status.jsonify())
+            # end for
+        # end if
+
+        return structure
 
     def get_ingestion_progress(self):
 

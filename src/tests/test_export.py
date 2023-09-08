@@ -347,7 +347,7 @@ class TestExport(unittest.TestCase):
         assert len(events) == 1
 
         structure = {}
-        export.export_events(structure, events)
+        export.export_events(structure, events, include_sources = False)
 
         assert structure == {
             "events": {
@@ -445,25 +445,6 @@ class TestExport(unittest.TestCase):
                                        "type": "timestamp",
                                        "value": "2018-07-12T00:00:00"}]},
                     "links_to_me": [],
-                    "alerts": [
-                        {"event_alert_uuid": str(events[0].alerts[0].event_alert_uuid),
-                         "message": "Alert message",
-                         "validated": "",
-                         "ingestion_time": events[0].alerts[0].ingestion_time.isoformat(),
-                         "generator": "test",
-                         "notified": "",
-                         "solved": "",
-                         "solved_time": "",
-                         "notification_time": events[0].alerts[0].notification_time.isoformat(),
-                         "justification": "",
-                         "definition": {"alert_uuid": str(events[0].alerts[0].alertDefinition.alert_uuid),
-                                        "name": "alert_name1",
-                                        "severity": 4,
-                                        "description": "Alert description",
-                                        "group": "alert_group"},
-                         "event_uuid": str(events[0].event_uuid)
-                         }
-                    ],
                     "explicit_reference": {"uuid": str(events[0].explicitRef.explicit_ref_uuid),
                                            "name": "EXPLICIT_REFERENCE"}
                 }
@@ -473,7 +454,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(events[0].explicitRef.explicit_ref_uuid),
                     "ingestion_time": events[0].explicitRef.ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {
                         "ANNOTATION_CNF": [{
                             "annotation_uuid": str(events[0].explicitRef.annotations[0].annotation_uuid),
@@ -496,22 +476,6 @@ class TestExport(unittest.TestCase):
                                       "description": ""},
                     "source": {"source_uuid": str(events[0].explicitRef.annotations[0].source.source_uuid),
                                "name": "source1.xml"},
-                    "alerts": [{"annotation_alert_uuid": str(events[0].explicitRef.annotations[0].alerts[0].annotation_alert_uuid),
-                                "message": "Alert message",
-                                "validated": "",
-                                "ingestion_time": events[0].explicitRef.annotations[0].alerts[0].ingestion_time.isoformat(),
-                                "generator": "test",
-                                "notified": "",
-                                "solved": "",
-                                "solved_time": "",
-                                "notification_time": events[0].explicitRef.annotations[0].alerts[0].notification_time.isoformat(),
-                                "justification": "",
-                                "definition": {"alert_uuid": str(events[0].explicitRef.annotations[0].alerts[0].alertDefinition.alert_uuid),
-                                               "name": "alert_name1",
-                                               "severity": 4,
-                                               "description": "Alert description",
-                                               "group": "alert_group"},
-                                "annotation_uuid": str(events[0].explicitRef.annotations[0].annotation_uuid)}],
                     "indexed_values": {"TEXT": [{"name": "TEXT",
                                                  "type": "text",
                                                  "value": "TEXT"}],
@@ -665,7 +629,7 @@ class TestExport(unittest.TestCase):
         assert len(events) == 2
         
         structure = {}
-        export.export_events(structure, events, group = "event_group")
+        export.export_events(structure, events, group = "event_group", include_sources = False)
 
         assert structure == {
             "event_groups": {
@@ -689,7 +653,6 @@ class TestExport(unittest.TestCase):
                     "indexed_values": {},
                     "links_to_me": [{"event_uuid_link": str(events[1].event_uuid),
                                      "name": "EVENT_LINK_BACK_REF"}],
-                    "alerts": [],
                     "explicit_reference": {"uuid": str(events[0].explicitRef.explicit_ref_uuid),
                                            "name": "EXPLICIT_REFERENCE"}},
                 str(events[1].event_uuid): {
@@ -709,7 +672,6 @@ class TestExport(unittest.TestCase):
                     "indexed_values": {},
                     "links_to_me": [{"event_uuid_link": str(events[0].event_uuid),
                                      "name": "EVENT_LINK"}],
-                    "alerts": [],
                     "explicit_reference": {"uuid": str(events[1].explicitRef.explicit_ref_uuid),
                                            "name": "EXPLICIT_REFERENCE"}}
             },
@@ -718,7 +680,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(events[0].explicitRef.explicit_ref_uuid),
                     "ingestion_time": events[0].explicitRef.ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {}
                 }
             },
@@ -761,7 +722,7 @@ class TestExport(unittest.TestCase):
         assert len(events) == 1
         
         structure = {}
-        export.export_events(structure, events, group = "event_group")
+        export.export_events(structure, events, group = "event_group", include_sources = False)
 
         assert structure == {
             "event_groups": {
@@ -784,7 +745,6 @@ class TestExport(unittest.TestCase):
                     "values": [],
                     "indexed_values": {},
                     "links_to_me": [],
-                    "alerts": [],
                     "explicit_reference": {"uuid": str(events[0].explicitRef.explicit_ref_uuid),
                                            "name": "EXPLICIT_REFERENCE"}}},
             "explicit_references": {
@@ -792,7 +752,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(events[0].explicitRef.explicit_ref_uuid),
                     "ingestion_time": events[0].explicitRef.ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {}
                 }
             },
@@ -834,7 +793,7 @@ class TestExport(unittest.TestCase):
         assert len(events) == 1
         
         structure = {}
-        export.export_events(structure, events, include_ers = False)
+        export.export_events(structure, events, include_ers = False, include_sources = False)
 
         assert structure == {
             "events": {
@@ -854,7 +813,6 @@ class TestExport(unittest.TestCase):
                     "values": [],
                     "indexed_values": {},
                     "links_to_me": [],
-                    "alerts": [],
                 }
             },
             "gauges": {'GAUGE_NAME': {'GAUGE_SYSTEM': [str(events[0].event_uuid)]}}
@@ -959,16 +917,6 @@ class TestExport(unittest.TestCase):
                             ]
                             }
                            ],
-                "alerts": [{
-                    "message": "Alert message",
-                    "generator": "test",
-                    "notification_time": "2018-06-05T08:07:36",
-                    "alert_cnf": {
-                        "name": "alert_name1",
-                        "severity": "critical",
-                        "description": "Alert description",
-                        "group": "alert_group"
-                    }}]
             }]
         }]}
 
@@ -1077,25 +1025,6 @@ class TestExport(unittest.TestCase):
                         "TIMESTAMP": [{"name": "TIMESTAMP",
                                        "type": "timestamp",
                                        "value": "2018-07-12T00:00:00"}]},
-                    "alerts": [
-                        {"annotation_alert_uuid": str(annotations[0].alerts[0].annotation_alert_uuid),
-                         "message": "Alert message",
-                         "validated": "",
-                         "ingestion_time": annotations[0].alerts[0].ingestion_time.isoformat(),
-                         "generator": "test",
-                         "notified": "",
-                         "solved": "",
-                         "solved_time": "",
-                         "notification_time": annotations[0].alerts[0].notification_time.isoformat(),
-                         "justification": "",
-                         "definition": {"alert_uuid": str(annotations[0].alerts[0].alertDefinition.alert_uuid),
-                                        "name": "alert_name1",
-                                        "severity": 4,
-                                        "description": "Alert description",
-                                        "group": "alert_group"},
-                         "annotation_uuid": str(annotations[0].annotation_uuid)
-                         }
-                    ],
                     "explicit_reference": {"uuid": str(annotations[0].explicitRef.explicit_ref_uuid),
                                            "name": "EXPLICIT_REFERENCE"}
                 }
@@ -1105,7 +1034,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(annotations[0].explicitRef.explicit_ref_uuid),
                     "ingestion_time": annotations[0].explicitRef.ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {
                         "ANNOTATION_CNF": [{
                             "annotation_uuid": str(annotations[0].annotation_uuid),
@@ -1172,7 +1100,6 @@ class TestExport(unittest.TestCase):
                                "name": "source1.xml"},
                     "values": [],
                     "indexed_values": {},
-                    "alerts": [],
                 }
             },
             "explicit_references": {
@@ -1180,7 +1107,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(annotations[0].explicitRef.explicit_ref_uuid),
                     "ingestion_time": annotations[0].explicitRef.ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {
                         "ANNOTATION_CNF": [{
                             "annotation_uuid": str(annotations[0].annotation_uuid),
@@ -1247,7 +1173,6 @@ class TestExport(unittest.TestCase):
                                "name": "source1.xml"},
                     "values": [],
                     "indexed_values": {},
-                    "alerts": [],
                 }
             }
         }
@@ -1367,16 +1292,6 @@ class TestExport(unittest.TestCase):
                             ]
                             }
                            ],
-                "alerts": [{
-                    "message": "Alert message",
-                    "generator": "test",
-                    "notification_time": "2018-06-05T08:07:36",
-                    "alert_cnf": {
-                        "name": "alert_name1",
-                        "severity": "critical",
-                        "description": "Alert description",
-                        "group": "alert_group"
-                    }}]
             }]
         }]}
 
@@ -1397,7 +1312,6 @@ class TestExport(unittest.TestCase):
                     "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
                     "ingestion_time": ers[0].ingestion_time.isoformat(),
                     "explicit_ref": "EXPLICIT_REFERENCE",
-                    "alerts": [],
                     "annotations": {
                         "ANNOTATION_CNF": [{
                             "annotation_uuid": str(ers[0].annotations[0].annotation_uuid),
@@ -1420,22 +1334,6 @@ class TestExport(unittest.TestCase):
                                       "description": ""},
                     "source": {"source_uuid": str(ers[0].annotations[0].source.source_uuid),
                                "name": "source1.xml"},
-                    "alerts": [{"annotation_alert_uuid": str(ers[0].annotations[0].alerts[0].annotation_alert_uuid),
-                                "message": "Alert message",
-                                "validated": "",
-                                "ingestion_time": ers[0].annotations[0].alerts[0].ingestion_time.isoformat(),
-                                "generator": "test",
-                                "notified": "",
-                                "solved": "",
-                                "solved_time": "",
-                                "notification_time": ers[0].annotations[0].alerts[0].notification_time.isoformat(),
-                                "justification": "",
-                                "definition": {"alert_uuid": str(ers[0].annotations[0].alerts[0].alertDefinition.alert_uuid),
-                                               "name": "alert_name1",
-                                               "severity": 4,
-                                               "description": "Alert description",
-                                               "group": "alert_group"},
-                                "annotation_uuid": str(ers[0].annotations[0].annotation_uuid)}],
                     "indexed_values": {"TEXT": [{"name": "TEXT",
                                                  "type": "text",
                                                  "value": "TEXT"}],
@@ -1664,7 +1562,7 @@ class TestExport(unittest.TestCase):
         assert len(event_alerts) == 1
 
         structure = {}
-        export.export_events(structure, events, include_alerts = True)
+        export.export_events(structure, events, include_alerts = True, include_sources = False)
 
         assert structure == {
             "events": {
@@ -1719,40 +1617,3 @@ class TestExport(unittest.TestCase):
                 "alert_group": [str(event_alerts[0].get_uuid())]
             }
         }
-
-        {"events": {"3c67a40a-c313-11ed-b0b8-000000000463": {"event_uuid": "3c67a40a-c313-11ed-b0b8-000000000463",
-"start": "2018-01-01T04:00:00",
-"stop": "2018-01-01T05:00:00",
-"duration": 3600.0, "ingestion_time": "2023-03-15T09:24:50.362475",
-"gauge": {"gauge_uuid": "3c59feba-c313-11ed-bea6-000000000463",
-"system": "GAUGE_SYSTEM",
-"name": "GAUGE_NAME",
-"dim_signature": "dim_signature",
-"description": ""},
-"source": {"source_uuid": "3c500992-c313-11ed-92ef-000000000463",
-"name": "source1.xml"},
-"links_to_me": [], "alerts": ["3c6a9102-c313-11ed-9d63-000000000463"], "indexed_values": {},
-"values": [], "explicit_reference": {"uuid": "3c606f22-c313-11ed-a9ed-000000000463",
-"name": "EXPLICIT_REFERENCE"}}},
-"gauges": {"GAUGE_NAME": {"GAUGE_SYSTEM": ["3c67a40a-c313-11ed-b0b8-000000000463"]}},
-"explicit_references": {"3c606f22-c313-11ed-a9ed-000000000463": {"explicit_ref_uuid": "3c606f22-c313-11ed-a9ed-000000000463",
-"ingestion_time": "2023-03-15T09:24:50.310150",
-"explicit_ref": "EXPLICIT_REFERENCE",
-"alerts": [], "annotations": {}}},
-"annotations": {},
-"event_alerts": {"3c6a9102-c313-11ed-9d63-000000000463": {"event_alert_uuid": "3c6a9102-c313-11ed-9d63-000000000463",
-"message": "Alert message",
-"validated": "",
-"ingestion_time": "2023-03-15T09:24:50.376561",
-"generator": "test",
-"notified": "",
-"solved": "",
-"solved_time": "",
-"notification_time": "2018-06-05T08:07:36",
-"justification": "",
-"definition": {"alert_uuid": "3c698378-c313-11ed-aed3-000000000463",
-"name": "alert_name1",
-"severity": 4, "description": "Alert description",
-"group": "alert_group"},
-"event_uuid": "3c67a40a-c313-11ed-b0b8-000000000463"}},
-"event_alerts_groups": {"alert_group": ["3c6a9102-c313-11ed-9d63-000000000463"]}}

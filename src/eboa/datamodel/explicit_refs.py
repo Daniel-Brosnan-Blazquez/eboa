@@ -41,8 +41,7 @@ class ExplicitRef(Base):
         structure = {
             "explicit_ref_uuid": str(self.explicit_ref_uuid),
             "ingestion_time": self.ingestion_time.isoformat(),
-            "explicit_ref": self.explicit_ref,
-            "alerts": [alert.jsonify() for alert in self.alerts]
+            "explicit_ref": self.explicit_ref
         }
 
         # Insert explicit reference group

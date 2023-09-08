@@ -60,8 +60,7 @@ class Annotation(Base):
             "source": {
                 "source_uuid": str(self.source.source_uuid),
                 "name": self.source.name,
-            },
-            "alerts": [alert.jsonify() for alert in self.alerts]
+            }
         }
         
         if include_indexed_values:

@@ -19,7 +19,7 @@ logger = logging.logger
 ########
 # Export methods in python dictionary format
 ########
-def export_events(structure, events, include_ers = True, include_annotations = True, include_alerts = False, group = None):
+def export_events(structure, events, include_ers = True, include_annotations = True, include_sources = True, include_alerts = False, group = None):
     """Function to insert the events with DDBB format into a dictionary
     
     :param structure: dictionary where to export the events to
@@ -30,6 +30,8 @@ def export_events(structure, events, include_ers = True, include_annotations = T
     :type include_ers: boolean
     :param include_annotations: flag to indicate if the detail of the annotations has to be included
     :type include_annotations: boolean
+    :param include_sources: flag to indicate if the detail of the sources has to be included
+    :type include_sources: boolean
     :param include_alerts: flag to indicate if the detail of the alerts has to be included
     :type include_alerts: boolean
     :param group: label to group the events
@@ -39,12 +41,12 @@ def export_events(structure, events, include_ers = True, include_annotations = T
     corresponding events, leaving the structure like the following:
     structure = {
     "event_groups": {
-    group: [event_uuid1, event_uuid2, ..., event_uuidn]
+    group: [uuid1, uuid2, ..., uuidn]
     "events": {
-    "event_uuid1": structure of event with event_uuid1,
-    "event_uuid2": structure of event with event_uuid1,
+    "uuid1": structure of event associated to uuid1,
+    "uuid2": structure of event associated to uuid2,
     ...,
-    "event_uuidn": structure of event with event_uuidn
+    "uuidn": structure of event associated to uuidn
     }
     }
     }
@@ -113,6 +115,11 @@ def export_events(structure, events, include_ers = True, include_annotations = T
             export_ers(structure, [event.explicitRef], include_annotations = include_annotations)
         # end if
 
+        # Insert structure of the source
+        if include_sources:
+            export_sources(structure, [event.source], include_alerts = include_alerts)
+        # end if
+
         if include_alerts and len(event.alerts) > 0:
             structure["events"][str(event.event_uuid)]["alerts"] = [alert.get_uuid() for alert in event.alerts]
             export_alerts(structure, event.alerts)
@@ -140,12 +147,12 @@ def export_annotations(structure, annotations, include_ers = True, group = None)
     corresponding annotations, leaving the structure like the following:
     structure = {
     "annotation_groups": {
-    group: [annotation_uuid1, annotation_uuid2, ..., annotation_uuidn]
+    group: [uuid1, uuid2, ..., uuidn]
     "annotations": {
-    "annotation_uuid1": structure of annotation with annotation_uuid1,
-    "annotation_uuid2": structure of annotation with annotation_uuid1,
+    "uuid1": structure of annotation associated to uuid1,
+    "uuid2": structure of annotation associated to uuid2,
     ...,
-    "annotation_uuidn": structure of annotation with annotation_uuidn
+    "uuidn": structure of annotation associated to uuidn
     }
     }
     }
@@ -211,12 +218,12 @@ def export_ers(structure, ers, include_annotations = True, group = None):
     corresponding explicit references, leaving the structure like the following:
     structure = {
     "explicit_reference_groups": {
-    group: [explicit_reference_uuid1, explicit_reference_uuid2, ..., explicit_reference_uuidn]
+    group: [uuid1, uuid2, ..., uuidn]
     "explicit_references": {
-    "explicit_reference_uuid1": structure of explicit reference with explicit_reference_uuid1,
-    "explicit_reference_uuid2": structure of explicit reference with explicit_reference_uuid2,
+    "uuid1": structure of explicit reference associated to uuid1,
+    "uuid2": structure of explicit reference associated to uuid2,
     ...,
-    "explicit_reference_uuidn": structure of explicit reference with explicit_reference_uuidn
+    "uuidn": structure of explicit reference associated to uuidn
     }
     }
     }
@@ -259,6 +266,77 @@ def export_ers(structure, ers, include_annotations = True, group = None):
 
         if include_annotations:
             export_annotations(structure, er.annotations, include_ers = False)
+        # end if
+
+    # end for
+
+    return structure
+
+def export_sources(structure, sources, include_alerts = False, group = None):
+    """Function to insert the sources with DDBB format into a dictionary
+    
+    :param structure: dictionary where to export the sources to
+    :type structure: dict
+    :param sources: list of sources
+    :type sources: list(Source)
+    :param include_alerts: flag to indicate if the detail of the alerts has to be included
+    :type include_alerts: boolean
+    :param group: label to group the sources
+    :type group: str
+
+    Output: The function will insert into the structure the
+    corresponding sources, leaving the structure like the following:
+    structure = {
+    "source_groups": {
+    group: [uuid1, uuid2, ..., uuidn]
+    "sources": {
+    "uuid1": structure of source associated to uuid1,
+    "uuid2": structure of source associated to uuid2,
+    ...,
+    "uuidn": structure of source associated to uuidn
+    }
+    }
+    }
+
+    """
+
+    if type(structure) != dict:
+        raise ErrorParsingParameters("The structure parameter has to have type dict. Received structure is: {}, with type: {}".format(structure, type(structure)))
+    # end if
+    
+    if group != None and type(group) != str:
+        raise ErrorParsingParameters("The group parameter has to have type str. Received group is: {}, with type: {}".format(group, type(group)))
+    # end if
+
+    if type(include_alerts) != bool:
+        raise ErrorParsingParameters("The include_alerts parameter has to have type bool. Received group is: {}, with type: {}".format(include_alerts, type(include_alerts)))
+    # end if
+
+    if group and "source_groups" not in structure:
+        structure["source_groups"] = {}
+    # end if
+    if group and group not in structure["source_groups"]:
+        structure["source_groups"][group] = []
+    # end if
+    if "sources" not in structure:
+        structure["sources"] = {}
+    # end if
+
+    for source in sources:
+
+        # Insert the source reference in the group
+        if group:
+            structure["source_groups"][group].append(str(source.source_uuid))
+        # end if
+
+        # Insert the structure of the source
+        if str(source.source_uuid) not in structure["sources"]:
+            structure["sources"][str(source.source_uuid)] = source.jsonify(include_source_statuses = True)
+        # end if
+
+        if include_alerts and len(source.alerts) > 0:
+            structure["sources"][str(source.source_uuid)]["alerts"] = [alert.get_uuid() for alert in source.alerts]
+            export_alerts(structure, source.alerts)
         # end if
 
     # end for
@@ -387,14 +465,14 @@ def export_alerts(structure, alerts, group = None):
     Output: The function will insert into the structure the
     corresponding alerts, leaving the structure like the following:
     structure = {
-    "<alerts_type>_alerts_groups": {
-    group: [<alerts_type>_alert_uuid1, <alerts_type>_alert_uuid2, ..., <alerts_type>_alert_uuidn]
+    "<alerts_type>_groups": {
+    group: [uuid1, uuid2, ..., uuidn]
     },
-    "<alerts_type>_alerts": {
-    "<alerts_type>_alert_uuid1": structure of <alerts_type>_alert with <alerts_type>_alert_uuid1,
-    "<alerts_type>_alert_uuid2": structure of <alerts_type>_alert with <alerts_type>_alert_uuid1,
+    "<alerts_type>": {
+    "uuid1": structure of alert associated to uuid1,
+    "uuid2": structure of alert associated to uuid2,
     ...,
-    "<alerts_type>_alert_uuidn": structure of <alerts_type>_alert with <alerts_type>_alert_uuidn
+    "uuidn": structure of alert associated to uuidn
     }
     }
 

@@ -46,6 +46,9 @@ class Event(Base):
         """
         Method to obtain the structure of the event in a python dictionary format
 
+        :param include_indexed_values: flag to indicate to include the indexed values to ease the searching
+        :type include_indexed_values: boolean
+
         :return: structure of the event
         :rtype: dict
         """
@@ -64,8 +67,7 @@ class Event(Base):
             "links_to_me": [{
                 "event_uuid_link": str(link.event_uuid_link),
                 "name": link.name
-            } for link in self.eventLinks],
-            "alerts": [alert.jsonify() for alert in self.alerts]
+            } for link in self.eventLinks]
         }
         
         if include_indexed_values:
