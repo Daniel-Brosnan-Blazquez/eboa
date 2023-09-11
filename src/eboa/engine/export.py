@@ -112,7 +112,7 @@ def export_events(structure, events, include_ers = True, include_annotations = T
 
         # Insert structure of the explicit reference
         if include_ers and event.explicitRef != None:
-            export_ers(structure, [event.explicitRef], include_annotations = include_annotations)
+            export_ers(structure, [event.explicitRef], include_annotations = include_annotations, include_sources = include_sources)
         # end if
 
         # Insert structure of the source
@@ -129,7 +129,7 @@ def export_events(structure, events, include_ers = True, include_annotations = T
 
     return structure
 
-def export_annotations(structure, annotations, include_ers = True, group = None):
+def export_annotations(structure, annotations, include_ers = True, include_sources = True, include_alerts = False, group = None):
     """Function to insert the annotations with DDBB format into a dictionary
     
     :param structure: dictionary where to export the annotations to
@@ -138,8 +138,10 @@ def export_annotations(structure, annotations, include_ers = True, group = None)
     :type annotations: list(Annotation)
     :param include_ers: flag to indicate if the detail of the explicit references has to be included
     :type include_ers: boolean
-    :param include_annotations: flag to indicate if the detail of the annotations has to be included
-    :type include_annotations: boolean
+    :param include_sources: flag to indicate if the detail of the sources has to be included
+    :type include_sources: boolean
+    :param include_alerts: flag to indicate if the detail of the alerts has to be included
+    :type include_alerts: boolean
     :param group: label to group the annotations
     :type group: str
 
@@ -171,6 +173,10 @@ def export_annotations(structure, annotations, include_ers = True, group = None)
         raise ErrorParsingParameters("The include_ers parameter has to have type bool. Received group is: {}, with type: {}".format(include_ers, type(include_ers)))
     # end if
 
+    if type(include_alerts) != bool:
+        raise ErrorParsingParameters("The include_alerts parameter has to have type bool. Received group is: {}, with type: {}".format(include_alerts, type(include_alerts)))
+    # end if
+
     if group and "annotation_groups" not in structure:
         structure["annotation_groups"] = {}
     # end if
@@ -195,14 +201,41 @@ def export_annotations(structure, annotations, include_ers = True, group = None)
 
         # Insert structure of the explicit reference
         if include_ers:
-            export_ers(structure, [annotation.explicitRef])
+            export_ers(structure, [annotation.explicitRef], include_annotations = False, include_sources = include_sources)
+
+            # Include only this annotation into the structure of the associated ER
+            er_structure = structure["explicit_references"][str(annotation.explicitRef.explicit_ref_uuid)]
+            if "annotations" not in er_structure:
+                er_structure["annotations"] = {}
+            # end if
+            name = annotation.annotationCnf.name
+            system = annotation.annotationCnf.system
+            if name not in er_structure["annotations"]:
+                er_structure["annotations"][name] = []
+            # end if
+            er_structure["annotations"][name].append({
+                "annotation_uuid": str(annotation.annotation_uuid),
+                "name": name,
+                "system": system
+            })
+
+        # end if
+
+        # Insert structure of the source
+        if include_sources:
+            export_sources(structure, [annotation.source], include_alerts = include_alerts)
+        # end if
+
+        if include_alerts and len(annotation.alerts) > 0:
+            structure["annotations"][str(annotation.annotation_uuid)]["alerts"] = [alert.get_uuid() for alert in annotation.alerts]
+            export_alerts(structure, annotation.alerts)
         # end if
 
     # end for
 
     return structure
 
-def export_ers(structure, ers, include_annotations = True, group = None):
+def export_ers(structure, ers, include_annotations = True, include_sources = True, include_alerts = False, group = None):
     """Function to insert the explicit reference with DDBB format into a dictionary
     
     :param structure: dictionary where to export the explicit refereces to
@@ -211,7 +244,11 @@ def export_ers(structure, ers, include_annotations = True, group = None):
     :type ers: list(ExplicitRef)
     :param include_annotations: flag to indicate if the detail of the annotations has to be included
     :type include_annotations: boolean
-    :param group: label to group the events
+    :param include_sources: flag to indicate if the detail of the sources associated to the annotations has to be included
+    :type include_sources: boolean
+    :param include_alerts: flag to indicate if the detail of the alerts has to be included
+    :type include_alerts: boolean
+    :param group: label to group the ERs
     :type group: str
 
     Output: The function will insert into the structure the
@@ -242,6 +279,10 @@ def export_ers(structure, ers, include_annotations = True, group = None):
         raise ErrorParsingParameters("The include_annotations parameter has to have type bool. Received group is: {}, with type: {}".format(include_annotations, type(include_annotations)))
     # end if
 
+    if type(include_alerts) != bool:
+        raise ErrorParsingParameters("The include_alerts parameter has to have type bool. Received group is: {}, with type: {}".format(include_alerts, type(include_alerts)))
+    # end if
+
     if group and "explicit_reference_groups" not in structure:
         structure["explicit_reference_groups"] = {}
     # end if
@@ -259,14 +300,20 @@ def export_ers(structure, ers, include_annotations = True, group = None):
             structure["explicit_references"][group].append(str(er.explicit_ref_uuid))
         # end if
 
-        # Insert the structure of the event
+        # Insert the structure of the ER
         if str(er.explicit_ref_uuid) not in structure["explicit_references"]:
             structure["explicit_references"][str(er.explicit_ref_uuid)] = er.jsonify(include_annotations)
         # end if
 
         if include_annotations:
-            export_annotations(structure, er.annotations, include_ers = False)
+            export_annotations(structure, er.annotations, include_ers = False, include_sources = include_sources, include_alerts = include_alerts)
         # end if
+
+        if include_alerts and len(er.alerts) > 0:
+            structure["explicit_references"][str(er.explicit_ref_uuid)]["alerts"] = [alert.get_uuid() for alert in er.alerts]
+            export_alerts(structure, er.alerts)
+        # end if
+
 
     # end for
 

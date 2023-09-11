@@ -396,17 +396,7 @@ class TestDatamodel(unittest.TestCase):
                                          {"type": "boolean",
                                           "name": "BOOLEAN",
                                           "value": "true"}]}]
-                            }],
-                "alerts": [{
-                    "message": "Alert message",
-                    "generator": "test",
-                    "notification_time": "2018-06-05T08:07:36",
-                    "alert_cnf": {
-                        "name": "alert_name1",
-                        "severity": "critical",
-                        "description": "Alert description",
-                        "group": "alert_group"
-                    }}]
+                            }]
                 }]
         }]}
 
@@ -457,27 +447,7 @@ class TestDatamodel(unittest.TestCase):
                                   "name": "BOOLEAN",
                                   "value": "True"}]}]
                         }],
-            "links_to_me": [],
-            "alerts": [{
-                "event_alert_uuid": str(events[0].alerts[0].event_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": events[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(events[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "event_uuid": str(events[0].event_uuid),
-                }]
+            "links_to_me": []
         }
 
         assert jsonified_event == data_to_match
@@ -509,17 +479,7 @@ class TestDatamodel(unittest.TestCase):
                            "reception_time": "2018-07-05T02:07:03",
                            "generation_time": "2018-07-05T02:07:03",
                            "validity_start": "2018-06-05T02:07:03",
-                           "validity_stop": "2018-06-05T08:07:36",
-                "alerts": [{
-                    "message": "Alert message",
-                    "generator": "test",
-                    "notification_time": "2018-06-05T08:07:36",
-                    "alert_cnf": {
-                        "name": "alert_name1",
-                        "severity": "critical",
-                        "description": "Alert description",
-                        "group": "alert_group"
-                    }}]
+                           "validity_stop": "2018-06-05T08:07:36"
                 }
         }]}
 
@@ -547,27 +507,14 @@ class TestDatamodel(unittest.TestCase):
             "processor": "exec",
             "processor_version": "1.0",
             "dim_signature": "dim_signature",
-            "dim_signature_uuid": str(sources[0].dim_signature_uuid),
-            "alerts": [{
-                "source_alert_uuid": str(sources[0].alerts[0].source_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": sources[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(sources[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "source_uuid": str(sources[0].source_uuid),
-                }]
+            "ingestion_completeness": True,
+            "ingestion_completeness_message": None,
+            "number_of_annotations": 0,
+            "number_of_events": 0,
+            "priority": None,
+            "reported_generation_time": "2018-07-05T02:07:03",
+            "reported_validity_start": "2018-06-05T02:07:03",
+            "reported_validity_stop": "2018-06-05T08:07:36",
         }
 
         jsonified_source = sources[0].jsonify()
@@ -626,17 +573,7 @@ class TestDatamodel(unittest.TestCase):
                                      {"type": "boolean",
                                       "name": "BOOLEAN",
                                       "value": "true"}]}]
-                            }],
-                "alerts": [{
-                    "message": "Alert message",
-                    "generator": "test",
-                    "notification_time": "2018-06-05T08:07:36",
-                    "alert_cnf": {
-                        "name": "alert_name1",
-                        "severity": "critical",
-                        "description": "Alert description",
-                        "group": "alert_group"
-                    }}]
+                            }]
             }]
         }]}
 
@@ -687,27 +624,7 @@ class TestDatamodel(unittest.TestCase):
                                  {"type": "boolean",
                                   "name": "BOOLEAN",
                                   "value": "True"}]}]
-                        }],
-            "alerts": [{
-                "annotation_alert_uuid": str(annotations[0].alerts[0].annotation_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": annotations[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(annotations[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "annotation_uuid": str(annotations[0].annotation_uuid),
-                }]
+                        }]
         }
 
         assert jsonified_annotation == data_to_match
@@ -788,27 +705,7 @@ class TestDatamodel(unittest.TestCase):
             "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
             "explicit_ref": "EXPLICIT_REFERENCE",
             "group": "EXPL_GROUP",
-            "ingestion_time": ers[0].ingestion_time.isoformat(),
-            "alerts": [{
-                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
-                }]
+            "ingestion_time": ers[0].ingestion_time.isoformat()
         }
 
         assert jsonified_er == data_to_match
@@ -887,27 +784,7 @@ class TestDatamodel(unittest.TestCase):
         data_to_match = {
             "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
             "explicit_ref": "EXPLICIT_REFERENCE",
-            "ingestion_time": ers[0].ingestion_time.isoformat(),
-            "alerts": [{
-                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
-                }]
+            "ingestion_time": ers[0].ingestion_time.isoformat()
         }
 
         assert jsonified_er == data_to_match
@@ -983,26 +860,6 @@ class TestDatamodel(unittest.TestCase):
             "explicit_ref": "EXPLICIT_REFERENCE",
             "group": "EXPL_GROUP",
             "ingestion_time": ers[0].ingestion_time.isoformat(),
-            "alerts": [{
-                "explicit_ref_alert_uuid": str(ers[0].alerts[0].explicit_ref_alert_uuid),
-                "message": "Alert message",
-                "validated": "",
-                "ingestion_time": ers[0].alerts[0].ingestion_time.isoformat(),
-                "generator": "test",
-                "notified": "",
-                "solved": "",
-                "solved_time": "",
-                "notification_time": "2018-06-05T08:07:36",
-                "justification": "",
-                "definition": {
-                    "alert_uuid": str(ers[0].alerts[0].alertDefinition.alert_uuid),
-                    "name": "alert_name1",
-                    "severity": 4,
-                    "description": "Alert description",
-                    "group": "alert_group"
-                },
-                "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
-            }],
             "annotations": {
                 "ANNOTATION_CNF": [{
                     "annotation_uuid": str(annotations[0].annotation_uuid),

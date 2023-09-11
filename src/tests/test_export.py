@@ -929,7 +929,7 @@ class TestExport(unittest.TestCase):
         assert len(annotations) == 1
 
         structure = {}
-        export.export_annotations(structure, annotations)
+        export.export_annotations(structure, annotations, include_sources = False)
         
         assert structure == {
             "annotations": {
@@ -1079,7 +1079,7 @@ class TestExport(unittest.TestCase):
         assert len(annotations) == 1
         
         structure = {}
-        export.export_annotations(structure, annotations, group = "annotation_group")
+        export.export_annotations(structure, annotations, group = "annotation_group", include_sources = False)
 
         assert structure == {
             "annotation_groups": {
@@ -1152,7 +1152,7 @@ class TestExport(unittest.TestCase):
         assert len(annotations) == 1
         
         structure = {}
-        export.export_annotations(structure, annotations, include_ers = False, group = "annotation_group")
+        export.export_annotations(structure, annotations, include_ers = False, group = "annotation_group", include_sources = False)
 
         assert structure == {
             "annotation_groups": {
@@ -1304,7 +1304,7 @@ class TestExport(unittest.TestCase):
         assert len(ers) == 1
 
         structure = {}
-        export.export_ers(structure, ers)
+        export.export_ers(structure, ers, include_sources = False)
 
         assert structure == {
             "explicit_references": {
