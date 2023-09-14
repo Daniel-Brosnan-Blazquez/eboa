@@ -100,7 +100,7 @@ class Source(Base):
         
         if include_source_statuses:
             structure["statuses"] = []
-            for status in self.statuses:
+            for status in sorted(self.statuses, key=lambda status: status.time_stamp):
                 structure["statuses"].append(status.jsonify())
             # end for
         # end if
@@ -166,7 +166,7 @@ class SourceStatus(Base):
 
     def jsonify(self):
         return {
-            "source_uuid": self.source.source_uuid,
+            "source_uuid": str(self.source.source_uuid),
             "time_stamp": self.time_stamp.isoformat(),
             "log": self.log,
             "status": self.status,

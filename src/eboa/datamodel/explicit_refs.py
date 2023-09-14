@@ -27,12 +27,14 @@ class ExplicitRef(Base):
         self.explicit_ref = explicitRef
         self.group = group
 
-    def jsonify(self, include_annotations = True):
+    def jsonify(self, include_annotations = True, include_events = True):
         """
         Method to obtain the structure of explicit references in a python dictionary format
 
         :param include_annotations: flag to indicate if the detail of the annotations has to be included
         :type include_annotations: boolean
+        :param include_events: flag to indicate if the detail of the events has to be included
+        :type include_events: boolean
 
         :return: structure of the explicit reference
         :rtype: dict
@@ -60,6 +62,23 @@ class ExplicitRef(Base):
                 # end if
                 structure["annotations"][name].append({
                     "annotation_uuid": str(annotation.annotation_uuid),
+                    "name": name,
+                    "system": system
+                })
+            # end for
+        # end if
+
+        if include_events:
+            
+            structure["events"] = {}
+            for event in self.events:
+                name = event.gauge.name
+                system = event.gauge.system
+                if name not in structure["events"]:
+                    structure["events"][name] = []
+                # end if
+                structure["events"][name].append({
+                    "event_uuid": str(event.event_uuid),
                     "name": name,
                     "system": system
                 })
