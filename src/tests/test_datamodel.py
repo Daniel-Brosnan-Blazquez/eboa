@@ -702,6 +702,7 @@ class TestDatamodel(unittest.TestCase):
         jsonified_er = ers[0].jsonify(False)
 
         data_to_match = {
+            "events": {},
             "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
             "explicit_ref": "EXPLICIT_REFERENCE",
             "group": "EXPL_GROUP",
@@ -782,6 +783,7 @@ class TestDatamodel(unittest.TestCase):
         jsonified_er = ers[0].jsonify(False)
 
         data_to_match = {
+            "events": {},
             "explicit_ref_uuid": str(ers[0].explicit_ref_uuid),
             "explicit_ref": "EXPLICIT_REFERENCE",
             "ingestion_time": ers[0].ingestion_time.isoformat()
@@ -802,9 +804,9 @@ class TestDatamodel(unittest.TestCase):
 
         new_file.close()
 
-    def test_get_jsonify_explicit_reference_with_annotations(self):
+    def test_get_jsonify_explicit_reference_with_annotations_and_events(self):
         """
-        Test jsonify method associated to explicit references with annotations
+        Test jsonify method associated to explicit references with annotations and events
         """
         
         data = {"operations": [{
@@ -831,6 +833,16 @@ class TestDatamodel(unittest.TestCase):
                         "group": "alert_group"
                     }}]
             }],
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE",
+                "gauge": {
+                    "name": "GAUGE_NAME",
+                    "system": "GAUGE_SYSTEM",
+                    "insertion_type": "SIMPLE_UPDATE"
+                },
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36"
+            }],
             "annotations": [{
                 "explicit_reference": "EXPLICIT_REFERENCE",
                 "annotation_cnf": {
@@ -852,6 +864,10 @@ class TestDatamodel(unittest.TestCase):
         annotations = self.query_eboa.get_annotations()
 
         assert len(annotations) == 1
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
         
         jsonified_er = ers[0].jsonify()
 
@@ -860,6 +876,12 @@ class TestDatamodel(unittest.TestCase):
             "explicit_ref": "EXPLICIT_REFERENCE",
             "group": "EXPL_GROUP",
             "ingestion_time": ers[0].ingestion_time.isoformat(),
+            "events": {
+                "GAUGE_NAME": [{
+                    "event_uuid": str(events[0].event_uuid),
+                    "name": "GAUGE_NAME",
+                    "system": "GAUGE_SYSTEM"}]
+            },
             "annotations": {
                 "ANNOTATION_CNF": [{
                     "annotation_uuid": str(annotations[0].annotation_uuid),
