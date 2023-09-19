@@ -1744,7 +1744,7 @@ class Engine():
                         except IntegrityError as e:
                             self.session.rollback()
                             if "psycopg2.errors.ForeignKeyViolation" in str(e):
-                                logger.error(exit_codes["LINK_TO_NOT_AVAILABLE_EVENT"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link["name"], link["event_uuid_link"], link["event_uuid"], e))
+                                logger.error(exit_codes["LINK_TO_NOT_AVAILABLE_EVENT"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link["event_uuid_link"], link["name"], link["event_uuid"], e))
                                 pass
                             else:
                                 self.session.rollback()
