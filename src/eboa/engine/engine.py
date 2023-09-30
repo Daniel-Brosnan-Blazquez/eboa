@@ -1526,6 +1526,7 @@ class Engine():
         list_event_links_by_uuid = []
         list_event_links_by_uuid_sorted = []
         list_event_links_by_uuid_ddbb = []
+        list_event_links_to_check_by_event_uuid_link = []
         list_alerts = []
         
         list_values = {}
@@ -1613,6 +1614,7 @@ class Engine():
                                                          link["name"],
                                                          str(link["link"])))
                         if back_ref:
+                            list_event_links_to_check_by_event_uuid_link.append(str(link["link"]))
                             list_event_links_by_uuid.append((str(link["link"]),
                                                              back_ref_name,
                                                              str(id)))
@@ -1757,6 +1759,12 @@ class Engine():
                 # end if
             # end try
         # end if
+
+        # Review inserted links to check if some of them are obsolete (mainly the ones linking to the inserted events)
+        events_with_event_uuids_equal_to_event_uuid_links = self.session.query(Event).filter(Event.event_uuid.in_(list_event_links_to_check_by_event_uuid_link)).all()
+        event_uuids_existing_in_ddbb = {str(event.event_uuid) for event in events_with_event_uuids_equal_to_event_uuid_links}
+        event_uuid_links_to_be_removed = [event_uuid for event_uuid in list_event_links_to_check_by_event_uuid_link if event_uuid not in event_uuids_existing_in_ddbb]
+        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuid_links_to_be_removed)).delete(synchronize_session=False)
 
         # Bulk insert alerts
         if len(list_alerts) > 0:

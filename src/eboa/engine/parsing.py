@@ -281,15 +281,15 @@ def _validate_explicit_reference_links(data):
             raise ErrorParsingDictionary("The tag name is mandatory inside links structure for explicit_references structure")
         # end if
         if not type(link["name"]) == str:
-            raise ErrorParsingDictionary("The tag name inside links structure for explicit_references has to be of type string. Received value: {}".format(link["name"]))
+            raise ErrorParsingDictionary("The tag name inside links structure for explicit_references has to be of type string. Received value: {}. Received type: {}".format(link["name"], type(link["name"])))
         # end if
         if not type(link["link"]) == str:
-            raise ErrorParsingDictionary("The tag link inside links structure for explicit_references has to be of type string. Received value: {}".format(link["link"]))
+            raise ErrorParsingDictionary("The tag link inside links structure for explicit_references has to be of type string. Received value: {}. Received type: {}".format(link["link"], type(link["link"])))
         # end if
 
         # Optional tags
         if "back_ref" in link and not type(link["back_ref"]) == str:
-            raise ErrorParsingDictionary("The tag back_ref inside links structure for explicit_references has to be of type string. Received value: {}".format(link["back_ref"]))
+            raise ErrorParsingDictionary("The tag back_ref inside links structure for explicit_references has to be of type string. Received value: {}. Received type: {}".format(link["back_ref"], type(link["back_ref"])))
         # end if
 
     # end for
@@ -413,10 +413,10 @@ def _validate_event_links(data):
             raise ErrorParsingDictionary("The tag link_mode is mandatory inside links structure for events structure")
         # end if
         if not type(link["name"]) == str:
-            raise ErrorParsingDictionary("The tag name inside links structure for events has to be of type string. Received value: {}".format(link["name"]))
+            raise ErrorParsingDictionary("The tag name inside links structure for events has to be of type string. Received value: {}. Received type: {}".format(link["name"], type(link["name"])))
         # end if
         if not type(link["link"]) == str:
-            raise ErrorParsingDictionary("The tag link inside links structure for events has to be of type string. Received value: {}".format(link["link"]))
+            raise ErrorParsingDictionary("The tag link inside links structure for events has to be of type string. Received value: {}. Received type: {}".format(link["link"], type(link["link"])))
         # end if
         if not link["link_mode"] in ["by_ref", "by_uuid"]:
             raise ErrorParsingDictionary("The values allowed for tag link_mode inside links structure for events are 'by_ref' and 'by_uuid'")
@@ -424,7 +424,7 @@ def _validate_event_links(data):
 
         # Optional tags
         if "back_ref" in link and not type(link["back_ref"]) == str:
-            raise ErrorParsingDictionary("The tag back_ref inside links structure for events has to be of type string. Received value: {}".format(link["back_ref"]))
+            raise ErrorParsingDictionary("The tag back_ref inside links structure for events has to be of type string. Received value: {}. Received type: {}".format(link["back_ref"], type(link["back_ref"])))
         # end if
 
     # end for
