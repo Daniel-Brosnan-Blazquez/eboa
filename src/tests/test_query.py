@@ -1697,7 +1697,8 @@ class TestQuery(unittest.TestCase):
         assert len(events["linked_events"]) == 2
         assert len(events["prime_events"]) == 2
         assert len(events["linking_events"]) == 1
-        assert events["linking_events"]["EVENT_LINK%"][0].event_uuid == event1[0].event_uuid
+        assert events["linking_events"]["EVENT_LINK%"][0].event_uuid in [event1[0].event_uuid, event2[0].event_uuid]
+        assert events["linking_events"]["EVENT_LINK%"][1].event_uuid in [event1[0].event_uuid, event2[0].event_uuid]
 
     def test_wrong_inputs_query_linking_events(self):
 

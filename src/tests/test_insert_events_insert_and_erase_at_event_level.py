@@ -623,7 +623,7 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
                         "link": "EVENT_LINK2",
                         "link_mode": "by_ref",
                         "name": "EVENT_LINK_NAME1",
-                        "back_ref": "LINK_BACK_REF_NAME"
+                        "back_ref": "LINK_BACK_REF_NAME1"
                     }],
                     "key": "EVENT_KEY",
                     "values": [{"name": "VALUES",
@@ -664,7 +664,7 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME2",
-                                   "back_ref": "LINK_BACK_REF_NAME"
+                                   "back_ref": "LINK_BACK_REF_NAME2"
                                }]},
                            {
                                "explicit_reference": "EXPLICIT_REFERENCE_EVENT3",
@@ -677,7 +677,7 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
                                    "link": "EVENT_LINK1",
                                    "link_mode": "by_ref",
                                    "name": "EVENT_LINK_NAME3",
-                                   "back_ref": "LINK_BACK_REF_NAME"
+                                   "back_ref": "LINK_BACK_REF_NAME3"
                                }]}]
             }
         self.engine_eboa.operation = data1
@@ -688,6 +688,8 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
         self.engine_eboa._insert_explicit_refs()
         self.engine_eboa.session.commit()
         self.engine_eboa._insert_events()
+        self.engine_eboa.session.commit()
+        self.engine_eboa._insert_event_links()
         self.engine_eboa.session.commit()
 
         self.engine_eboa._initialize_context_insert_data()

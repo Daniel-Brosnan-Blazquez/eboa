@@ -178,7 +178,7 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
             query_log_status = Query()
             sources = query_log_status.get_sources(names = {"filter": filename, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
             if len(sources) > 0:
-                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["message"].format(filename, processor, str(e)))
+                eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["PROCESSING_ENDED_UNEXPECTEDLY"]["message"].format(filename, processor, str(e) + "\n" + traceback.format_exc()))
             # end if
             query_log_status.close_session()
 

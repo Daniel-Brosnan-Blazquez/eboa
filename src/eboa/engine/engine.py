@@ -93,7 +93,7 @@ exit_codes = {
     },
     "UNDEFINED_EVENT_LINK_REF": {
         "status": 6,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} contains an event which links to an undefined reference identifier {}"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} (or any other DIM in the same batch) contains an event which links to an undefined reference identifier {}"
     },
     "WRONG_VALUE": {
         "status": 7,
@@ -117,7 +117,7 @@ exit_codes = {
     },
     "LINKS_INCONSISTENCY": {
         "status": 12,
-        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} (or any other DIM in the same batch) defines links between events which lead to clashing unique values into the DDBB. The exception raised has been the following: {}"
     },
     "DUPLICATED_VALUES": {
         "status": 13,
@@ -583,11 +583,55 @@ class Engine():
             # end def
             treat_operation_data(self, processing_duration, returned_values)
         # end for
+
+        # Insert event links at the end of the process to allow having references to events in DIMs which are going to be inserted later
+        # Associate any error to the source of the last operation
+        self.session.begin_nested()        
+        try:
+            self._insert_event_links()
+        except LinksInconsistency as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["LINKS_INCONSISTENCY"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            # Log the error
+            logger.error(e)
+            returned_information = {
+                "source": self.operation.get("source").get("name"),
+                "dim_signature": self.operation.get("dim_signature").get("name"),
+                "processor": self.operation.get("dim_signature").get("exec"),
+                "status": exit_codes["LINKS_INCONSISTENCY"]["status"]
+            }
+            returned_values.append(returned_information)
+        except UndefinedEventLink as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            # Log the error
+            logger.error(e)
+            returned_information = {
+                "source": self.operation.get("source").get("name"),
+                "dim_signature": self.operation.get("dim_signature").get("name"),
+                "processor": self.operation.get("dim_signature").get("exec"),
+                "status": exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
+            }
+            returned_values.append(returned_information)
+        # end try
+
+        # Close nested operations and commit
+        self.session.commit()
+        self.session.commit()
+        
         return returned_values
 
     def _initialize_context_treat_data(self):
         # Initialize context
         self.event_link_refs = {}
+        self.list_event_links_by_ref = []
+        self.list_event_links_by_uuid = []
+        self.list_event_links_to_check_by_event_uuid_link = []
+        self.dict_event_uuids_aliases = {}
 
         return
 
@@ -613,9 +657,21 @@ class Engine():
         self.alert_cnfs = {}
         self.alert_groups = {}
 
-        # This is not necesary needed, just here to avoid a lot of modifications on tests
+        # This is not necessarily needed, just here to avoid a lot of modifications on tests
         if not hasattr(self, "event_link_refs"):
             self.event_link_refs = {}
+        # end if
+        if not hasattr(self, "list_event_links_by_ref"):
+            self.list_event_links_by_ref = []
+        # end if
+        if not hasattr(self, "list_event_links_by_uuid"):
+            self.list_event_links_by_uuid = []
+        # end if
+        if not hasattr(self, "list_event_links_to_check_by_event_uuid_link"):
+            self.list_event_links_to_check_by_event_uuid_link = []
+        # end if
+        if not hasattr(self, "dict_event_uuids_aliases"):
+            self.dict_event_uuids_aliases = {}
         # end if
 
         return
@@ -752,24 +808,6 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["DUPLICATED_EVENT_LINK_REF"]["status"]
-        except LinksInconsistency as e:
-            self.session.rollback()
-            self._insert_source_status(exit_codes["LINKS_INCONSISTENCY"]["status"], error = True, message = str(e))
-            # Insert content in the DDBB
-            self.source.content_json = json.dumps(self.operation)
-            self.session.commit()
-            # Log the error
-            logger.error(e)
-            raise LinksInconsistency(e)
-        except UndefinedEventLink as e:
-            self.session.rollback()
-            self._insert_source_status(exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"], error = True, message = str(e))
-            # Insert content in the DDBB
-            self.source.content_json = json.dumps(self.operation)
-            self.session.commit()
-            # Log the error
-            logger.error(e)
-            return exit_codes["UNDEFINED_EVENT_LINK_REF"]["status"]
         except WrongPeriod as e:
             self.session.rollback()
             self._insert_source_status(exit_codes["WRONG_EVENT_PERIOD"]["status"], error = True, message = str(e))
@@ -1520,18 +1558,12 @@ class Engine():
         """
         list_events = []
         list_keys = []
-        list_event_links_by_ref = []
-        list_event_links_by_ref_sorted = []
-        list_event_links_by_ref_ddbb = []
-        list_event_links_by_uuid = []
-        list_event_links_by_uuid_sorted = []
-        list_event_links_by_uuid_ddbb = []
-        list_event_links_to_check_by_event_uuid_link = []
         list_alerts = []
         
         list_values = {}
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+            self.dict_event_uuids_aliases[id] = []
             start = event.get("start")
             stop = event.get("stop")
             gauge_info = event.get("gauge")
@@ -1604,18 +1636,17 @@ class Engine():
                     # end if
                     
                     if link["link_mode"] == "by_ref":
-                        list_event_links_by_ref.append((id,
+                        self.list_event_links_by_ref.append((id,
                                                         link["name"],
                                                         link["link"],
                                                         back_ref,
                                                         back_ref_name))
                     else:
-                        list_event_links_by_uuid.append((str(id),
+                        self.list_event_links_by_uuid.append((str(id),
                                                          link["name"],
                                                          str(link["link"])))
                         if back_ref:
-                            list_event_links_to_check_by_event_uuid_link.append(str(link["link"]))
-                            list_event_links_by_uuid.append((str(link["link"]),
+                            self.list_event_links_by_uuid.append((str(link["link"]),
                                                              back_ref_name,
                                                              str(id)))
                         # end if
@@ -1691,8 +1722,51 @@ class Engine():
             raise DuplicatedValues(exit_codes["DUPLICATED_VALUES"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, e))
         # end try
 
+        # Bulk insert alerts
+        if len(list_alerts) > 0:
+            self._bulk_insert_mappings(EventAlert, list_alerts)
+        # end if
+        
+        return
+
+    def _get_event_uuid_aliases(self, event_uuid):
+        """
+        Method to get the final UUIDs associated to a specific UUID
+        :param event_uuid: event UUID to find the aliases
+        :type event_uuid: UUID
+
+        :return: event UUID aliases
+        :rtype: list
+        """
+
+        event_uuid_aliases = []
+        if event_uuid in self.dict_event_uuids_aliases and len(self.dict_event_uuids_aliases[event_uuid]) > 0:
+            for event_uuid_alias in self.dict_event_uuids_aliases[event_uuid]:
+                if event_uuid_alias in self.dict_event_uuids_aliases and len(self.dict_event_uuids_aliases[event_uuid_alias]) > 0:
+                    event_uuid_aliases.extend(list(set(self._get_event_uuid_aliases(event_uuid_alias))))
+                else:
+                    event_uuid_aliases.append(event_uuid_alias)
+                # end if
+            # end for
+        else:
+            event_uuid_aliases.append(event_uuid)
+        # end if
+            
+        return event_uuid_aliases
+    
+    @debug
+    def _insert_event_links(self):
+        """
+        Method to insert the links between events
+        """
+
+        list_event_links_by_ref_sorted = []
+        list_event_links_by_ref_ddbb = []
+        list_event_links_by_uuid_sorted = []
+        list_event_links_by_uuid_ddbb = []
+
         # Insert links by reference
-        list_event_links_by_ref_sorted = sorted(set(list_event_links_by_ref))
+        list_event_links_by_ref_sorted = sorted(set(self.list_event_links_by_ref))
         for link in list_event_links_by_ref_sorted:
             link_ref = link[2]
             if not link_ref in self.event_link_refs:
@@ -1701,30 +1775,49 @@ class Engine():
                 raise UndefinedEventLink(exit_codes["UNDEFINED_EVENT_LINK_REF"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, link_ref))
             # end if
 
-            link_name = link[1]
             event_uuid_link = link[0]
-            event_uuid = self.event_link_refs[link_ref]
-            
-            list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid_link,
-                                                     name = link_name,
-                                                     event_uuid = event_uuid))
-            back_ref = link[3]
-            back_ref_name = link[4]
-            if back_ref:
-                list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
-                                                         name = back_ref_name,
-                                                         event_uuid = event_uuid_link))
-            # end if
+            event_uuid_links = self._get_event_uuid_aliases(event_uuid_link)
+
+            for event_uuid_link in event_uuid_links:
+                link_name = link[1]
+                event_uuid = self.event_link_refs[link_ref]
+                event_uuids = self._get_event_uuid_aliases(event_uuid)
+
+                for event_uuid in event_uuids:
+                    self.list_event_links_to_check_by_event_uuid_link.append(str(event_uuid_link))
+                    list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid_link,
+                                                             name = link_name,
+                                                             event_uuid = event_uuid))
+                    back_ref = link[3]
+                    back_ref_name = link[4]
+                    if back_ref:
+                        self.list_event_links_to_check_by_event_uuid_link.append(str(event_uuid))
+                        list_event_links_by_ref_ddbb.append(dict(event_uuid_link = event_uuid,
+                                                                 name = back_ref_name,
+                                                                 event_uuid = event_uuid_link))
+                    # end if
+                # end for
+            # end for
         # end for
 
-        list_event_links_by_uuid_sorted = sorted(set(list_event_links_by_uuid))
+        list_event_links_by_uuid_sorted = sorted(set(self.list_event_links_by_uuid))
         for link in list_event_links_by_uuid_sorted:
             event_uuid_link = link[0]
-            link_name = link[1]
-            event_uuid = link[2]
-            list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = event_uuid_link,
-                                                      name = link_name,
-                                                      event_uuid = event_uuid))
+            event_uuid_links = self._get_event_uuid_aliases(event_uuid_link)
+            
+            for event_uuid_link in event_uuid_links:
+                link_name = link[1]
+                event_uuid = link[2]
+                event_uuids = self._get_event_uuid_aliases(event_uuid)
+
+                for event_uuid in event_uuids:
+                    self.list_event_links_to_check_by_event_uuid_link.append(str(event_uuid_link))
+
+                    list_event_links_by_uuid_ddbb.append(dict(event_uuid_link = event_uuid_link,
+                                                              name = link_name,
+                                                              event_uuid = event_uuid))
+                # end for
+            # end for
         # end for
 
         # Bulk insert links
@@ -1761,18 +1854,17 @@ class Engine():
         # end if
 
         # Review inserted links to check if some of them are obsolete (mainly the ones linking to the inserted events)
-        events_with_event_uuids_equal_to_event_uuid_links = self.session.query(Event).filter(Event.event_uuid.in_(list_event_links_to_check_by_event_uuid_link)).all()
-        event_uuids_existing_in_ddbb = {str(event.event_uuid) for event in events_with_event_uuids_equal_to_event_uuid_links}
-        event_uuid_links_to_be_removed = [event_uuid for event_uuid in list_event_links_to_check_by_event_uuid_link if event_uuid not in event_uuids_existing_in_ddbb]
-        self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuid_links_to_be_removed)).delete(synchronize_session=False)
-
-        # Bulk insert alerts
-        if len(list_alerts) > 0:
-            self._bulk_insert_mappings(EventAlert, list_alerts)
+        if len(self.list_event_links_to_check_by_event_uuid_link) > 0:
+            events_with_event_uuids_equal_to_event_uuid_links = self.session.query(Event).filter(Event.event_uuid.in_(self.list_event_links_to_check_by_event_uuid_link)).all()
+            event_uuids_existing_in_ddbb = {str(event.event_uuid) for event in events_with_event_uuids_equal_to_event_uuid_links}
+            event_uuid_links_to_be_removed = [event_uuid for event_uuid in self.list_event_links_to_check_by_event_uuid_link if event_uuid not in event_uuids_existing_in_ddbb]
+            if len(event_uuid_links_to_be_removed) > 0:
+                self.session.query(EventLink).filter(EventLink.event_uuid_link.in_(event_uuid_links_to_be_removed)).delete(synchronize_session=False)
+            # end if
         # end if
-        
-        return
 
+        return
+    
     def _insert_values(self, values, entity_uuid, list_values, position = 0, parent_level = -1, parent_position = 0, positions = None):
         """
         Method to insert the values associated to events or annotations
@@ -4190,6 +4282,13 @@ class Engine():
         :type list_event_uuids_aliases: list
         """
         for event_uuid in list_event_uuids_aliases:
+
+            # Annotate aliases for links creation at the end of the ingestion of all DIMs
+            if event_uuid not in self.dict_event_uuids_aliases:
+                self.dict_event_uuids_aliases[event_uuid] = []
+            # end if
+            self.dict_event_uuids_aliases[event_uuid].extend(list_event_uuids_aliases[event_uuid])
+            
             # Get links that point to it
             links = self.query.get_event_links(event_uuids = {"filter": [event_uuid], "op": "in"})
             for link in links:

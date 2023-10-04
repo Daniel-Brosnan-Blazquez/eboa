@@ -146,16 +146,16 @@ def _validate_source(data):
         raise ErrorParsingDictionary("The tag name inside source structure has to be of type string")
     # end if
     if not is_datetime(data["generation_time"]):
-        raise ErrorParsingDictionary("The tag generation_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        raise ErrorParsingDictionary("The tag generation_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(data["generation_time"], type(data["generation_time"])))
     # end if
     if not is_datetime(data["reception_time"]):
-        raise ErrorParsingDictionary("The tag reception_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        raise ErrorParsingDictionary("The tag reception_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(data["reception_time"], type(data["reception_time"])))
     # end if
     if not is_datetime(data["validity_start"]):
-        raise ErrorParsingDictionary("The tag validity_start inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        raise ErrorParsingDictionary("The tag validity_start inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(data["validity_start"], type(data["validity_start"])))
     # end if
     if not is_datetime(data["validity_stop"]):
-        raise ErrorParsingDictionary("The tag validity_stop inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+        raise ErrorParsingDictionary("The tag validity_stop inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(data["validity_stop"], type(data["validity_stop"])))
     # end if
 
     # Optional tags
@@ -590,7 +590,7 @@ def validate_alerts_inside_entity(data):
             raise ErrorParsingDictionary("The tag notification_time is mandatory inside alert structure")
         # end if
         if not is_datetime(alert["notification_time"]):
-            raise ErrorParsingDictionary("The tag notification_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+            raise ErrorParsingDictionary("The tag notification_time inside alert structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(alert["notification_time"], type(alert["notification_time"])))
         # end if
 
         validate_alert_cnf(alert["alert_cnf"])
@@ -637,7 +637,7 @@ def _validate_alerts(data):
             raise ErrorParsingDictionary("The tag notification_time is mandatory inside alert structure")
         # end if
         if not is_datetime(alert["notification_time"]):
-            raise ErrorParsingDictionary("The tag notification_time inside source structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]")
+            raise ErrorParsingDictionary("The tag notification_time inside alert structure has to comply with this pattern AAAA-MM-DDThh:mm:ss[.mmm]. Received value: {}. Received type: {}".format(alert["notification_time"], type(alert["notification_time"])))
         # end if
 
         if not "entity" in alert:
@@ -714,7 +714,7 @@ def validate_alert_cnf(data):
     # end if
     severities = ["info", "warning", "minor", "major", "critical", "fatal"]
     if not data["severity"] in severities:
-        raise ErrorParsingDictionary("The tag severity inside alert_cnf structure has to be one of the following values {}".format(severities))
+        raise ErrorParsingDictionary("The tag severity inside alert_cnf structure has to be one of the following values {}. Received value: {}. Received type: {}".format(severities, data["severity"], type(data["severity"])))
     # end if
 
     # Optional tags
