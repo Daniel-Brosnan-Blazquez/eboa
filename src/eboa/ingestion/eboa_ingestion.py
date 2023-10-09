@@ -239,12 +239,19 @@ def command_process_file(processor, file_path, reception_time, output_path = Non
     failures = [returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
     successes = [returned_status for returned_status in returned_statuses if returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]
 
-    for failure in failures:
-        logger.error("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status {}".format(filename,
-                                                                                                                                                      failure["dim_signature"],
-                                                                                                                                                      failure["processor"],
-                                                                                                                                                      failure["status"]))
-    # end for
+    if len(failures) > 0:
+        statuses_dict = {eboa_engine.exit_codes[status_text_code]["status"]: status_text_code for status_text_code in eboa_engine.exit_codes.keys()}
+        for failure in failures:
+            logger.error("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status: {}".format(filename,
+                                                                                                                                                          failure["dim_signature"],
+                                                                                                                                                          failure["processor"],
+                                                                                                                                                          statuses_dict[failure["status"]]))
+            print("The ingestion of the file {} has failed for the DIM signature {} using the processor {} with status: {}".format(filename,
+                                                                                                                                                          failure["dim_signature"],
+                                                                                                                                                          failure["processor"],
+                                                                                                                                                          statuses_dict[failure["status"]]), file=sys.stderr)
+        # end for
+    # end if
     for success in successes:
         logger.info("The ingestion of the file {} has been performed correctly for the DIM signature {} using the processor {}".format(filename,
                                                                                                                                        success["dim_signature"],

@@ -173,7 +173,7 @@ exit_codes = {
     },
     "TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY": {
         "status": 26,
-        "message": "The triggered command associated to the source file with name {} ended unexpectedly with the error:\n{}"
+        "message": "The triggered command associated to the source file with name {} ended unexpectedly with the following errors:\n{}"
     },
     "SCHEMA_FILE_DOES_NOT_EXIST": {
         "status": 27,

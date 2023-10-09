@@ -346,7 +346,6 @@ def main(file_path, output_path = None, remove_input = False, test = False):
         if not test:
             newpid = os.fork()
         # end if
-        result = 0
         if test or newpid == 0:
             engine_eboa = Engine()
 
@@ -397,7 +396,7 @@ def main(file_path, output_path = None, remove_input = False, test = False):
             # end if
 
 
-            result = triggering(file_path, reception_time, engine_eboa, test)
+            exit_code = triggering(file_path, reception_time, engine_eboa, test)
             if remove_input:
                 try:
                     os.remove(file_path)
