@@ -459,6 +459,29 @@ def get_eboa_timeline_duration(timeline):
 
     return sum([(event.stop - event.start).total_seconds() for event in timeline])
 
+def get_eboa_nearest_event(timeline, date):
+    """
+    Method to get the nearest event in the timeline to the relevant date (comparing with start values)
+    Input: list of events structured as the datamodel of EBOA and the relevant date to compared with
+    Output: nearest event
+    Pre: timeline is not empty
+    """
+
+    nearest_event = None
+    distance_to_nearest = None
+    for event_timeline in timeline:
+        distance_between_events = abs((event_timeline.start - date).total_seconds())
+        if distance_to_nearest != None and distance_between_events > distance_to_nearest:
+            break
+        # end if
+        if distance_to_nearest == None or distance_between_events < distance_to_nearest:
+            nearest_event = event_timeline
+            distance_to_nearest = distance_between_events
+        # end if
+    # end for
+
+    return nearest_event
+
 ###########
 # Functions for managing dates
 ###########
