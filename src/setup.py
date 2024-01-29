@@ -32,7 +32,8 @@ setup(name="eboa",
           "inotify",
           "lockfile",
           "python-daemon",
-          "scipy"
+          "scipy",
+          "pyquaternion"
       ],
       extras_require={
           "tests" :[
