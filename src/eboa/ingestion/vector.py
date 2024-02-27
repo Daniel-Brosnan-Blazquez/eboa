@@ -10,6 +10,7 @@ module eboa
 # Import numpy and quaternions
 import numpy as np
 from pyquaternion import Quaternion
+import math
 
 # Import scipy utilities
 from scipy.spatial.transform import Rotation as R
@@ -45,6 +46,20 @@ def quaternion_conjugate(quaternion):
     w, x, y, z = quaternion
     
     return [float(w), -float(x), -float(y), -float(z)]
+
+def normalize_quaternion (q):
+    '''
+    Function normalize a quaternion given in the form of:
+    scalar, vector
+
+    :param quaternion: quaternion in the form [w, x, y, z]
+    :type quaternion: list
+
+    :return: normalized quaternion
+    :rtype: tuple
+    '''
+    magnitude = math.sqrt (sum (n * n for n in q))
+    return tuple (n / magnitude for n in q)
 
 def quaternion_vector_rotation(quaternion, vector):
     '''
