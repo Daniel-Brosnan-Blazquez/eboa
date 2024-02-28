@@ -215,83 +215,125 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
 
     matching_rules = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name)]", file_name = file_name)
     if len(matching_rules) > 0:
-        rule = matching_rules[0]
-        skip = rule.get("skip")
-        if skip == "true":
-            logger.info("Found a rule for the file {} with no tool execution".format(file_name))
+        logger.info(f"Found {len(matching_rules)} rule/s for the file {file_name}")
+        for rule in matching_rules:
+            skip = rule.get("skip")
+            if skip == "true":
+                logger.info("Found a rule for the file {} with no tool execution".format(file_name))
 
-            # Insert an associated alert for checking pending ingestions
-            data = {"operations": [{
-                "mode": "insert",
-                "dim_signature": {"name": "SOURCES_NOT_PROCESSED",
-                                  "exec": "",
-                                  "version": ""},
-                "source": {"name": os.path.basename(file_path),
-                           "reception_time": reception_time,
-                           "generation_time": reception_time,
-                           "validity_start": datetime.datetime.now().isoformat(),
-                           "validity_stop": datetime.datetime.now().isoformat(),
-                           "ingested": "false"}
-            }]
-            }
-            engine_eboa.treat_data(data)
+                # Insert an associated alert for checking pending ingestions
+                data = {"operations": [{
+                    "mode": "insert",
+                    "dim_signature": {"name": "SOURCES_NOT_PROCESSED",
+                                      "exec": "",
+                                      "version": ""},
+                    "source": {"name": os.path.basename(file_path),
+                               "reception_time": reception_time,
+                               "generation_time": reception_time,
+                               "validity_start": datetime.datetime.now().isoformat(),
+                               "validity_stop": datetime.datetime.now().isoformat(),
+                               "ingested": "false"}
+                }]
+                }
+                engine_eboa.treat_data(data)
 
-            # Remove the metadata indicating the pending ingestion
-            query_remove = Query()
-            query_remove.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
+                # Remove the metadata indicating the pending ingestion
+                query_remove = Query()
+                query_remove.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="}, delete = True)
 
-            query_remove.close_session()
-        else:
-            logger.info("Found a rule for the file {} with tool execution".format(file_name))
-            # File register into the configuration
-            dependencies = None
-            if output_path == None:
-                dependencies = rule.xpath("dependencies/source_type")
-            # end if
-
-            # Execute the associated tool entering on its specific mutex depending on its source type
-            add_file_path = rule.xpath("tool/command/@add_file_path")
-            add_file_path_content = True
-            if len(add_file_path) > 0:
-                if add_file_path[0].lower() == "false":
-                    add_file_path_content = False
-                # end if
-            # end if
-            if add_file_path_content:
-                command = rule.xpath("tool/command")[0].text + " " + file_path + " -t " + reception_time
+                query_remove.close_session()
             else:
-                command = rule.xpath("tool/command")[0].text + " -t " + reception_time
-            # end if
+                logger.info("Found a rule for the file {} with tool execution".format(file_name))
 
-            if output_path:
-                command = command + " -o " + output_path
-            # end if
-            source_type = rule.xpath("source_type")[0].text
+                # Check if the PENDING_SOURCES object is still available
+                query_pending = Query()
+                sources = query_pending.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+                if len(sources) == 0:
+                    logger.info("Recreating the alert for the expectancy of the ingestion of the file {}".format(file_name))
+                    # If the PENDING_SOURCES object is not available anymore, create it
+                    data = {"operations": [{
+                        "mode": "insert",
+                        "dim_signature": {"name": "PENDING_SOURCES",
+                                          "exec": "",
+                                          "version": ""},
+                        "source": {"name": os.path.basename(file_path),
+                                   "reception_time": reception_time,
+                                   "generation_time": reception_time,
+                                   "validity_start": datetime.datetime.now().isoformat(),
+                                   "validity_stop": datetime.datetime.now().isoformat(),
+                                   "ingested": "false"},
+                        "alerts": [{
+                            "message": "The input {} has been received to be ingested".format(file_path),
+                            "generator": os.path.basename(__file__),
+                            "notification_time": (datetime.datetime.now() + datetime.timedelta(hours=2)).isoformat(),
+                            "alert_cnf": {
+                                "name": "PENDING_INGESTION_OF_SOURCE",
+                                "severity": "fatal",
+                                "description": "Alert refers to the pending ingestion of the relative input",
+                                "group": "INGESTION_CONTROL"
+                            },
+                            "entity": {
+                                "reference_mode": "by_ref",
+                                "reference": os.path.basename(file_path),
+                                "type": "source"
+                            }
+                        }]
+                    }]
+                    }
+                    engine_eboa.treat_data(data)
+                # end if
+                query_pending.close_session()
+                
+                # File register into the configuration
+                dependencies = None
+                if output_path == None:
+                    dependencies = rule.xpath("dependencies/source_type")
+                # end if
 
-            # Get dependencies on this type of triggering
-            dependencies_on_this = triggering_xpath("/triggering_rules/rule/dependencies[source_type = $source_type]", source_type = source_type)
-
-            logger.info("Found {} dependecy/ies on the triggering of the file {}".format(len(dependencies_on_this), file_name))
-
-            if output_path:
-                logger.info("The following command is going to be triggered: {}".format(command))
-                exit_code, error_message = execute_command(command)
-                if exit_code == 0:
-                    logger.info("The triggering of the file {} has been executed".format(file_name))
-                else:
-                    # Execution of triggering command failed
-                    logger.error(eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
-                    query_log_status = Query()
-                    sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
-                    if len(sources) > 0:
-                        eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
+                # Execute the associated tool entering on its specific mutex depending on its source type
+                add_file_path = rule.xpath("tool/command/@add_file_path")
+                add_file_path_content = True
+                if len(add_file_path) > 0:
+                    if add_file_path[0].lower() == "false":
+                        add_file_path_content = False
                     # end if
-                    query_log_status.close_session()
                 # end if
-            else:
-                exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
+                if add_file_path_content:
+                    command = rule.xpath("tool/command")[0].text + " " + file_path + " -t " + reception_time
+                else:
+                    command = rule.xpath("tool/command")[0].text + " -t " + reception_time
+                # end if
+
+                if output_path:
+                    command = command + " -o " + output_path
+                # end if
+                source_type = rule.xpath("source_type")[0].text
+
+                # Get dependencies on this type of triggering
+                dependencies_on_this = triggering_xpath("/triggering_rules/rule/dependencies[source_type = $source_type]", source_type = source_type)
+
+                logger.info("Found {} dependecy/ies on the triggering of the file {}".format(len(dependencies_on_this), file_name))
+
+                if output_path:
+                    logger.info("The following command is going to be triggered: {}".format(command))
+                    exit_code, error_message = execute_command(command)
+                    if exit_code == 0:
+                        logger.info("The triggering of the file {} has been executed".format(file_name))
+                    else:
+                        # Execution of triggering command failed
+                        logger.error(eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
+                        query_log_status = Query()
+                        sources = query_log_status.get_sources(names = {"filter": file_name, "op": "=="}, dim_signatures = {"filter": "PENDING_SOURCES", "op": "=="})
+                        if len(sources) > 0:
+                            eboa_engine.insert_source_status(query_log_status.session, sources[0], eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["status"], error = True, message = eboa_engine.exit_codes["TRIGGERING_COMMAND_ENDED_UNEXPECTEDLY"]["message"].format(file_path, error_message))
+                        # end if
+                        query_log_status.close_session()
+                    # end if
+                else:
+                    exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
+                # end if
             # end if
-        # end if
+        # end for
     else:
         exit_code = -1
         # File not register into the configuration

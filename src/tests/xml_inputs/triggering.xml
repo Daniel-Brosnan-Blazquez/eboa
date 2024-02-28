@@ -17,14 +17,14 @@
     <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
     <source_type>FILE_NOT_TO_PROCESS</source_type>
     <tool>
-      <command>echo "File should have not been processed"</command>
+      <command>echo "File should not have been processed"</command>
     </tool>
   </rule>
   <rule>
     <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
     <source_type>FILE_NOT_TO_PROCESS</source_type>
     <tool>
-      <command>echo "File should have not been processed"</command>
+      <command>echo "File should not have been processed but skip rule is not activated"</command>
     </tool>
   </rule>
   <rule>
