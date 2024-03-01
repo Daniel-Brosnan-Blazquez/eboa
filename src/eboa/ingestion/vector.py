@@ -141,3 +141,39 @@ def calculate_vector_between_positions(position1, position2):
     # end if
     
     return vector
+
+def calculate_vector_between_positions(position1, position2):
+    '''
+    Function to obtain the vector between positions
+
+    :param position1: position in the form [x, y, z]
+    :type position1: list
+    :param position2: position in the form [x, y, z]
+    :type position2: list
+
+    :return: vector
+    :rtype: list
+    '''
+
+    vector = []
+    for dimension, coordinate1 in enumerate(position1):
+      vector.append(position2[dimension]-coordinate1)
+    # end if
+    
+    return vector
+
+def unit_vector(vector):
+    '''
+    Returns the unit vector of the vector.
+    '''
+    
+    return vector / np.linalg.norm(vector)
+
+def angle_between_vectors(v1, v2):
+    '''
+    Returns the angle in radians between vectors 'v1' and 'v2'::
+    '''
+    
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
