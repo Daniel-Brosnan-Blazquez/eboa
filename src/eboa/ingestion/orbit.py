@@ -154,6 +154,26 @@ def get_semimajor(tle_string):
 
     return semimajor
 
+def get_satellite(tle_string):
+    """
+    Method to obtain the satellite from a tle
+
+    :param tle_string: TLE of the satellite with the following format:
+    SATELLITE-INDICATOR
+    1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN
+    2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN
+    :type tle_string: str
+
+    :return: satellite value
+    :rtype: str
+    """
+    
+    first_line, second_line = verify_tle(tle_string)
+
+    satellite = tle_string.split("\n")[0]
+
+    return satellite
+
 ###########
 # Functions for managing the reference frames of the positions of the satellite
 ###########
