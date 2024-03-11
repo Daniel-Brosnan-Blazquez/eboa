@@ -33,6 +33,7 @@ setup(name="eboa",
           "lockfile",
           "python-daemon",
           "scipy",
+          "astropy",
           "pyquaternion"
       ],
       extras_require={
