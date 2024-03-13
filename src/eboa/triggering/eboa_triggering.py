@@ -189,12 +189,15 @@ def block_and_execute_command(source_type, command, file_name, dependencies, dep
             pass
         # end try
 
+        # Set the exit code to mark this thread as the parent and avoid processing the rest of rules
+        exit_code = -1000
+
     # end if
 
     return exit_code
 
 @debug
-def triggering(file_path, reception_time, engine_eboa, test, output_path = None):
+def triggering(file_path, reception_time, engine_eboa, test, output_path = None, remove_input = False):
     """
     Method to trigger commands depending on the matched configuration to the file_path
     
@@ -204,6 +207,8 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
     :type reception_time: str
     :param output_path: path to the output file
     :type output_path: str
+    :param remove_input: flag to indicate if the input has to be removed
+    :type remove_input: bool
     """
 
     exit_code = 0
@@ -214,8 +219,11 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
     triggering_xpath = get_triggering_conf()
 
     matching_rules = triggering_xpath("/triggering_rules/rule[match(source_mask, $file_name)]", file_name = file_name)
+
+    confirm_removal_input = True    
     if len(matching_rules) > 0:
         logger.info(f"Found {len(matching_rules)} rule/s for the file {file_name}")
+        index_rules = 0
         for rule in matching_rules:
             skip = rule.get("skip")
             if skip == "true":
@@ -331,6 +339,19 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
                     # end if
                 else:
                     exit_code = block_and_execute_command(source_type, command, file_name, dependencies, dependencies_on_this, test)
+
+                    # Check if this thread is the parent thread and shall just end
+                    if exit_code == -1000:
+                        confirm_removal_input = False
+                        exit_code = 0
+                        break
+                    # end if
+                # end if
+
+                # Deactivate removal of input if there are still rules applying to the input
+                index_rules += 1
+                if index_rules < len(matching_rules):
+                    confirm_removal_input = False
                 # end if
             # end if
         # end for
@@ -349,6 +370,16 @@ def triggering(file_path, reception_time, engine_eboa, test, output_path = None)
         print("\nWARNING: The file {} does not match with any configured rule in {}".format(file_name, get_resources_path() + "/triggering.xml"))
     # end if
 
+    # Remove input if indicated and there are no more rules applying
+    if remove_input and confirm_removal_input:
+        try:
+            os.remove(file_path)
+            logger.info("The received file {} has been removed".format(file_path))
+        except FileNotFoundError:
+            pass
+        # end try
+    # end if
+    
     return exit_code
 
 def main(file_path, output_path = None, remove_input = False, test = False):
@@ -367,6 +398,7 @@ def main(file_path, output_path = None, remove_input = False, test = False):
         # end if
 
         engine_eboa = Engine()
+
         triggering(file_path, reception_time, engine_eboa, test, output_path)
         if remove_input:
             try:
@@ -438,15 +470,7 @@ def main(file_path, output_path = None, remove_input = False, test = False):
             # end if
 
 
-            exit_code = triggering(file_path, reception_time, engine_eboa, test)
-            if remove_input:
-                try:
-                    os.remove(file_path)
-                    logger.info("The received file {} has been removed".format(file_path))
-                except FileNotFoundError:
-                    pass
-                # end try
-            # end if
+            exit_code = triggering(file_path, reception_time, engine_eboa, test, remove_input = remove_input)
 
             engine_eboa.close_session()
 

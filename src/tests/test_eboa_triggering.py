@@ -240,3 +240,45 @@ class TestEboaIngestion(unittest.TestCase):
         assert len([status for status in sources[0].statuses if status.status == eboa_engine.exit_codes["FILE_DOES_NOT_PASS_SCHEMA"]["status"]]) > 0
 
         shutil.copyfile("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")
+        
+    def test_trigger_file_with_three_rules(self):
+
+        # Move test configuration for triggering
+        os.rename("/resources_path/triggering.xml", "/resources_path/triggering_bak.xml")
+        shutil.copyfile(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/triggering_three_rules.xml", "/resources_path/triggering.xml")
+
+        filename = "source.json"
+        file_path = os.path.dirname(os.path.abspath(__file__)) + "/json_inputs/" + filename
+        
+        try:
+            eboa_triggering.main(file_path, test = True)
+        except SystemExit as e:
+            exit_code = str(e)
+        # end try
+
+        assert exit_code == "0"
+
+        # Check inserted data
+        sources = self.query.get_sources()
+
+        assert len(sources) == 3
+
+        sources = self.query.get_sources(names = {"filter": "source.json", "op": "=="})
+
+        assert len(sources) == 1
+
+        assert len([status for status in sources[0].statuses if status.status == eboa_engine.exit_codes["OK"]["status"]]) > 0
+
+        sources = self.query.get_sources(names = {"filter": "source.json_1", "op": "=="})
+
+        assert len(sources) == 1
+
+        assert len([status for status in sources[0].statuses if status.status == eboa_engine.exit_codes["OK"]["status"]]) > 0
+
+        sources = self.query.get_sources(names = {"filter": "source.json_2", "op": "=="})
+
+        assert len(sources) == 1
+
+        assert len([status for status in sources[0].statuses if status.status == eboa_engine.exit_codes["OK"]["status"]]) > 0
+
+        shutil.copyfile("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")
