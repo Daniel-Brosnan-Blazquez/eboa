@@ -34,7 +34,8 @@ setup(name="eboa",
           "python-daemon",
           "scipy",
           "astropy",
-          "pyquaternion"
+          "pyquaternion",
+          "sgp4"
       ],
       extras_require={
           "tests" :[
