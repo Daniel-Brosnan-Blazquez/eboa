@@ -211,6 +211,26 @@ class PriorityNotDefined(Error):
     def __init__(self, message):
         self.message = message
 
+class DuplicatedSetCounter(Error):
+    """Exception raised when there is one or more events with the insertion type SET_COUNTER associated to the same gauge.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class MixedOperationsWithCounter(Error):
+    """Exception raised when there are events with the insertion type SET_COUNTER and UPDATE_COUNTER mixed associated to the same gauge.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class IncorrectTle(Error):
     """Exception raised when the format of the received TLE is not correct.
     Correct format is:

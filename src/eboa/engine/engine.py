@@ -30,7 +30,7 @@ from geoalchemy2 import functions
 from geoalchemy2.shape import to_shape
 
 # Import exceptions
-from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference, PriorityNotDefined, WrongReportedValidityPeriod
+from eboa.engine.errors import LinksInconsistency, UndefinedEventLink, DuplicatedEventLinkRef, WrongPeriod, SourceAlreadyIngested, WrongValue, OddNumberOfCoordinates, EboaResourcesPathNotAvailable, WrongGeometry, ErrorParsingDictionary, DuplicatedValues, UndefinedEntityReference, PriorityNotDefined, WrongReportedValidityPeriod, MixedOperationsWithCounter, DuplicatedSetCounter
 
 # Import datamodel
 from eboa.datamodel.base import Session
@@ -178,6 +178,14 @@ exit_codes = {
     "SCHEMA_FILE_DOES_NOT_EXIST": {
         "status": 27,
         "message": "The schema file with path {} does not exist"
+    },
+    "DUPLICATED_SET_COUNTER": {
+        "status": 28,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} defines duplicated requests to set the counter ('insertion_type': 'SET_COUNTER') associated to gauge name {} and gauge system {}"
+    },
+    "MIXED_OPERATIONS_WITH_COUNTER": {
+        "status": 29,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} mixes requests to set and update the counter ('insertion_type': 'SET_COUNTER') associated to gauge name {} and gauge system {}. This is not allowed (it has no logic)"
     }
 }
 
@@ -654,6 +662,8 @@ class Engine():
         self.annotations = {}
         self.keys_events = {}
         self.keys_events_with_priority = {}
+        self.update_counters = {}
+        self.set_counters = {}
         self.alert_cnfs = {}
         self.alert_groups = {}
 
@@ -862,6 +872,24 @@ class Engine():
             # Log the error
             logger.error(e)
             return exit_codes["PRIORITY_NOT_DEFINED"]["status"]
+        except MixedOperationsWithCounter as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["status"]
+        except DuplicatedSetCounter as e:
+            self.session.rollback()
+            self._insert_source_status(exit_codes["DUPLICATED_SET_COUNTER"]["status"], error = True, message = str(e))
+            # Insert content in the DDBB
+            self.source.content_json = json.dumps(self.operation)
+            self.session.commit()
+            # Log the error
+            logger.error(e)
+            return exit_codes["DUPLICATED_SET_COUNTER"]["status"]
         # end try
 
         self._insert_ingestion_progress(65)
@@ -939,7 +967,7 @@ class Engine():
         self._insert_ingestion_progress(85)
 
         logger.debug("Alerts inserted for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
-
+        
         # At this point all the information has been inserted, commit data twice as there was a begin nested initiated
         self.session.commit()
         self.session.commit()
@@ -952,6 +980,14 @@ class Engine():
         self._insert_ingestion_progress(90)
 
         logger.debug("Deprecated data removed for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
+
+        # Manage counters
+        self._manage_set_counters()
+        self._manage_update_counters()
+
+        self._insert_ingestion_progress(95)
+
+        logger.debug("Counters managed for the source file {} associated to the DIM signature {} and DIM processing {} with version {}".format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         
         n_events = 0
         n_event_alerts = 0
@@ -1603,6 +1639,60 @@ class Engine():
                 self.keys_events[(key, str(self.dim_signature.dim_signature_uuid))] = None
             elif gauge_info["insertion_type"] == "EVENT_KEYS_with_PRIORITY":
                 self.keys_events_with_priority[(key, str(self.dim_signature.dim_signature_uuid))] = None
+            elif gauge_info["insertion_type"] == "UPDATE_COUNTER":
+
+                counter_key = (self.dim_signature.dim_signature, gauge_info.get("name"), gauge_info.get("system"))
+
+                if counter_key in self.set_counters:
+                    raise MixedOperationsWithCounter(exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, gauge_info.get("name"), gauge_info.get("system")))
+                # end if
+
+                value_for_update = float(event.get("values")[0].get("value"))
+                if counter_key not in self.update_counters:
+                    self.update_counters[counter_key] = {
+                        "value": value_for_update,
+                        "start": start,
+                        "stop": stop,
+                        "gauge_name": gauge_info.get("name"),
+                        "gauge_system": gauge_info.get("system"),
+                        "dim_signature": self.dim_signature.dim_signature
+                    }
+                else:
+                    self.update_counters[counter_key]["value"] += value_for_update
+                    if start < self.update_counters[counter_key]["start"]:
+                        self.update_counters[counter_key]["start"] = start
+                    # end if
+                    if stop > self.update_counters[counter_key]["stop"]:
+                        self.update_counters[counter_key]["stop"] = stop
+                    # end if
+                # end if
+
+                # This insertion type does not actually insert any event at this stage
+                continue
+            elif gauge_info["insertion_type"] == "SET_COUNTER":
+
+                counter_key = (self.dim_signature.dim_signature, gauge_info.get("name"), gauge_info.get("system"))
+
+                if counter_key in self.update_counters:
+                    raise MixedOperationsWithCounter(exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, gauge_info.get("name"), gauge_info.get("system")))
+                # end if
+
+                if counter_key in self.set_counters:
+                    raise DuplicatedSetCounter(exit_codes["DUPLICATED_SET_COUNTER"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, gauge_info.get("name"), gauge_info.get("system")))
+                # end if
+                    
+                value_for_update = float(event.get("values")[0].get("value"))
+                self.set_counters[counter_key] = {
+                    "value": value_for_update,
+                    "start": start,
+                    "stop": stop,
+                    "gauge_name": gauge_info.get("name"),
+                    "gauge_system": gauge_info.get("system"),
+                    "dim_signature": self.dim_signature.dim_signature
+                }
+
+                # This insertion type does not actually insert any event at this stage
+                continue
             # end if
             explicit_ref_uuid = None
             if explicit_ref != None:
@@ -2146,6 +2236,142 @@ class Engine():
         # end if
 
         self.session.commit()
+
+        return
+
+    @debug
+    def _manage_update_counters(self):
+        """
+        Method to manage counters when the insertion_type is 'UPDATE_COUNTER'
+        """
+
+        list_events_to_create = []
+        list_values_to_create = {
+            "doubles": []
+        }
+        
+        for counter_key in self.update_counters:
+            
+            # Make this method process and thread safe
+            lock = "manage_counters_" + str(counter_key)
+            @self.synchronized(lock, external=True, lock_path="/dev/shm")
+            def _manage_update_counters_synchronize(self):
+
+                counter = self.update_counters[counter_key]
+                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(Gauge.name == counter["gauge_name"],
+                                                           Gauge.system == counter["gauge_system"],
+                                                           DimSignature.dim_signature == counter["dim_signature"]).limit(1).all()
+
+                # Check if the counter was already stored in the DDBB
+                if len(events) > 0:
+                    event_value = self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).first()
+                    self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).update({"value": event_value.value + counter["value"]}, synchronize_session=False)
+                    if counter["start"] < events[0].start.isoformat() and counter["stop"] > events[0].stop.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"], "stop": counter["stop"]}, synchronize_session=False)
+                    elif counter["start"] < events[0].start.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"]}, synchronize_session=False)
+                    elif counter["stop"] > events[0].stop.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"stop": counter["stop"]}, synchronize_session=False)
+                    # end if
+                else:
+                    id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    self._insert_event(list_events_to_create, id, counter["start"], counter["stop"], self.gauges[(counter["gauge_name"], counter["gauge_system"])].gauge_uuid, None, True, source = self.source)
+                    entity_uuid = {
+                        "name": "event_uuid",
+                        "id": id
+                    }
+                    values = [{
+                        "type": "double",
+                        "name": "value",
+                        "value": counter["value"]
+                    }]
+
+                    self._insert_values(values, entity_uuid, list_values_to_create)
+
+                # end if
+
+            # end def
+
+            _manage_update_counters_synchronize(self)
+
+        # end for
+
+        # Bulk insert events
+        if len(list_events_to_create) > 0:
+            self.session.bulk_insert_mappings(Event, list_events_to_create)
+        # end if
+
+        if len(list_values_to_create["doubles"]) > 0:
+            self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
+        # end if
+
+        return
+
+    @debug
+    def _manage_set_counters(self):
+        """
+        Method to manage counters when the insertion_type is 'SET_COUNTER'
+        """
+
+        list_events_to_create = []
+        list_values_to_create = {
+            "doubles": []
+        }
+        
+        for counter_key in self.set_counters:
+            
+            # Make this method process and thread safe
+            lock = "manage_counters_" + str(counter_key)
+            @self.synchronized(lock, external=True, lock_path="/dev/shm")
+            def _manage_set_counters_synchronize(self):
+
+                counter = self.set_counters[counter_key]
+                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(Gauge.name == counter["gauge_name"],
+                                                           Gauge.system == counter["gauge_system"],
+                                                           DimSignature.dim_signature == counter["dim_signature"]).limit(1).all()
+
+                # Check if the counter was already stored in the DDBB
+                if len(events) > 0:
+                    event_value = self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).first()
+                    self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).update({"value": counter["value"]}, synchronize_session=False)
+                    if counter["start"] < events[0].start.isoformat() and counter["stop"] > events[0].stop.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"], "stop": counter["stop"]}, synchronize_session=False)
+                    elif counter["start"] < events[0].start.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"]}, synchronize_session=False)
+                    elif counter["stop"] > events[0].stop.isoformat():
+                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"stop": counter["stop"]}, synchronize_session=False)
+                    # end if
+                else:
+                    id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
+                    self._insert_event(list_events_to_create, id, counter["start"], counter["stop"], self.gauges[(counter["gauge_name"], counter["gauge_system"])].gauge_uuid, None, True, source = self.source)
+                    entity_uuid = {
+                        "name": "event_uuid",
+                        "id": id
+                    }
+                    values = [{
+                        "type": "double",
+                        "name": "value",
+                        "value": counter["value"]
+                    }]
+
+                    self._insert_values(values, entity_uuid, list_values_to_create)
+
+                # end if
+
+            # end def
+
+            _manage_set_counters_synchronize(self)
+
+        # end for
+
+        # Bulk insert events
+        if len(list_events_to_create) > 0:
+            self.session.bulk_insert_mappings(Event, list_events_to_create)
+        # end if
+
+        if len(list_values_to_create["doubles"]) > 0:
+            self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
+        # end if
 
         return
 

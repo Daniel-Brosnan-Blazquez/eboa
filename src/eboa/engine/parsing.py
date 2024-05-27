@@ -331,21 +331,39 @@ def _validate_events(data):
         # end if
 
         # Optional tags
+        if "explicit_reference" in event and event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') cannot have an associated explicit_reference")
+        # end if            
         if "explicit_reference" in event and not type(event["explicit_reference"]) == str:
             raise ErrorParsingDictionary("The tag explicit_reference inside events structure has to be of type string")
         # end if
+        if "key" in event and event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') cannot have an associated key")
+        # end if            
         if "key" in event and not type(event["key"]) == str:
             raise ErrorParsingDictionary("The tag key inside events structure has to be of type string")
         # end if
+        if "links" in event and event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') cannot have associated links")
+        # end if            
         if "links" in event:
             _validate_event_links(event["links"])
         # end if
         if "values" in event:
             validate_values(event["values"])
+            if event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+                validate_values_for_counters(event["values"])
+            # end if
         # end if
+        if "link_ref" in event and event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') cannot have an associated link_ref")
+        # end if            
         if "link_ref" in event and not type(event["link_ref"]) == str:
             raise ErrorParsingDictionary("The tag link_ref inside events structure has to be of type string")
         # end if
+        if "alerts" in event and event["gauge"]["insertion_type"] in ["SET_COUNTER", "UPDATE_COUNTER"]:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') cannot have an associated alerts")
+        # end if            
         if "alerts" in event:
             validate_alerts_inside_entity(event["alerts"])
         # end if
@@ -375,8 +393,8 @@ def _validate_gauge(data):
     if not type(data["name"]) == str:
         raise ErrorParsingDictionary("The tag name inside gauge structure has to be of type string")
     # end if
-    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "EVENT_KEYS_with_PRIORITY", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY", "INSERT_and_ERASE_per_EVENT", "INSERT_and_ERASE_per_EVENT_with_PRIORITY"]:
-        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS', 'EVENT_KEYS_with_PRIORITY', 'INSERT_and_ERASE', 'INSERT_and_ERASE_with_PRIORITY', 'INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY', 'INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY', 'INSERT_and_ERASE_per_EVENT' and 'INSERT_and_ERASE_per_EVENT_with_PRIORITY'")
+    if not data["insertion_type"] in ["SIMPLE_UPDATE", "EVENT_KEYS", "EVENT_KEYS_with_PRIORITY", "INSERT_and_ERASE", "INSERT_and_ERASE_with_PRIORITY", "INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY", "INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY", "INSERT_and_ERASE_per_EVENT", "INSERT_and_ERASE_per_EVENT_with_PRIORITY", "SET_COUNTER", "UPDATE_COUNTER"]:
+        raise ErrorParsingDictionary("The values allowed for tag insertion_type inside gauge structure are 'SIMPLE_UPDATE', 'EVENT_KEYS', 'EVENT_KEYS_with_PRIORITY', 'INSERT_and_ERASE', 'INSERT_and_ERASE_with_PRIORITY', 'INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY', 'INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY', 'INSERT_and_ERASE_per_EVENT', 'INSERT_and_ERASE_per_EVENT_with_PRIORITY', 'SET_COUNTER' and 'UPDATE_COUNTER'")
     # end if
 
     # Optional tags
@@ -508,7 +526,7 @@ def validate_values(data):
     if type(data) != list:
         raise ErrorParsingDictionary("The tag values has to be of type list")
     # end if
-
+    
     for value in data:
         if type(value) != dict:
             raise ErrorParsingDictionary("The values have to be of type dict")
@@ -555,6 +573,26 @@ def validate_values(data):
 
     # end for
 
+    return
+
+def validate_values_for_counters(data):
+
+    # Validate specific structure of values for managing counters
+    if len(data) != 1:
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') can include only one value in the associated list of values. Received values {data}")
+    # end if
+    if data[0]["type"] != "double":
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') can include only one value in the associated list of values with type 'double'. Received values: {data}")
+    # end if
+    if data[0]["name"] != "value":
+            raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') can include only one value in the associated list of values with name 'value'. Received values: {data}")
+    # end if
+    try:
+        float(data[0]["value"])
+    except (ValueError, TypeError):
+        raise ErrorParsingDictionary(f"The gauges associated to counters ('SET_COUNTER', 'UPDATE_COUNTER') can include only one value in the associated list of values and value needs to be convertible to float. Received values: {data}")
+    # end try
+    
     return
 
 def validate_alerts_inside_entity(data):
