@@ -1,7 +1,7 @@
-##EBOA: Engine for Business Operation Analysis##
+# EBOA: Engine for Business Operation Analysis #
 
-This component is the data storage management tool for business-related data.
-The data management will make use of a data model containing the following main entities:
+This component is the data storage management tool for the Business Operation Analysis.
+The data management makes use of a data model containing the following main entities:
 
 1. Events
 
@@ -11,9 +11,9 @@ The data management will make use of a data model containing the following main 
 
 4. Data Ingestion Modules
 
-** Purpose **
+## Purpose ##
 
-This component will manage the storage of business-related data following the next requirements:
+This component manages the storage of Business Operation Analysis data following the next requirements:
 
 1. Traceability of all the data to the source of information (even information created within the infrastructure)
 
@@ -35,7 +35,7 @@ This component will manage the storage of business-related data following the ne
 
 10. Quick access to the information by which the information can be managed dynamically depending on the needs of the users
 
-** Scope **
+## Scope ##
 
 This component will be targetted to systems/tools with the need of storing time-tagged information.
 The data model used will allow quick access to the infomration in a structured way.
