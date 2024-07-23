@@ -1642,7 +1642,6 @@ class Engine():
             elif gauge_info["insertion_type"] == "UPDATE_COUNTER":
 
                 counter_key = (self.dim_signature.dim_signature, gauge_info.get("name"), gauge_info.get("system"))
-
                 if counter_key in self.set_counters:
                     raise MixedOperationsWithCounter(exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, gauge_info.get("name"), gauge_info.get("system")))
                 # end if
@@ -2290,20 +2289,23 @@ class Engine():
 
                 # end if
 
+                # Bulk insert events
+                if len(list_events_to_create) > 0:
+                    self.session.bulk_insert_mappings(Event, list_events_to_create)
+                # end if
+
+                if len(list_values_to_create["doubles"]) > 0:
+                    self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
+                # end if
+
+                # Commit data
+                self.session.commit()
+
             # end def
 
             _manage_update_counters_synchronize(self)
 
         # end for
-
-        # Bulk insert events
-        if len(list_events_to_create) > 0:
-            self.session.bulk_insert_mappings(Event, list_events_to_create)
-        # end if
-
-        if len(list_values_to_create["doubles"]) > 0:
-            self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
-        # end if
 
         return
 

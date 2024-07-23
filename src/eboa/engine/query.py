@@ -19,7 +19,7 @@ from geoalchemy2.shape import to_shape
 
 # Import SQLalchemy entities
 from sqlalchemy import extract
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import scoped_session, aliased
 
 # Import datamodel
 from eboa.datamodel.base import Session, engine, Base
@@ -1923,16 +1923,17 @@ class Query():
             for value_filter in value_filters:
                 # Type
                 value_type = value_entities[value_filter["type"]]
+                value_table_alias = aliased(value_type)
                 if tables != None:
-                    tables.append(value_type)
+                    tables.append(value_table_alias)
                 # end if
 
                 # Name
                 if value_filter["name"]["op"] in arithmetic_operators.keys():
                     op = arithmetic_operators[value_filter["name"]["op"]]
-                    params.append(op(eval("value_type.name"), value_filter["name"]["filter"]))
+                    params.append(op(eval("value_table_alias.name"), value_filter["name"]["filter"]))
                 else:
-                    filter = eval('value_type.name.' + text_operators[value_filter["name"]["op"]])
+                    filter = eval('value_table_alias.name.' + text_operators[value_filter["name"]["op"]])
                     params.append(filter(value_filter["name"]["filter"]))
                 # end if
 
@@ -1941,9 +1942,9 @@ class Query():
                     value = value_filter["value"]
                     if value["op"] in arithmetic_operators.keys():
                         op = arithmetic_operators[value["op"]]
-                        params.append(op(value_type.value, value["filter"]))
+                        params.append(op(value_table_alias.value, value["filter"]))
                     else:
-                        op = eval("value_type.value." + text_operators[value["op"]])
+                        op = eval("value_table_alias.value." + text_operators[value["op"]])
                         params.append(op(value["filter"]))
                     # end if
                 # end if

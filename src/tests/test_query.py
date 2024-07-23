@@ -3785,3 +3785,63 @@ class TestQuery(unittest.TestCase):
         alerts = self.query.get_alerts(**kwargs)
 
         assert len(alerts) == 2
+
+    def test_query_event_by_two_values_of_same_type(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-06T08:07:36"},
+            "events": [{
+                "gauge": {
+                    "name": "GAUGE",
+                    "system": "SYSTEM",
+                    "insertion_type": "SIMPLE_UPDATE"
+                },
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T08:07:36",
+                "values": [{"name": "VALUES",
+                            "type": "object",
+                            "values": [
+                                {"type": "text",
+                                 "name": "TEXT",
+                                 "value": "TEXT"},
+                                {"type": "text",
+                                 "name": "TEXT2",
+                                 "value": "TEXT2"}
+                            ]
+                }
+                ]
+            }
+            ]
+        }]}
+        self.engine_eboa.treat_data(data)
+
+        event = self.query.get_events(value_filters = [
+            {"name": {
+                "op": "==",
+                "filter": "TEXT"},
+             "type": "text",
+             "value": {
+                 "op": "==",
+                 "filter": "TEXT"
+             }
+            },
+            {"name": {
+                "op": "==",
+                "filter": "TEXT2"},
+             "type": "text",
+             "value": {
+                 "op": "==",
+                 "filter": "TEXT2"
+             }
+            }
+        ])
+
+        assert len(event) == 1
