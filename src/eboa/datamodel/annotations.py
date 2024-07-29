@@ -35,7 +35,48 @@ class Annotation(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
-    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
+    def jsonify(self, include_indexed_values = False):
+        """
+        Method to obtain the structure of the annotation in a python dictionary format
+
+        :return: structure of the annotation
+        :rtype: dict
+        """
+
+        structure = {
+            "annotation_uuid": str(self.annotation_uuid),
+            "explicit_reference": {
+                "uuid": str(self.explicitRef.explicit_ref_uuid),
+                "name": self.explicitRef.explicit_ref
+            },
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "configuration": {
+                "uuid": str(self.annotationCnf.annotation_cnf_uuid),
+                "dim_signature": self.annotationCnf.dim_signature.dim_signature,
+                "name": self.annotationCnf.name,
+                "system": self.annotationCnf.system,
+                "description": self.annotationCnf.description or "",
+            },
+            "source": {
+                "source_uuid": str(self.source.source_uuid),
+                "name": self.source.name,
+            }
+        }
+        
+        if include_indexed_values:
+            indexed_values = {}
+            values = self.get_structured_values(structure_for_searching_values = indexed_values)
+
+            structure["indexed_values"] = indexed_values
+        else:
+            values = self.get_structured_values()
+        # end if
+
+        structure["values"] = values
+
+        return structure
+
+    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0, structure_for_searching_values = None):
         """
         Method to obtain the structure of values in a python dictionary format
         """
@@ -50,7 +91,8 @@ class Annotation(Base):
             export.build_values_structure(values, json_values,
                                           position = position,
                                           parent_level = parent_level,
-                                          parent_position = parent_position)
+                                          parent_position = parent_position,
+                                          structure_for_searching_values = structure_for_searching_values)
         # end if
 
         return json_values

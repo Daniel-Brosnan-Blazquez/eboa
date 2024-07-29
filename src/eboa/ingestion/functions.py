@@ -10,6 +10,20 @@ from dateutil import parser
 import datetime
 from lxml import etree, objectify
 
+# Import LeapSeconds
+from astropy.utils.iers import LeapSeconds
+
+###########
+# Functions for controling the ingestion
+###########
+def insert_ingestion_progress(session, source, progress):
+    if source:
+        source.processor_progress = progress
+        session.commit()
+    # end if
+
+    return
+
 ###########
 # Functions for helping with the ingestion of data
 ###########
@@ -37,6 +51,23 @@ def insert_event_for_ingestion(event, source, list_of_events):
     # end if
     list_of_events.append(event)
     return
+
+def add_ingestion_completess_message(ingestion_completeness_message, new_message):
+    """
+    Method to add a new ingestion completeness message into the record
+
+    :param ingestion_completeness_message: record of the ingestino completeness messages
+    :type ingestion_completeness_message: str
+    :param new_message: new message to be inserted into the record
+    :type new_message: str
+    """
+
+    new_message_wrapper = "#" + new_message + "# "
+    if not new_message_wrapper in ingestion_completeness_message:
+        ingestion_completeness_message = ingestion_completeness_message + new_message_wrapper
+    # end if
+
+    return ingestion_completeness_message
 
 ###########
 # Functions for helping with trating XML files
@@ -71,15 +102,43 @@ def dates_difference (minuend, subtrahend):
     """
     Method to perform the difference between two dates
     :param minuend: first date in the substruction
-    :type date: str
+    :type minuend: str
     :param subtrahend: second date in the substruction
-    :type date: str
+    :type subtrahend: str
 
     :return: seconds of difference
     :rtype: float
 
     """    
     return (parser.parse(minuend) - parser.parse(subtrahend)).total_seconds()
+
+###########
+# Functions for parsing dates
+###########
+def date_doy_to_iso (date_doy):
+    """
+    Method to perform the convert a date in DOY (YYYY.DOY.hh.mm.ss.000) format to ISO format
+    :param date: date in doy format
+    :type date: str
+
+    :return: date in iso format
+    :rtype: str
+
+    """
+
+    split_date_doy = date_doy.split(".")
+    year = int(split_date_doy[0])
+    doy = int(split_date_doy[1]) - 1
+    hours = int(split_date_doy[2])
+    minutes = int(split_date_doy[3])
+    seconds = int(split_date_doy[4])
+    milliseconds = hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000
+    if len(split_date_doy) > 5:
+        milliseconds = milliseconds + float("0." + split_date_doy[5]) * 1000
+    # end if
+    date_iso = (datetime.datetime(year, 1, 1) + datetime.timedelta(days=doy, milliseconds=milliseconds)).isoformat()
+
+    return date_iso
 
 ###########
 # Functions using the timelines with the structure defined by identifiers and start and stop vlaues
@@ -317,11 +376,11 @@ def get_timeline_duration(timeline):
     """
     return sum([(segment["stop"] - segment["start"]).total_seconds() for segment in timeline])
 
-def get_greater_segment(timeline):
+def get_segments_sorted_by_duration(timeline):
     """
-    Method to get the segment corresponding to the greater duration
+    Method to get the segments of the timeline sorted by duration
     Input: list of segments structured for the usage of this component
-    Output: segment with the greater duration
+    Output: segments sorted by duration
 
     """
     segments_duration = [{"id": segment["id"],
@@ -329,9 +388,22 @@ def get_greater_segment(timeline):
                           "stop": segment["stop"],
                           "duration": (segment["stop"] - segment["start"]).total_seconds()} for segment in timeline]
     
-    sorted_segments_by_duration = sorted(segments_duration, key=lambda segment: segment["duration"])
+    return sorted(segments_duration, key=lambda segment: segment["duration"])
 
-    return sorted_segments_by_duration[-1]
+def get_greater_segment(timeline):
+    """
+    Method to get the segment corresponding to the greater duration
+    Input: list of segments structured for the usage of this component
+    Output: segment with the greater duration
+
+    """
+    segments = get_segments_sorted_by_duration(timeline)
+    greater_segment = None
+    if len(segments) > 0:
+        greater_segment = segments[-1]
+    # end if
+
+    return greater_segment
 
 ###########
 # Functions using the timelines with the structure of data to be inserted into the EBOA
@@ -386,3 +458,100 @@ def get_eboa_timeline_duration(timeline):
     """
 
     return sum([(event.stop - event.start).total_seconds() for event in timeline])
+
+def get_eboa_nearest_event(timeline, date):
+    """
+    Method to get the nearest event in the timeline to the relevant date (comparing with start values)
+    Input: list of events structured as the datamodel of EBOA and the relevant date to compared with
+    Output: nearest event
+    Pre: timeline is not empty
+    """
+
+    nearest_event = None
+    distance_to_nearest = None
+    for event_timeline in timeline:
+        distance_between_events = abs((event_timeline.start - date).total_seconds())
+        if distance_to_nearest != None and distance_between_events > distance_to_nearest:
+            break
+        # end if
+        if distance_to_nearest == None or distance_between_events < distance_to_nearest:
+            nearest_event = event_timeline
+            distance_to_nearest = distance_between_events
+        # end if
+    # end for
+
+    return nearest_event
+
+###########
+# Functions for managing dates
+###########
+def get_leap_seconds():
+    """
+    Method to obtain a dictionary with the leap seconds
+
+    :return: list with the dates when the leap seconds where applied
+    :rtype: list
+
+    """
+
+    epoch = "1980-01-01T00:00:00"
+    
+    leap_seconds_list = []
+    leap_seconds = LeapSeconds()
+
+    leap_seconds_table = leap_seconds.auto_open()
+    
+    for leap_seconds_row in leap_seconds_table:
+        year = leap_seconds_row[0]
+        month = leap_seconds_row[1]
+        date = datetime.datetime(year=year, month=month, day=1).isoformat()
+        if date > epoch:
+            leap_seconds_list.append(date)
+        # end if
+    # end for
+
+    return leap_seconds_list
+
+def get_number_of_leap_seconds(date):
+    """
+    Method to obtain the number of leap seconds before a given date
+
+    :param date: date in ISO8601
+    :type date: str
+
+    :return: number of leap seconds
+    :rtype: int
+
+    """
+
+    leap_seconds_list = get_leap_seconds()
+
+    leap_seconds_before_date = [leap_second_date for leap_second_date in leap_seconds_list if leap_second_date < date]
+
+    return len(leap_seconds_before_date)
+
+def date_inside_range(date1, date2, margin):
+    """
+    Method to check if date1 is inside range [date2 - margin, date2 + margin]
+
+    :param date1: date to check if it is inside range [date2 - margin, date2 + margin]
+    :type date1: datetime
+    :param date2: date to define the range [date2 - margin, date2 + margin]
+    :type date2: datetime
+    :param margin: margin in seconds to define the range [date2 - margin, date2 + margin]
+    :type margin: float
+
+    :return: True if date1 is in range [date2 - margin, date2 + margin], False otherwise
+    :rtype: bool
+
+    """
+
+    period_start = date2 - datetime.timedelta(seconds=margin)
+    period_stop = date2 + datetime.timedelta(seconds=margin)
+
+    date_inside_period = False
+    if date1 >= period_start and date1 <= period_stop:
+        date_inside_period = True
+    # end if
+    
+    return date_inside_period

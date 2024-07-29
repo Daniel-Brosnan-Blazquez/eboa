@@ -12,7 +12,7 @@ The \acrshort{eboa} implements the data model shown in the figure \ref{fg:eboadb
 
 This datamodel is based on the data model of the SDM component.
 
-As said in chapter \ref{c:intro}, there are 4 main entities in the data model: explicit references (explicit\_ref\_tb), events (event\_tb), annotations (annotation\_tb) and inputs (dim\_processing\_tb).
+As said in chapter \ref{c:intro}, these are the main entities in the data model: explicit references (explicit\_refs), events (events), annotations (annotations), sources (sources), alerts (alerts) and reports (reports).
 
 The entities event and annotation may have an associated dynamic structure of values. These values indicate properties/information of the related entities interesting for the data model. These values are structured in the database following the schema of the figure \ref{fg:values_structure}.
 
@@ -23,6 +23,8 @@ The entities event and annotation may have an associated dynamic structure of va
 	\label{fg:values_structure}
   \end{center}
 \end{figure}
+
+Note that the values per level follow an incremental value for the position, i.e. the first value under object in position 5 in the first level has position value 3 and not 0. This is due to the need to link values univocally to their parent object in all the structure. If this is not done this way the values could share parent level and parent position values.
 
 The values associated to an entity may have one of the following types:
 

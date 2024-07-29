@@ -13,4 +13,18 @@
       <command>echo "matching skip"</command>
     </tool>
   </rule>
+  <rule skip="true" report="true">
+    <source_mask>matching_source_skip_report</source_mask>
+    <source_type>MATCHING_SKIP_REPORT</source_type>
+    <tool>
+      <command>echo "matching skip report"</command>
+    </tool>
+  </rule>
+  <rule skip="true" report="false">
+    <source_mask>matching_source_skip_not_report</source_mask>
+    <source_type>MATCHING_SKIP_NOT_REPORT</source_type>
+    <tool>
+      <command>echo "matching skip not report"</command>
+    </tool>
+  </rule>
 </triggering_rules>

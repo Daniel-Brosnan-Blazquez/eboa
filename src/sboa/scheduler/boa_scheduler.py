@@ -19,6 +19,8 @@ import psutil
 import shlex
 from subprocess import Popen, PIPE
 from multiprocessing import Pool
+import os
+import errno
 
 # Get boa scheduler functions
 import sboa.scheduler.boa_scheduler_functions as functions
@@ -34,6 +36,7 @@ from sboa.engine.engine import Engine
 import sboa.engine.engine as sboa_engine
 
 pid_file = functions.pid_file
+pid_files_folder = functions.pid_files_folder
 
 # Import auxiliary functions
 from sboa.datamodel.functions import read_configuration
@@ -80,6 +83,9 @@ def query_and_execute_tasks(logger = None):
     tasks_to_trigger = len(tasks)
 
     if tasks_to_trigger > 0:
+
+        logger.info("There are {} tasks to trigger and {} available slots".format(tasks_to_trigger, available_slots))
+        
         if tasks_to_trigger > available_slots:
             tasks_to_trigger = available_slots
         # end if
@@ -99,14 +105,11 @@ def query_and_execute_tasks(logger = None):
                     "start": start.isoformat(),
                     "stop": stop.isoformat()
                 })
-            else:
-                parameters.append({
-                    "triggering_uuid": None,
-                    "start": start.isoformat(),
-                    "stop": stop.isoformat()
-                })                
             # end if
         # end for
+
+        logger.info("{} tasks are going to be triggered".format(len(parameters)))
+        
         # Trigger parallel generation of reports
         pool = Pool(tasks_to_trigger)
         try:
@@ -122,15 +125,29 @@ def query_and_execute_tasks(logger = None):
     
     return
 
+def create_pid_files_folder():
+    try:
+        os.makedirs(pid_files_folder)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            raise
+        # end if
+        pass
+    # end try
+
 def start_scheduler():
 
-    print("BOA scheduler started...")
+    print("BOA scheduler initiating...")
     logging = Log(name = __name__)
     logger = logging.logger
+    logger.info("BOA scheduler initiating...")
+    create_pid_files_folder()
+    
+    print("BOA scheduler started...")
     logger.info("BOA scheduler started...")
     while True:
         time.sleep(1)
-        logger.info("BOA scheduler is going to review tasks for triggerig")
+        logger.info("BOA scheduler is going to review tasks for triggering")
         query_and_execute_tasks(logger)    
     # end while
 
@@ -172,7 +189,7 @@ if __name__ == "__main__":
         else:
             print("BOA scheduler is already running...")
             exit(-1)
-        # end try
+        # end if
     elif command == "stop":
         stop_scheduler()
     elif command == "status":

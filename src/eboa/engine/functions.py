@@ -9,6 +9,7 @@ module eboa
 import os
 import json
 from dateutil import parser
+import datetime
 
 # Import exceptions
 from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
@@ -17,7 +18,10 @@ from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
 import uuid
 
 # Import operators
-from eboa.engine.operators import arithmetic_operators, text_operators
+from eboa.engine.operators import arithmetic_operators, text_operators, regex_operators
+
+# Import alert severity codes
+from eboa.engine.alerts import alert_severity_codes
 
 # Auxiliary functions
 def is_datetime(date):
@@ -215,7 +219,7 @@ def is_valid_value_filters(value_filters):
             raise InputError("Every value_filter should be a dictionary with maximum 3 keys (received keys: {}).".format(value_filter.keys()))
         # end if
         if len(value_filter.keys()) == 3 and (not "name" in value_filter.keys() or not "type" in value_filter.keys() or not "value" in value_filter.keys()):
-            raise InputError("Every value_filter should be a dictionary with keys name, type and, if three specified, and value (received keys: {}).".format(value_filter.keys()))
+            raise InputError("Every value_filter should be a dictionary with keys name, type and, if three specified, value (received keys: {}).".format(value_filter.keys()))
         # end if
         if len(value_filter.keys()) == 2 and (not "name" in value_filter.keys() or not "type" in value_filter.keys()):
             raise InputError("Every value_filter should be a dictionary with at least keys name and type (received keys: {}).".format(value_filter.keys()))
@@ -224,11 +228,19 @@ def is_valid_value_filters(value_filters):
         is_valid_text_filter(value_filter["name"])
         if type(value_filter["type"]) != str:
             raise InputError("The specified name must be a string (received type: {}).".format(value_filter["type"]))
+        # end if
         if not value_filter["type"] in ["text", "timestamp", "boolean", "double", "geometry", "object"]:
             raise InputError("The specified type is not in the list of allowed types: 'text' or 'timestamp' or 'boolean' or 'double' or 'geometry' or 'object' (received type: {}).".format(value_filter["type"]))
         # end if
         if "value" in value_filter and value_filter["type"] != "object":
             is_valid_text_filter(value_filter["value"])
+            if value_filter["type"] == "double":
+                try:
+                    float(value_filter["value"]["filter"])
+                except (ValueError, TypeError):
+                    raise InputError("The value for the filter with type double has to be convertible to float. Received value {} of filter {} is not convertible to float".format(value_filter["value"]["filter"], value_filter))
+                # end try
+            # end if
         elif "value" in value_filter and value_filter["type"] == "object":
             raise InputError("The object value has no possibility of filtering by value")
         # end if
@@ -266,10 +278,10 @@ def is_valid_text_filter(text_filter):
     if len(text_filter.keys()) != 2 or not "op" in text_filter.keys() or not "filter" in text_filter.keys():
         raise InputError("The parameter text_filter should be a dictionary with keys op and filter (received keys: {}).".format(text_filter.keys()))
     # end if
-    if type(text_filter["op"]) != str or not (text_filter["op"] in arithmetic_operators.keys() or text_filter["op"] in text_operators.keys()):
-        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()), text_filter["op"]))
+    if type(text_filter["op"]) != str or not (text_filter["op"] in arithmetic_operators.keys() or text_filter["op"] in text_operators.keys() or text_filter["op"] in regex_operators.keys()):
+        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()) + list(regex_operators.keys()), text_filter["op"]))
     # end if
-    if (text_filter["op"] in ["like", "notlike"] or text_filter["op"] in arithmetic_operators.keys()) and type(text_filter["filter"]) != str:
+    if (text_filter["op"] in ["like", "notlike", "regex"] or text_filter["op"] in arithmetic_operators.keys()) and type(text_filter["filter"]) != str:
         raise InputError("The specified filter must be a string when the op is in the list {} (received filter has type: {}).".format(list(arithmetic_operators.keys()) + ["like", "notlike"], type(text_filter["filter"])))
     # end if
     if text_filter["op"] in ["in", "notin"] and type(text_filter["filter"]) != list:
@@ -284,3 +296,63 @@ def is_valid_text_filter(text_filter):
 
     return True
 
+def is_valid_severity_filter(severity_filter):
+
+    if type(severity_filter) != dict:
+        raise InputError("The parameter severity_filter must be a dictionary (received severity_filter: {}).".format(severity_filter))
+    # end if
+    if len(severity_filter.keys()) != 2 or not "op" in severity_filter.keys() or not "filter" in severity_filter.keys():
+        raise InputError("The parameter severity_filter should be a dictionary with keys op and filter (received keys: {}).".format(severity_filter.keys()))
+    # end if
+    if type(severity_filter["op"]) != str or not (severity_filter["op"] in arithmetic_operators.keys() or severity_filter["op"] in text_operators.keys() or severity_filter["op"] in regex_operators.keys()):
+        raise InputError("The specified op must be a string inside these list: {} (received op: {}).".format(list(arithmetic_operators.keys()) + list(text_operators.keys()) + list(regex_operators.keys()), severity_filter["op"]))
+    # end if
+    if (severity_filter["op"] in ["like", "notlike", "regex"] or severity_filter["op"] in arithmetic_operators.keys()) and type(severity_filter["filter"]) != str:
+        raise InputError("The specified filter must be a string when the op is in the list {} (received filter has type: {}).".format(list(arithmetic_operators.keys()) + ["like", "notlike"], type(severity_filter["filter"])))
+    # end if
+    if (severity_filter["op"] in ["like", "notlike", "regex"] or severity_filter["op"] in arithmetic_operators.keys()) and not severity_filter["filter"] in alert_severity_codes:
+        raise InputError("The specified filter must be one of this {} (received filter is: {}).".format(alert_severity_codes.keys(), severity_filter["filter"]))
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) != list:
+        raise InputError("The specified filter must be a list when the op is 'in' or 'notin' (received filter has type: {}).".format(type(severity_filter["filter"])))
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) == list:
+        not_str_filters = [severity_filter for severity_filter in severity_filter["filter"] if type(severity_filter) != str and type(severity_filter) != uuid.UUID]
+        if len(not_str_filters) > 0:
+            raise InputError("The specified filter inside the list must be a string when the op is 'in' or 'notin' (received filters are: {}).".format(not_str_filters))
+        # end if
+    # end if
+    if severity_filter["op"] in ["in", "notin"] and type(severity_filter["filter"]) == list:
+        not_in_alert_severity_codes = [severity_filter for severity_filter in severity_filter["filter"] if not severity_filter in alert_severity_codes.keys()]
+        if len(not_in_alert_severity_codes) > 0:
+            raise InputError("The specified filter must be one of this {} (received filters are: {}).".format(alert_severity_codes.keys(), not_in_alert_severity_codes))
+        # end if
+    # end if
+
+    return True
+
+def extract_events_with_alerts_to_be_notified(events):
+    """
+    Extract the events with alerts to be notified (notification time <= current time)
+
+    :param events: list of events to extract those with alerts to be notified from
+    :type events: list
+
+    :return: list of events with alerts to be notified
+    :rtype: list
+    """
+
+    return [event for event in events for alert in event.alerts if alert.notification_time <= datetime.datetime.now()]
+
+def extract_alerts_to_be_notified(alerts):
+    """
+    Extract the alerts to be notified (notification time <= current time)
+
+    :param alerts: list of alerts to extract those to be notified from
+    :type alerts: list
+
+    :return: list of alerts to be notified
+    :rtype: list
+    """
+
+    return [alert for alert in alerts if alert.notification_time <= datetime.datetime.now()]

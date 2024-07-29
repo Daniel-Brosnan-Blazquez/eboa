@@ -9,6 +9,8 @@ Subpackages
     eboa.datamodel
     eboa.engine
     eboa.analysis
+    eboa.ingestion
+    eboa.triggering
 
 eboa.debugging module
 ---------------------
@@ -26,11 +28,3 @@ eboa.logging module
     :undoc-members:
     :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: eboa
-    :members:
-    :undoc-members:
-    :show-inheritance:

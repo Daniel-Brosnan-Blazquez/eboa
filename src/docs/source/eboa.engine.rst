@@ -36,14 +36,6 @@ eboa.engine.functions module
     :undoc-members:
     :show-inheritance:
 
-eboa.engine.ingestion module
-----------------------------
-
-.. automodule:: eboa.engine.ingestion
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 eboa.engine.parsing module
 --------------------------
 

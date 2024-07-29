@@ -1,11 +1,11 @@
 #!/bin/bash
 #################################################################
 #
-# Init DDBB of the eboa
+# Init DDBB of the uboa
 #
 # Written by DEIMOS Space S.L. (dibb)
 #
-# module eboa
+# module uboa
 #################################################################
 USAGE="Usage: `basename $0` -f datamodel_file -p port -h host"
 DATAMODEL_FILE=""
@@ -24,12 +24,6 @@ do
     esac
 done
 
-# Check that the init of the DDBB is being executed by Postgres or root
-if [ "$(whoami)" != "postgres" ] && [ "$(whoami)" != "root" ]; then
-        echo "ERROR: Script must be run as user: postgres"
-        exit -1
-fi
-
 # Check that option -f has been specified
 if [ "$DATAMODEL_FILE" == "" ];
 then
@@ -46,10 +40,10 @@ then
 fi
 
 # Check that there are no connections to the DDBB if exists
-DATABASE=`psql -p "$PORT" -h "$HOST" -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='eboadb'";`
+DATABASE=`psql -p "$PORT" -h "$HOST" -t -U postgres -c "SELECT count(*) FROM pg_database WHERE datname='uboadb'";`
 if [ $DATABASE -eq 1 ];
 then
-    CONNECTIONS=`psql -p "$PORT" -h "$HOST" -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'eboadb';"`
+    CONNECTIONS=`psql -p "$PORT" -h "$HOST" -U postgres -t -c "SELECT count(*) FROM pg_stat_activity where datname = 'uboadb';"`
     if [ $CONNECTIONS -ne 0 ];
     then
         echo "ERROR: There are $((CONNECTIONS + 0)) active connections to the DDBB"
@@ -61,17 +55,17 @@ fi
 if [ $DATABASE -eq 1 ];
 then
     # Drop the DDBB
-    psql -p $PORT -h $HOST -U postgres -c "DROP DATABASE eboadb;"
+    psql -p $PORT -h $HOST -U postgres -c "DROP DATABASE uboadb;"
 
-    # Drop the eboa role
-    psql -p $PORT -h $HOST -U postgres -c "DROP ROLE eboa;"
+    # Drop the uboa role
+    psql -p $PORT -h $HOST -U postgres -c "DROP ROLE uboa;"
 fi
 
 # Create DDBB
-psql -p $PORT -h $HOST -U postgres -c "CREATE DATABASE eboadb;"
+psql -p $PORT -h $HOST -U postgres -c "CREATE DATABASE uboadb;"
 
 # Fill DDBB
-psql -p $PORT -h $HOST -U postgres -d eboadb -f $DATAMODEL_FILE
+psql -p $PORT -h $HOST -U postgres -d uboadb -f $DATAMODEL_FILE
 status=$?
 
 if [ $status -ne 0 ];

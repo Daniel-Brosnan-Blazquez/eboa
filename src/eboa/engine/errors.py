@@ -29,6 +29,16 @@ class WrongPeriod(Error):
     def __init__(self, message):
         self.message = message
 
+class WrongReportedValidityPeriod(Error):
+    """Exception raised when the reported validity period is defined with a stop date lower than the start date.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class UndefinedEventLink(Error):
     """Exception raised when a link has been defined for an event which does not exist with the corresponding link reference.
 
@@ -109,6 +119,26 @@ class ErrorParsingDictionary(Error):
     def __init__(self, message):
         self.message = message
 
+class ErrorParsingParameters(Error):
+    """Exception raised when the parsing has found a non supported structure in the parameters received
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class ErrorParsingFilters(Error):
+    """Exception raised when the filters passed to a method are not accepted
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
 class DuplicatedEventLinkRef(Error):
     """Exception raised when there is more than one event with the same link reference identifier.
 
@@ -169,3 +199,52 @@ class FilePathDoesNotExist(Error):
 
     def __init__(self, message):
         self.message = message
+
+class PriorityNotDefined(Error):
+    """Exception raised when there is one or more events with the insertion type ...with_PRIORITY
+    and the related source has not defined the priority.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class DuplicatedSetCounter(Error):
+    """Exception raised when there is one or more events with the insertion type SET_COUNTER associated to the same gauge.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class MixedOperationsWithCounter(Error):
+    """Exception raised when there are events with the insertion type SET_COUNTER and UPDATE_COUNTER mixed associated to the same gauge.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+class IncorrectTle(Error):
+    """Exception raised when the format of the received TLE is not correct.
+    Correct format is:
+    SATELLITE-INDICATOR
+    1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN
+    2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, tle):
+        tle_format = "SATELLITE-INDICATOR\n1 NNNNNC NNNNNAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN\n2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN"
+
+        self.message = "\nReceived TLE:\n{}\n is incorrect. TLE should have the following format:\n{} ".format(tle, tle_format)
+
+        super().__init__(self.message)

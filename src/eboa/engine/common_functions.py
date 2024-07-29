@@ -125,7 +125,7 @@ def insert_values(values, entity_uuid, list_values, position = 0, parent_level =
                         try:
                             float(coordinate)
                         except ValueError:
-                            raise WrongValue("The value {} cannot be converted to the specified type {}".format(coordinate, "float"))
+                            raise WrongValue("The coordinate {} inside the geometry cannot be converted to the specified type {}. Note: coordinates inside the geometry should be separated by white spaces".format(coordinate, "float"))
                         # end try
                         value = value + coordinate
                         coordinates += 1

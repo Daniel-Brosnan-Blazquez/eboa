@@ -138,10 +138,11 @@ class TestEngine(unittest.TestCase):
 
         assert len(tasks) == 10
 
+        scheduler.create_pid_files_folder()
         scheduler.query_and_execute_tasks()
         scheduler.query_and_execute_tasks()
 
-        time.sleep(20)
+        time.sleep(40)
         
         triggerings = self.query_sboa.get_triggerings(triggered = True)
 

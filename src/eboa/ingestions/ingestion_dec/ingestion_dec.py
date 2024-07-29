@@ -14,7 +14,7 @@ from lxml import etree
 
 # Import ingestion_functions.helpers
 import eboa.triggering.xpath_functions as xpath_functions
-import s2boa.ingestions.functions as functions
+import eboa.ingestion.functions as functions
 
 # Import query
 from eboa.engine.query import Query
@@ -109,11 +109,14 @@ def process_file(file_path, engine, query, reception_time):
         if len(matching_rules) > 0:
             rule = matching_rules[0]
             skip = rule.get("skip")
-            if skip == "true":
+            report = rule.get("report")
+            # Check if the file name has to be processed or reported
+            if skip == "true" and (not report or report == "false"):
                 logger.info("The file {} has been received by DEC (reported in file {}) but the first rule matching in the triggering configuration indicates to skip tts processing".format(file_name, file_name_dec_f_recv))
             else:
                 logger.info("The file {} has been received by DEC (reported in file {}) and should be processed by BOA. Its processing will be checked".format(file_name, file_name_dec_f_recv))
                 received_files_by_dec_to_be_queried.append(file_name)
+            # end if
         else:
             logger.info("The file {} has been received by DEC (reported in file {}) but there are no matching rules in the triggering configuration".format(file_name, file_name_dec_f_recv))
         # end if
@@ -166,7 +169,7 @@ def process_file(file_path, engine, query, reception_time):
                 }]
             })
         else:
-            logger.info("The file {} has been already processed by BOA. No alert will be inserted".format(file_name))
+            logger.info("The file {} has been or is being processed by BOA. No alert will be inserted".format(file_name))
         # end if
     # end for
 

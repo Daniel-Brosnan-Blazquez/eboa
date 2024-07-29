@@ -12,7 +12,6 @@ import shlex
 from subprocess import Popen, PIPE
 from daemon import pidfile
 import os
-import errno
 
 # Get eboa auxiliary functions
 from eboa.engine.functions import get_resources_path
@@ -26,15 +25,6 @@ from sboa.engine.query import Query
 pid_file = get_resources_path() + "/boa_scheduler.pid"
 pid_files_folder = get_resources_path() + "/on_going_triggerings/"
 
-try:
-    os.makedirs(pid_files_folder)
-except OSError as exc:
-    if exc.errno != errno.EEXIST:
-        raise
-    # end if
-    pass
-# end try
-
 def stop_scheduler():
 
     query = Query()
@@ -45,10 +35,23 @@ def stop_scheduler():
         logger = logging.logger
         logger.info("BOA scheduler is going to be stopped...")
         pid = pidfile.TimeoutPIDLockFile(pid_file).read_pid()
-        p = psutil.Process(pid)
-        p.terminate()
-        logger.info("BOA scheduler stopped")
-        print("BOA scheduler stopped")
+        try:
+            p = psutil.Process(pid)
+            p.terminate()
+            logger.info("BOA scheduler stopped")
+            print("BOA scheduler stopped")
+        except psutil.NoSuchProcess:
+            logger.info("BOA scheduler was already stopped but PID file {} was still there".format(pid_file))
+            print("BOA scheduler was already stopped but PID file {} was still there".format(pid_file))
+        # end try
+
+        # Remove the PID file
+        try:
+            os.remove(pid_file)
+        except FileNotFoundError:
+            pass
+        # end for
+
         i = 0
         on_going_triggerings = os.listdir(pid_files_folder)
         if len(on_going_triggerings) > 0:
@@ -65,7 +68,7 @@ def stop_scheduler():
                     os.remove(pid_files_folder + "/" + file)
                 except FileNotFoundError:
                     pass
-                # end for
+                # end try
         # end if
     else:
         print("BOA scheduler was not running...")
@@ -85,7 +88,7 @@ def status_scheduler():
     # end if
 
 def command_start_scheduler():
-
+    
     command = "boa_scheduler.py -c start -o"
 
     command_split = shlex.split(command)
@@ -105,6 +108,6 @@ def command_start_scheduler():
                           "output": output,
                           "error": error,
                           "return_code": return_code}
-    # end if
+    # end try
 
     return command_status

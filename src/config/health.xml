@@ -11,5 +11,8 @@
   <folders>
     <folder name="ROOT" path="/" threshold_num_files="100"/>
     <folder name="TMP" path="/tmp" recursive="true" threshold_num_files="100"/>
+    <folder name="INPUTS" path="/inputs" threshold_num_files="100"/>
+    <folder name="ON_GOING_INGESTIONS" recursive="true" path="/resources_path/on_going_ingestions" threshold_num_files="100"/>
+    <folder name="ORC_TO_BOA_PICKUP_POINT" path="/minarc_root/processorWd" threshold_num_files="50"/>
   </folders>
 </health>

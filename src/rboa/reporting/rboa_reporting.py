@@ -44,6 +44,9 @@ def insert_data_into_DDBB(data, report_name, engine):
 
 def command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path = None, parameters = None):
 
+    # Set VBOA_TEST to TRUE to avoid authentication and authorization
+    os.environ["VBOA_TEST"] = "TRUE"
+
     # Import the processor module
     try:
         processor_module = import_module(processor)
@@ -94,6 +97,7 @@ def command_generate_reporting(report_name, processor, generator, generation_mod
         generation_stop = datetime.datetime.now()
     except Exception as e:
         logger.error("The generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
+        logger.error(traceback.format_exc())
         traceback.print_exc(file=sys.stdout)
         # Log status
         query_log_status = Query()
@@ -156,6 +160,7 @@ def command_generate_reporting(report_name, processor, generator, generation_mod
         except Exception as e:
             logger.error("The insertion of the metadata related to the generation of the report {} has ended unexpectedly with the following error: {}".format(report_name, str(e)))
             # Log status
+            logger.error(traceback.format_exc())
             traceback.print_exc(file=sys.stdout)
             query_log_status = Query()
             reports = query_log_status.get_reports(names = {"filter": report_name, "op": "=="}, report_groups = {"filter": "PENDING_GENERATION", "op": "=="})
@@ -205,15 +210,15 @@ if __name__ == "__main__":
         output_path = args.output_path[0]
     # end if
     parameters = None
-    if len(args.arguments) > 0:
+    if args.arguments and len(args.arguments) > 0:
         parameters = {}
+        for argument in args.arguments:
+            name = argument.split("=")[0]
+            value = argument.split("=")[1]
+            parameters[name] = value
+        # end for
     # end if
-    for argument in args.arguments:
-        name = argument.split("=")[0]
-        value = argument.split("=")[1]
-        parameters[name] = value
-    # end for
-
+    
     command_generate_reporting(report_name, processor, generator, generation_mode, begin, end, output_path, parameters)
 
     exit(0)

@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta1" author="Daniel Brosnan Blázquez" last-position="0,333" last-zoom="0.6" max-obj-count="56"
+<dbmodel pgmodeler-ver="0.9.2" author="Daniel Brosnan Blázquez" last-position="0,327" last-zoom="0.6" max-obj-count="60"
 	 default-owner="postgres">
 <role name="eboa"
       inherit="true"
@@ -27,7 +27,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="events" layer="0" collapse-mode="2" max-obj-count="9">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="1040"/>
+	<position x="1000" y="1040"/>
 	<column name="event_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -54,7 +54,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="gauges" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="840"/>
+	<position x="1000" y="760"/>
 	<column name="gauge_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -72,10 +72,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="sources" layer="0" collapse-mode="2" max-obj-count="24">
+<table name="sources" layer="0" collapse-mode="2" max-obj-count="30">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1020" y="1220"/>
+	<position x="960" y="1240"/>
 	<column name="source_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -88,10 +88,19 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="validity_stop">
 		<type name="timestamp" length="1"/>
 	</column>
+	<column name="reported_validity_start">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="reported_validity_stop">
+		<type name="timestamp" length="1"/>
+	</column>
 	<column name="reception_time" not-null="true">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="generation_time">
+		<type name="timestamp" length="1"/>
+	</column>
+	<column name="reported_generation_time">
 		<type name="timestamp" length="1"/>
 	</column>
 	<column name="ingestion_time">
@@ -131,17 +140,31 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="decimal" length="5" precision="2"/>
 	</column>
 	<column name="ingestion_completeness">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="ingestion_completeness_message">
+		<type name="text" length="0"/>
+	</column>
+	<column name="priority">
 		<type name="integer" length="0"/>
 	</column>
 	<constraint name="sources_pk" type="pk-constr" table="eboa.sources">
 		<columns names="source_uuid" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="dim_signature_uuid" index="24"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="dim_signatures_fk" index="1"/>
+	</customidxs>
 </table>
 
 <table name="dim_signatures" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1440" y="740"/>
+	<position x="1380" y="620"/>
 	<column name="dim_signature_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -159,7 +182,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_refs" layer="0" collapse-mode="2" max-obj-count="4">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1160"/>
+	<position x="1380" y="1140"/>
 	<column name="explicit_ref_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -180,7 +203,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="700" y="840"/>
+	<position x="620" y="780"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -201,7 +224,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="680" y="980"/>
+	<position x="620" y="940"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -222,7 +245,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="660" y="1260"/>
+	<position x="620" y="1260"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -240,7 +263,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="660" y="1380"/>
+	<position x="620" y="1400"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -261,7 +284,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotations" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="940"/>
+	<position x="1380" y="860"/>
 	<column name="annotation_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -282,7 +305,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="840"/>
+	<position x="1940" y="840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -303,7 +326,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="980"/>
+	<position x="1940" y="1020"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -324,7 +347,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="1260"/>
+	<position x="1940" y="1380"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -342,7 +365,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="1380"/>
+	<position x="1940" y="1540"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -363,7 +386,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_cnfs" layer="0" collapse-mode="2" pagination="true" attribs-page="0" ext-attribs-page="0" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="820"/>
+	<position x="1380" y="700"/>
 	<column name="annotation_cnf_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -384,7 +407,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_links" layer="0" collapse-mode="2" pagination="true" attribs-page="0" ext-attribs-page="0" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="960"/>
+	<position x="1000" y="920"/>
 	<column name="event_uuid_link" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -396,7 +419,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_cnfs" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1260"/>
+	<position x="1380" y="1260"/>
 	<column name="expl_ref_cnf_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -414,22 +437,19 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="explicit_ref_links" layer="0" collapse-mode="2" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1420" y="1080"/>
+	<position x="1380" y="1040"/>
 	<column name="explicit_ref_uuid_link" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
-	<constraint name="explicit_ref_linkss_pk" type="pk-constr" table="eboa.explicit_ref_links">
-		<columns names="explicit_ref_uuid_link" ref-type="src-columns"/>
-	</constraint>
 </table>
 
 <table name="source_statuses" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1020" y="1560"/>
+	<position x="980" y="1760"/>
 	<column name="source_status_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -450,7 +470,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="700" y="700"/>
+	<position x="620" y="620"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -489,7 +509,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="700"/>
+	<position x="1940" y="660"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -510,7 +530,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="annotation_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1980" y="1120"/>
+	<position x="1940" y="1200"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -611,7 +631,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_keys" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1040" y="740"/>
+	<position x="1000" y="620"/>
 	<column name="event_key" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -623,7 +643,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="event_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="660" y="1120"/>
+	<position x="620" y="1100"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -785,7 +805,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="events_has_many_event_linkss" type="rel1n" layer="0"
+<relationship name="events_has_many_event_links" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -818,7 +838,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<position x="0" y="0"/>
 	</label>
 	<label ref-type="name-label">
-		<position x="3.72874" y="8.13934"/>
+		<position x="12.799" y="0.13934"/>
 	</label>
 </relationship>
 
@@ -842,7 +862,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
-<relationship name="explicit_refs_has_many_explicit_ref_linkss" type="rel1n" layer="0"
+<relationship name="explicit_refs_has_many_explicit_ref_links" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1436,7 +1456,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="name,processor_version,dim_signature_uuid,processor" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="events_has_many_event_keyss" type="rel1n" layer="0"
+<relationship name="events_has_many_event_keys" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1450,7 +1470,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="event_key,event_uuid" ref-type="src-columns"/>
 </constraint>
 
-<relationship name="dim_signatures_has_many_event_keyss" type="rel1n" layer="0"
+<relationship name="dim_signatures_has_many_event_keys" type="rel1n" layer="0"
 	 src-col-pattern="{sc}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
@@ -1616,10 +1636,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="position,parent_level,parent_position,annotation_uuid" ref-type="src-columns"/>
 </constraint>
 
-<table name="event_alerts" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="event_alerts" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1340"/>
+	<position x="1340" y="1360"/>
 	<column name="event_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1647,15 +1667,28 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="notification_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="event_alerts_pk" type="pk-constr" table="eboa.event_alerts">
 		<columns names="event_alert_uuid" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="10"/>
+		<object name="event_uuid" index="11"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="1"/>
+		<object name="events_fk" index="2"/>
+	</customidxs>
 </table>
 
 <table name="alerts" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1660" y="1560"/>
+	<position x="1600" y="1880"/>
 	<column name="alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1676,10 +1709,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="source_alerts" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="source_alerts" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1540"/>
+	<position x="1320" y="1640"/>
 	<column name="source_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1707,15 +1740,28 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="notification_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="source_alerts_pk" type="pk-constr" table="eboa.source_alerts">
 		<columns names="source_alert_uuid" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="10"/>
+		<object name="source_uuid" index="11"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="1"/>
+		<object name="sources_fk" index="2"/>
+	</customidxs>
 </table>
 
-<table name="explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1640" y="1340"/>
+	<position x="1640" y="1260"/>
 	<column name="explicit_ref_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -1743,16 +1789,21 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="notification_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="explicit_ref_alerts_pk" type="pk-constr" table="eboa.explicit_ref_alerts">
 		<columns names="explicit_ref_alert_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="alert_uuid" index="9"/>
+		<object name="alert_uuid" index="10"/>
+		<object name="explicit_ref_uuid" index="11"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
 		<object name="alerts_fk" index="0"/>
+		<object name="explicit_refs_fk" index="2"/>
 	</customidxs>
 </table>
 
@@ -1797,7 +1848,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#c35c1e"
 	 src-table="eboa.events"
 	 dst-table="eboa.event_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
 <relationship name="explicit_refs_has_many_explicit_ref_alerts" type="rel1n" layer="0"
@@ -1807,7 +1858,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#cdf733"
 	 src-table="eboa.explicit_refs"
 	 dst-table="eboa.explicit_ref_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE"/>
 
 <relationship name="sources_has_many_sources_alerts" type="rel1n" layer="0"
@@ -1817,7 +1868,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#daab63"
 	 src-table="eboa.sources"
 	 dst-table="eboa.source_alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="src-label">
 		<position x="15.1178" y="-1.275"/>
@@ -1827,7 +1878,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="alert_groups" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1680"/>
+	<position x="1600" y="2040"/>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
@@ -1849,7 +1900,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 custom-color="#d21594"
 	 src-table="eboa.alert_groups"
 	 dst-table="eboa.alerts"
-	 src-required="false" dst-required="false"
+	 src-required="true" dst-required="false"
 	del-action="CASCADE">
 	<label ref-type="name-label">
 		<position x="184.287" y="-41.5271"/>
@@ -2398,7 +2449,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="reports" layer="0" collapse-mode="2" max-obj-count="22">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="960" y="1680"/>
+	<position x="940" y="1900"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="1"/>
 	</column>
@@ -2592,7 +2643,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_groups" layer="0" collapse-mode="2" max-obj-count="3">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1360" y="2020"/>
+	<position x="1340" y="2320"/>
 	<column name="name">
 		<type name="text" length="0"/>
 	</column>
@@ -2640,7 +2691,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_event_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1740"/>
+	<position x="1320" y="1920"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2674,7 +2725,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_explicit_ref_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1760"/>
+	<position x="1580" y="2240"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2704,7 +2755,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_source_alerts" layer="0" collapse-mode="2" max-obj-count="2">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1680" y="1840"/>
+	<position x="1580" y="2340"/>
 	<column name="report_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2735,10 +2786,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</label>
 </relationship>
 
-<table name="report_alerts" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="report_alerts" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1340" y="1800"/>
+	<position x="1320" y="2020"/>
 	<column name="report_alert_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2766,15 +2817,20 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="notification_time" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
 	<constraint name="report_alerts_pk" type="pk-constr" table="eboa.report_alerts">
 		<columns names="report_alert_uuid" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="report_uuid" index="9"/>
+		<object name="alert_uuid" index="11"/>
+		<object name="report_uuid" index="10"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="2"/>
 		<object name="reports_fk" index="1"/>
 	</customidxs>
 </table>
@@ -2871,7 +2927,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_statuses" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="1000" y="2000"/>
+	<position x="960" y="2300"/>
 	<column name="report_status_uuid" not-null="true">
 		<type name="uuid" length="0"/>
 	</column>
@@ -2930,7 +2986,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_texts" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="640" y="1680"/>
+	<position x="620" y="1700"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -2951,7 +3007,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_doubles" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="620" y="1820"/>
+	<position x="620" y="1840"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -2972,7 +3028,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_objects" layer="0" collapse-mode="2" max-obj-count="6">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="620" y="2100"/>
+	<position x="620" y="2160"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -2990,7 +3046,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_geometries" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="620" y="2220"/>
+	<position x="620" y="2300"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -3011,7 +3067,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_booleans" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="640" y="1540"/>
+	<position x="620" y="1540"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -3032,7 +3088,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="report_timestamps" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="eboa"/>
 	<role name="eboa"/>
-	<position x="620" y="1960"/>
+	<position x="620" y="2000"/>
 	<column name="name" not-null="true">
 		<type name="text" length="1"/>
 	</column>
@@ -3308,5 +3364,267 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <constraint name="unique_value_position_report_timestamps" type="uq-constr" table="eboa.report_timestamps">
 	<columns names="position,parent_level,parent_position,report_uuid" ref-type="src-columns"/>
 </constraint>
+
+<index name="idx_source_reported_validity_start" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="reported_validity_start"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_reported_validity_stop" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="reported_validity_stop"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_reported_generation_time" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="reported_generation_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_event_alerts_justification" table="eboa.event_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_explicit_ref_alerts_justification" table="eboa.explicit_ref_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_alerts_justification" table="eboa.source_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_report_alerts_justification" table="eboa.report_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_priority" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="priority"/>
+		</idxelement>
+</index>
+
+<index name="idx_source_ingestion_completeness" table="eboa.sources"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_completeness"/>
+		</idxelement>
+</index>
+
+<table name="annotation_alerts" layer="0" collapse-mode="2" max-obj-count="14">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1640" y="1580"/>
+	<column name="annotation_alert_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<column name="message" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="validated">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="ingestion_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="generator" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notified">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="solved">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="solved_time">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="notification_time" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="justification">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="annotation_alerts_pk" type="pk-constr" table="eboa.annotation_alerts">
+		<columns names="annotation_alert_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="alert_uuid" index="11"/>
+		<object name="annotation_uuid" index="10"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="alerts_fk" index="2"/>
+		<object name="annotations_fk" index="1"/>
+	</customidxs>
+</table>
+
+<index name="idx_annotation_alerts_validated" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="validated"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_ingestion_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="ingestion_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_generator_gin" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_notified" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notified"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_solved" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_solved_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="solved_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_notification_time" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="notification_time"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_generator" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="generator"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_justification" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="gin" factor="0">
+		<idxelement use-sorting="false">
+			<column name="justification"/>
+			<opclass  signature="eboa.gin_trgm_ops USING gin"/>
+		</idxelement>
+</index>
+
+<relationship name="annotations_has_many_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#9b1746"
+	 src-table="eboa.annotations"
+	 dst-table="eboa.annotation_alerts"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="alerts_has_many_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ea2f5a"
+	 src-table="eboa.alerts"
+	 dst-table="eboa.annotation_alerts"
+	 src-required="true" dst-required="false"/>
+
+<index name="idx_annotation_alerts_alert_uuid" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="alert_uuid"/>
+		</idxelement>
+</index>
+
+<index name="idx_annotation_alerts_annotation_uuid" table="eboa.annotation_alerts"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="annotation_uuid"/>
+		</idxelement>
+</index>
+
+<table name="report_annotation_alerts" layer="0" collapse-mode="2" max-obj-count="2">
+	<schema name="eboa"/>
+	<role name="eboa"/>
+	<position x="1600" y="2140"/>
+	<column name="report_uuid" not-null="true">
+		<type name="uuid" length="0"/>
+	</column>
+	<constraint name="report_alert_annotations_pk" type="pk-constr" table="eboa.report_annotation_alerts">
+		<columns names="report_uuid" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="annotation_alert_uuid" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="annotation_alerts_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="annotation_alerts_has_many_report_annotation_alerts" type="rel1n" layer="0"
+	 src-col-pattern="{sc}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d09d48"
+	 src-table="eboa.annotation_alerts"
+	 dst-table="eboa.report_annotation_alerts"
+	 src-required="true" dst-required="false"/>
 
 </dbmodel>

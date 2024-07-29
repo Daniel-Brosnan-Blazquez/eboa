@@ -6,18 +6,25 @@
       <command>eboa_ingestion.py -p eboa.ingestions.ingestion_dec.ingestion_dec -f </command>
     </tool>
   </rule>
+  <rule>
+    <source_mask>.*DEC_F_RECS.*</source_mask>
+    <source_type>DEC_F_RECS</source_type>
+    <tool>
+      <command>eboa_ingestion.py -p eboa.ingestions.ingestion_dec.ingestion_dec -s /eboa/src/tests/xsd_inputs/DEC_F_RECS.xsd -f </command>
+    </tool>
+  </rule>
   <rule skip="true">
     <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
     <source_type>FILE_NOT_TO_PROCESS</source_type>
     <tool>
-      <command>echo "File should have not been processed"</command>
+      <command>echo "File should not have been processed"</command>
     </tool>
   </rule>
   <rule>
     <source_mask>.*FILE_NOT_TO_PROCESS.*</source_mask>
     <source_type>FILE_NOT_TO_PROCESS</source_type>
     <tool>
-      <command>echo "File should have not been processed"</command>
+      <command>echo "File should not have been processed but skip rule is not activated"</command>
     </tool>
   </rule>
   <rule>

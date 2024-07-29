@@ -28,9 +28,17 @@ class TestParsing(unittest.TestCase):
                 "source": {
                     "reception_time": "2018-06-06T13:33:29",
                     "generation_time": "2018-06-06T13:33:29",
+                    "reported_generation_time": "2018-06-06T13:33:29",
                     "name": "test_simple_update.json",
                     "validity_start": "2018-06-05T02:07:03",
-                    "validity_stop": "2018-06-05T02:07:36"
+                    "validity_stop": "2018-06-05T02:07:36",
+                    "reported_validity_start": "2018-06-05T02:07:03",
+                    "reported_validity_stop": "2018-06-05T02:07:36",
+                    "ingestion_completeness": {
+                        "check": "true",
+                        "message": ""                        
+                    },
+                    "ingested": "false"
                 },
                 "explicit_references": [
                     {
@@ -155,7 +163,54 @@ class TestParsing(unittest.TestCase):
                                 ]
                             }
                         ]}
-                ]
+                ],
+                "alerts": [{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name1",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    },
+                    "entity": {
+                        "reference_mode": "by_ref",
+                        "reference": "EVENT_REF",
+                        "type": "event"
+                    }
+                },{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "alert_cnf": {
+                        "name": "alert_name2",
+                        "severity": "warning",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    },
+                    "entity": {
+                        "reference_mode": "by_ref",
+                        "reference": "EXPLICIT_REFERENCE_EVENT",
+                        "type": "explicit_ref"
+                    }
+                },{
+                    "message": "Alert message",
+                    "generator": "test",
+                    "notification_time": "2018-06-05T08:07:36",
+                    "justification": "JUSTIFICATION",
+                    "alert_cnf": {
+                        "name": "alert_name3",
+                        "severity": "critical",
+                        "description": "Alert description",
+                        "group": "alert_group"
+                    },
+                    "entity": {
+                        "reference_mode": "by_ref",
+                        "reference": "source.json",
+                        "type": "source"
+                    }
+                }]
             }]
             }
 

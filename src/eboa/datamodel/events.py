@@ -14,6 +14,9 @@ from geoalchemy2 import Geometry
 from eboa.datamodel.base import Base
 import eboa.engine.export as export
 
+# Import EBOA errors
+from eboa.engine.errors import ErrorParsingParameters
+
 class Event(Base):
     __tablename__ = 'events'
 
@@ -39,9 +42,61 @@ class Event(Base):
         self.explicitRef = explicit_ref
         self.source = source
 
-    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0):
+    def jsonify(self, include_indexed_values = False):
+        """
+        Method to obtain the structure of the event in a python dictionary format
+
+        :param include_indexed_values: flag to indicate to include the indexed values to ease the searching
+        :type include_indexed_values: boolean
+
+        :return: structure of the event
+        :rtype: dict
+        """
+
+        structure = {
+            "event_uuid": str(self.event_uuid),
+            "start": self.start.isoformat(),
+            "stop": self.stop.isoformat(),
+            "duration": self.get_duration(),
+            "ingestion_time": self.ingestion_time.isoformat(),
+            "gauge": self.gauge.jsonify(),
+            "source": {
+                "source_uuid": str(self.source.source_uuid),
+                "name": self.source.name,
+            },
+            "links_to_me": [{
+                "event_uuid_link": str(link.event_uuid_link),
+                "name": link.name
+            } for link in self.eventLinks]
+        }
+        
+        if include_indexed_values:
+            indexed_values = {}
+            values = self.get_structured_values(structure_for_searching_values = indexed_values)
+
+            structure["indexed_values"] = indexed_values
+        else:
+            values = self.get_structured_values()
+        # end if
+
+        structure["values"] = values
+        
+        # Insert explicit reference
+        if self.explicitRef:
+            structure["explicit_reference"] = {
+                "uuid": str(self.explicitRef.explicit_ref_uuid),
+                "name": self.explicitRef.explicit_ref
+            }
+        # end if
+        
+        return structure
+
+    def get_structured_values(self, position = 0, parent_level = -1, parent_position = 0, structure_for_searching_values = None):
         """
         Method to obtain the structure of values in a python dictionary format
+
+        :return: structure of values associated to the event
+        :rtype: list
         """
 
         values = []
@@ -54,7 +109,8 @@ class Event(Base):
             export.build_values_structure(values, json_values,
                                           position = position,
                                           parent_level = parent_level,
-                                          parent_position = parent_position)
+                                          parent_position = parent_position,
+                                          structure_for_searching_values = structure_for_searching_values)
         # end if
         return json_values
 
@@ -69,6 +125,35 @@ class Event(Base):
         # end for
 
         return values
+
+    def get_value(self, value_type, value_name):
+        """
+        Method to obtain the structure of values in a python dictionary format
+
+        :param value_type: type in ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]
+        :type value_type: str
+        :param value_name: name of the value
+        :type value_name: str
+
+        :return: corresponding value
+        :rtype: str
+        """
+
+        types = ["eventTexts", "eventDoubles", "eventObjects", "eventGeometries", "eventBooleans", "eventTimestamps"]
+        if value_type not in types:
+            raise ErrorParsingParameters("The received value type is not in the list of value types ({}). Received value type is: {}".format(types, value_type))
+        # end if
+
+        value_type_access = eval("self." + value_type)
+
+        values = [value.value for value in value_type_access if value.name == value_name]
+
+        value = ""
+        if len(values) > 0:
+            value = values[0]
+        # end if
+
+        return value
 
     def get_duration(self):
         """

@@ -31,8 +31,9 @@ class Gauge(Base):
 
     def jsonify(self):
         return {
-            "gauge_uuid": self.gauge_uuid,
+            "gauge_uuid": str(self.gauge_uuid),
             "system": self.system,
             "name": self.name,
-            "dim_signature_uuid": self.dim_signature_uuid
+            "dim_signature": self.dim_signature.dim_signature,
+            "description": self.description or ""
         }

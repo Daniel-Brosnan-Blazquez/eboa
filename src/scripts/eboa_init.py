@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script for initializing BOA environment
+Script for initializing EBOA environment (engine)
 
 Written by DEIMOS Space S.L. (dibb)
 
@@ -9,8 +9,7 @@ module eboa
 # Import python utilities
 import argparse
 import re
-import shlex
-from subprocess import Popen, PIPE
+from eboa.common.commands import execute_command
 import os
 import shutil
 
@@ -24,106 +23,56 @@ config = read_configuration()
 
 db_configuration = config["DDBB_CONFIGURATION"]
 
-def execute_command(command, success_message, check_error = True):
-    command_split = shlex.split(command)
-    program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
-    output, error = program.communicate()
-    return_code = program.returncode
-    if check_error and return_code != 0:
-        print("The execution of the command {} has ended unexpectedly with the following error: {} and the following output: {}".format(command, str(error), str(output)))
-        exit(-1)
-    else:
-        print(success_message)
-    # end try
+def init(datamodel_path = None):
 
-
-def main():
-
-    args_parser = argparse.ArgumentParser(description="Initialize BOA environment.")
-    args_parser.add_argument('-f', dest='datamodel_path', type=str, nargs=1,
-                             help='path to the datamodel', required=False)
-    args_parser.add_argument("-o", "--initialize_orc",
-                             help="Initialize also ORC environment", action="store_true")
-
-    continue_flag = input("\n" +
-                          "Welcome to the BOA initializer :-)\n" +
-                          "You are about to initialize the system.\n" +
-                          "This operation will erase all the information, would you still want to continue? [Ny]")
-    
-    if continue_flag != "y":
-        print("No worries! The initialization is going to be aborted :-)")
-        exit(0)
-    # end if
-
-    args = args_parser.parse_args()
-
-    if args.initialize_orc:
-        continue_orc_initialization_flag = input("\n" +
-                                                 "You selected also to initialize ORC environment\n" +
-                                                 "This operation will erase all the information in ORC DDBB, would you still want to continue? [Ny]")
-    
-        if continue_orc_initialization_flag != "y":
-            print("No worries! The initialization is going to be aborted :-)")
-            exit(0)
-        # end if
-    # end if
-
-    # Default path for the docker environment
-    datamodel_path = "/datamodel/eboa_data_model.sql"
-    if args.datamodel_path != None:
-        datamodel_path = args.datamodel_path[0]
+    # Path to the datamodel
+    if datamodel_path != None:
         # Check if file exists
         if not os.path.isfile(datamodel_path):
             print("The specified path to the datamodel file {} does not exist".format(datamodel_path))
             exit(-1)
         # end if
+    else:
+        # Default path for the docker environment
+        datamodel_path = "/datamodel/eboa_data_model.sql"
     # end if
 
     datatabse_address = db_configuration["host"]
     datatabse_port = db_configuration["port"]
 
-    command = "init_ddbb.sh -h {} -p {} -f {}".format(datatabse_address, datatabse_port, datamodel_path)
-    print("The BOA database is going to be initialize using the datamodel SQL file {}...".format(datamodel_path))
-    command_split = shlex.split(command)
-    program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)    
-    output, error = program.communicate()
-    return_code = program.returncode
-    if return_code != 0:
-        print("The execution of the command {} has ended unexpectedly with the following error: {} and the following output: {}".format(command, str(error), str(output)))
-        exit(-1)
-    else:
-        print("The BOA database has been initialized successfully :-)")
-    # end try
-
-    # Remove the on_going_ingestions directory
-    on_going_ingestions_folder = get_resources_path() + "/on_going_ingestions/"
-    try:
-        shutil.rmtree(on_going_ingestions_folder)
-    except FileNotFoundError:
-        pass
-    # end try
+    command = "eboa_init_ddbb.sh -h {} -p {} -f {}".format(datatabse_address, datatabse_port, datamodel_path)
+    print("The EBOA database is going to be initialize using the datamodel SQL file {}...".format(datamodel_path))
+    execute_command(command, "The EBOA database has been initialized successfully :-)")
     
-    if args.initialize_orc:
+def main():
 
-        print("The ORC database is going to be deleted...")
-        command = "dropdb s2boa_orc"
-        execute_command(command, "The MINARC database has been successfully created :-)", check_error = False)
+    args_parser = argparse.ArgumentParser(description="Initialize EBOA environment (Scheduler).")
+    args_parser.add_argument("-f", dest="datamodel_path", type=str, nargs=1,
+                             help="path to the datamodel", required=False)
+    args_parser.add_argument("-y", "--accept_everything",
+                             help="Accept by default every request (Be careful when using this because it will drop all the data without requesting any confirmation)", action="store_true")
 
-        print("The ORC database is going to be created...")
-        command = "createdb s2boa_orc"
-        execute_command(command, "The MINARC database has been successfully created :-)")
+    args = args_parser.parse_args()
 
-        command = "minArcDB --create-tables"
-        execute_command(command, "The MINARC database has been initialized successfully :-)")
+    if not args.accept_everything:
+        continue_flag = input("\n" +
+                              "Welcome to the EBOA initializer (Engine) :-)\n" +
+                              "You are about to initialize the DDBB of the engine.\n" +
+                              "This operation will erase all the information stored related to the engine, would you still want to continue? [Ny]")
 
-        print("The MINARC archive is going to be initialize...")
-        command = "minArcPurge -Y"
-        execute_command(command, "The MINARC archive has been initialized successfully :-)")
-
-        command = "orcManageDB --create-tables"
-        execute_command(command, "The ORC database has been initialized successfully :-)")
-        
+        if continue_flag != "y":
+            print("No worries! The initialization is going to be aborted :-)")
+            exit(0)
+        # end if
     # end if
+
+    datamodel_path = None
+    if args.datamodel_path != None:
+        datamodel_path = args.datamodel_path[0]
+    # end if
+
+    # Initialize DDBB
+    init(datamodel_path)
     
     exit(0)
     

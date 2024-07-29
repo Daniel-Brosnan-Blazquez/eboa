@@ -16,9 +16,6 @@ import random
 import json
 import glob
 
-# Import auxiliary functions
-from eboa.datamodel.functions import read_configuration
-
 # Import xml parser
 from lxml import etree
 
@@ -26,6 +23,7 @@ from lxml import etree
 from eboa.engine.functions import get_resources_path, get_schemas_path
 from eboa.engine.engine import Engine
 import eboa.engine.engine as eboa_engine
+from eboa.datamodel.base import engine as datamodel_engine
 
 # Import SQLalchemy entities
 from sqlalchemy import create_engine
@@ -437,7 +435,10 @@ def main():
     # end if
     
     swap_usage = psutil.swap_memory()
-
+    swap_usage_percentage = 0
+    if swap_usage.total > 0:
+        swap_usage_percentage = (swap_usage.used / swap_usage.total) * 100
+    # end if
     values.append({
         "name": "swap_information",
         "type": "object",
@@ -447,7 +448,7 @@ def main():
              "value": str(swap_usage.total)},
             {"name": "swap_usage_percentage",
              "type": "double",
-             "value": str((swap_usage.used / swap_usage.total) * 100)},
+             "value": str(swap_usage_percentage)},
             {"name": "swap_used",
              "type": "double",
              "value": str(swap_usage.used)},
@@ -457,7 +458,7 @@ def main():
         ]
     })
 
-    if ((swap_usage.used / swap_usage.total) * 100) >= swap_max_threshold:
+    if swap_usage_percentage >= swap_max_threshold:
         alerts.append({
             "message": "Swap: maximum usage threshold ({}) reached with a value of {} %".format(swap_max_threshold, (swap_usage.used / swap_usage.total) * 100),
             "generator": os.path.basename(__file__),
@@ -586,6 +587,7 @@ def main():
 
         except psutil.NoSuchProcess:
             pass
+        # end try
     # end for
 
     ###
@@ -597,7 +599,11 @@ def main():
             files_inside_dir = [file for file in glob.glob(folder.get("path") + "/**", recursive=True) if os.path.isfile(file)]
             number_of_files = len(files_inside_dir)
         else:
-            number_of_files = len(os.listdir(folder.get("path")))
+            try:
+                number_of_files = len(os.listdir(folder.get("path")))
+            except FileNotFoundError:
+                continue
+            # end try
         # end if
         values.append({
             "name": "information_for_folder_" + folder.get("name"),
@@ -639,15 +645,7 @@ def main():
     ###
     # DDBB CONNECTIONs
     ###
-    config = read_configuration()
-    
-    db_configuration = config["DDBB_CONFIGURATION"]
-    
-    db_uri = "{db_api}://postgres@{host}:{port}/{database}".format(**db_configuration)
-    
-    engine = create_engine(db_uri, pool_size=db_configuration["pool_size"], max_overflow=db_configuration["max_overflow"])
-
-    number_of_parallel_connections_to_ddbb = engine.execute("select count(*) from pg_stat_activity;").first()[0]
+    number_of_parallel_connections_to_ddbb = datamodel_engine.execute("select count(*) from pg_stat_activity;").first()[0]
 
     values.append({
         "name": "number_of_parallel_connections_to_ddbb",
