@@ -101,7 +101,7 @@ class TestCounters(unittest.TestCase):
 
         assert len(events) == 1
 
-    def test_several_update_counter_in_same_operation(self):
+    def test_update_counters_different_periods(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -127,7 +127,58 @@ class TestCounters(unittest.TestCase):
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "UPDATE_COUNTER"},
                 "start": "2018-06-05T05:07:03",
-                "stop": "2018-06-05T05:07:03",
+                "stop": "2018-06-05T06:07:03",
+                "values": [{"type": "double",
+                            "name": "value",
+                            "value": "10"}]
+            }]
+        }]
+        }
+        
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 2
+
+        events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
+                                            gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
+                                            start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
+        )
+
+        assert len(events) == 1
+
+        events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
+                                            gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
+                                            start_filters = [{"date": "2018-06-05T05:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T06:07:03", "op": "=="}],
+                                            value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
+        )
+
+        assert len(events) == 1
+
+    def test_several_update_counter_in_same_operation(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-07-04T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:03"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "UPDATE_COUNTER"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
                             "value": "10"}]
@@ -135,7 +186,16 @@ class TestCounters(unittest.TestCase):
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "UPDATE_COUNTER"},
-                "start": "2018-06-05T06:07:03",
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
+                "values": [{"type": "double",
+                            "name": "value",
+                            "value": "10"}]
+            },{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "UPDATE_COUNTER"},
+                "start": "2018-06-05T04:07:03",
                 "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
@@ -178,7 +238,7 @@ class TestCounters(unittest.TestCase):
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "UPDATE_COUNTER"},
                 "start": "2018-06-05T04:07:03",
-                "stop": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
                             "value": "10"}]
@@ -204,8 +264,8 @@ class TestCounters(unittest.TestCase):
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "UPDATE_COUNTER"},
-                "start": "2018-06-05T05:07:03",
-                "stop": "2018-06-05T05:07:03",
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
                             "value": "10"}]
@@ -213,7 +273,7 @@ class TestCounters(unittest.TestCase):
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "UPDATE_COUNTER"},
-                "start": "2018-06-05T06:07:03",
+                "start": "2018-06-05T04:07:03",
                 "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
@@ -281,7 +341,7 @@ class TestCounters(unittest.TestCase):
 
         assert len(events) == 1
 
-    def test_several_set_counter_in_same_operation(self):
+    def test_set_counters_different_periods(self):
 
         data = {"operations": [{
             "mode": "insert",
@@ -303,11 +363,71 @@ class TestCounters(unittest.TestCase):
                             "name": "value",
                             "value": "10"}]
             },{
+                "gauge": {"name": "GAUGE_NAME2",
+                          "system": "GAUGE_SYSTEM2",
+                          "insertion_type": "SET_COUNTER"},
+                "start": "2018-06-05T05:07:03",
+                "stop": "2018-06-05T06:07:03",
+                "values": [{"type": "double",
+                            "name": "value",
+                            "value": "10"}]
+            }]
+        }]
+        }
+        
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 2
+
+        events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
+                                            gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
+                                            start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
+        )
+
+        assert len(events) == 1
+
+        events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME2", "op": "=="},
+                                            gauge_systems = {"filter": "GAUGE_SYSTEM2", "op": "=="},
+                                            start_filters = [{"date": "2018-06-05T05:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T06:07:03", "op": "=="}],
+                                            value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
+        )
+
+        assert len(events) == 1
+
+    def test_several_set_counter_in_same_operation(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-07-04T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:03"},
+            "events": [{
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "SET_COUNTER"},
-                "start": "2018-06-05T05:07:03",
-                "stop": "2018-06-05T05:07:03",
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
+                "values": [{"type": "double",
+                            "name": "value",
+                            "value": "10"}]
+            },{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SET_COUNTER"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
                             "value": "11"}]
@@ -315,7 +435,7 @@ class TestCounters(unittest.TestCase):
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "SET_COUNTER"},
-                "start": "2018-06-05T06:07:03",
+                "start": "2018-06-05T04:07:03",
                 "stop": "2018-06-05T06:07:03",
                 "values": [{"type": "double",
                             "name": "value",
@@ -349,7 +469,7 @@ class TestCounters(unittest.TestCase):
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "SET_COUNTER"},
                 "start": "2018-06-05T04:07:03",
-                "stop": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T05:07:03",
                 "values": [{"type": "double",
                             "name": "value",
                             "value": "10"}]
@@ -375,7 +495,7 @@ class TestCounters(unittest.TestCase):
                 "gauge": {"name": "GAUGE_NAME",
                           "system": "GAUGE_SYSTEM",
                           "insertion_type": "SET_COUNTER"},
-                "start": "2018-06-05T05:07:03",
+                "start": "2018-06-05T04:07:03",
                 "stop": "2018-06-05T05:07:03",
                 "values": [{"type": "double",
                             "name": "value",

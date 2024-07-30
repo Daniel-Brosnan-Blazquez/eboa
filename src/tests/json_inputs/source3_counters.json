@@ -13,7 +13,7 @@
                   "system": "GAUGE_SYSTEM",
                   "insertion_type": "UPDATE_COUNTER"},
         "start": "2018-06-05T04:07:03",
-        "stop": "2018-06-05T05:07:03",
+        "stop": "2018-06-05T06:07:03",
         "values": [{"type": "double",
                     "name": "value",
                     "value": "30"}]
