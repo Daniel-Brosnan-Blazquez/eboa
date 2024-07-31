@@ -173,7 +173,8 @@ class Engine():
 
         # Check if file exists
         if not os.path.isfile(configuration_path):
-            logger.error(exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["message"].format(configuration_path))
+            message = exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["message"].format(configuration_path)
+            logger.error(message)
             return {"status": exit_codes["CONFIG_FILE_DOES_NOT_EXIST"]["status"], "message": message}
         # end if
         
