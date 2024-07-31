@@ -211,7 +211,7 @@ class Engine():
             return {"status": exit_codes["DUPLICATED_RULE_NAMES"]["status"], "message": message}
         # end if
 
-        task_names = [task.xpath("@name")[0] + "_" + task.xpath("../../@name")[0] for task in scheduler_xpath("/rules/rule/tasks/task[not(boolean(@skip)) and not(@skip = 'true')]")]
+        task_names = [task.xpath("@name")[0] for task in scheduler_xpath("/rules/rule/tasks/task[not(boolean(@skip)) and not(@skip = 'true')]")]
         unique_task_names = set(task_names)
         if len(task_names) != len(unique_task_names):
             message = exit_codes["DUPLICATED_TASK_NAMES"]["message"].format(task_names, unique_task_names)
@@ -270,7 +270,7 @@ class Engine():
             list_rules.append(dict(rule_uuid = rule_uuid, name = name, periodicity = periodicity, window_delay = window_delay, window_size = window_size))
 
             for task in rule.xpath("tasks/task[not(boolean(@skip)) and not(@skip = 'true')]"):
-                name = task.xpath("@name")[0] + "_" + task.xpath("../../@name")[0]
+                name = task.xpath("@name")[0]
                 command = task.xpath("command")[0].text
 
                 add_window_arguments = True

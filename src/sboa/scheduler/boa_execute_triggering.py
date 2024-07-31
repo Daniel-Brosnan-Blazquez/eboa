@@ -73,18 +73,23 @@ def execute_triggering(triggering_uuid, start, stop):
         logger.info("The command '{}' is going to be executed with triggering time {} and window arguments (if applied) -b {} -e {}".format(command, task.triggering_time, start, stop))
 
         command_split = shlex.split(command)
-        program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output, error = program.communicate()        
-        return_code = program.returncode
+        try:
+            program = Popen(command_split, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            output, error = program.communicate()        
+            return_code = program.returncode
+            
+            logger.info("Returned code of command '{}' is: {}".format(command, return_code))
+            
+            # Notify end triggering
+            engine.triggering_done(triggering_uuid)
 
-        logger.info("Returned code of command '{}' is: {}".format(command, return_code))
-
-        # Notify end triggering
-        engine.triggering_done(triggering_uuid)
-
-        # Release the pid lock file
-        pidfile.TimeoutPIDLockFile(pid_file).release()
-    # end if
+            # Release the pid lock file
+            pidfile.TimeoutPIDLockFile(pid_file).release()
+        except Exception as e:
+            logger.info("The command '{}' was not successfully executed. The returned error was: {}".format(command, str(e)))
+            logger.error(traceback.format_exc())
+            traceback.print_exc(file=sys.stdout)
+        # end if
 
     engine.close_session()
     query.close_session()
