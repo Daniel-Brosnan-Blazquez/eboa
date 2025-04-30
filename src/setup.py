@@ -44,7 +44,8 @@ setup(name="eboa",
               "coverage",
               "termcolor",
               "pytest-cov",
-              "Sphinx"
+              "Sphinx",
+              "flask-security-too==4.1.6"
           ]
       },
       test_suite='nose.collector')
