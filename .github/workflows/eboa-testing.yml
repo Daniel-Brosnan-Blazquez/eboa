@@ -1,0 +1,18 @@
+# Github actions for testing EBOA
+name: "EBOA testing"
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  # Integration Test
+  tests:
+    name: "Integration Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Set up environment"
+        run: docker compose -f compose_eboa_github_dev.yml up -d --wait
+      - name: "Test EBOA"
+        run: docker exec -it eboa bash -c "cd /eboa/src; py.test -vv tests/ eboa/ingestions"
