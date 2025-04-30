@@ -8,7 +8,7 @@ module eboa
 from setuptools import setup, find_packages
 
 setup(name="eboa",
-      version="1.0.5",
+      version="1.0.6",
       description="Engine for Business Operation Analysis",
       url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",
@@ -44,7 +44,9 @@ setup(name="eboa",
               "coverage",
               "termcolor",
               "pytest-cov",
-              "Sphinx"
+              "Sphinx",
+              "Werkzeug==3.0.6",
+              "flask-security-too==4.1.6"
           ]
       },
       test_suite='nose.collector')

@@ -1641,7 +1641,7 @@ class Engine():
                 self.keys_events_with_priority[(key, str(self.dim_signature.dim_signature_uuid))] = None
             elif gauge_info["insertion_type"] == "UPDATE_COUNTER":
 
-                counter_key = (self.dim_signature.dim_signature, gauge_info.get("name"), gauge_info.get("system"))
+                counter_key = (self.dim_signature.dim_signature, gauge_info.get("name"), gauge_info.get("system"), parser.parse(start), parser.parse(stop))
                 if counter_key in self.set_counters:
                     raise MixedOperationsWithCounter(exit_codes["MIXED_OPERATIONS_WITH_COUNTER"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, gauge_info.get("name"), gauge_info.get("system")))
                 # end if
@@ -1658,12 +1658,6 @@ class Engine():
                     }
                 else:
                     self.update_counters[counter_key]["value"] += value_for_update
-                    if start < self.update_counters[counter_key]["start"]:
-                        self.update_counters[counter_key]["start"] = start
-                    # end if
-                    if stop > self.update_counters[counter_key]["stop"]:
-                        self.update_counters[counter_key]["stop"] = stop
-                    # end if
                 # end if
 
                 # This insertion type does not actually insert any event at this stage
@@ -2243,11 +2237,6 @@ class Engine():
         """
         Method to manage counters when the insertion_type is 'UPDATE_COUNTER'
         """
-
-        list_events_to_create = []
-        list_values_to_create = {
-            "doubles": []
-        }
         
         for counter_key in self.update_counters:
             
@@ -2256,22 +2245,23 @@ class Engine():
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
             def _manage_update_counters_synchronize(self):
 
+                list_events_to_create = []
+                list_values_to_create = {
+                    "doubles": []
+                }
+
                 counter = self.update_counters[counter_key]
-                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(Gauge.name == counter["gauge_name"],
-                                                           Gauge.system == counter["gauge_system"],
-                                                           DimSignature.dim_signature == counter["dim_signature"]).limit(1).all()
+                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(
+                    Gauge.name == counter["gauge_name"],
+                    Gauge.system == counter["gauge_system"],
+                    DimSignature.dim_signature == counter["dim_signature"],
+                    Event.start == counter["start"],
+                    Event.stop == counter["stop"]).limit(1).all()
 
                 # Check if the counter was already stored in the DDBB
                 if len(events) > 0:
                     event_value = self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).first()
                     self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).update({"value": event_value.value + counter["value"]}, synchronize_session=False)
-                    if counter["start"] < events[0].start.isoformat() and counter["stop"] > events[0].stop.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"], "stop": counter["stop"]}, synchronize_session=False)
-                    elif counter["start"] < events[0].start.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"]}, synchronize_session=False)
-                    elif counter["stop"] > events[0].stop.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"stop": counter["stop"]}, synchronize_session=False)
-                    # end if
                 else:
                     id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                     self._insert_event(list_events_to_create, id, counter["start"], counter["stop"], self.gauges[(counter["gauge_name"], counter["gauge_system"])].gauge_uuid, None, True, source = self.source)
@@ -2314,11 +2304,6 @@ class Engine():
         """
         Method to manage counters when the insertion_type is 'SET_COUNTER'
         """
-
-        list_events_to_create = []
-        list_values_to_create = {
-            "doubles": []
-        }
         
         for counter_key in self.set_counters:
             
@@ -2327,22 +2312,23 @@ class Engine():
             @self.synchronized(lock, external=True, lock_path="/dev/shm")
             def _manage_set_counters_synchronize(self):
 
+                list_events_to_create = []
+                list_values_to_create = {
+                    "doubles": []
+                }
+
                 counter = self.set_counters[counter_key]
-                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(Gauge.name == counter["gauge_name"],
-                                                           Gauge.system == counter["gauge_system"],
-                                                           DimSignature.dim_signature == counter["dim_signature"]).limit(1).all()
+                events = self.session.query(Event).join(Gauge).join(DimSignature).filter(
+                    Gauge.name == counter["gauge_name"],
+                    Gauge.system == counter["gauge_system"],
+                    DimSignature.dim_signature == counter["dim_signature"],
+                    Event.start == counter["start"],
+                    Event.stop == counter["stop"]).limit(1).all()
 
                 # Check if the counter was already stored in the DDBB
                 if len(events) > 0:
                     event_value = self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).first()
                     self.session.query(EventDouble).filter(EventDouble.event_uuid == str(events[0].event_uuid)).update({"value": counter["value"]}, synchronize_session=False)
-                    if counter["start"] < events[0].start.isoformat() and counter["stop"] > events[0].stop.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"], "stop": counter["stop"]}, synchronize_session=False)
-                    elif counter["start"] < events[0].start.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"start": counter["start"]}, synchronize_session=False)
-                    elif counter["stop"] > events[0].stop.isoformat():
-                        self.session.query(Event).filter(Event.event_uuid == str(events[0].event_uuid)).update({"stop": counter["stop"]}, synchronize_session=False)
-                    # end if
                 else:
                     id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
                     self._insert_event(list_events_to_create, id, counter["start"], counter["stop"], self.gauges[(counter["gauge_name"], counter["gauge_system"])].gauge_uuid, None, True, source = self.source)
@@ -2360,20 +2346,23 @@ class Engine():
 
                 # end if
 
+                # Bulk insert events
+                if len(list_events_to_create) > 0:
+                    self.session.bulk_insert_mappings(Event, list_events_to_create)
+                # end if
+
+                if len(list_values_to_create["doubles"]) > 0:
+                    self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
+                # end if
+
+                # Commit data
+                self.session.commit()
+
             # end def
 
             _manage_set_counters_synchronize(self)
 
         # end for
-
-        # Bulk insert events
-        if len(list_events_to_create) > 0:
-            self.session.bulk_insert_mappings(Event, list_events_to_create)
-        # end if
-
-        if len(list_values_to_create["doubles"]) > 0:
-            self.session.bulk_insert_mappings(EventDouble, list_values_to_create["doubles"])
-        # end if
 
         return
 

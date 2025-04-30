@@ -366,7 +366,7 @@ class TestEboaIngestion(unittest.TestCase):
         # Check inserted data
         sources = self.query.get_sources()
 
-        assert len(sources) == 1
+        assert len(sources) == 4
 
         sources = self.query.get_sources(names = {"filter": "DEC_F_RECS_ALL_CASES.xml", "op": "=="})
 

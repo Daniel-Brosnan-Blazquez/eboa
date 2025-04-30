@@ -60,7 +60,7 @@ class TestEngine(unittest.TestCase):
 
         assert len(rules) == 3
 
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
 
         assert len(tasks) == 1
 
@@ -76,7 +76,7 @@ class TestEngine(unittest.TestCase):
         assert len(triggerings) == 1
 
         self.query_sboa.session.expunge_all()
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
 
         assert len(tasks) == 1
 
@@ -103,19 +103,19 @@ class TestEngine(unittest.TestCase):
 
         time.sleep(10)
 
-        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1_ECHO_3", "ECHO_3_2_ECHO_3"], "op": "in"}, triggered = True)
+        triggerings = self.query_sboa.get_triggerings(task_names = {"filter": ["ECHO_3_1", "ECHO_3_2"], "op": "in"}, triggered = True)
 
         assert len(triggerings) == 2
 
         self.query_sboa.session.expunge_all()
         
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_2_ECHO_3", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_2", "op": "=="})
 
         assert len(tasks) == 1
 
         assert tasks[0].triggering_time.isoformat() == "2019-12-02T10:00:00"
         
-        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1_ECHO_3", "op": "=="})
+        tasks = self.query_sboa.get_tasks(names = {"filter": "ECHO_3_1", "op": "=="})
 
         assert len(tasks) == 1
 

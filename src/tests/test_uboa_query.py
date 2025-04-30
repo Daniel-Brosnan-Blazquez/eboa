@@ -6,26 +6,60 @@ Written by DEIMOS Space S.L. (jubv)
 module uboa
 """
 # Import python utilities
+import os
+
+# Import python utilities
 import unittest
 
+# Import Flask
+from flask import Flask
+
 # Import flask security utils
-from flask_security import hash_password
+from flask_security import Security, hash_password, SQLAlchemySessionUserDatastore
+import flask_security
 
 # Import engine of the DDBB
 import uboa.engine.engine as uboa_engine
 from uboa.engine.engine import Engine
+
+# Import query interface
 from uboa.engine.query import Query
 
 # Import datamodel
+from uboa.datamodel.base import Session
 from uboa.datamodel.users import RoleUser, Role, User
+from uboa.datamodel.base import db_session
 
 # Import exceptions
 from eboa.engine.errors import InputError
 
 # Create an app context to hash passwords (this is because the hash_password depends on configurations related to the app)
-import vboa
+app = Flask(__name__, instance_relative_config=True)
+secret_key = os.urandom(24)
+app.config.from_mapping(
+            SECRET_KEY=secret_key,
+            SECURITY_PASSWORD_SALT="ALWAYS_THE_SAME",
+            SECURITY_CHANGEABLE=True,
+            SECURITY_SEND_PASSWORD_CHANGE_EMAIL=False,
+            SESSION_COOKIE_SECURE=False,
+            REMEMBER_COOKIE_SECURE=False,
+            SESSION_COOKIE_HTTPONLY=True,
+            REMEMBER_COOKIE_HTTPONLY=True
+)
 
-app = vboa.create_app()
+# the toolbar is only enabled in debug mode:
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+
+# Setup Flask-Security
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
+        {"email": {"mapper": flask_security.uia_email_mapper, "case_insensitive": True}},
+        {"username": {"mapper": flask_security.uia_username_mapper}}
+]
+app.config["SECURITY_TRACKABLE"] = True
+user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
+security = Security(app, user_datastore)
+
 with app.app_context():
     password = hash_password("password")
 
