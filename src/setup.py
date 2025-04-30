@@ -45,6 +45,7 @@ setup(name="eboa",
               "termcolor",
               "pytest-cov",
               "Sphinx",
+              "Werkzeug==3.0.6",
               "flask-security-too==4.1.6"
           ]
       },
