@@ -5,7 +5,7 @@ echo "Initialize EBOA DDBB"
 echo "####################"
 while true
 do
-    echo "Trying to initialize EBOA, SBOA, minArc and ORC databases..."
+    echo "Trying to initialize EBOA, SBOA and UBOA databases..."
     boa_init.py -e -s -u -y
     status=$?
     if [ $status -ne 0 ]
