@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: "Set up environment"
-        run: GITHUB_BRANCH=${{ github.ref_name }} REPOSITORY_URI=${{ github.server_url }}/${{ github.repository }} docker compose -f compose_eboa_github_dev.yml up -d --wait
+        run: GITHUB_BRANCH=${{ github.ref_name }} REPOSITORY_URI=${{ github.server_url }}/${{ github.repository }} docker compose -f compose_github_dev.yml up -d --wait
       - name: "Test EBOA"
         run: docker exec eboa bash -c "/scripts/initialize_eboa_ddbb.sh; cd /eboa/src; py.test -vv tests/ eboa/ingestions"
