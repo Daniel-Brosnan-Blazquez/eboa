@@ -20,6 +20,8 @@ services:
          - EBOA_DDBB_HOST=eboa_db
          - SBOA_DDBB_HOST=eboa_db
          - UBOA_DDBB_HOST=eboa_db
+         - REPOSITORY_URI=${REPOSITORY_URI}
+         - GITHUB_BRANCH=${GITHUB_BRANCH}
       restart        : always
       shm_size: 512M
       networks:

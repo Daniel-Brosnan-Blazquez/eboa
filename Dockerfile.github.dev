@@ -67,7 +67,7 @@ ENV PATH="/home/boa/bin:${PATH}"
 USER boa
 
 # Install EBOA packages
-RUN git clone --branch develop https://github.com/Daniel-Brosnan-Blazquez/eboa.git
+RUN git clone --branch ${GITHUB_BRANCH} ${REPOSITORY_URI}
 
 RUN pip3 install --target=/usr/local/python-packages "/eboa/src[tests]"
 
