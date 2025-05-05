@@ -1,6 +1,9 @@
 # Base the image on Rocky Linux (Red hat compatible)
 FROM rockylinux:9
 
+ARG REPOSITORY_URI
+ARG GITHUB_BRANCH
+
 USER root
 
 RUN useradd -m -r boa
