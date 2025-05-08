@@ -72,7 +72,7 @@ USER boa
 # Install EBOA packages
 RUN git clone --branch ${GITHUB_BRANCH} ${REPOSITORY_URI}
 
-RUN pip3 install --target=/usr/local/python-packages "/eboa/src[tests]"
+RUN pip3 install --use-pep517 --target=/usr/local/python-packages "/eboa/src[tests]"
 
 # Copy EBOA configurations
 RUN cp /eboa/src/config/* /resources_path
