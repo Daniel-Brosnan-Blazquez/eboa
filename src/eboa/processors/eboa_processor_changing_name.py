@@ -2,7 +2,7 @@
 Basic processor module for testing purposes
 It changes the name of the json structure to add the number of previous ingested files with the same dim_signature
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

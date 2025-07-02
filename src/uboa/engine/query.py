@@ -1,7 +1,7 @@
 """
 Engine definition
 
-Written by DEIMOS Space S.L. (jubv)
+Written by Daniel Brosnan Blázquez
 
 module uboa
 """

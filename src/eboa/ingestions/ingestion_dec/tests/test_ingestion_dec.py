@@ -1,7 +1,7 @@
 """
 Automated tests for the ingestion of the DEC_F_RECV files
 
-Written by DEIMOS Space S.L. (femd)
+Written by Daniel Brosnan Blázquez
 
 module ingestions
 """

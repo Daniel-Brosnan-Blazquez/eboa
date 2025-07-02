@@ -1,7 +1,7 @@
 """
 Helper module for using functions in XPATH
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

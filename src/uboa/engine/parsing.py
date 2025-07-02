@@ -1,7 +1,7 @@
 """
 Parsing definition for the engine module
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module uboa
 """

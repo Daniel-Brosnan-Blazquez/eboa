@@ -1,7 +1,7 @@
 """
 Test: ingest events using multiprocessing test
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

@@ -2,7 +2,7 @@
 """
 RBOA reporting tool
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

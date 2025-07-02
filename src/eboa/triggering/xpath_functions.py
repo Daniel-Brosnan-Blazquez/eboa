@@ -1,7 +1,7 @@
 """
 Helper module for the ingestions of files of Sentinel-2 using functions in XPATH
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

@@ -2,7 +2,7 @@
 #
 # Modify existing DDBB of the eboa with a SQL file with differences
 #
-# Written by DEIMOS Space S.L. (dibb)
+# Written by Daniel Brosnan Blázquez
 #
 # module eboa
 #################################################################

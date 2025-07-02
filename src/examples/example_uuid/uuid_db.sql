@@ -1,5 +1,5 @@
 -- Database for testing the uuids
--- Written by DEIMOS Space S.L. (dibb)
+-- Written by Daniel Brosnan Blázquez
 -- modeule eboa
 
 ---------------------- 

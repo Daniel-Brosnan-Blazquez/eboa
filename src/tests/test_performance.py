@@ -1,7 +1,7 @@
 """
 Tests for checking performances
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """# Import python utilities

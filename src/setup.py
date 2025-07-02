@@ -1,7 +1,7 @@
 """
 Setup configuration for the eboa application
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

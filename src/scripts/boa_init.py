@@ -2,7 +2,7 @@
 """
 Script for initializing BOA environment
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module boa
 """

@@ -2,7 +2,7 @@
 """
 Script for converting MJD to UTC
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

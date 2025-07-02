@@ -2,7 +2,7 @@
 """
 Script for initializing ORC environment (orchestrator)
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module orc
 """

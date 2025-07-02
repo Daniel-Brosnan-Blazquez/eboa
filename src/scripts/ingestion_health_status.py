@@ -2,7 +2,7 @@
 """
 Ingestion module of the health status of the host machine
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """
@@ -39,7 +39,7 @@ version="1.0"
 """
 Errors definition for the health ingestion
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """
