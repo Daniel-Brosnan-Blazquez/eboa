@@ -3,4 +3,4 @@ graft schemas
 graft datamodel
 graft cron
 graft config
-graft boa_package_versions
+graft boa_package_version
