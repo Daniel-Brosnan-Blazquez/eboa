@@ -12,6 +12,7 @@ import json
 import before_after
 import tempfile
 import os
+import shutil
 
 # Import eboa_ingestion module
 from eboa.ingestion import eboa_ingestion
@@ -31,6 +32,11 @@ class TestEboaIngestion(unittest.TestCase):
         self.query.clear_db()
 
     def tearDown(self):
+        try:
+            os.rename("/resources_path/triggering_bak.xml", "/resources_path/triggering.xml")
+        except FileNotFoundError:
+            pass
+        # end try
 
         # Close query session
         self.query.close_session()
@@ -353,6 +359,10 @@ class TestEboaIngestion(unittest.TestCase):
         assert len([returned_status for returned_status in returned_statuses if not returned_status["status"] in [eboa_engine.exit_codes["OK"]["status"], eboa_engine.exit_codes["SOURCE_ALREADY_INGESTED"]["status"]]]) == 1
 
     def test_ingestion_passing_schema(self):
+
+        # Move test configuration for triggering
+        os.rename("/resources_path/triggering.xml", "/resources_path/triggering_bak.xml")
+        shutil.copyfile(os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/triggering_one_rule.xml", "/resources_path/triggering.xml")
 
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/xml_inputs/DEC_F_RECS_ALL_CASES.xml"
 

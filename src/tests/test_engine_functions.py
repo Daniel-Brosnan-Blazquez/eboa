@@ -14,7 +14,7 @@ from eboa.engine.functions import read_configuration
 from eboa.engine import functions as eboa_engine_functions
 
 # Import exceptions
-from eboa.engine.errors import EboaResourcesPathNotAvailable
+from eboa.engine.errors import EboaResourcesPathNotAvailable, EboaLogPathNotAvailable, EboaSchemasPathNotAvailable
 
 # Import engine of the DDBB
 import eboa.engine.engine as eboa_engine
@@ -55,10 +55,7 @@ class TestEngineFunctions(unittest.TestCase):
 
     def test_no_eboa_resources_path(self):
 
-        if "EBOA_RESOURCES_PATH" in os.environ.keys():
-            eboa_resources_path = os.environ["EBOA_RESOURCES_PATH"]
-            del os.environ["EBOA_RESOURCES_PATH"]
-        # end if
+        eboa_resources_path = os.environ.pop("EBOA_RESOURCES_PATH", None)
 
         try:
             read_configuration()
@@ -66,9 +63,38 @@ class TestEngineFunctions(unittest.TestCase):
             assert True == True
         except:
             assert False == True
+        finally:
+            if eboa_resources_path is not None:
+                os.environ["EBOA_RESOURCES_PATH"] = eboa_resources_path
 
-        os.environ["EBOA_RESOURCES_PATH"] = eboa_resources_path
+    def test_no_eboa_log_path(self):
 
+        eboa_log_path = os.environ.pop("EBOA_LOG_PATH", None)
+
+        try:
+            eboa_engine_functions.get_log_path()
+        except EboaLogPathNotAvailable:
+            assert True == True
+        except:
+            assert False == True
+        finally:
+            if eboa_log_path is not None:
+                os.environ["EBOA_LOG_PATH"] = eboa_log_path
+
+    def test_no_eboa_schemas_path(self):
+
+        eboa_schemas_path = os.environ.pop("EBOA_SCHEMAS_PATH", None)
+
+        try:
+            eboa_engine_functions.get_schemas_path()
+        except EboaSchemasPathNotAvailable:
+            assert True == True
+        except:
+            assert False == True
+        finally:
+            if eboa_schemas_path is not None:
+                os.environ["EBOA_SCHEMAS_PATH"] = eboa_schemas_path
+                
     def test_extract_events_with_alerts_to_be_notified(self):
 
         data = {"operations": [{
