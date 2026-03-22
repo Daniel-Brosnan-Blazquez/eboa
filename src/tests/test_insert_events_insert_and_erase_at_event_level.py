@@ -283,7 +283,41 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
         events = self.session.query(Event).filter(Event.visible == True).all()
 
         assert len(events) == 3
-        
+
+    def test_insert_event_insert_and_erase_event_duration_0_at_the_beginning_to_stay(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-07-04T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:03"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "INSERT_and_ERASE"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T04:07:03"
+            }]
+        }]}
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
+
+        events = self.query_eboa.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
+
+        assert len(events) == 1
+
     def test_insert_event_insert_and_erase_partial_remove_with_links(self):
 
         data1 = {"operations": [{

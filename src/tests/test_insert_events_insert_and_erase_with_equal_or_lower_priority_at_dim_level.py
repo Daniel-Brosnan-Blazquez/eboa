@@ -279,6 +279,41 @@ class TestInsertEventsInsertAndEraseWithEqualOrLowerPriorityAtDim(unittest.TestC
 
         assert len(events) == 1
 
+    def test_insert_event_insert_and_erase_with_equal_or_lower_priority_at_dim_signature_level_events_duration_0_at_the_beginning_to_stay(self):
+
+        data = {"operations": [{
+            "mode": "insert_and_erase_with_equal_or_lower_priority",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-07-04T02:07:03",
+                       "validity_start": "2018-06-05T04:07:03",
+                       "validity_stop": "2018-06-05T06:07:03",
+                       "priority": "20"},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T04:07:03",
+                "stop": "2018-06-05T04:07:03"
+            }]
+        }]}
+        exit_status = self.engine_eboa.treat_data(data)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
+        events = self.query_eboa.get_events()
+
+        assert len(events) == 1
+
+        events = self.query_eboa.get_events(start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}])
+
+        assert len(events) == 1
+
     def test_insert_and_erase_with_equal_or_lower_priority_at_dim_signature_level_with_split_event_at_the_end(self):
 
         data = {"operations": [{

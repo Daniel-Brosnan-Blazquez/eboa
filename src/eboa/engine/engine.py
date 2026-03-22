@@ -2481,9 +2481,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
@@ -2739,9 +2752,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
@@ -3017,9 +3043,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
@@ -3326,9 +3365,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
@@ -3582,9 +3634,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
@@ -3856,9 +3921,22 @@ class Engine():
             # Sort list
             filtered_timeline_points.sort()
 
+            events_duration_0 = [event for event in events if event.start == event.stop]
+            events_duration_0_added_stop = {}
+            for event in events_duration_0:
+                # Insert only once the stop of the events with duration 0
+                if event.stop not in events_duration_0_added_stop:
+                    events_duration_0_added_stop[event.stop] = None
+                    filtered_timeline_points.append(event.stop)
+                # end if
+            # end for
+
+            # Sort list again after adding duplicated timestamps for events with duration 0
+            filtered_timeline_points.sort()
+
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
 
             # Iterate through the periods
             next_timestamp = 1
