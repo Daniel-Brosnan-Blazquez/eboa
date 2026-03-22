@@ -2,7 +2,7 @@
 """
 Reporting script for helping generating reports using the BOA
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module rboa
 """

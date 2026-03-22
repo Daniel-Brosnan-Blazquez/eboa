@@ -1,7 +1,7 @@
 """
 Functions definition for the engine component
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """
@@ -12,7 +12,7 @@ from dateutil import parser
 import datetime
 
 # Import exceptions
-from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable
+from eboa.engine.errors import InputError, EboaResourcesPathNotAvailable, EboaLogPathNotAvailable, EboaSchemasPathNotAvailable
 
 # Import SQLAlchemy utilities
 import uuid

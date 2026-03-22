@@ -1,7 +1,7 @@
 """
 Ingestion module for the DEC_F_RECV files from DEC
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

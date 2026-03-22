@@ -1,14 +1,14 @@
 """
 Setup configuration for the eboa application
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """
 from setuptools import setup, find_packages
 
 setup(name="eboa",
-      version="1.0.6",
+      version="1.0.7",
       description="Engine for Business Operation Analysis",
       url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",

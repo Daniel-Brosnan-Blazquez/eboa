@@ -2,7 +2,7 @@
 """
 Script for deciding if continue launching triggering command to ingest data into EBOA
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

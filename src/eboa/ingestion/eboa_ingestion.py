@@ -2,7 +2,7 @@
 """
 Ingestion script for helping inserting data to EBOA
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

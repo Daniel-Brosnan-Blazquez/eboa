@@ -1,7 +1,7 @@
 """
 Automated tests for the engine submodule (event insertion type INSERT_and_ERASE)
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

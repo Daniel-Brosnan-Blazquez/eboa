@@ -2,7 +2,7 @@
 #
 # Generate  documentation for the eboa component
 #
-# Written by DEIMOS Space S.L. (dibb)
+# Written by Daniel Brosnan Blázquez
 #
 # module eboa
 #################################################################

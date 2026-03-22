@@ -1,7 +1,7 @@
 """
 Errors definition for the triggering module
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

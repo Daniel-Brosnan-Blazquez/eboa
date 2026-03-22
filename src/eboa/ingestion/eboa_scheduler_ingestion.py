@@ -2,7 +2,7 @@
 """
 Ingestion script for helping inserting data to EBOA when commanded from the BOA scheduler
 
-Written by DEIMOS Space S.L. (dibb)
+Written by Daniel Brosnan Blázquez
 
 module eboa
 """

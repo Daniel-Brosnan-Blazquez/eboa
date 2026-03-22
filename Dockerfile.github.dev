@@ -1,6 +1,9 @@
 # Base the image on Rocky Linux (Red hat compatible)
 FROM rockylinux:9
 
+ARG REPOSITORY_URI
+ARG GITHUB_BRANCH
+
 USER root
 
 RUN useradd -m -r boa
@@ -10,11 +13,8 @@ RUN yum install -y epel-release
 RUN yum install --allowerasing -y python3 \
     python3-pip \
     python3-tkinter \
-    gcc \
     python3-devel \
     make \
-    gcc-c++ \
-    sqlite-devel \
     which \
     p7zip \
     unzip \
@@ -67,9 +67,9 @@ ENV PATH="/home/boa/bin:${PATH}"
 USER boa
 
 # Install EBOA packages
-RUN git clone --branch develop https://github.com/Daniel-Brosnan-Blazquez/eboa.git
+RUN git clone --branch ${GITHUB_BRANCH} ${REPOSITORY_URI}
 
-RUN pip3 install --target=/usr/local/python-packages "/eboa/src[tests]"
+RUN pip3 install --use-pep517 --target=/usr/local/python-packages "/eboa/src[tests]"
 
 # Copy EBOA configurations
 RUN cp /eboa/src/config/* /resources_path

@@ -3,7 +3,7 @@
 #
 # Init DDBB of the uboa
 #
-# Written by DEIMOS Space S.L. (dibb)
+# Written by Daniel Brosnan Blázquez
 #
 # module uboa
 #################################################################
