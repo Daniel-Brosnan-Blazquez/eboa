@@ -264,7 +264,7 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
-                                                                           Event.start == "2018-06-05T04:07:03",
+                                                                           Event.start == "2018-06-05T04:07:03.000001",
                                                                            Event.stop == "2018-06-05T08:07:36",
                                                                            Source.name == "source.json").all()
         assert len(events) == 1
@@ -272,7 +272,7 @@ class TestInsertEventsInsertAndEraseAtEvent(unittest.TestCase):
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
                                                                            Event.start == "2018-06-05T04:07:03",
-                                                                           Event.stop == "2018-06-05T04:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:03.000001",
                                                                            Source.name == "source2.json").all()
         assert len(events) == 1
 

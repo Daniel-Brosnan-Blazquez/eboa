@@ -186,6 +186,18 @@ exit_codes = {
     "MIXED_OPERATIONS_WITH_COUNTER": {
         "status": 29,
         "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} mixes requests to set and update the counter ('insertion_type': 'SET_COUNTER') associated to gauge name {} and gauge system {}. This is not allowed (it has no logic)"
+    },
+    "SOURCE_VALIDITY_DURATION_0": {
+        "status": 30,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has a reported validity period with duration 0 ({}_{}). The stop value has been shifted by 1 microsecond ({})"
+    },
+    "EVENT_DURATION_0": {
+        "status": 31,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has an event or events with duration 0. The stop value of those events have been shifted by 1 microsecond"
+    },
+    "EVENT_DURATION_0_AT_THE_VALIDITY_END": {
+        "status": 32,
+        "message": "The source file with name {} associated to the DIM signature {} and DIM processing {} with version {} has an event or events with duration 0 at the end of the validity period ({}_{}). The validity stop value has been shifted by 1 microsecond ({})"
     }
 }
 
@@ -1210,6 +1222,17 @@ class Engine():
             # end if
         # end if
 
+        # If duration of validity period is 0, shift the stop value by 1 microsecond and log a warning
+        check_duration_0 = False
+        warning_message_duration_0 = ""
+        if parser.parse(validity_stop).replace(tzinfo=None) == parser.parse(validity_start).replace(tzinfo=None):
+            new_validity_stop = (parser.parse(validity_stop).replace(tzinfo=None) + datetime.timedelta(microseconds=1)).isoformat()
+            warning_message_duration_0 = exit_codes["SOURCE_VALIDITY_DURATION_0"]["message"].format(name, self.dim_signature.dim_signature, processor, version, validity_stop, validity_start, new_validity_stop)
+            logger.warning(warning_message_duration_0)
+            validity_stop = new_validity_stop
+            check_duration_0 = True
+        # end if
+
         self.source = self.session.query(Source).filter(Source.name == name,
                                                                Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
                                                                Source.processor_version == version,
@@ -1265,7 +1288,6 @@ class Engine():
         if operation_mode in ["insert_and_erase_with_priority", "insert_and_erase_with_equal_or_lower_priority"] and not self.source.priority:
             raise PriorityNotDefined(exit_codes["PRIORITY_NOT_DEFINED"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version))
         # end if
-            
         
         self.source_progress = self.session_progress.query(Source).filter(Source.name == name,
                                                         Source.dim_signature_uuid == self.dim_signature.dim_signature_uuid,
@@ -1296,6 +1318,11 @@ class Engine():
         # Bulk insert alerts
         if len(list_alerts) > 0:
             self._bulk_insert_mappings(SourceAlert, list_alerts)
+        # end if
+
+        # If the duration of the validity period is 0, notify the relevant status
+        if check_duration_0:
+            self._insert_source_status(exit_codes["SOURCE_VALIDITY_DURATION_0"]["status"], message=warning_message_duration_0)
         # end if
 
         return
@@ -1597,11 +1624,26 @@ class Engine():
         list_alerts = []
         
         list_values = {}
+        check_duration_0 = False
         for event in self.operation.get("events") or []:
             id = uuid.uuid1(node = os.getpid(), clock_seq = random.getrandbits(14))
             self.dict_event_uuids_aliases[id] = []
             start = event.get("start")
             stop = event.get("stop")
+
+            # If duration of event period is 0, shift the stop value by 1 microsecond and log a warning
+            if parser.parse(stop).replace(tzinfo=None) == parser.parse(start).replace(tzinfo=None):
+                stop_datetime = parser.parse(stop).replace(tzinfo=None) + datetime.timedelta(microseconds=1)
+                stop = stop_datetime.isoformat()
+                check_duration_0 = True
+                # Check if validity period of the source needs to be adjusted to accommodate the new stop value of the event
+                if parser.parse(stop).replace(tzinfo=None) > self.source.validity_stop.replace(tzinfo=None):
+                    warning_message_duration_0_at_end = exit_codes["EVENT_DURATION_0_AT_THE_VALIDITY_END"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version, self.source.validity_start.isoformat(), self.source.validity_stop.isoformat(), stop)
+                    logger.warning(warning_message_duration_0_at_end)
+                    self.source.validity_stop = stop_datetime
+                    self._insert_source_status(exit_codes["EVENT_DURATION_0_AT_THE_VALIDITY_END"]["status"], message=warning_message_duration_0_at_end)
+            # end if
+
             gauge_info = event.get("gauge")
             gauge = self.gauges[(gauge_info.get("name"), gauge_info.get("system"))]
             explicit_ref = None
@@ -1691,6 +1733,7 @@ class Engine():
             if explicit_ref != None:
                 explicit_ref_uuid = explicit_ref.explicit_ref_uuid
             # end if
+
             # Insert the event into the list for bulk ingestion
             self._insert_event(list_events, id, start, stop, gauge.gauge_uuid, explicit_ref_uuid,
                                     visible, source = self.source)
@@ -1808,6 +1851,12 @@ class Engine():
         # Bulk insert alerts
         if len(list_alerts) > 0:
             self._bulk_insert_mappings(EventAlert, list_alerts)
+        # end if
+
+        # If there has been detected any event with duration 0, notify the relevant status
+        if check_duration_0:
+            warning_message_duration_0 = exit_codes["EVENT_DURATION_0"]["message"].format(self.source.name, self.dim_signature.dim_signature, self.source.processor, self.source.processor_version)
+            self._insert_source_status(exit_codes["EVENT_DURATION_0"]["status"], message=warning_message_duration_0)
         # end if
         
         return
@@ -2453,30 +2502,16 @@ class Engine():
             dim_signature = self.session.query(DimSignature).join(Gauge).filter(Gauge.gauge_uuid == gauge_uuid).first()
             sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                         or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                 Source.validity_stop > self.source.validity_start),
-                                                            and_(Source.validity_start == self.source.validity_start,
-                                                                 Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+                                                                 Source.validity_stop > self.source.validity_start))).order_by(Source.validity_start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
                       
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -2539,25 +2574,17 @@ class Engine():
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
                                            if (source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop)])
+                                               source.validity_stop > validity_start)])
                 
                 # Get the related source
                 source_max_generation_time = sorted([source for source in sources_during_period
                                            if source.generation_time == max_generation_time and
                                               ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                              or
-                                              (source.validity_start == validity_start and
-                                               source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                                               source.validity_stop > validity_start))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              ((event.start < validity_stop and event.stop > validity_start))]
                                     
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -2711,30 +2738,16 @@ class Engine():
             sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                         Source.priority != None,
                                                         or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                 Source.validity_stop > self.source.validity_start),
-                                                            and_(Source.validity_start == self.source.validity_start,
-                                                                 Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+                                                                 Source.validity_stop > self.source.validity_start))).order_by(Source.validity_start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
 
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -2797,37 +2810,26 @@ class Engine():
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
                                            if source.priority >= self.source.priority and
-                                           ((source.validity_start < validity_stop and
-                                            source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)])
 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
                                            if source.priority == max_priority and
-                                           ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)])
 
                 # Get the related source
                 source_max_generation_time = sorted(
                     [source for source in sources_during_period
                      if source.generation_time == max_generation_time and
                      source.priority == max_priority and
-                     ((source.validity_start < validity_stop and
-                       source.validity_stop > validity_start)
-                      or
-                      (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                     (source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
                 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
                 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -2989,30 +2991,16 @@ class Engine():
             sources = self.session.query(Source).filter(Source.dim_signature_uuid == dim_signature.dim_signature_uuid,
                                                                            Source.priority != None,
                                                                                   or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                                           Source.validity_stop > self.source.validity_start),
-                                                                                      and_(Source.validity_start == self.source.validity_start,
-                                                                                           Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+                                                                                           Source.validity_stop > self.source.validity_start))).order_by(Source.validity_start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
 
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -3076,40 +3064,29 @@ class Engine():
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
                                            if source.priority >= self.source.priority and
-                                           ((source.validity_start < validity_stop and
-                                            source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)])
                 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
                                            if source.priority == max_priority and
-                                           ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)])
                 
                 # Get the related source
                 source_max_generation_time = sorted(
                     [source for source in sources_during_period
                      if source.generation_time == max_generation_time and
                      source.priority == max_priority and
-                     ((source.validity_start < validity_stop and
-                       source.validity_stop > validity_start)
-                      or
-                      (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                     (source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
                 
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
                 events_max_generation_time = [event for event in events_during_period if
                                               event.source.priority <= self.source.priority and
                                               event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -3298,30 +3275,16 @@ class Engine():
             # Get the sources of events intersecting the validity period
             sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                             Source.validity_stop > self.source.validity_start),
-                                                                        and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Source.validity_start).all()
+                                                                             Source.validity_stop > self.source.validity_start))).order_by(Source.validity_start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
 
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -3387,11 +3350,8 @@ class Engine():
 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
-                                           if ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           if (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)])
                 
                 # Get the related source
                 source_max_generation_time = sorted([source for source in sources_during_period
@@ -3405,9 +3365,7 @@ class Engine():
                 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -3554,30 +3512,16 @@ class Engine():
             sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                        Source.priority != None,
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                             Source.validity_stop > self.source.validity_start),
-                                                                        and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Event.start).all()
+                                                                             Source.validity_stop > self.source.validity_start))).order_by(Event.start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
 
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -3639,31 +3583,22 @@ class Engine():
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
                                            if source.priority >= self.source.priority and
-                                           ((source.validity_start < validity_stop and
-                                            source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)])
                 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
                                            if source.priority == max_priority and
-                                           ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)])
                 
                 # Get the related source
                 source_max_generation_time = sorted(
                     [source for source in sources_during_period
                      if source.generation_time == max_generation_time and
                      source.priority == max_priority and
-                     ((source.validity_start < validity_stop and
-                       source.validity_stop > validity_start)
-                      or
-                      (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                     (source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -3672,9 +3607,7 @@ class Engine():
                 
                 # Events related to the DIM processing with the maximum generation time
                 events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
                 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -3828,30 +3761,16 @@ class Engine():
             sources = self.session.query(Source).join(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                                        Source.priority != None,
                                                                     or_(and_(Source.validity_start < self.source.validity_stop,
-                                                                             Source.validity_stop > self.source.validity_start),
-                                                                        and_(Source.validity_start == self.source.validity_start,
-                                                                             Source.validity_stop == self.source.validity_stop))).order_by(Event.start).all()
+                                                                             Source.validity_stop > self.source.validity_start))).order_by(Event.start).all()
             events = sorted(set([event for source in sources for event in source.events if
                                  (event.gauge_uuid == gauge_uuid) and
-                                 ((event.start < self.source.validity_stop and
-                                  event.stop > self.source.validity_start) or
-                                 (event.start == self.source.validity_start and
-                                  event.stop == self.source.validity_stop))]), key=lambda event: event.start)
+                                 (event.start < self.source.validity_stop and
+                                  event.stop > self.source.validity_start)]), key=lambda event: event.start)
 
             # Get the timeline of validity periods intersecting
             timeline_points = set(list(chain.from_iterable([[source.validity_start,source.validity_stop] for source in sources])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            sources_duration_0 = [source for source in sources if source.validity_start == source.validity_stop]
-            sources_duration_0_added_stop = {}
-            for source in sources_duration_0:
-                # Insert only once the stop of the sources with duration 0
-                if source.validity_stop not in sources_duration_0_added_stop:
-                    sources_duration_0_added_stop[source.validity_stop] = None
-                    filtered_timeline_points.append(source.validity_stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
@@ -3913,31 +3832,22 @@ class Engine():
                 # Get the maximum priority at this moment
                 max_priority = max([source.priority for source in sources_during_period
                                            if source.priority >= self.source.priority and
-                                           ((source.validity_start < validity_stop and
-                                            source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                            source.validity_stop > validity_start)])
                 
                 # Get the maximum generation time at this moment
                 max_generation_time = max([source.generation_time for source in sources_during_period
                                            if source.priority == max_priority and
-                                           ((source.validity_start < validity_stop and
-                                               source.validity_stop > validity_start)
-                                           or
-                                           (source.validity_start == validity_start and
-                                            source.validity_stop == validity_stop))])
+                                           (source.validity_start < validity_stop and
+                                               source.validity_stop > validity_start)])
                 
                 # Get the related source
                 source_max_generation_time = sorted(
                     [source for source in sources_during_period
                      if source.generation_time == max_generation_time and
                      source.priority == max_priority and
-                     ((source.validity_start < validity_stop and
-                       source.validity_stop > validity_start)
-                      or
-                      (source.validity_start == validity_start and
-                       source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                     (source.validity_start < validity_stop and
+                       source.validity_stop > validity_start)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # Check if the period contains sources with the relevant events if not continue with the following period
                 if not source_max_generation_time:
@@ -3947,9 +3857,7 @@ class Engine():
                 # Events related to the source with the maximum generation time if the priority is lower or equal that the defined for the current source
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
                 events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                               or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
                 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -4107,31 +4015,19 @@ class Engine():
             events = self.session.query(Event).join(Source).filter(Event.gauge_uuid == gauge_uuid,
                                                                    Source.priority != None,
                                                                    or_(and_(Event.start < self.source.validity_stop,
-                                                                            Event.stop > self.source.validity_start),
-                                                                       and_(Event.start == self.source.validity_start,
-                                                                            Event.stop == self.source.validity_stop))).order_by(Event.start).all()
+                                                                            Event.stop > self.source.validity_start))).order_by(Event.start).all()
             sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
             
             # Get the timeline of event periods intersecting
             timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
             filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= self.source.validity_start and timestamp <= self.source.validity_stop]
-
-            events_duration_0 = [event for event in events if event.start == event.stop]
-            events_duration_0_added_stop = {}
-            for event in events_duration_0:
-                # Insert only once the stop of the events with duration 0
-                if event.stop not in events_duration_0_added_stop:
-                    events_duration_0_added_stop[event.stop] = None
-                    filtered_timeline_points.append(event.stop)
-                # end if
-            # end for
             
             # Sort list
             filtered_timeline_points.sort()
 
             events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
-            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
+            sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
             
             # Iterate through the periods
             next_timestamp = 1
@@ -4144,7 +4040,7 @@ class Engine():
                 if timestamp in sources_per_timestamp:
                     sources_during_period = sources_per_timestamp[timestamp]
                 # end if
-                
+
                 # Check if for the last period there are pending splits or events to be created not ending on previous periods
                 if next_timestamp == len(filtered_timeline_points):
                     for event_uuid in list_split_events:
@@ -4189,41 +4085,29 @@ class Engine():
                 max_priority = max([source.priority for source in sources_during_period
                                     if
                                     (source.priority <= self.source.priority and
-                                     ((source.validity_start < validity_stop and source.validity_stop > validity_start)
-                                      or
-                                      (source.validity_start == validity_start and source.validity_stop == validity_stop)))
+                                     (source.validity_start < validity_stop and source.validity_stop > validity_start))
                                     or
                                     (source.priority > self.source.priority and
-                                     ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                      or
-                                      (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0)))])
+                                     (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0))])
                 
                 if max_priority and max_priority <= self.source.priority:
                     # Get the maximum generation time at this moment
                     max_generation_time = max([source.generation_time for source in sources_during_period if source.priority == max_priority and
-                                               ((source.validity_start < validity_stop and source.validity_stop > validity_start)
-                                               or
-                                                (source.validity_start == validity_start and source.validity_stop == validity_stop))])
+                                               (source.validity_start < validity_stop and source.validity_stop > validity_start)])
 
                     # Get the related source (sorting by ingestion time and setting sources with ingestion time None at the end)
                     source_max_generation_time = sorted([source for source in sources_during_period if source.generation_time == max_generation_time and
                                                   source.priority == max_priority and
-                                                  ((source.validity_start < validity_stop and source.validity_stop > validity_start)
-                                                   or
-                                                   (source.validity_start == validity_start and source.validity_stop == validity_stop))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                                                  (source.validity_start < validity_stop and source.validity_stop > validity_start)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
                 elif max_priority and max_priority > self.source.priority:
                     # Get the maximum generation time at this moment
                     max_generation_time = max([source.generation_time for source in sources_during_period if source.priority == max_priority and
-                                               ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                or
-                                                (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))])
+                                               (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)])
 
                     # Get the related source
                     source_max_generation_time = sorted([source for source in sources_during_period if source.generation_time == max_generation_time and
                                                          source.priority == max_priority and
-                                                         ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                          or
-                                                          (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                                                         (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                 # end if
 
@@ -4236,9 +4120,7 @@ class Engine():
                 # Note this list will be empty if the source with maximum priority has a priority higher than the one defined by the current source
                 events_max_generation_time = [event for event in events_during_period if event.source.priority <= self.source.priority and
                                               event.source.source_uuid == source_max_generation_time.source_uuid and
-                                              ((event.start < validity_stop and event.stop > validity_start)
-                                              or
-                                               (event.start == validity_start and event.stop == validity_stop))]
+                                              (event.start < validity_stop and event.stop > validity_start)]
 
                 # Review events with higher generation time in the period
                 for event in events_max_generation_time:
@@ -4584,31 +4466,19 @@ class Engine():
                 # Get the events intersecting the segment
                 events = self.session.query(Event).filter(Event.gauge_uuid == gauge_uuid,
                                                           or_(and_(Event.start < segment_stop,
-                                                                   Event.stop > segment_start),
-                                                              and_(Event.start == segment_start,
-                                                                   Event.stop == segment_stop))).order_by(Event.start).all()
+                                                                   Event.stop > segment_start))).order_by(Event.start).all()
                 sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
                 # Get the timeline of validity periods intersecting
                 timeline_points = set(list(chain.from_iterable([[event.start,event.stop] for event in events])))
 
                 filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= segment_start and timestamp <= segment_stop]
 
-                events_duration_0 = [event for event in events if event.start == event.stop]
-                events_duration_0_added_stop = {}
-                for event in events_duration_0:
-                    # Insert only once the stop of the events with duration 0
-                    if event.stop not in events_duration_0_added_stop:
-                        events_duration_0_added_stop[event.stop] = None
-                        filtered_timeline_points.append(event.stop)
-                    # end if
-                # end for
-
                 # Sort list
                 filtered_timeline_points.sort()
 
                 events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
 
-                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
+                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4659,21 +4529,15 @@ class Engine():
                     next_timestamp += 1
                     # Get the maximum generation time at this moment
                     max_generation_time = max([source.generation_time for source in sources_during_period
-                                        if ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                            or
-                                            (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))])
+                                        if (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)])
 
                     # Get the related source
                     source_max_generation_time = sorted([source for source in sources_during_period if source.generation_time == max_generation_time and
-                                                         ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                          or
-                                                          (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                                                         (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                                  ((event.start < validity_stop and event.stop > validity_start)
-                                                   or
-                                                   (event.start == validity_start and event.stop == validity_stop))]
+                                                  (event.start < validity_stop and event.stop > validity_start)]
 
                     # Review events with higher generation time in the period
                     for event in events_max_generation_time:
@@ -4827,9 +4691,7 @@ class Engine():
                 events = self.session.query(Event).join(Source).filter(Event.gauge_uuid == gauge_uuid,
                                                                        Source.priority != None,
                                                                        or_(and_(Event.start < segment_stop,
-                                                                                Event.stop > segment_start),
-                                                                           and_(Event.start == segment_start,
-                                                                                Event.stop == segment_stop))).order_by(Event.start).all()
+                                                                                Event.stop > segment_start))).order_by(Event.start).all()
                 sources = sorted(set([event.source for event in events]), key=lambda source: source.validity_start)
                 
                 # Get the timeline of validity periods intersecting
@@ -4837,21 +4699,11 @@ class Engine():
 
                 filtered_timeline_points = [timestamp for timestamp in timeline_points if timestamp >= segment_start and timestamp <= segment_stop]
 
-                events_duration_0 = [event for event in events if event.start == event.stop]
-                events_duration_0_added_stop = {}
-                for event in events_duration_0:
-                    # Insert only once the stop of the events with duration 0
-                    if event.stop not in events_duration_0_added_stop:
-                        events_duration_0_added_stop[event.stop] = None
-                        filtered_timeline_points.append(event.stop)
-                    # end if
-                # end for
-
                 # Sort list
                 filtered_timeline_points.sort()
 
                 events_per_timestamp = get_events_per_timestamp(events, filtered_timeline_points)
-                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points, events_duration_0)
+                sources_per_timestamp = get_sources_per_timestamp(sources, filtered_timeline_points)
 
                 # Iterate through the periods
                 next_timestamp = 1
@@ -4905,29 +4757,21 @@ class Engine():
                     # Get the maximum priority at this moment
                     max_priority = max([source.priority for source in sources_during_period
                                                if source.priority >= self.source.priority and
-                                               ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                or
-                                                (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))])
+                                               (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)])
                     
                     # Get the maximum generation time at this moment
                     max_generation_time = max([source.generation_time for source in sources_during_period
                                                if source.priority == max_priority and
-                                               ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                or
-                                                (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))])
+                                               (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)])
 
                     # Get the related source
                     source_max_generation_time = sorted([source for source in sources_during_period if source.generation_time == max_generation_time and
                                                           source.priority == max_priority and
-                                                         ((len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)
-                                                          or
-                                                          (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start == validity_start and event.stop == validity_stop]) > 0))], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
+                                                         (len([event for event in events_during_period if event.source.source_uuid == source.source_uuid and event.start < validity_stop and event.stop > validity_start]) > 0)], key=lambda source: (source.ingestion_time is None, source.ingestion_time))[0]
 
                     # Events related to the DIM processing with the maximum generation time
                     events_max_generation_time = [event for event in events_during_period if event.source.source_uuid == source_max_generation_time.source_uuid and
-                                                  ((event.start < validity_stop and event.stop > validity_start)
-                                                   or
-                                                   (event.start == validity_start and event.stop == validity_stop))]
+                                                  (event.start < validity_stop and event.stop > validity_start)]
 
                     # Review events with higher generation time in the period
                     for event in events_max_generation_time:
@@ -5421,12 +5265,11 @@ def get_events_per_timestamp(events, timestamps):
     """
     Method to associate events to the timestamps (starts of segments specified by the timestamps).
     An event is associated to a timestamp:
-    if (start < next timestamp and stop > timestamp) or
-    (start == timestamp and stop == next timestamp)
+    if (start < next timestamp and stop > timestamp)
 
     PRE:
     - The list of events is ordered by start
-    - The list of timestamps is the list of start and stop values associated to the events without duplications except for the case of having events with duration 0 in which case there will be only one duplication
+    - The list of timestamps is the list of start and stop values associated to the events without duplications
 
     Note:
     1. Given the following scenario:
@@ -5486,8 +5329,7 @@ def get_events_per_timestamp(events, timestamps):
                 break
             # end if
 
-            if (event.start < next_timestamp and event.stop > timestamp) or \
-               (event.start == timestamp and event.stop == next_timestamp):
+            if event.start < next_timestamp and event.stop > timestamp:
                 if timestamp not in events_per_timestamp:
                     events_per_timestamp[timestamp] = []
                 # end if
@@ -5502,20 +5344,18 @@ def get_events_per_timestamp(events, timestamps):
 
     return events_per_timestamp
 
-def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
+def get_sources_per_timestamp(sources, timestamps):
     """
     Method to associate sources to the timestamps (starts of segments specified by the timestamps).
     A source is associated to a timestamp:
-    if (validity_start < next timestamp and validity_stop > timestamp) or
-    (validity_start == timestamp and validity_stop == next timestamp) or
-    there is an associated event with duration 0 and event.start == timestamp
+    if (validity_start < next timestamp and validity_stop > timestamp)
 
     PRE:
     - The list of sources is ordered by validity_start
-    - The list of timestamps is the list of validity_start and validity_stop values associated to the sources without duplications except for the case of having sources with duration 0 in which case there will be only one duplication
+    - The list of timestamps is the list of validity_start and validity_stop values associated to the sources without duplications
 
     Note:
-    1. Given the following scenario (if events_duration_0 != None)):
+    1. Given the following scenario:
     Timestamps: |         |         |
                           |
     Source1:    [         ]
@@ -5528,14 +5368,12 @@ def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
     Timestamp:  |
     Sources:     Source1, Source4
     Timestamp:            |
-    Sources:     Source2, Source3, Source4
+    Sources:     Source1, Source2, Source3, Source4
 
     :param sources: list of sources to associate to the timestamps
     :type sources: list
     :param timestamps: list of timestamps corresponding to the start and stop values of the received sources
     :type timestamps: list
-    :param events_duration_0: list of events related to the sources with duration 0
-    :type events_duration_0: list
 
     :return: sources_per_timestamp
     :rtype: dictionary (key: timestamp, value: list of sources associated)
@@ -5548,20 +5386,6 @@ def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
         specific_covered_timestamps = {}
         while specific_timeline_points_iterator < len(timestamps):
             timestamp = timestamps[specific_timeline_points_iterator]
-
-            if events_duration_0 != None:
-                # Associate source to the timestamp if it has an event with duration 0 and start == timestamp
-                associated_events_with_duration_0 = [event for event in events_duration_0 if event.source.source_uuid == source.source_uuid and event.start == timestamp]
-                if len(associated_events_with_duration_0) > 0:
-                    if timestamp not in sources_per_timestamp:
-                        sources_per_timestamp[timestamp] = []
-                    # end if
-                    if timestamp not in specific_covered_timestamps:
-                        sources_per_timestamp[timestamp].append(source)
-                        specific_covered_timestamps[timestamp] = None
-                    # end if
-                # end if
-            # end if
 
             # Check if the source has to be assigned to the penultimate timestamp (latest timestamp is not used)
             if specific_timeline_points_iterator == len(timestamps) - 1:
@@ -5589,8 +5413,7 @@ def get_sources_per_timestamp(sources, timestamps, events_duration_0 = None):
                 break
             # end if
 
-            if (source.validity_start < next_timestamp and source.validity_stop > timestamp) or \
-               (source.validity_start == timestamp and source.validity_stop == next_timestamp):
+            if source.validity_start < next_timestamp and source.validity_stop > timestamp:
                 if timestamp not in sources_per_timestamp:
                     sources_per_timestamp[timestamp] = []
                 # end if

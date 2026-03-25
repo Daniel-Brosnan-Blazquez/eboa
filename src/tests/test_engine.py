@@ -2626,6 +2626,41 @@ class TestEngine(unittest.TestCase):
 
         assert len(sources_status) == 1
 
+    def test_treat_data_zero_duration_event_shifts_stop_and_logs_warning(self):
+
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source_zero_duration_event.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T02:07:03"
+            }]
+        }]}
+
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        event_ddbb = self.session.query(Event).join(Source).filter(Source.name == data["operations"][0]["source"]["name"]).first()
+
+        assert event_ddbb.stop == event_ddbb.start + datetime.timedelta(microseconds = 1)
+
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["EVENT_DURATION_0"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
+
+        assert "The source file with name source_zero_duration_event.xml associated to the DIM signature dim_signature and DIM processing exec with version 1.0 has an event or events with duration 0. The stop value of those events have been shifted by 1 microsecond" in sources_status[0].log
+        
     def test_treat_data_wrong_event_value(self):
 
         data = {"operations": [{
@@ -4403,3 +4438,69 @@ class TestEngine(unittest.TestCase):
         event_links = self.session.query(EventLink).all()
 
         assert len(event_links) == 6
+
+    def test_insert_source_zero_duration_shifts_stop_and_logs_warning(self):
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source_zero_duration.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T02:07:03"}
+        }]
+        }
+        returned_value = self.engine_eboa.treat_data(data)[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        source_ddbb = self.session.query(Source).filter(Source.name == data["operations"][0]["source"]["name"]).first()
+
+        assert source_ddbb.validity_stop == source_ddbb.validity_start + datetime.timedelta(microseconds = 1)
+
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["SOURCE_VALIDITY_DURATION_0"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
+
+        assert "The source file with name source_zero_duration.xml associated to the DIM signature dim_signature and DIM processing exec with version 1.0 has a reported validity period with duration 0 (2018-06-05T02:07:03_2018-06-05T02:07:03). The stop value has been shifted by 1 microsecond (2018-06-05T02:07:03.000001)" in sources_status[0].log
+
+
+    def test_insert_source_zero_duration_shifts_stop_event_zero_duration_and_logs_warning(self):
+        data = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "event_zero_duration_at_end.xml",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2018-07-05T02:07:03",
+                       "validity_start": "2018-06-05T01:07:03",
+                       "validity_stop": "2018-06-05T02:07:03"},
+            "events": [{
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T02:07:03",
+                "stop": "2018-06-05T02:07:03"
+            }]
+        }]}
+
+        self.engine_eboa.data = data
+        returned_value = self.engine_eboa.treat_data()[0]["status"]
+
+        assert returned_value == eboa_engine.exit_codes["OK"]["status"]
+
+        event_ddbb = self.session.query(Event).join(Source).filter(Source.name == data["operations"][0]["source"]["name"]).first()
+
+        assert event_ddbb.stop.isoformat() == "2018-06-05T02:07:03.000001"
+
+        source_ddbb = self.session.query(Source).filter(Source.name == data["operations"][0]["source"]["name"]).first()
+    
+        assert source_ddbb.validity_stop.isoformat() == "2018-06-05T02:07:03.000001"
+
+        sources_status = self.session.query(SourceStatus).join(Source).filter(SourceStatus.status == eboa_engine.exit_codes["EVENT_DURATION_0_AT_THE_VALIDITY_END"]["status"],
+                                                                           Source.name == data["operations"][0]["source"]["name"]).all()
+
+        assert "The source file with name event_zero_duration_at_end.xml associated to the DIM signature dim_signature and DIM processing exec with version 1.0 has an event or events with duration 0 at the end of the validity period (2018-06-05T01:07:03_2018-06-05T02:07:03). The validity stop value has been shifted by 1 microsecond (2018-06-05T02:07:03.000001)" in sources_status[0].log
+        

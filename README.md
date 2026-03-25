@@ -71,42 +71,6 @@ EBOA is designed for enterprise and analytical systems that require robust stora
 - Priority-based data conflict resolution
 - Scalable for high-volume, concurrent data operations
 
-## Full Stack Application: EBOA + VBOA ##
-
-While EBOA serves as a powerful backend data management engine, it is designed to work seamlessly with **VBOA** (Visualization for Business Operation Analysis), a modern frontend component that completes the full-stack application architecture.
-
-### Architecture Overview ###
-
-The EBOA + VBOA stack provides an enterprise-grade solution for business operation analysis:
-
-- **EBOA (Backend)**: Data storage, management, and query engine built on PostgreSQL with Python API
-- **VBOA (Frontend)**: Interactive web application for visualization, analysis, and real-time monitoring
-
-Together, these components form a complete, production-ready platform for complex business operation management without requiring extensive custom development.
-
-### Easy Tailoring Structure ###
-
-One of the key advantages of the EBOA + VBOA stack is its easily customizable architecture:
-
-- **Modular design**: Both components are designed with modularity in mind, allowing you to extend and customize functionality
-- **Configuration-driven**: Most features are driven by configuration files rather than code changes
-- **Data model adaptation**: Define your own entities and relationships through EBOA's flexible schema
-- **UI customization**: VBOA's interface can be tailored to your specific business needs
-- **Integration points**: Well-defined APIs and integration points for connecting custom processors and analyzers
-
-### Getting Started ###
-
-To get started with the full EBOA + VBOA stack:
-
-1. **EBOA Documentation**: This repository contains comprehensive documentation for the backend component
-2. **VBOA Repository**: Visit the GitHub repository for VBOA to access the frontend component and additional examples:
-https://github.com/Daniel-Brosnan-Blazquez/vboa
-3. **Examples**: Complete reference implementations and example configurations demonstrating typical use cases (e.g. monitoring of observation satellites, financial analysis, etc) are available in the GitHub repositories:
-https://github.com/Daniel-Brosnan-Blazquez/s1boa
-https://github.com/Daniel-Brosnan-Blazquez/s2boa
-https://github.com/Daniel-Brosnan-Blazquez/s3boa
-https://github.com/Daniel-Brosnan-Blazquez/bankboa
-
 ## Insertion Methods ##
 
 EBOA supports various insertion methods at different hierarchical levels, allowing flexible data management based on different update strategies:
@@ -214,3 +178,40 @@ EBOA maintains comprehensive temporal metadata for all entities:
 - **Reported times**: Original times as reported by source systems
 
 This enables sophisticated temporal queries and analysis of business operations over time.
+
+## Full Stack Application: EBOA + VBOA ##
+
+While EBOA serves as a powerful backend data management engine, it is designed to work seamlessly with **VBOA** (Visualization for Business Operation Analysis), a modern frontend component that completes the full-stack application architecture.
+
+### Architecture Overview ###
+
+The EBOA + VBOA stack provides an enterprise-grade solution for business operation analysis:
+
+- **EBOA (Backend)**: Data storage, management, and query engine built on PostgreSQL with Python API
+- **VBOA (Frontend)**: Interactive web application for visualization, analysis, and real-time monitoring
+
+Together, these components form a complete, production-ready platform for complex business operation management without requiring extensive custom development.
+
+### Easy Tailoring Structure ###
+
+One of the key advantages of the EBOA + VBOA stack is its easily customizable architecture:
+
+- **Modular design**: Both components are designed with modularity in mind, allowing you to extend and customize functionality
+- **Configuration-driven**: Most features are driven by configuration files rather than code changes
+- **Data model adaptation**: Define your own entities and relationships through EBOA's flexible schema
+- **UI customization**: VBOA's interface can be tailored to your specific business needs
+- **Integration points**: Well-defined APIs and integration points for connecting custom processors and analyzers
+
+### Getting Started ###
+
+To get started with the full EBOA + VBOA stack:
+
+1. **EBOA Documentation**: This repository contains comprehensive documentation for the backend component
+2. **VBOA Repository**: Visit the GitHub repository for VBOA to access the frontend component and additional examples:  
+https://github.com/Daniel-Brosnan-Blazquez/vboa
+
+3. **Examples**: Complete reference implementations and example configurations demonstrating typical use cases (e.g. monitoring of observation satellites, financial analysis, etc) are available in the GitHub repositories:  
+https://github.com/Daniel-Brosnan-Blazquez/s1boa
+https://github.com/Daniel-Brosnan-Blazquez/s2boa
+https://github.com/Daniel-Brosnan-Blazquez/s3boa
+https://github.com/Daniel-Brosnan-Blazquez/bankboa
