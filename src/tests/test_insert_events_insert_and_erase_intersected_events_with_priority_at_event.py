@@ -552,7 +552,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
 
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
-                                                                           Event.start == "2018-06-05T04:07:03",
+                                                                           Event.start == "2018-06-05T04:07:03.000001",
                                                                            Event.stop == "2018-06-05T08:07:36",
                                                                            Source.name == "source.json").all()
         assert len(events) == 1
@@ -560,7 +560,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
                                                                            Event.start == "2018-06-05T04:07:03",
-                                                                           Event.stop == "2018-06-05T04:07:03",
+                                                                           Event.stop == "2018-06-05T04:07:03.000001",
                                                                            Source.name == "source2.json").all()
         assert len(events) == 1
 
@@ -2816,7 +2816,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
                                                                            Event.start == "2018-06-05T08:07:36",
-                                                                           Event.stop == "2018-06-05T08:07:36",
+                                                                           Event.stop == "2018-06-05T08:07:36.000001",
                                                                            Source.name == "source.json").all()
         assert len(events) == 1
 
@@ -2824,32 +2824,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
 
         assert len(events) == 2
 
-    def test_event_with_duration_0_in_the_middle_of_events_to_remove(self):
-
-        data1 = {"operations": [{
-            "mode": "insert",
-            "dim_signature": {"name": "dim_signature",
-                              "exec": "exec",
-                              "version": "1.0"},
-            "source": {"name": "source1.json",
-                       "reception_time": "2018-06-06T13:33:29",
-                       "generation_time": "2016-07-07T02:07:03",
-                       "validity_start": "2018-06-05T02:07:03",
-                       "validity_stop": "2018-06-05T08:07:36",
-                       "priority": 20},
-            "events": [{
-                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
-                "gauge": {"name": "GAUGE_NAME",
-                          "system": "GAUGE_SYSTEM",
-                          "insertion_type": "SIMPLE_UPDATE"},
-                "start": "2018-06-05T08:07:36",
-                "stop": "2018-06-05T08:07:36"
-            }]
-        }]
-        }
-        exit_status = self.engine_eboa.treat_data(data1)
-
-        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+    def test_event_with_duration_0_in_the_middle_of_events_not_removed_due_to_higher_priority(self):
 
         data2 = {"operations": [{
             "mode": "insert",
@@ -2902,6 +2877,31 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
 
         assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
 
+        data1 = {"operations": [{
+            "mode": "insert",
+            "dim_signature": {"name": "dim_signature",
+                              "exec": "exec",
+                              "version": "1.0"},
+            "source": {"name": "source1.json",
+                       "reception_time": "2018-06-06T13:33:29",
+                       "generation_time": "2016-07-07T02:07:03",
+                       "validity_start": "2018-06-05T02:07:03",
+                       "validity_stop": "2018-06-05T08:07:36",
+                       "priority": 20},
+            "events": [{
+                "explicit_reference": "EXPLICIT_REFERENCE_EVENT",
+                "gauge": {"name": "GAUGE_NAME",
+                          "system": "GAUGE_SYSTEM",
+                          "insertion_type": "SIMPLE_UPDATE"},
+                "start": "2018-06-05T08:07:36",
+                "stop": "2018-06-05T08:07:36"
+            }]
+        }]
+        }
+        exit_status = self.engine_eboa.treat_data(data1)
+
+        assert len([item for item in exit_status if item["status"] != eboa_engine.exit_codes["OK"]["status"]]) == 0
+
         data4 = {"operations": [{
             "mode": "insert",
             "dim_signature": {"name": "dim_signature",
@@ -2930,7 +2930,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
                                                                            Event.start == "2018-06-05T08:07:36",
-                                                                           Event.stop == "2018-06-05T08:07:36",
+                                                                           Event.stop == "2018-06-05T08:07:36.000001",
                                                                            Source.name == "source1.json").all()
         assert len(events) == 1
 
@@ -3058,7 +3058,7 @@ class TestInsertEventsInsertAndEraseIntersectedEventsWithPriority(unittest.TestC
         events = self.session.query(Event).join(Gauge).join(Source).filter(Gauge.name == "GAUGE_NAME", 
                                                                            Gauge.system == "GAUGE_SYSTEM",
                                                                            Event.start == "2018-06-05T08:07:36",
-                                                                           Event.stop == "2018-06-05T08:07:36",
+                                                                           Event.stop == "2018-06-05T08:07:36.000001",
                                                                            Source.name == "source1.json").all()
         assert len(events) == 1
         

@@ -95,7 +95,7 @@ class TestCounters(unittest.TestCase):
         events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
                                             gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
                                             start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
-                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03.000001", "op": "=="}],
                                             value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
         )
 
@@ -146,7 +146,7 @@ class TestCounters(unittest.TestCase):
         events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
                                             gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
                                             start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
-                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03.000001", "op": "=="}],
                                             value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
         )
 
@@ -335,7 +335,7 @@ class TestCounters(unittest.TestCase):
         events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
                                             gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
                                             start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
-                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03.000001", "op": "=="}],
                                             value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
         )
 
@@ -386,7 +386,7 @@ class TestCounters(unittest.TestCase):
         events = self.query_eboa.get_events(gauge_names = {"filter": "GAUGE_NAME", "op": "=="},
                                             gauge_systems = {"filter": "GAUGE_SYSTEM", "op": "=="},
                                             start_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
-                                            stop_filters = [{"date": "2018-06-05T04:07:03", "op": "=="}],
+                                            stop_filters = [{"date": "2018-06-05T04:07:03.000001", "op": "=="}],
                                             value_filters = [{"name": {"filter": "value", "op": "=="}, "type": "double", "value": {"op": "==", "filter": "10"}}]
         )
 
