@@ -8,9 +8,9 @@ USER root
 
 RUN useradd -m -r boa
 
-RUN yum install -y epel-release-9-10.el9
+RUN dnf install -y epel-release-9-10.el9
 
-RUN yum install --allowerasing -y \
+RUN dnf install --allowerasing -y \
     python3-3.9.25-3.el9_7.1 \
     python3-pip-21.3.1-1.el9 \
     python3-tkinter-3.9.25-3.el9_7.1 \
@@ -30,14 +30,14 @@ RUN yum install --allowerasing -y \
     glibc-langpack-en-2.34-231.el9_7.10 \
     redhat-rpm-config-210-1.el9
 
-RUN yum install -y \
+RUN dnf install -y \
     ruby-3.0.7-165.el9_5 \
     rubygem-bundler-2.2.33-165.el9_5 \
     ruby-devel-3.0.7-165.el9_5
 
-RUN yum install -y git-2.47.3-1.el9_6
+RUN dnf install -y git-2.47.3-1.el9_6
 
-RUN yum update -y
+RUN dnf update -y
 
 RUN pip3 install wheel
     
