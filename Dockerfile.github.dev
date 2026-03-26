@@ -8,9 +8,9 @@ USER root
 
 RUN useradd -m -r boa
 
-RUN dnf install -y epel-release-9-10.el9
+RUN yum install -y epel-release-9-10.el9
 
-RUN dnf install --allowerasing -y \
+RUN yum install --allowerasing -y \
     python3-3.9.25-3.el9_7.1 \
     python3-pip-21.3.1-1.el9 \
     python3-tkinter-3.9.25-3.el9_7.1 \
@@ -23,21 +23,21 @@ RUN dnf install --allowerasing -y \
     cronie-1.5.7-15.el9 \
     libcurl-7.76.1-35.el9_7.3 \
     libcurl-devel-7.76.1-35.el9_7.3 \
-    postgresql-server-devel-13.23 \
-    postgresql-13.23 \
+    postgresql-server-devel-13 \
+    postgresql-13 \
     podman-docker-6:5.6.0-14.el9_7 \
     procps-ng-3.3.17-14.el9 \
     glibc-langpack-en-2.34-231.el9_7.10 \
     redhat-rpm-config-210-1.el9
 
-RUN dnf install -y \
+RUN yum install -y \
     ruby-3.0.7-165.el9_5 \
     rubygem-bundler-2.2.33-165.el9_5 \
     ruby-devel-3.0.7-165.el9_5
 
-RUN dnf install -y git-2.47.3-1.el9_6
+RUN yum install -y git-2.47.3-1.el9_6
 
-RUN dnf update -y
+RUN yum update -y
 
 RUN pip3 install wheel
     
