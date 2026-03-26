@@ -23,8 +23,8 @@ RUN yum install --allowerasing -y \
     cronie-1.5.7-15.el9 \
     libcurl-7.76.1-35.el9_7.3 \
     libcurl-devel-7.76.1-35.el9_7.3 \
-    postgresql-server-devel-13.23-2.el9_7 \
-    postgresql-13.23-2.el9_7 \
+    postgresql-server-devel-13.23 \
+    postgresql-13.23 \
     podman-docker-6:5.6.0-14.el9_7 \
     procps-ng-3.3.17-14.el9 \
     glibc-langpack-en-2.34-231.el9_7.10 \
