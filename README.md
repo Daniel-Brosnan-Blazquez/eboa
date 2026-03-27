@@ -192,10 +192,19 @@ EBOA supports various insertion methods at different hierarchical levels, allowi
 
 These methods apply to all events and annotations linked to gauges associated with a specific DIM signature:
 
-- **insert**: Basic insertion without any filtering or removal of existing data.
+- **insert**: Basic insertion without any filtering or removal of existing data. Insertion methods at event level are applied.
+
 - **insert_and_erase**: Applies INSERT_and_ERASE logic to all events linked to all gauges associated with the DIM signature.
+
+  ![insert_and_erase Method](doc/fig/insert_and_erase.png)
+
 - **insert_and_erase_with_priority**: Same as insert_and_erase but using priority values to determine data relevance.
+
+  ![insert_and_erase_with_priority Method](doc/fig/insert_and_erase_with_priority.png)
+
 - **insert_and_erase_with_equal_or_lower_priority**: Similar to insert_and_erase_with_priority with specific priority handling.
+
+  ![insert_and_erase_with_equal_or_lower_priority Method](doc/fig/insert_and_erase_with_equal_or_lower_priority.png)
 
 ###### Key Behavioral Differences ######
 
@@ -207,17 +216,42 @@ These methods apply to all events and annotations linked to gauges associated wi
 ##### Event Level #####
 
 These methods apply to individual events based on their gauge configuration:
+Note: these methods are applied if at operation level the mode of insertion is configured as "insert".
 
 - **SIMPLE_UPDATE**: All events are inserted without any filtering or removal.
+
+  ![SIMPLE_UPDATE Method](doc/fig/SIMPLE_UPDATE.png)
+
 - **INSERT_and_ERASE**: Events are inserted but initially flagged as not visible. The system keeps only events with the greatest generation time within the source's validity period, removing or splitting others as needed.
-- **INSERT_and_ERASE_per_EVENT**: Similar to INSERT_and_ERASE, but the validity period is determined per individual event rather than the source.
-- **INSERT_and_ERASE_with_PRIORITY**: Same as INSERT_and_ERASE, but uses priority values for source relevance.
-- **INSERT_and_ERASE_per_EVENT_with_PRIORITY**: Combines per-event validity checking with priority-based selection.
+
+  ![INSERT_and_ERASE Method](doc/fig/INSERT_and_ERASE.png)
+
 - **INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY**: INSERT_and_ERASE with specific priority comparison logic.
+
+  ![INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY Method](doc/fig/INSERT_and_ERASE_with_EQUAL_or_LOWER_PRIORITY.png)
+
+- **INSERT_and_ERASE_with_PRIORITY**: Same as INSERT_and_ERASE, but uses priority values for source relevance.
+
+  ![INSERT_and_ERASE_with_PRIORITY Method](doc/fig/INSERT_and_ERASE_with_PRIORITY.png)
+
+- **INSERT_and_ERASE_per_EVENT**: Similar to INSERT_and_ERASE, but the validity period is determined per individual event rather than the source.
+
+  ![INSERT_and_ERASE_per_EVENT Method](doc/fig/INSERT_and_ERASE_per_EVENT.png)
+
+- **INSERT_and_ERASE_per_EVENT_with_PRIORITY**: Combines per-event validity checking with priority-based selection.
+
+  ![INSERT_and_ERASE_per_EVENT_with_PRIORITY Method](doc/fig/INSERT_and_ERASE_per_EVENT_with_PRIORITY.png)
+
 - **INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY**: Handles intersecting events with priority considerations.
+
+  ![INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY Method](doc/fig/INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY.png)
+
 - **EVENT_KEYS**: Events are inserted but flagged as not visible. Keeps events with the same event key and DIM signature that have the greatest generation time.
+
 - **EVENT_KEYS_with_PRIORITY**: Same as EVENT_KEYS, but incorporates priority values.
+
 - **SET_COUNTER**: For counter-type gauges, sets the counter value.
+
 - **UPDATE_COUNTER**: For counter-type gauges, updates the existing counter value.
 
 ###### Key Behavioral Differences ######
@@ -226,7 +260,38 @@ These methods apply to individual events based on their gauge configuration:
 - **Validity Period Scope**: Source-level variants (INSERT_and_ERASE, INSERT_and_ERASE_with_PRIORITY) apply source validity periods uniformly, while per-event variants (INSERT_and_ERASE_per_EVENT*) determine validity individually for each event
 - **Conflict Resolution Strategy**: Generation-time-based methods prioritize earlier-generated data, priority-based methods use source priority rankings, and EVENT_KEYS methods use event key deduplication
 - **Counter Operations**: SET_COUNTER and UPDATE_COUNTER are specialized methods for counter-type gauges, distinguishing between initial setting and incremental updates
-- **Intersection Handling**: The INTERSECTED_EVENTS variant specifically handles overlapping temporal intervals with priority considerations, useful for complex multi-source scenarios
+- **Intersection Handling**: The `INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY` variant specifically handles overlapping temporal intervals by examining existing events at intersecting time periods, using priority considerations for conflict resolution. This is different from other priority-based methods in that it focuses on **where events actually exist** rather than where a higher-priority source claims coverage.
+
+###### Use Case: Multi-Source Timeline Completeness ######
+
+![Timeline Completeness Strategy](doc/fig/timeline_completeness_strategy.png)
+
+A practical example is determining completeness between planned mission timelines from different sources:
+
+**Scenario**: Two independent sources provide scheduling data:
+- **Timeline A (lower priority)**: Expected satellite download activities 
+- **Timeline B (higher priority)**: Expected antenna reception activities
+
+The goal is to identify which periods have complete coverage from both timelines.
+
+**Insertion Strategy**:
+- Insert Timeline A using `INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY` (this method)
+- Insert Timeline B using `INSERT_and_ERASE_per_EVENT_with_PRIORITY` with higher priority
+
+**Behavior**:
+1. When Timeline B is inserted first: Events are stored as-is
+2. When Timeline A is then inserted: EBOA reviews each time period where Timeline A has events
+   - Previous Timeline A covered by the new Timeline A is completelly removed
+   - At intersections where Timeline B also has events: Timeline A events are removed (Timeline B has higher priority)
+   - At gaps where Timeline B has NO events: Timeline A events are kept (no competing data)
+   - Result: Completeness is automatically calculated—you see the union of both timelines
+
+**Key Difference from `INSERT_and_ERASE_per_EVENT_with_PRIORITY`**:
+- **`INSERT_and_ERASE_per_EVENT_with_PRIORITY`**: Removes previous Timeline A covered by the new Timeline A
+- **`INSERT_and_ERASE_per_EVENT_with_PRIORITY`**: Removes Timeline A events whenever Timeline B source has higher priority, **regardless of whether Timeline B actually has events** during those periods
+- **`INSERT_and_ERASE_INTERSECTED_EVENTS_with_PRIORITY`**: Only removes Timeline A events where Timeline B **actually has conflicting events** at the same time
+
+This distinction is crucial for scenarios where higher-priority sources may have incomplete coverage or gaps in their data. This method ensures you don't lose lower-priority data in periods where the higher-priority source is silent.
 - **Granularity vs Performance**: Per-event methods offer maximum granularity but require more processing; source-level methods are more efficient for uniform datasets
 
 ##### Annotation Level #####
