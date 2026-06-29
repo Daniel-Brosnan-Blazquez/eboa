@@ -12,7 +12,7 @@ setup(name="eboa",
       description="Engine for Business Operation Analysis",
       url="https://bitbucket.org/dbrosnan/eboa/",
       author="Daniel Brosnan",
-      author_email="daniel.brosnan@deimos-space.com",
+      author_email="d.brosnan.b@gmail.com",
       packages=find_packages(),
       python_requires='>=3',
       install_requires=[
